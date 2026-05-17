@@ -26,6 +26,7 @@ import { registerCors } from "./plugins/cors";
 import { registerDb } from "./plugins/db";
 import { registerEnv } from "./plugins/env";
 import { registerOpenApi } from "./plugins/openapi";
+import { authRateLimitOptions, registerSecurity } from "./plugins/security";
 import { normalizeUserTimeZone } from "./shared/timezone";
 import { sendAuthError } from "./shared/controller-helpers";
 
@@ -65,6 +66,9 @@ async function sendProxyResponse(reply: FastifyReply, response: Response) {
 export async function createApp(options: CreateAppOptions = {}) {
   const app = fastify({
     logger: options.logger ?? false,
+    // The API is only reachable through the Caddy reverse proxy, which sets
+    // X-Forwarded-For. trustProxy lets rate limiting key on the real client IP.
+    trustProxy: true,
   });
   const defaultJsonParser = app.getDefaultJsonParser("ignore", "ignore");
 
@@ -84,6 +88,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerDb(app, options.prisma);
   await migrateLegacyPersonalApiTokens(app.db);
   await registerCors(app);
+  await registerSecurity(app);
   await registerAuth(app);
   await registerHabitRoutes(app);
   await registerStatsRoutes(app);
@@ -94,7 +99,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   app.get("/api/auth/registration", async () => getRegistrationStatus(app.db));
 
-  app.post("/api/auth/sign-up/email", async (request, reply) => {
+  app.post("/api/auth/sign-up/email", authRateLimitOptions(app), async (request, reply) => {
     const status = await getRegistrationStatus(app.db);
     const payload =
       typeof request.body === "object" && request.body !== null
@@ -139,7 +144,7 @@ export async function createApp(options: CreateAppOptions = {}) {
     reply.send(body);
   });
 
-  app.all("/api/auth/*", async (request, reply) => {
+  app.all("/api/auth/*", authRateLimitOptions(app), async (request, reply) => {
     const response = await app.auth.handler(buildAuthProxyRequest(request));
     await sendProxyResponse(reply, response);
   });

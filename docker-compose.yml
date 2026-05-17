@@ -9,8 +9,15 @@ services:
         condition: service_healthy
     ports:
       - "${HAAABIT_PUBLIC_PORT:-8080}:80"
+      # For a public HTTPS deployment, also publish 443 and set
+      # HAAABIT_SITE_ADDRESS below so Caddy can provision Let's Encrypt TLS:
+      # - "443:443"
+    # environment:
+    #   HAAABIT_SITE_ADDRESS: ${HAAABIT_SITE_ADDRESS}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
   web:
     build:
@@ -25,12 +32,12 @@ services:
       PORT: 3000
       API_INTERNAL_BASE_URL: ${API_INTERNAL_BASE_URL:-http://api:3001}
     healthcheck:
+      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
+      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\"",
         ]
       interval: 10s
       timeout: 5s
@@ -53,12 +60,12 @@ services:
     volumes:
       - sqlite_data:/data
     healthcheck:
+      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
+      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3001/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:3001/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))\"",
         ]
       interval: 10s
       timeout: 5s
@@ -88,3 +95,5 @@ services:
 
 volumes:
   sqlite_data:
+  caddy_data:
+  caddy_config:

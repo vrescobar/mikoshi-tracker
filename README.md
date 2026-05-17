@@ -30,10 +30,10 @@ Self-hosted habit tracker that makes "what should I do today?" legible to both h
 | Runtime | Node.js, TypeScript, pnpm |
 | Testing | Vitest (API), Playwright (E2E) |
 
-## Quick Start (Docker) / 快速开始
+## Quick Start (Docker or Podman) / 快速开始
 
 ```bash
-git clone https://github.com/booooodv/haaabit.git
+git clone https://github.com/vrescobar/haaabit.git
 cd haaabit
 cp .env.example .env
 # Edit .env — set BETTER_AUTH_SECRET (run: openssl rand -hex 32)
@@ -44,6 +44,12 @@ docker compose up -d
 ```
 
 Open `http://localhost:8080` — the first registered user becomes admin.
+
+> **Docker or Podman / Docker 或 Podman**: the stack also runs on rootless
+> Podman — just swap `docker compose` for `podman-compose` in the commands
+> above (the `self-host` scripts auto-detect the engine). See
+> [docs/PUBLIC-DEPLOYMENT.md](./docs/PUBLIC-DEPLOYMENT.md) for Podman notes and
+> public-internet hardening.
 
 For the full setup guide, see [Self-host install guide / 自托管安装指南](./docs/self-hosting.md).
 
