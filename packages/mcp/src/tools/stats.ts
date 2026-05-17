@@ -11,7 +11,8 @@ export const statsTools: InventoryTool[] = [
     name: "stats_get_overview",
     method: "GET",
     path: "/stats/overview",
-    description: "Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot.",
+    description:
+      "Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot.",
     responseSchema: overviewStatsResponseSchema,
     outputSchema: z.object({
       stats: overviewStatsSchema,

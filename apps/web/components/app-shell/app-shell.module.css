@@ -1,9 +1,6 @@
 .shell {
   min-height: 100vh;
-  padding:
-    clamp(1rem, 2vw, 1.4rem)
-    clamp(1rem, 3vw, 2rem)
-    calc(env(safe-area-inset-bottom) + 6.5rem);
+  padding: clamp(1rem, 2vw, 1.4rem) clamp(1rem, 3vw, 2rem) calc(env(safe-area-inset-bottom) + 6.5rem);
 }
 
 .inner {
@@ -161,11 +158,7 @@
 
 .mobileNavLinkActive {
   color: var(--color-accent-ink);
-  background: linear-gradient(
-    135deg,
-    var(--color-accent) 0%,
-    var(--color-accent-strong) 100%
-  );
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
   border-color: transparent;
   box-shadow: 0 12px 30px rgba(28, 64, 81, 0.22);
 }
@@ -223,10 +216,7 @@
 
 @media (max-width: 720px) {
   .shell {
-    padding:
-      var(--space-4)
-      var(--space-4)
-      calc(env(safe-area-inset-bottom) + 7.6rem);
+    padding: var(--space-4) var(--space-4) calc(env(safe-area-inset-bottom) + 7.6rem);
   }
 
   .headerSurface {

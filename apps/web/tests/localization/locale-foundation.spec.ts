@@ -80,10 +80,7 @@ test.describe("locale foundation", () => {
 
       await route.fulfill({
         response,
-        body: html.replace(
-          "<head>",
-          "<head><script>document.documentElement.classList.add('trancy-zh-CN')</script>",
-        ),
+        body: html.replace("<head>", "<head><script>document.documentElement.classList.add('trancy-zh-CN')</script>"),
       });
     });
 

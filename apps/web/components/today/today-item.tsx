@@ -135,18 +135,12 @@ export function TodayItemCard(props: TodayItemProps) {
       ) : null}
 
       {feedback ? (
-        <InlineStatus
-          tone={feedback.tone}
-          title={feedback.title}
-          testId={`today-item-feedback-${item.habitId}`}
-        >
+        <InlineStatus tone={feedback.tone} title={feedback.title} testId={`today-item-feedback-${item.habitId}`}>
           {feedback.message}
         </InlineStatus>
       ) : null}
 
-      {isPending ? (
-        <DisabledHint>{copy.today.item.disabledHint}</DisabledHint>
-      ) : null}
+      {isPending ? <DisabledHint>{copy.today.item.disabledHint}</DisabledHint> : null}
     </article>
   );
 }

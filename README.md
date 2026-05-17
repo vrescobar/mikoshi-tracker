@@ -21,14 +21,14 @@ Self-hosted habit tracker that makes "what should I do today?" legible to both h
 
 ## Tech Stack / 技术栈
 
-| Layer | Technology |
-|-------|-----------|
-| API | Fastify, Prisma, better-auth, Zod |
-| Web | Next.js (App Router), CSS Modules, Radix UI |
-| Database | SQLite |
-| Proxy | Caddy |
-| Runtime | Node.js, TypeScript, pnpm |
-| Testing | Vitest (API), Playwright (E2E) |
+| Layer    | Technology                                  |
+| -------- | ------------------------------------------- |
+| API      | Fastify, Prisma, better-auth, Zod           |
+| Web      | Next.js (App Router), CSS Modules, Radix UI |
+| Database | SQLite                                      |
+| Proxy    | Caddy                                       |
+| Runtime  | Node.js, TypeScript, pnpm                   |
+| Testing  | Vitest (API), Playwright (E2E)              |
 
 ## Quick Start (Docker or Podman) / 快速开始
 
@@ -91,19 +91,19 @@ pnpm test:e2e
 
 All endpoints require Bearer token authentication. Generate a personal API token from the web UI under API Access.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/today` | Today's habits with status |
-| `POST` | `/api/today/complete` | Complete a boolean habit |
-| `POST` | `/api/today/set-total` | Set value for a quantified habit |
-| `POST` | `/api/today/undo` | Undo the latest check-in |
-| `GET` | `/api/habits` | List habits (filterable) |
-| `POST` | `/api/habits` | Create a habit |
-| `GET` | `/api/habits/:id` | Habit detail with stats and history |
-| `PATCH` | `/api/habits/:id` | Update a habit |
-| `GET` | `/api/stats/overview` | Dashboard analytics |
-| `GET` | `/api/openapi.json` | OpenAPI 3.1 spec |
-| `GET` | `/api/docs` | Interactive API documentation |
+| Method  | Endpoint               | Description                         |
+| ------- | ---------------------- | ----------------------------------- |
+| `GET`   | `/api/today`           | Today's habits with status          |
+| `POST`  | `/api/today/complete`  | Complete a boolean habit            |
+| `POST`  | `/api/today/set-total` | Set value for a quantified habit    |
+| `POST`  | `/api/today/undo`      | Undo the latest check-in            |
+| `GET`   | `/api/habits`          | List habits (filterable)            |
+| `POST`  | `/api/habits`          | Create a habit                      |
+| `GET`   | `/api/habits/:id`      | Habit detail with stats and history |
+| `PATCH` | `/api/habits/:id`      | Update a habit                      |
+| `GET`   | `/api/stats/overview`  | Dashboard analytics                 |
+| `GET`   | `/api/openapi.json`    | OpenAPI 3.1 spec                    |
+| `GET`   | `/api/docs`            | Interactive API documentation       |
 
 Full request/response examples are available at `/api/docs`.
 

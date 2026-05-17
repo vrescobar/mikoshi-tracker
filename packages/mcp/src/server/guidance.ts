@@ -6,14 +6,16 @@ export const HAAABIT_WORKFLOW_RESOURCE = {
   name: "haaabit_workflow_guide",
   uri: "haaabit://guides/workflow",
   title: "Haaabit Workflow Guide",
-  description: "Read-only playbook for choosing Haaabit MCP tools, sequencing reads before writes, and avoiding ambiguous mutations.",
+  description:
+    "Read-only playbook for choosing Haaabit MCP tools, sequencing reads before writes, and avoiding ambiguous mutations.",
   mimeType: "text/markdown",
 } as const;
 
 export const HAAABIT_WORKFLOW_PROMPT = {
   name: "haaabit_assistant_workflow",
   title: "Haaabit Assistant Workflow",
-  description: "Prompt template for habit and today requests. Use it to decide whether to inspect, update, undo, or analyze through the Haaabit MCP tools.",
+  description:
+    "Prompt template for habit and today requests. Use it to decide whether to inspect, update, undo, or analyze through the Haaabit MCP tools.",
 } as const;
 
 export const WORKFLOW_GUIDE_TEXT = `# Haaabit MCP workflow guide
@@ -80,7 +82,9 @@ export function registerGuidance(server: McpServer): {
       title: HAAABIT_WORKFLOW_PROMPT.title,
       description: HAAABIT_WORKFLOW_PROMPT.description,
       argsSchema: {
-        userRequest: z.string().describe("The user's latest request about today's habits, progress, or habit settings."),
+        userRequest: z
+          .string()
+          .describe("The user's latest request about today's habits, progress, or habit settings."),
       },
     },
     async ({ userRequest }) => ({

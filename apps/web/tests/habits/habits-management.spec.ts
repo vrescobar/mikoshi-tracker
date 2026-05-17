@@ -2,10 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { createFirstHabit, signUpInBrowser } from "../accessibility/helpers";
 
-async function seedHabit(
-  page: import("@playwright/test").Page,
-  payload: Record<string, unknown>,
-) {
+async function seedHabit(page: import("@playwright/test").Page, payload: Record<string, unknown>) {
   await page.evaluate(async (input) => {
     const response = await fetch("http://127.0.0.1:3001/api/habits", {
       method: "POST",
@@ -162,9 +159,7 @@ test("habit action failures stay in context", async ({ page }) => {
 
   await expect(page.getByTestId("habits-feedback")).toBeVisible();
   await expect(page.getByTestId("habits-feedback")).toContainText("Unable to update habits");
-  await expect(page.getByTestId("habits-feedback")).toContainText(
-    "Archive is temporarily unavailable",
-  );
+  await expect(page.getByTestId("habits-feedback")).toContainText("Archive is temporarily unavailable");
   await expect(card).toBeVisible();
 });
 

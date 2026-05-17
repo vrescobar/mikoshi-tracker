@@ -286,10 +286,7 @@ describe("buildTodaySummary", () => {
     });
 
     expect(summary.date).toBe("2026-03-08");
-    expect(summary.pendingItems.map((item) => item.habitId)).toEqual([
-      "sunday-habit",
-      "daily-yesterday-only",
-    ]);
+    expect(summary.pendingItems.map((item) => item.habitId)).toEqual(["sunday-habit", "daily-yesterday-only"]);
     expect(summary.completedItems).toEqual([]);
   });
 });

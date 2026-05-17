@@ -42,7 +42,10 @@ describe("openapi docs", () => {
 
     const spec = response.json() as {
       openapi: string;
-      paths: Record<string, Record<string, { security?: Array<Record<string, string[]>>; responses?: Record<string, unknown> }>>;
+      paths: Record<
+        string,
+        Record<string, { security?: Array<Record<string, string[]>>; responses?: Record<string, unknown> }>
+      >;
       components?: {
         securitySchemes?: Record<string, unknown>;
       };

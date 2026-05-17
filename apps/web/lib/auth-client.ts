@@ -1,5 +1,11 @@
 import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
-import type { CreateHabitInput, HabitDetail, HabitListFilters, UpdateHabitInput, Weekday } from "@haaabit/contracts/habits";
+import type {
+  CreateHabitInput,
+  HabitDetail,
+  HabitListFilters,
+  UpdateHabitInput,
+  Weekday,
+} from "@haaabit/contracts/habits";
 import type { OverviewStats } from "@haaabit/contracts/stats";
 import type { TodaySummary } from "@haaabit/contracts/today";
 

@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  createHabitInputSchema,
-  updateHabitInputSchema,
-  type Weekday,
-} from "@haaabit/contracts/habits";
+import { createHabitInputSchema, updateHabitInputSchema, type Weekday } from "@haaabit/contracts/habits";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -54,8 +50,12 @@ export function HabitCreateForm({
     setError(null);
 
     startTransition(async () => {
-      const currentFrequencyType = String(formData.get("frequencyType") ?? frequencyType) as HabitRecord["frequencyType"];
-      const currentKind = (mode === "edit" ? initialHabit?.kind : String(formData.get("kind") ?? kind)) as HabitRecord["kind"];
+      const currentFrequencyType = String(
+        formData.get("frequencyType") ?? frequencyType,
+      ) as HabitRecord["frequencyType"];
+      const currentKind = (
+        mode === "edit" ? initialHabit?.kind : String(formData.get("kind") ?? kind)
+      ) as HabitRecord["kind"];
       const name = String(formData.get("name") ?? "");
       const countValue = Number(formData.get("frequencyCount") ?? "0");
       const weekdays = formData.getAll("weekdays").map((value) => String(value)) as Weekday[];
@@ -75,12 +75,9 @@ export function HabitCreateForm({
             name,
             description: String(formData.get("description") ?? "").trim() || null,
             category: String(formData.get("category") ?? "").trim() || null,
-            unit:
-              currentKind === "quantity" ? String(formData.get("unit") ?? "").trim() || null : null,
+            unit: currentKind === "quantity" ? String(formData.get("unit") ?? "").trim() || null : null,
             targetValue:
-              currentKind === "quantity"
-                ? Number(formData.get("targetValue") ?? "0") || undefined
-                : undefined,
+              currentKind === "quantity" ? Number(formData.get("targetValue") ?? "0") || undefined : undefined,
             startDate: String(formData.get("startDate") ?? ""),
             frequency,
           });
@@ -96,10 +93,7 @@ export function HabitCreateForm({
           description: String(formData.get("description") ?? "").trim() || undefined,
           category: String(formData.get("category") ?? "").trim() || undefined,
           unit: currentKind === "quantity" ? String(formData.get("unit") ?? "").trim() || undefined : undefined,
-          targetValue:
-            currentKind === "quantity"
-              ? Number(formData.get("targetValue") ?? "0") || undefined
-              : undefined,
+          targetValue: currentKind === "quantity" ? Number(formData.get("targetValue") ?? "0") || undefined : undefined,
           startDate: String(formData.get("startDate") ?? "").trim() || undefined,
           frequency,
         });
@@ -215,12 +209,7 @@ export function HabitCreateForm({
           htmlFor="habit-description"
           description={copy.form.fields.description.description}
         >
-          <Input
-            id="habit-description"
-            name="description"
-            type="text"
-            defaultValue={initialHabit?.description ?? ""}
-          />
+          <Input id="habit-description" name="description" type="text" defaultValue={initialHabit?.description ?? ""} />
         </Field>
 
         <Field

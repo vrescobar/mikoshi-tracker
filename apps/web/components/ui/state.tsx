@@ -43,12 +43,7 @@ export function StatePanel({
     <Surface
       variant="soft"
       padding={compact ? "md" : "lg"}
-      className={cn(
-        styles.statePanel,
-        styles[`tone${capitalize(tone)}`],
-        compact && styles.panelCompact,
-        className,
-      )}
+      className={cn(styles.statePanel, styles[`tone${capitalize(tone)}`], compact && styles.panelCompact, className)}
       data-testid={testId}
       {...props}
     >
@@ -64,14 +59,7 @@ export function StatePanel({
   );
 }
 
-export function InlineStatus({
-  title,
-  tone = "neutral",
-  testId,
-  className,
-  children,
-  ...props
-}: InlineStatusProps) {
+export function InlineStatus({ title, tone = "neutral", testId, className, children, ...props }: InlineStatusProps) {
   return (
     <div
       className={cn(styles.inlineStatus, styles[`tone${capitalize(tone)}`], className)}
@@ -89,13 +77,7 @@ export function DisabledHint({ className, ...props }: HTMLAttributes<HTMLParagra
   return <p className={cn(styles.disabledHint, className)} {...props} />;
 }
 
-export function SkeletonBlock({
-  className,
-  height = "1rem",
-  width = "100%",
-  style,
-  ...props
-}: SkeletonBlockProps) {
+export function SkeletonBlock({ className, height = "1rem", width = "100%", style, ...props }: SkeletonBlockProps) {
   return (
     <span
       aria-hidden="true"

@@ -91,10 +91,7 @@ function getDefaultState(dateKey: string): HabitStateSnapshot {
   };
 }
 
-function isHabitActionableToday(
-  habit: PersistedCheckinHabit,
-  day: ReturnType<typeof resolveHabitDay>,
-) {
+function isHabitActionableToday(habit: PersistedCheckinHabit, day: ReturnType<typeof resolveHabitDay>) {
   if (day.todayKey < habit.startDate) {
     return false;
   }
@@ -189,10 +186,7 @@ async function persistMutation(
   };
 }
 
-export async function completeHabitForToday(
-  dependencies: CheckinDependencies,
-  params: BaseCheckinParams,
-) {
+export async function completeHabitForToday(dependencies: CheckinDependencies, params: BaseCheckinParams) {
   const parsed = parseCompleteHabitInput({
     habitId: params.habitId,
     source: params.source,
@@ -270,10 +264,7 @@ export async function setHabitTotalForToday(
   });
 }
 
-export async function undoHabitForToday(
-  dependencies: CheckinDependencies,
-  params: BaseCheckinParams,
-) {
+export async function undoHabitForToday(dependencies: CheckinDependencies, params: BaseCheckinParams) {
   const parsed = parseUndoHabitInput({
     habitId: params.habitId,
     source: params.source,

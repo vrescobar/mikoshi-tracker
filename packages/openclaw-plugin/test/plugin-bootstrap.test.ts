@@ -182,7 +182,9 @@ describe("activateHaaabitOpenClawPlugin", () => {
         apiToken: "secret-token",
         timeoutMs: 10_000,
       });
-      expect(registerTool.mock.calls.map(([tool]) => (tool as OpenClawRegisteredTool).name)).toEqual(EXPECTED_TOOL_NAMES);
+      expect(registerTool.mock.calls.map(([tool]) => (tool as OpenClawRegisteredTool).name)).toEqual(
+        EXPECTED_TOOL_NAMES,
+      );
     } finally {
       resetProcessEnv("HAAABIT_API_URL", previousApiUrl);
       resetProcessEnv("HAAABIT_API_TOKEN", previousApiToken);

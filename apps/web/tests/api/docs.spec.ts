@@ -50,7 +50,12 @@ test("signed-in users can open english interactive api docs from api access", as
   await expect(page.getByText("This page follows your current app language.")).toBeVisible();
   await expect(page.getByText("Authorization: Bearer")).toBeVisible();
   await expect(page.getByText("/api/openapi.json")).toBeVisible();
-  await expect(page.locator("code").filter({ hasText: /^\/api\/habits$/ }).first()).toBeVisible();
+  await expect(
+    page
+      .locator("code")
+      .filter({ hasText: /^\/api\/habits$/ })
+      .first(),
+  ).toBeVisible();
 });
 
 test("signed-in users can open chinese interactive api docs while technical literals stay english", async ({
@@ -76,5 +81,10 @@ test("signed-in users can open chinese interactive api docs while technical lite
   await expect(page.getByText("当前页面会跟随你在应用中的语言。")).toBeVisible();
   await expect(page.getByText("Authorization: Bearer")).toBeVisible();
   await expect(page.getByText("/api/openapi.json")).toBeVisible();
-  await expect(page.locator("code").filter({ hasText: /^\/api\/habits$/ }).first()).toBeVisible();
+  await expect(
+    page
+      .locator("code")
+      .filter({ hasText: /^\/api\/habits$/ })
+      .first(),
+  ).toBeVisible();
 });

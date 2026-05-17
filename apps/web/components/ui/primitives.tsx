@@ -26,20 +26,10 @@ type PageHeaderProps = {
   actions?: ReactNode;
 };
 
-export function Surface({
-  className,
-  variant = "panel",
-  padding = "lg",
-  ...props
-}: SurfaceProps) {
+export function Surface({ className, variant = "panel", padding = "lg", ...props }: SurfaceProps) {
   return (
     <div
-      className={cn(
-        styles.surface,
-        styles[variant],
-        padding === "lg" ? styles.paddingLg : styles.paddingMd,
-        className,
-      )}
+      className={cn(styles.surface, styles[variant], padding === "lg" ? styles.paddingLg : styles.paddingMd, className)}
       {...props}
     />
   );

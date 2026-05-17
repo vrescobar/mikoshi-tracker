@@ -27,7 +27,8 @@ export const habitsTools: InventoryTool[] = [
     name: "habits_list",
     method: "GET",
     path: "/habits",
-    description: "List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status.",
+    description:
+      "List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status.",
     inputSchema: habitListFiltersSchema,
     responseSchema: habitListResponseSchema,
     outputSchema: habitListResponseSchema,
@@ -37,7 +38,8 @@ export const habitsTools: InventoryTool[] = [
     name: "habits_add",
     method: "POST",
     path: "/habits",
-    description: "Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category.",
+    description:
+      "Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category.",
     inputSchema: createHabitInputSchema,
     responseSchema: habitItemResponseSchema,
     outputSchema: habitItemResponseSchema,
@@ -47,7 +49,8 @@ export const habitsTools: InventoryTool[] = [
     name: "habits_get_detail",
     method: "GET",
     path: "/habits/:habitId",
-    description: "Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit.",
+    description:
+      "Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit.",
     inputSchema: habitPathParamsSchema,
     responseSchema: habitDetailResponseSchema,
     outputSchema: habitDetailResponseSchema,
@@ -57,7 +60,8 @@ export const habitsTools: InventoryTool[] = [
     name: "habits_edit",
     method: "PATCH",
     path: "/habits/:habitId",
-    description: "Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it.",
+    description:
+      "Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it.",
     inputSchema: editHabitToolInputSchema,
     responseSchema: habitItemResponseSchema,
     outputSchema: habitItemResponseSchema,
@@ -306,10 +310,7 @@ function summarizeHabitDetail(payload: {
   return `${opening} Current streak is ${currentStreak}; longest streak is ${longestStreak}.`;
 }
 
-function describeLatestTrend(
-  habitName: string,
-  status: "completed" | "pending" | "missed" | "not_due" | undefined,
-) {
+function describeLatestTrend(habitName: string, status: "completed" | "pending" | "missed" | "not_due" | undefined) {
   switch (status) {
     case "completed":
       return `${habitName} is already complete today.`;

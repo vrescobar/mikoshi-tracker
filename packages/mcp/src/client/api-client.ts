@@ -74,7 +74,7 @@ async function parseResponseBody(response: Response) {
   const contentType = response.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    return response.json() as Promise<unknown>;
+    return response.json();
   }
 
   const text = await response.text();

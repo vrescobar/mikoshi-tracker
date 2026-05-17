@@ -57,7 +57,8 @@ export function createEnv(source: NodeJS.ProcessEnv): {
     BETTER_AUTH_SECRET: parsed.BETTER_AUTH_SECRET,
     BETTER_AUTH_URL: betterAuthUrl,
     CORS_ORIGIN: corsOrigin,
-    corsOrigins: corsOrigin.split(",")
+    corsOrigins: corsOrigin
+      .split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),
   };

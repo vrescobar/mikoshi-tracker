@@ -39,9 +39,7 @@ describe("native error semantics", () => {
         });
       }),
     );
-    const networkHandlers = createHandlers(
-      vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed")),
-    );
+    const networkHandlers = createHandlers(vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed")));
 
     await expect(timeoutHandlers.today_get_summary?.({})).resolves.toMatchObject({
       ok: false,

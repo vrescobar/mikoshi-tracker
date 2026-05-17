@@ -4,9 +4,13 @@ import { createReadToolResult } from "../../src/tools/read-results";
 
 describe("createReadToolResult", () => {
   it("returns content plus preserved structuredContent for passthrough read tools", () => {
-    const result = createReadToolResult("habits_list", {
-      items: [{ id: "habit_1" }],
-    }, "2 active habits");
+    const result = createReadToolResult(
+      "habits_list",
+      {
+        items: [{ id: "habit_1" }],
+      },
+      "2 active habits",
+    );
     const machineJson = JSON.stringify({
       items: [{ id: "habit_1" }],
     });

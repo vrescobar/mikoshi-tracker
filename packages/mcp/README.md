@@ -127,19 +127,19 @@ For a broader explanation of workspace skills vs MCP transport and host-specific
 
 All tools use the authenticated Haaabit API behind the scenes and return structured data that matches the existing contracts.
 
-| Tool | Route | Description |
-|------|-------|-------------|
-| `habits_list` | `GET /habits` | List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status. |
-| `habits_add` | `POST /habits` | Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category. |
-| `habits_get_detail` | `GET /habits/:habitId` | Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit. |
-| `habits_edit` | `PATCH /habits/:habitId` | Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it. |
-| `habits_archive` | `POST /habits/:habitId/archive` | Archive a habit only when the user explicitly wants to shelve it without losing history. |
-| `habits_restore` | `POST /habits/:habitId/restore` | Restore an archived habit only when the user explicitly wants it active again. |
-| `today_get_summary` | `GET /today` | Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete. |
-| `today_complete` | `POST /today/complete` | Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item. |
-| `today_set_total` | `POST /today/set-total` | Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today. |
-| `today_undo` | `POST /today/undo` | Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action. |
-| `stats_get_overview` | `GET /stats/overview` | Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot. |
+| Tool                 | Route                           | Description                                                                                                                              |
+| -------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `habits_list`        | `GET /habits`                   | List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status.        |
+| `habits_add`         | `POST /habits`                  | Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category.                       |
+| `habits_get_detail`  | `GET /habits/:habitId`          | Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit. |
+| `habits_edit`        | `PATCH /habits/:habitId`        | Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it.               |
+| `habits_archive`     | `POST /habits/:habitId/archive` | Archive a habit only when the user explicitly wants to shelve it without losing history.                                                 |
+| `habits_restore`     | `POST /habits/:habitId/restore` | Restore an archived habit only when the user explicitly wants it active again.                                                           |
+| `today_get_summary`  | `GET /today`                    | Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete.               |
+| `today_complete`     | `POST /today/complete`          | Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item.                              |
+| `today_set_total`    | `POST /today/set-total`         | Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today.              |
+| `today_undo`         | `POST /today/undo`              | Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action.                       |
+| `stats_get_overview` | `GET /stats/overview`           | Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot.                        |
 
 ## AI Guidance
 

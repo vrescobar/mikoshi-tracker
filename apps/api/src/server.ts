@@ -44,7 +44,7 @@ function buildAuthProxyRequest(request: FastifyRequest) {
     if (Array.isArray(value)) {
       value.forEach((entry) => headers.append(key, entry));
     } else if (value) {
-      headers.append(key, String(value));
+      headers.append(key, value);
     }
   });
 
@@ -102,9 +102,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.post("/api/auth/sign-up/email", authRateLimitOptions(app), async (request, reply) => {
     const status = await getRegistrationStatus(app.db);
     const payload =
-      typeof request.body === "object" && request.body !== null
-        ? (request.body as Record<string, unknown>)
-        : undefined;
+      typeof request.body === "object" && request.body !== null ? (request.body as Record<string, unknown>) : undefined;
     const requestedTimeZone = typeof payload?.timezone === "string" ? payload.timezone : undefined;
     const timezone = normalizeUserTimeZone(requestedTimeZone);
 

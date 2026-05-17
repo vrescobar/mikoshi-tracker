@@ -102,16 +102,8 @@ export function buildDailySummaryForDate(
         })),
     ),
     periodProgress: habits.flatMap((habit) => {
-      const weekCompletions = countCompletedStatesInRange(
-        habit.dayStates,
-        day.weekStartKey,
-        params.dateKey,
-      );
-      const monthCompletions = countCompletedStatesInRange(
-        habit.dayStates,
-        day.monthStartKey,
-        params.dateKey,
-      );
+      const weekCompletions = countCompletedStatesInRange(habit.dayStates, day.weekStartKey, params.dateKey);
+      const monthCompletions = countCompletedStatesInRange(habit.dayStates, day.monthStartKey, params.dateKey);
 
       return [
         {
@@ -146,7 +138,8 @@ function isDueOnDate(record: TrendHabitRecord, dateKey: string) {
 function getPeriodProgressForDate(record: TrendHabitRecord, dateKey: string) {
   if (record.frequencyType === "WEEKLY_COUNT") {
     const bounds = getWeekBounds(dateKey);
-    const effectiveStart = compareDateKeys(record.startDate, bounds.weekStartKey) > 0 ? record.startDate : bounds.weekStartKey;
+    const effectiveStart =
+      compareDateKeys(record.startDate, bounds.weekStartKey) > 0 ? record.startDate : bounds.weekStartKey;
     const completionTarget = record.frequencyCount ?? 1;
     const completedCount = countCompletedStatesInRange(record.dayStates, effectiveStart, dateKey);
     const finalCompletedCount = countCompletedStatesInRange(
@@ -168,7 +161,8 @@ function getPeriodProgressForDate(record: TrendHabitRecord, dateKey: string) {
 
   if (record.frequencyType === "MONTHLY_COUNT") {
     const bounds = getMonthBounds(dateKey);
-    const effectiveStart = compareDateKeys(record.startDate, bounds.monthStartKey) > 0 ? record.startDate : bounds.monthStartKey;
+    const effectiveStart =
+      compareDateKeys(record.startDate, bounds.monthStartKey) > 0 ? record.startDate : bounds.monthStartKey;
     const completionTarget = record.frequencyCount ?? 1;
     const completedCount = countCompletedStatesInRange(record.dayStates, effectiveStart, dateKey);
     const finalCompletedCount = countCompletedStatesInRange(
@@ -233,7 +227,8 @@ export function buildHabitTrendPoint(
       : getMonthBounds(params.todayKey).monthKey;
   const isCurrentPeriod = progress?.periodKey === currentPeriodKey;
   const isCompleted = (progress?.completedCount ?? 0) >= (progress?.completionTarget ?? Number.MAX_SAFE_INTEGER);
-  const finalCompleted = (progress?.finalCompletedCount ?? 0) >= (progress?.completionTarget ?? Number.MAX_SAFE_INTEGER);
+  const finalCompleted =
+    (progress?.finalCompletedCount ?? 0) >= (progress?.completionTarget ?? Number.MAX_SAFE_INTEGER);
 
   return {
     date: params.dateKey,
@@ -322,9 +317,7 @@ export function calculateRecentCompletionRate(
           ? getWeekBounds(cursor).weekStartKey
           : getMonthBounds(cursor).monthStartKey;
       const periodEndKey =
-        record.frequencyType === "WEEKLY_COUNT"
-          ? getWeekBounds(cursor).weekEndKey
-          : getMonthBounds(cursor).monthEndKey;
+        record.frequencyType === "WEEKLY_COUNT" ? getWeekBounds(cursor).weekEndKey : getMonthBounds(cursor).monthEndKey;
       const effectiveStart = maxDateKey(record.startDate, periodStartKey);
       const effectiveEnd = minDateKey(periodEndKey, params.todayKey);
       const periodCompletedCount = countCompletedStatesInRange(record.dayStates, effectiveStart, effectiveEnd);

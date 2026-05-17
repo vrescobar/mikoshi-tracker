@@ -25,17 +25,15 @@ const reverseWeekdayMap = {
 type ContractFrequencyType = (typeof reverseFrequencyTypeMap)[keyof typeof reverseFrequencyTypeMap];
 
 export function serializeContractHabitKind(kind: string): HabitKind {
-  return reverseHabitKindMap[kind as keyof typeof reverseHabitKindMap] as HabitKind;
+  return reverseHabitKindMap[kind as keyof typeof reverseHabitKindMap];
 }
 
 export function serializeContractFrequencyType(frequencyType: string): ContractFrequencyType {
-  return reverseFrequencyTypeMap[
-    frequencyType as keyof typeof reverseFrequencyTypeMap
-  ] as ContractFrequencyType;
+  return reverseFrequencyTypeMap[frequencyType as keyof typeof reverseFrequencyTypeMap];
 }
 
 export function serializeContractWeekday(day: string): Weekday {
-  return reverseWeekdayMap[day as keyof typeof reverseWeekdayMap] as Weekday;
+  return reverseWeekdayMap[day as keyof typeof reverseWeekdayMap];
 }
 
 export function serializeContractWeekdays(entries: Array<{ day: string }>): Weekday[] {

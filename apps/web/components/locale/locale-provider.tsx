@@ -13,13 +13,7 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
-export function LocaleProvider({
-  initialLocale,
-  children,
-}: {
-  initialLocale: SupportedLocale;
-  children: ReactNode;
-}) {
+export function LocaleProvider({ initialLocale, children }: { initialLocale: SupportedLocale; children: ReactNode }) {
   const [locale, setLocale] = useState<SupportedLocale>(initialLocale);
 
   useEffect(() => {
@@ -27,7 +21,9 @@ export function LocaleProvider({
     document.cookie = `${localeCookieName}=${encodeURIComponent(locale)}; path=/; max-age=${localeCookieMaxAge}; samesite=lax`;
   }, [locale]);
 
-  return <LocaleContext.Provider value={{ locale, copy: messages[locale], setLocale }}>{children}</LocaleContext.Provider>;
+  return (
+    <LocaleContext.Provider value={{ locale, copy: messages[locale], setLocale }}>{children}</LocaleContext.Provider>
+  );
 }
 
 export function useLocale() {

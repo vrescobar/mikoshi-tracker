@@ -83,10 +83,7 @@ describe("habits read tools", () => {
     );
     expect(result).toMatchObject({
       structuredContent: {
-        items: [
-          expect.objectContaining({ name: "Deep Work" }),
-          expect.objectContaining({ name: "Read" }),
-        ],
+        items: [expect.objectContaining({ name: "Deep Work" }), expect.objectContaining({ name: "Read" })],
       },
     });
     expect(result.content?.[0]).toMatchObject({
@@ -156,13 +153,69 @@ describe("habits read tools", () => {
           recentHistory: [],
           trends: {
             last7Days: [
-              { date: "2026-03-05", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-06", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-07", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-08", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-09", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-10", status: "completed", completionRate: 1, completedCount: 1, completionTarget: 1, value: 4, valueTarget: 4 },
-              { date: "2026-03-11", status: "pending", completionRate: null, completedCount: 0, completionTarget: 1, value: 0, valueTarget: 4 },
+              {
+                date: "2026-03-05",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-06",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-07",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-08",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-09",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-10",
+                status: "completed",
+                completionRate: 1,
+                completedCount: 1,
+                completionTarget: 1,
+                value: 4,
+                valueTarget: 4,
+              },
+              {
+                date: "2026-03-11",
+                status: "pending",
+                completionRate: null,
+                completedCount: 0,
+                completionTarget: 1,
+                value: 0,
+                valueTarget: 4,
+              },
             ],
             last30Days: Array.from({ length: 30 }, (_, index) => ({
               date: `2026-02-${String(index + 1).padStart(2, "0")}`,

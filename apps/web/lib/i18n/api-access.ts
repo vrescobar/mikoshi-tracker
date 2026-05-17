@@ -144,10 +144,7 @@ const apiAccessCopy: Record<SupportedLocale, ApiAccessCopy> = {
         stored: "这个 token 已安全存储。若要重新拿到原始值，请轮换生成新的 token。",
       },
       guidanceTitle: "请像保管密码一样保管这个 token。",
-      guidanceLines: [
-        "把它存进可信的密钥管理工具或私有环境变量文件。",
-        "轮换后，旧 token 会立即失效。",
-      ],
+      guidanceLines: ["把它存进可信的密钥管理工具或私有环境变量文件。", "轮换后，旧 token 会立即失效。"],
       storedStateTitle: "token 已安全保存",
       storedStateDescription: "原始 token 只会在生成或轮换后显示一次。",
       storedTokenValue: "已安全保存，如需原始值请轮换新的 token",

@@ -51,7 +51,7 @@ test("auth keeps sign-in failures in context", async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
 
   const draft = await page.evaluate(() => window.sessionStorage.getItem("haaabit-auth-form-draft"));
-  expect(draft).toContain("\"email\":\"wrong@example.com\"");
+  expect(draft).toContain('"email":"wrong@example.com"');
   expect(draft).not.toContain("password123");
 
   await page.reload();
@@ -68,8 +68,8 @@ test("auth draft keeps only non-secret fields across reloads", async ({ page }) 
   await page.getByLabel("Password").fill("password123");
 
   const draft = await page.evaluate(() => window.sessionStorage.getItem("haaabit-auth-form-draft"));
-  expect(draft).toContain("\"name\":\"Draft User\"");
-  expect(draft).toContain("\"email\":\"draft@example.com\"");
+  expect(draft).toContain('"name":"Draft User"');
+  expect(draft).toContain('"email":"draft@example.com"');
   expect(draft).not.toContain("password123");
 
   await page.reload();

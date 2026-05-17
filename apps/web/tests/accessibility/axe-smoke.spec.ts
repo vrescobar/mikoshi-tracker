@@ -6,8 +6,8 @@ import { signUpAndCreateFirstHabit, signUpThroughApi } from "./helpers";
 async function expectNoSeriousOrCriticalViolations(page: Page) {
   const results = await new AxeBuilder({ page }).analyze();
 
-  const blockingViolations = results.violations.filter((violation) =>
-    violation.impact === "serious" || violation.impact === "critical",
+  const blockingViolations = results.violations.filter(
+    (violation) => violation.impact === "serious" || violation.impact === "critical",
   );
 
   expect(

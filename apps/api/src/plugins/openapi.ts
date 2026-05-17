@@ -62,7 +62,8 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     title: "Haaabit API Docs",
     eyebrow: "OpenAPI + Interactive Reference",
     localeHint: "This page follows your current app language. API contract items stay in English.",
-    intro: "This reference is generated from the same route metadata that powers the bearer-authenticated habits, today, and stats runtime.",
+    intro:
+      "This reference is generated from the same route metadata that powers the bearer-authenticated habits, today, and stats runtime.",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "Request Example",
     responseExampleLabel: (statusCode) => `${statusCode} Example`,
@@ -72,7 +73,8 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     title: "Haaabit API 文档",
     eyebrow: "OpenAPI + 交互式参考",
     localeHint: "当前页面会跟随你在应用中的语言。API 合同项保持英文。",
-    intro: "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 habits、today 和 stats 运行时。",
+    intro:
+      "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 habits、today 和 stats 运行时。",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "请求示例",
     responseExampleLabel: (statusCode) => `${statusCode} 示例`,
@@ -149,11 +151,7 @@ function resolveDocsLocale(request: FastifyRequest): SupportedLocale {
 }
 
 function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
 
 function routePathToOpenApi(path: string) {
@@ -219,10 +217,7 @@ function buildOpenApiDocument() {
       description: route.description,
       tags: route.tags,
       security: route.security,
-      parameters: [
-        ...toParameters(route.request?.params, "path"),
-        ...toParameters(route.request?.query, "query"),
-      ],
+      parameters: [...toParameters(route.request?.params, "path"), ...toParameters(route.request?.query, "query")],
       requestBody: route.request?.body
         ? {
             required: true,

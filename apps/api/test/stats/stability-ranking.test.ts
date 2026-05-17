@@ -105,11 +105,7 @@ describe("stability ranking", () => {
       },
     );
 
-    expect(overview.stabilityRanking.map((entry) => entry.name)).toEqual([
-      "Top habit",
-      "Middle habit",
-      "Bottom habit",
-    ]);
+    expect(overview.stabilityRanking.map((entry) => entry.name)).toEqual(["Top habit", "Middle habit", "Bottom habit"]);
     expect(overview.stabilityRanking.map((entry) => entry.completionRate)).toEqual([1, 0.6, 0.2]);
   });
 });

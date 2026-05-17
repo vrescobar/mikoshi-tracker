@@ -48,7 +48,16 @@ describe("OpenClaw compatibility smoke", () => {
   });
 
   it("ships one canonical OpenClaw example asset and keeps docs aligned with it", async () => {
-    const [example, packageReadme, repoReadme, integrationDoc, troubleshootingDoc, validationChecklist, packageJsonRaw, rootPackageJsonRaw] = await Promise.all([
+    const [
+      example,
+      packageReadme,
+      repoReadme,
+      integrationDoc,
+      troubleshootingDoc,
+      validationChecklist,
+      packageJsonRaw,
+      rootPackageJsonRaw,
+    ] = await Promise.all([
       readFile(examplePath, "utf8"),
       readFile(packageReadmePath, "utf8"),
       readFile(repoReadmePath, "utf8"),
@@ -81,7 +90,9 @@ describe("OpenClaw compatibility smoke", () => {
     expect(packageReadme).toContain("openclaw-troubleshooting.md");
     expect(packageReadme).toContain("openclaw-validation-checklist.md");
     expect(packageReadme.indexOf("## Generic MCP Client Setup")).toBeGreaterThan(-1);
-    expect(packageReadme.indexOf("## OpenClaw Setup")).toBeGreaterThan(packageReadme.indexOf("## Generic MCP Client Setup"));
+    expect(packageReadme.indexOf("## OpenClaw Setup")).toBeGreaterThan(
+      packageReadme.indexOf("## Generic MCP Client Setup"),
+    );
 
     expect(repoReadme).toContain("skills/haaabit-mcp/SKILL.md");
     expect(repoReadme).toContain("bootstrap-token");

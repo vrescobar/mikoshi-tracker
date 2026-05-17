@@ -7,11 +7,7 @@ import type { ReactNode } from "react";
 import { LocaleSwitch, useLocale } from "../locale";
 import { SignOutButton } from "../auth/sign-out-button";
 import { Surface, cn } from "../ui";
-import {
-  getPrimaryAppNavigation,
-  routes,
-  getUtilityAppNavigation,
-} from "../../lib/navigation";
+import { getPrimaryAppNavigation, routes, getUtilityAppNavigation } from "../../lib/navigation";
 import styles from "./app-shell.module.css";
 
 type AppShellProps = {
@@ -28,20 +24,11 @@ export function AppShell({ userEmail, children }: AppShellProps) {
   return (
     <main className={styles.shell} data-testid="app-shell">
       <div className={styles.inner}>
-        <Surface
-          variant="hero"
-          padding="md"
-          className={styles.headerSurface}
-          data-testid="app-shell-header"
-        >
+        <Surface variant="hero" padding="md" className={styles.headerSurface} data-testid="app-shell-header">
           <div className={styles.utilityRow}>
             <div className={styles.utilityMeta}>
               <span className={styles.identity}>{userEmail}</span>
-              <nav
-                aria-label="Utility"
-                className={styles.utilityNav}
-                data-testid="app-shell-utility-nav"
-              >
+              <nav aria-label="Utility" className={styles.utilityNav} data-testid="app-shell-utility-nav">
                 {utilityAppNavigation.map((item) => {
                   const active = isRouteActive(pathname, item.href);
 
@@ -106,11 +93,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
         </div>
       </div>
 
-      <nav
-        aria-label="Primary mobile"
-        className={styles.mobileNav}
-        data-testid="app-shell-mobile-nav"
-      >
+      <nav aria-label="Primary mobile" className={styles.mobileNav} data-testid="app-shell-mobile-nav">
         {primaryAppNavigation.map((item) => {
           const active = isRouteActive(pathname, item.href);
 

@@ -203,12 +203,12 @@ export type LocaleMessages = {
         cardSuccessMessage: string;
       };
     };
-      item: {
-        status: {
-          pending: string;
-          available: string;
-          completed: string;
-        };
+    item: {
+      status: {
+        pending: string;
+        available: string;
+        completed: string;
+      };
       totalLabel: string;
       saveTotal: string;
       progress: {
@@ -307,7 +307,8 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         archivedOnly: {
           eyebrow: "Today",
           title: "No active habits right now",
-          description: "Your archived habits are preserved. Restore one or create a new habit to bring today back online.",
+          description:
+            "Your archived habits are preserved. Restore one or create a new habit to bring today back online.",
           reviewArchived: "Review archived habits",
           createHabit: "Create a new habit",
         },
@@ -369,11 +370,13 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       states: {
         nothingDue: {
           title: "Nothing due today",
-          description: "Today's list is clear for now. Future or off-cycle habits will show up here when they become actionable.",
+          description:
+            "Today's list is clear for now. Future or off-cycle habits will show up here when they become actionable.",
         },
         allDone: {
           title: "All done for today",
-          description: "Everything due today is already complete. Finished habits stay visible below in case you need to review or undo.",
+          description:
+            "Everything due today is already complete. Finished habits stay visible below in case you need to review or undo.",
         },
         nothingPending: {
           title: "Nothing pending right now",
@@ -381,7 +384,8 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         },
         nothingCompleted: {
           title: "Nothing completed yet",
-          description: "Finished habits stay visible so you can undo or inspect today's result without leaving context.",
+          description:
+            "Finished habits stay visible so you can undo or inspect today's result without leaving context.",
         },
       },
       groups: {

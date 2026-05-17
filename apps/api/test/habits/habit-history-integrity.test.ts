@@ -153,11 +153,13 @@ describe("habit history integrity", () => {
 
     expect(restoredTodayResponse.statusCode).toBe(200);
     expect(
-      (restoredTodayResponse.json() as {
-        summary: {
-          pendingItems: Array<{ habitId: string }>;
-        };
-      }).summary.pendingItems,
+      (
+        restoredTodayResponse.json() as {
+          summary: {
+            pendingItems: Array<{ habitId: string }>;
+          };
+        }
+      ).summary.pendingItems,
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

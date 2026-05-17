@@ -104,9 +104,7 @@ export async function getSessionFromCookieHeader(cookieHeader: string): Promise<
   return (await response.json()) as SessionPayload;
 }
 
-export async function getRegistrationStatusFromCookieHeader(
-  cookieHeader: string,
-): Promise<RegistrationStatusPayload> {
+export async function getRegistrationStatusFromCookieHeader(cookieHeader: string): Promise<RegistrationStatusPayload> {
   const response = await fetch(createServerApiUrl("/api/auth/registration"), {
     headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
     cache: "no-store",

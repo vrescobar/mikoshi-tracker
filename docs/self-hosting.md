@@ -79,7 +79,7 @@ If the health check passes, open `${APP_BASE_URL}/` to register.
 
 ### After installation
 
-- **First user is admin**: the first account registered is automatically promoted to admin and can toggle whether new user registration is allowed.
+- **First user is admin**: the first account registered is automatically promoted to admin and can toggle whether new user registration is allowed. On a public instance, register your own account immediately — before announcing the URL — so an attacker cannot claim the admin role, then disable open registration from the admin settings if you do not want public sign-ups. See [Public deployment & hardening](./PUBLIC-DEPLOYMENT.md).
 - **API access**: each user can generate a personal API token from the API Access page. Tokens are hashed with SHA-256 at rest — the plaintext is shown only once on creation.
 - **Interactive API docs**: visit `${APP_BASE_URL}/api/docs` for the full OpenAPI documentation, or fetch the spec at `${APP_BASE_URL}/api/openapi.json`.
 
@@ -210,7 +210,7 @@ docker compose up -d
 
 ### 安装后
 
-- **首个用户即管理员**：首个注册的账号会自动成为管理员，可以开关是否允许新用户注册。
+- **首个用户即管理员**：首个注册的账号会自动成为管理员，可以开关是否允许新用户注册。在公网实例上，请在公布 URL 之前立即注册你自己的账号，以免攻击者抢占管理员角色；如果不希望公开注册，注册后请在管理员设置中关闭它。参见 [Public deployment & hardening](./PUBLIC-DEPLOYMENT.md)。
 - **API 访问**：每个用户可以在 API Access 页面生成个人 API Token。Token 以 SHA-256 哈希存储，明文仅在创建时展示一次。
 - **交互式 API 文档**：访问 `${APP_BASE_URL}/api/docs` 查看完整的 OpenAPI 文档，或通过 `${APP_BASE_URL}/api/openapi.json` 获取规范文件。
 

@@ -3,13 +3,7 @@
 import type { HabitDetail } from "@haaabit/contracts/habits";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 
-import {
-  archiveHabit,
-  getHabitDetail,
-  listHabits,
-  restoreHabit,
-  type HabitRecord,
-} from "../../lib/auth-client";
+import { archiveHabit, getHabitDetail, listHabits, restoreHabit, type HabitRecord } from "../../lib/auth-client";
 import { getHabitsCopy } from "../../lib/i18n/habits";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
@@ -39,10 +33,7 @@ type HabitsPageProps = {
 
 type HabitStatus = "active" | "archived";
 type HabitKindFilter = "all" | "boolean" | "quantity";
-type OverlayState =
-  | { mode: "create"; habit: null }
-  | { mode: "edit"; habit: HabitRecord }
-  | null;
+type OverlayState = { mode: "create"; habit: null } | { mode: "edit"; habit: HabitRecord } | null;
 type Feedback = {
   tone: "neutral" | "success" | "danger";
   title: string;
@@ -208,7 +199,14 @@ export function HabitsPage({
       pendingTitle: copy.page.feedback.refreshPendingTitle,
       pendingMessage: copy.page.feedback.refreshPendingMessage,
     });
-  }, [copy.page.feedback.refreshPendingMessage, copy.page.feedback.refreshPendingTitle, deferredCategory, deferredQuery, kind, status]);
+  }, [
+    copy.page.feedback.refreshPendingMessage,
+    copy.page.feedback.refreshPendingTitle,
+    deferredCategory,
+    deferredQuery,
+    kind,
+    status,
+  ]);
 
   async function handleArchive(habitId: string) {
     const requestId = ++requestIdRef.current;
@@ -396,7 +394,6 @@ export function HabitsPage({
                   </div>
                   <p className={styles.description}>{habit.description ?? copy.page.card.noDescription}</p>
                 </div>
-
               </div>
 
               <div className={styles.metaGrid} data-testid="habit-card-meta">
@@ -468,9 +465,7 @@ export function HabitsPage({
         ) : (
           <StatePanel
             title={
-              status === "active"
-                ? copy.page.card.emptyState.activeTitle
-                : copy.page.card.emptyState.archivedTitle
+              status === "active" ? copy.page.card.emptyState.activeTitle : copy.page.card.emptyState.archivedTitle
             }
             description={
               status === "active"
@@ -490,11 +485,11 @@ export function HabitsPage({
             }
           }}
           variant="dialog"
-          title={overlay.mode === "create" ? copy.page.overlay.createTitle : copy.page.overlay.editTitle(overlay.habit.name)}
+          title={
+            overlay.mode === "create" ? copy.page.overlay.createTitle : copy.page.overlay.editTitle(overlay.habit.name)
+          }
           description={
-            overlay.mode === "create"
-              ? copy.page.overlay.createDescription
-              : copy.page.overlay.editDescription
+            overlay.mode === "create" ? copy.page.overlay.createDescription : copy.page.overlay.editDescription
           }
           closeLabel={copy.page.overlay.closeLabel}
           testId="habit-form-overlay"
@@ -523,9 +518,7 @@ export function HabitsPage({
                 success: {
                   tone: "success",
                   title:
-                    nextMode === "create"
-                      ? copy.page.feedback.createSuccessTitle
-                      : copy.page.feedback.editSuccessTitle,
+                    nextMode === "create" ? copy.page.feedback.createSuccessTitle : copy.page.feedback.editSuccessTitle,
                   message:
                     nextMode === "create"
                       ? copy.page.feedback.createSuccessMessage

@@ -9,8 +9,7 @@
   padding: 1rem 1rem 1.05rem;
   border: 1px solid rgba(102, 122, 115, 0.16);
   border-radius: var(--radius-lg);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(246, 248, 247, 0.92));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(246, 248, 247, 0.92));
 }
 
 .modeEyebrow {

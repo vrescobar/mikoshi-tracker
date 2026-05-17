@@ -134,9 +134,9 @@ describe("habit routes", () => {
     });
 
     expect(activeHealthResponse.statusCode).toBe(200);
-    expect(
-      (activeHealthResponse.json() as { items: Array<{ id: string }> }).items.map((habit) => habit.id),
-    ).toEqual([yoga.id]);
+    expect((activeHealthResponse.json() as { items: Array<{ id: string }> }).items.map((habit) => habit.id)).toEqual([
+      yoga.id,
+    ]);
 
     const archivedSearchResponse = await context.app.inject({
       method: "GET",
@@ -147,9 +147,9 @@ describe("habit routes", () => {
     });
 
     expect(archivedSearchResponse.statusCode).toBe(200);
-    expect(
-      (archivedSearchResponse.json() as { items: Array<{ id: string }> }).items.map((habit) => habit.id),
-    ).toEqual([walk.id]);
+    expect((archivedSearchResponse.json() as { items: Array<{ id: string }> }).items.map((habit) => habit.id)).toEqual([
+      walk.id,
+    ]);
 
     const quantityResponse = await context.app.inject({
       method: "GET",

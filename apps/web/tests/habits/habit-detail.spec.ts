@@ -2,10 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { createFirstHabit, signUpInBrowser } from "../accessibility/helpers";
 
-async function createHabitViaApi(
-  page: import("@playwright/test").Page,
-  payload: Record<string, unknown>,
-) {
+async function createHabitViaApi(page: import("@playwright/test").Page, payload: Record<string, unknown>) {
   return page.evaluate(async (input) => {
     const response = await fetch("http://127.0.0.1:3001/api/habits", {
       method: "POST",
@@ -75,9 +72,7 @@ test("habit detail supports list entry, direct link, and close back to the habit
 test.describe("mobile habit detail", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("habit detail becomes a near-fullscreen mobile panel with vertically stacked stats", async ({
-    page,
-  }) => {
+  test("habit detail becomes a near-fullscreen mobile panel with vertically stacked stats", async ({ page }) => {
     const email = `habit-detail-mobile-${Date.now()}@example.com`;
 
     await signUpInBrowser(page, email, "Detail Mobile User");

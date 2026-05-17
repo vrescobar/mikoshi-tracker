@@ -1,10 +1,7 @@
 import type { OverviewStats } from "@haaabit/contracts/stats";
 
 import { normalizeUserTimeZone } from "../../shared/timezone";
-import {
-  serializeContractFrequencyType,
-  serializeContractHabitKind,
-} from "../../shared/habit-contract-mappers";
+import { serializeContractFrequencyType, serializeContractHabitKind } from "../../shared/habit-contract-mappers";
 import { parseOverviewStats } from "./stats.schema";
 import { findUserTimezone, listActiveHabitStatsRecords } from "./stats.repository";
 import { addDays, compareDateKeys, getWeekBounds, resolveHabitDay } from "../today/today-clock";
@@ -22,9 +19,7 @@ function sumCompletionRateWindow(
   },
 ) {
   const points = trends.filter(
-    (point) =>
-      compareDateKeys(point.date, params.rangeStart) >= 0 &&
-      compareDateKeys(point.date, params.rangeEnd) <= 0,
+    (point) => compareDateKeys(point.date, params.rangeStart) >= 0 && compareDateKeys(point.date, params.rangeEnd) <= 0,
   );
 
   const completedCount = points.reduce((sum, point) => sum + point.completedCount, 0);

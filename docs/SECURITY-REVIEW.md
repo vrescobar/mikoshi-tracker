@@ -18,17 +18,17 @@ mismo lote de trabajo que esta revisión — ver `docs/PUBLIC-DEPLOYMENT.md`.
 
 ## Resumen por severidad
 
-| Sev. | Hallazgo | Estado |
-|------|----------|--------|
-| 🔴 Alta | Sin rate limiting ni protección anti fuerza bruta en login | Arreglado (hardening) |
-| 🔴 Alta | Caddy sirve solo HTTP plano — tokens/sesiones en claro | Arreglado (plantilla TLS) |
-| 🟠 Media | Sin cabeceras de seguridad HTTP (helmet) | Arreglado (hardening) |
-| 🟠 Media | Primer usuario registrado = admin (carrera en despliegue público) | Mitigado (doc + recomendación) |
-| 🟠 Media | 65 vulnerabilidades en dependencias (`pnpm audit`), varias `high` | Recomendado actualizar |
-| 🟡 Baja | Contenedores corren como `root` dentro del contenedor | Arreglado (`USER node`) |
-| 🟡 Baja | Repositorios Prisma de hábitos hacen `update` por `id` sin `userId` | Sin riesgo actual (defensa en profundidad recomendada) |
-| 🟡 Baja | Sin expiración ni scope en los tokens de API personales | Aceptable; documentado |
-| ℹ️ Info | Sin ESLint, sin CI, sin reporte de cobertura | Recomendado añadir |
+| Sev.     | Hallazgo                                                            | Estado                                                 |
+| -------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| 🔴 Alta  | Sin rate limiting ni protección anti fuerza bruta en login          | Arreglado (hardening)                                  |
+| 🔴 Alta  | Caddy sirve solo HTTP plano — tokens/sesiones en claro              | Arreglado (plantilla TLS)                              |
+| 🟠 Media | Sin cabeceras de seguridad HTTP (helmet)                            | Arreglado (hardening)                                  |
+| 🟠 Media | Primer usuario registrado = admin (carrera en despliegue público)   | Mitigado (doc + recomendación)                         |
+| 🟠 Media | 65 vulnerabilidades en dependencias (`pnpm audit`), varias `high`   | Recomendado actualizar                                 |
+| 🟡 Baja  | Contenedores corren como `root` dentro del contenedor               | Arreglado (`USER node`)                                |
+| 🟡 Baja  | Repositorios Prisma de hábitos hacen `update` por `id` sin `userId` | Sin riesgo actual (defensa en profundidad recomendada) |
+| 🟡 Baja  | Sin expiración ni scope en los tokens de API personales             | Aceptable; documentado                                 |
+| ℹ️ Info  | Sin ESLint, sin CI, sin reporte de cobertura                        | Recomendado añadir                                     |
 
 ---
 
@@ -67,7 +67,7 @@ Implementación con `better-auth` (librería reputada) — `apps/api/src/auth/`.
   nunca en claro. Existe migración automática de tokens legacy en arranque
   (`migrateLegacyPersonalApiTokens`). SHA-256 sin sal es adecuado aquí porque el
   token es aleatorio de alta entropía (no una contraseña).
-  - *Limitación (baja):* un token por usuario, sin expiración ni scopes; el
+  - _Limitación (baja):_ un token por usuario, sin expiración ni scopes; el
     "reset" rota en sitio. Aceptable para un API personal; documentado.
 - **Política de contraseñas:** `auth.ts` habilita `emailAndPassword` sin
   configurar longitud mínima → se usa el valor por defecto de better-auth
@@ -93,7 +93,7 @@ Cada usuario solo ve sus datos. Verificado leyendo **todos** los repositorios:
   (`today.controller.ts`, `stats.repository.ts`).
 - `assertOwnsUser` protege la ruta `/api/users/:userId/ownership`.
 
-*Recomendación de defensa en profundidad (baja):* hacer que
+_Recomendación de defensa en profundidad (baja):_ hacer que
 `updateHabitRecord`/`setHabitActiveState` también incluyan `userId` en el
 `where`, para que un futuro cambio descuidado del servicio no introduzca un
 IDOR. No es un fallo actual.
@@ -115,7 +115,7 @@ IDOR. No es un fallo actual.
 en admin** automáticamente; si no hay admin, se promociona al usuario más
 antiguo. El registro se puede desactivar (`/api/admin/registration`).
 
-- *Riesgo (medio) en despliegue público:* entre que el servicio arranca y se
+- _Riesgo (medio) en despliegue público:_ entre que el servicio arranca y se
   registra el operador legítimo, un atacante podría registrarse primero y
   quedarse con el rol admin. **Mitigación:** desplegar con el registro
   desactivado y registrar la cuenta admin antes de exponer el puerto, o

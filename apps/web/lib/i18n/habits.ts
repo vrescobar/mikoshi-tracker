@@ -419,9 +419,11 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
     onboarding: {
       eyebrow: "Onboarding",
       title: "Create your first habit",
-      description: "Your account is ready. Add one clear habit now so later logins can route straight into a useful dashboard.",
+      description:
+        "Your account is ready. Add one clear habit now so later logins can route straight into a useful dashboard.",
       noticeTitle: "Start simple",
-      noticeBody: "You can refine categories, targets, and scheduling patterns later. Right now, aim for one habit you genuinely expect to check today.",
+      noticeBody:
+        "You can refine categories, targets, and scheduling patterns later. Right now, aim for one habit you genuinely expect to check today.",
       submitLabel: "Create first habit",
     },
   },

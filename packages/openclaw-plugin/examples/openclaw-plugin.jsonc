@@ -6,15 +6,15 @@
       "package": "@haaabit/openclaw-plugin",
       "env": {
         "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-        "HAAABIT_API_TOKEN": "${secrets.HAAABIT_API_TOKEN}"
-      }
-    }
+        "HAAABIT_API_TOKEN": "${secrets.HAAABIT_API_TOKEN}",
+      },
+    },
   },
 
   // Optional workflow guidance if your OpenClaw build also supports workspace Skills.
   "skills": {
     "entries": {
-      "haaabit-mcp": "./skills/haaabit-mcp/SKILL.md"
-    }
-  }
+      "haaabit-mcp": "./skills/haaabit-mcp/SKILL.md",
+    },
+  },
 }

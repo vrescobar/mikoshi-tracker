@@ -63,9 +63,7 @@ export function toToolErrorPayload(
 }
 
 export function sanitizeErrorMessage(message: string) {
-  return message
-    .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-    .replace(/token\s+\S+/gi, "token [REDACTED]");
+  return message.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").replace(/token\s+\S+/gi, "token [REDACTED]");
 }
 
 function categorizeError(error: HaaabitApiErrorLike, toolName: string | undefined): HaaabitToolErrorCategory {
@@ -130,11 +128,7 @@ function deriveMessage(error: HaaabitApiErrorLike, toolName: string | undefined)
   return message;
 }
 
-function deriveHint(
-  error: HaaabitApiErrorLike,
-  category: HaaabitToolErrorCategory,
-  toolName: string | undefined,
-) {
+function deriveHint(error: HaaabitApiErrorLike, category: HaaabitToolErrorCategory, toolName: string | undefined) {
   const message = sanitizeErrorMessage(error.message);
 
   switch (category) {
@@ -224,7 +218,10 @@ function deriveSuggestedTool(
     }
   }
 
-  if (category === "conflict" && (error.code === "HABIT_INACTIVE" || message === "Archived habits are read-only until restored")) {
+  if (
+    category === "conflict" &&
+    (error.code === "HABIT_INACTIVE" || message === "Archived habits are read-only until restored")
+  ) {
     return "habits_restore";
   }
 
@@ -236,7 +233,13 @@ function isRetryable(category: HaaabitToolErrorCategory) {
     return true;
   }
 
-  if (category === "auth" || category === "validation" || category === "wrong_kind" || category === "not_found" || category === "conflict") {
+  if (
+    category === "auth" ||
+    category === "validation" ||
+    category === "wrong_kind" ||
+    category === "not_found" ||
+    category === "conflict"
+  ) {
     return false;
   }
 

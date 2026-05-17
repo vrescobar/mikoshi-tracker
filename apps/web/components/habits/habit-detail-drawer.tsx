@@ -66,7 +66,11 @@ export function HabitDetailDrawer({
       testId="habit-detail-overlay"
     >
       <div className={styles.stack}>
-        <section className={styles.summary} data-testid="habit-detail-summary" aria-label={copy.detail.summaryAriaLabel}>
+        <section
+          className={styles.summary}
+          data-testid="habit-detail-summary"
+          aria-label={copy.detail.summaryAriaLabel}
+        >
           <div className={styles.summaryHeader}>
             <div className={styles.headerMeta}>
               <span className={styles.kicker}>{copy.detail.kicker}</span>
@@ -103,10 +107,26 @@ export function HabitDetailDrawer({
           </div>
 
           <div className={styles.stats} data-testid="habit-detail-stats">
-            <StatCard label={copy.detail.stats.currentStreak} value={detail.stats.currentStreak} testId="habit-detail-stat-current-streak" />
-            <StatCard label={copy.detail.stats.longestStreak} value={detail.stats.longestStreak} testId="habit-detail-stat-longest-streak" />
-            <StatCard label={copy.detail.stats.totalCompletions} value={detail.stats.totalCompletions} testId="habit-detail-stat-total-completions" />
-            <StatCard label={copy.detail.stats.interruptions} value={detail.stats.interruptionCount} testId="habit-detail-stat-interruptions" />
+            <StatCard
+              label={copy.detail.stats.currentStreak}
+              value={detail.stats.currentStreak}
+              testId="habit-detail-stat-current-streak"
+            />
+            <StatCard
+              label={copy.detail.stats.longestStreak}
+              value={detail.stats.longestStreak}
+              testId="habit-detail-stat-longest-streak"
+            />
+            <StatCard
+              label={copy.detail.stats.totalCompletions}
+              value={detail.stats.totalCompletions}
+              testId="habit-detail-stat-total-completions"
+            />
+            <StatCard
+              label={copy.detail.stats.interruptions}
+              value={detail.stats.interruptionCount}
+              testId="habit-detail-stat-interruptions"
+            />
           </div>
         </section>
 
