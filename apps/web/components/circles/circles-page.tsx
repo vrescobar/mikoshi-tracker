@@ -100,11 +100,7 @@ export function CirclesPage({ initialItems, currentUserId }: CirclesPageProps) {
           message: copy.page.feedback.createSuccessMessage,
         });
       } catch (err) {
-        setFeedback({
-          tone: "danger",
-          title: copy.page.overlay.errorTitle,
-          message: err instanceof Error ? err.message : copy.page.overlay.errorTitle,
-        });
+        setFormError(err instanceof Error ? err.message : copy.page.overlay.errorTitle);
       }
     });
   }
