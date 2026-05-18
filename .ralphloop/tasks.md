@@ -9,45 +9,13 @@ cites the `§C…` subsection it implements. Do not duplicate check-in mutation
 logic; reuse `apps/api/src/modules/checkins/checkin.service.ts`. Do not regress
 the single-user flow or `@haaabit/mcp`.
 
-## Phase 4 — Circle-token REST surface
-
-- [x] **05** Circles module scaffold — create
-      `apps/api/src/modules/circles/` with `circle.schema.ts`,
-      `circle.repository.ts`, `circle.service.ts`, `circle.controller.ts`,
-      `circle.routes.ts`, following the structure of `modules/habits/`. Reuse
-      the contracts from task 02. Register the routes in
-      `apps/api/src/server.ts`. See `GOAL.md` §C7.
-- [x] **06** Authorization core — implement
-      `assertCircleHabitWritable(circleId, userId, habitId)` in
-      `circle.service.ts`: member-in-circle else 404, habit-belongs-to-user
-      else 404, habit-active else 409 `HABIT_INACTIVE`, habit-shared-in-circle
-      else 403. See `GOAL.md` §C8.
-- [x] **07** Circle check-in source — add `"circle"` to the `CheckInMutation`
-      source enum in `apps/api/src/modules/checkins/checkin.schema.ts` and
-      `packages/contracts/src/checkins.ts` (alongside `web`/`ai`/`system`).
-      See `GOAL.md` §C9.
-- [x] **08** Circle read endpoints — implement circle-token-authenticated
-      `GET /api/circles/:circleId/members`,
-      `GET /api/circles/:circleId/leaderboard` (aggregated only over shared
-      habits), and `GET /api/circles/:circleId/members/:userId/habits`
-      (un-shared habits never appear). All start with `requireCircleContext`.
-      See `GOAL.md` §C9.
-- [x] **09** Circle write endpoints — implement
-      `POST /api/circles/:circleId/members/:userId/habits/:habitId/complete`,
-      `.../set-total`, and `.../undo`. Each runs `assertCircleHabitWritable`
-      then delegates to the existing `checkin.service` with the resolved
-      `userId` and `source: "circle"`. `undo` reverts **only** the day's
-      latest mutation whose `source` is `"circle"`; if the latest is `web`/`ai`
-      it returns `409 UNDO_NOT_CIRCLE_SOURCED` and mutates nothing. See
-      `GOAL.md` §C8–§C9.
-
 ## Phase 5 — Circle management REST surface (user session)
 
 - [x] **10** Circle lifecycle endpoints — implement session-authenticated
       `POST /api/circles` (creator becomes `owner` + first membership),
       `GET /api/circles` (circles the user belongs to), and
       `GET /api/circles/:circleId` (detail, member-only). See `GOAL.md` §C9.
-- [ ] **11** Member management endpoints — implement owner-only
+- [x] **11** Member management endpoints — implement owner-only
       `POST /api/circles/:circleId/members` (add by email),
       `PATCH /api/circles/:circleId/members/:membershipId` (edit `role`,
       `externalId`), `DELETE /api/circles/:circleId/members/:membershipId`.

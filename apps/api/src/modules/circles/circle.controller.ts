@@ -1,28 +1,38 @@
 import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import { circleSetTotalInputSchema, createCircleInputSchema } from "@haaabit/contracts/circles";
+import {
+  addCircleMemberInputSchema,
+  circleSetTotalInputSchema,
+  createCircleInputSchema,
+  updateCircleMemberInputSchema,
+} from "@haaabit/contracts/circles";
 import { CircleAuthError, requireCircleContext } from "../../auth/circle-session";
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";
 import {
+  addCircleMember,
   circleCompleteHabit,
   CircleForbiddenError,
   CircleHabitInactiveError,
   CircleHabitNotFoundError,
   CircleHabitNotSharedError,
+  CircleMemberAlreadyExistsError,
   CircleMemberNotFoundError,
   CircleNotFoundError,
   circleSetHabitTotal,
   circleUndoHabit,
   CircleUndoNotCircleSourcedError,
+  CircleUserNotFoundError,
   createCircle,
   getCircleDetail,
   getCircleLeaderboard,
   getMemberHabitsForCircle,
   listCircleMembersForToken,
   listUserCircles,
+  removeCircleMember,
   TodayActionUnavailableError,
+  updateCircleMember,
 } from "./circle.service";
 
 function notImplemented(reply: FastifyReply) {
@@ -179,12 +189,16 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     sendAuthError(reply, error);
     return reply;
   }
-  if (error instanceof CircleNotFoundError) {
-    reply.status(404).send({ code: "NOT_FOUND", message: error.message });
+  if (error instanceof CircleNotFoundError || error instanceof CircleUserNotFoundError || error instanceof CircleMemberNotFoundError) {
+    reply.status(404).send({ code: "NOT_FOUND", message: (error as Error).message });
     return reply;
   }
   if (error instanceof CircleForbiddenError) {
     reply.status(403).send({ code: "FORBIDDEN", message: error.message });
+    return reply;
+  }
+  if (error instanceof CircleMemberAlreadyExistsError) {
+    reply.status(409).send({ code: "CONFLICT", message: error.message });
     return reply;
   }
   if (error instanceof ZodError) {
@@ -225,16 +239,46 @@ export async function getCircleDetailHandler(request: FastifyRequest, reply: Fas
   }
 }
 
-export async function addCircleMemberHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function addCircleMemberHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId } = request.params as { circleId: string };
+    const { email, externalId } = addCircleMemberInputSchema.parse(request.body);
+    const result = await addCircleMember(
+      { db: request.server.db },
+      { circleId, callerId: user.id, email, externalId },
+    );
+    reply.status(201);
+    return result;
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
-export async function updateCircleMemberHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function updateCircleMemberHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
+    const { role, externalId } = updateCircleMemberInputSchema.parse(request.body);
+    return await updateCircleMember(
+      { db: request.server.db },
+      { circleId, callerId: user.id, membershipId, role, externalId },
+    );
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
-export async function removeCircleMemberHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function removeCircleMemberHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
+    await removeCircleMember({ db: request.server.db }, { circleId, callerId: user.id, membershipId });
+    reply.status(204);
+    return reply;
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
 export async function shareHabitHandler(_request: FastifyRequest, reply: FastifyReply) {

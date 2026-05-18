@@ -9,16 +9,21 @@ import {
   undoHabitForToday,
 } from "../checkins/checkin.service";
 import {
+  addCircleMemberRecord,
   createCircleRecord,
   findCircleHabitShare,
+  findCircleMembershipById,
   findCircleMembershipByUserId,
   findCircleRecord,
   findHabitForCircle,
+  findUserByEmail,
   getCircleLeaderboardData,
   listCircleHabitSharesByUser,
   listCircleMemberRecords,
   listCirclesByUserId,
   listSharedHabitsWithTodayState,
+  removeCircleMemberRecord,
+  updateCircleMemberRecord,
 } from "./circle.repository";
 
 export { TodayActionUnavailableError };
@@ -103,6 +108,20 @@ export class CircleUndoNotCircleSourcedError extends Error {
   constructor() {
     super("Cannot undo: the day's latest mutation was not circle-sourced");
     this.name = "CircleUndoNotCircleSourcedError";
+  }
+}
+
+export class CircleUserNotFoundError extends Error {
+  constructor() {
+    super("User not found");
+    this.name = "CircleUserNotFoundError";
+  }
+}
+
+export class CircleMemberAlreadyExistsError extends Error {
+  constructor() {
+    super("User is already a member of this circle");
+    this.name = "CircleMemberAlreadyExistsError";
   }
 }
 
@@ -387,6 +406,19 @@ export async function circleUndoHabit(
   };
 }
 
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
+async function assertCircleOwner(
+  db: PrismaClient,
+  circleId: string,
+  userId: string,
+): Promise<void> {
+  const membership = await findCircleMembershipByUserId(db, { circleId, userId });
+  if (!membership || membership.role !== "owner") {
+    throw new CircleForbiddenError("Only the circle owner can perform this action");
+  }
+}
+
 // ─── Session-authenticated lifecycle service functions ────────────────────────
 
 export async function createCircle(
@@ -403,6 +435,76 @@ export async function listUserCircles(
 ) {
   const circles = await listCirclesByUserId(db, params.userId);
   return { items: circles.map(serializeCircleRecord) };
+}
+
+export async function addCircleMember(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; email: string; externalId?: string },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+
+  const targetUser = await findUserByEmail(db, params.email);
+  if (!targetUser) {
+    throw new CircleUserNotFoundError();
+  }
+
+  const existing = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: targetUser.id,
+  });
+  if (existing) {
+    throw new CircleMemberAlreadyExistsError();
+  }
+
+  const membership = await addCircleMemberRecord(db, {
+    circleId: params.circleId,
+    userId: targetUser.id,
+    externalId: params.externalId ?? null,
+  });
+  return { membership: serializeCircleMember(membership) };
+}
+
+export async function updateCircleMember(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; membershipId: string; role?: string; externalId?: string | null },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+
+  const existing = await findCircleMembershipById(db, {
+    circleId: params.circleId,
+    membershipId: params.membershipId,
+  });
+  if (!existing) {
+    throw new CircleMemberNotFoundError();
+  }
+
+  const updated = await updateCircleMemberRecord(db, {
+    membershipId: params.membershipId,
+    role: params.role,
+    externalId: params.externalId,
+  });
+  return { membership: serializeCircleMember(updated) };
+}
+
+export async function removeCircleMember(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; membershipId: string },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+
+  const existing = await findCircleMembershipById(db, {
+    circleId: params.circleId,
+    membershipId: params.membershipId,
+  });
+  if (!existing) {
+    throw new CircleMemberNotFoundError();
+  }
+  if (existing.role === "owner") {
+    throw new CircleForbiddenError("Cannot remove the circle owner");
+  }
+
+  await removeCircleMemberRecord(db, params.membershipId);
+  return {};
 }
 
 export async function getCircleDetail(
