@@ -9,15 +9,53 @@ import {
   undoHabitForToday,
 } from "../checkins/checkin.service";
 import {
-  findCircleMembershipByUserId,
+  createCircleRecord,
   findCircleHabitShare,
+  findCircleMembershipByUserId,
+  findCircleRecord,
   findHabitForCircle,
   getCircleLeaderboardData,
+  listCircleHabitSharesByUser,
   listCircleMemberRecords,
+  listCirclesByUserId,
   listSharedHabitsWithTodayState,
 } from "./circle.repository";
 
 export { TodayActionUnavailableError };
+
+function serializeCircleRecord(circle: {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: circle.id,
+    name: circle.name,
+    ownerId: circle.ownerId,
+    createdAt: circle.createdAt.toISOString(),
+    updatedAt: circle.updatedAt.toISOString(),
+  };
+}
+
+function serializeCircleMember(m: {
+  id: string;
+  userId: string;
+  role: string;
+  externalId: string | null;
+  joinedAt: Date;
+  user: { name: string };
+}) {
+  return {
+    membershipId: m.id,
+    userId: m.userId,
+    displayName: m.user.name,
+    role: m.role as "owner" | "member",
+    externalId: m.externalId,
+    joinedAt: m.joinedAt.toISOString(),
+  };
+}
 
 export class CircleNotFoundError extends Error {
   constructor() {
@@ -107,16 +145,7 @@ export async function listCircleMembersForToken(
   params: { circleId: string },
 ) {
   const members = await listCircleMemberRecords(db, params.circleId);
-  return {
-    members: members.map((m) => ({
-      membershipId: m.id,
-      userId: m.userId,
-      displayName: m.user.name,
-      role: m.role as "owner" | "member",
-      externalId: m.externalId,
-      joinedAt: m.joinedAt.toISOString(),
-    })),
-  };
+  return { members: members.map(serializeCircleMember) };
 }
 
 export async function getCircleLeaderboard(
@@ -355,5 +384,57 @@ export async function circleUndoHabit(
     userId: params.userId,
     completed: result.currentState.completed,
     currentValue: result.currentState.value,
+  };
+}
+
+// ─── Session-authenticated lifecycle service functions ────────────────────────
+
+export async function createCircle(
+  { db }: CircleServiceDependencies,
+  params: { userId: string; name: string },
+) {
+  const circle = await createCircleRecord(db, { ownerId: params.userId, name: params.name });
+  return { item: serializeCircleRecord(circle) };
+}
+
+export async function listUserCircles(
+  { db }: CircleServiceDependencies,
+  params: { userId: string },
+) {
+  const circles = await listCirclesByUserId(db, params.userId);
+  return { items: circles.map(serializeCircleRecord) };
+}
+
+export async function getCircleDetail(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; userId: string },
+) {
+  // Check membership first — returns 404 for both "not a member" and "circle not found"
+  // (avoids leaking existence to non-members)
+  const membership = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: params.userId,
+  });
+  if (!membership) {
+    throw new CircleNotFoundError();
+  }
+
+  const [circle, members, myShares] = await Promise.all([
+    findCircleRecord(db, params.circleId),
+    listCircleMemberRecords(db, params.circleId),
+    listCircleHabitSharesByUser(db, { circleId: params.circleId, userId: params.userId }),
+  ]);
+
+  if (!circle) {
+    throw new CircleNotFoundError();
+  }
+
+  return {
+    circle: serializeCircleRecord(circle),
+    members: members.map(serializeCircleMember),
+    mySharedHabits: myShares.map((s) => ({
+      habitId: s.habit.id,
+      name: s.habit.name,
+    })),
   };
 }

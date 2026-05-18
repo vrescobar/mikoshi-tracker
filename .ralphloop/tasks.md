@@ -43,7 +43,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 5 — Circle management REST surface (user session)
 
-- [ ] **10** Circle lifecycle endpoints — implement session-authenticated
+- [x] **10** Circle lifecycle endpoints — implement session-authenticated
       `POST /api/circles` (creator becomes `owner` + first membership),
       `GET /api/circles` (circles the user belongs to), and
       `GET /api/circles/:circleId` (detail, member-only). See `GOAL.md` §C9.
