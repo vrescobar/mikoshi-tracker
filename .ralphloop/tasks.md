@@ -31,7 +31,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 6 — Core security tests
 
-- [ ] **14** Circle-token denial matrix — Vitest in `apps/api` covering
+- [x] **14** Circle-token denial matrix — Vitest in `apps/api` covering
       `GOAL.md` §C14: cross-circle token → 403, non-member write → 404,
       foreign habit → 404, un-shared habit → 403, archived habit → 409,
       happy-path check-in producing `CheckInMutation` with `source: "circle"`
