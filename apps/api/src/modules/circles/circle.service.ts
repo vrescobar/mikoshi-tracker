@@ -1,6 +1,13 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import { serializeContractHabitKind, serializeContractWeekday } from "../../shared/habit-contract-mappers";
 import { addDays, compareDateKeys, resolveHabitDay } from "../today/today-clock";
+import { findLatestCheckinMutation } from "../checkins/checkin.repository";
+import {
+  completeHabitForToday,
+  setHabitTotalForToday,
+  TodayActionUnavailableError,
+  undoHabitForToday,
+} from "../checkins/checkin.service";
 import {
   findCircleMembershipByUserId,
   findCircleHabitShare,
@@ -9,6 +16,8 @@ import {
   listCircleMemberRecords,
   listSharedHabitsWithTodayState,
 } from "./circle.repository";
+
+export { TodayActionUnavailableError };
 
 export class CircleNotFoundError extends Error {
   constructor() {
@@ -250,4 +259,101 @@ export async function getMemberHabitsForCircle(
   });
 
   return { habits };
+}
+
+type CircleWriteBaseParams = {
+  circleId: string;
+  userId: string;
+  habitId: string;
+  timestamp?: Date | number | string;
+};
+
+export async function circleCompleteHabit(
+  { db }: CircleServiceDependencies,
+  params: CircleWriteBaseParams,
+) {
+  await assertCircleHabitWritable({ db }, params);
+  const result = await completeHabitForToday(
+    { db },
+    {
+      userId: params.userId,
+      habitId: params.habitId,
+      source: "circle",
+      timestamp: params.timestamp,
+    },
+  );
+  return {
+    habitId: params.habitId,
+    userId: params.userId,
+    completed: result.currentState.completed,
+    currentValue: result.currentState.value,
+  };
+}
+
+export async function circleSetHabitTotal(
+  { db }: CircleServiceDependencies,
+  params: CircleWriteBaseParams & { total: number },
+) {
+  await assertCircleHabitWritable({ db }, params);
+  const result = await setHabitTotalForToday(
+    { db },
+    {
+      userId: params.userId,
+      habitId: params.habitId,
+      source: "circle",
+      total: params.total,
+      timestamp: params.timestamp,
+    },
+  );
+  return {
+    habitId: params.habitId,
+    userId: params.userId,
+    completed: result.currentState.completed,
+    currentValue: result.currentState.value,
+  };
+}
+
+export async function circleUndoHabit(
+  { db }: CircleServiceDependencies,
+  params: CircleWriteBaseParams,
+) {
+  await assertCircleHabitWritable({ db }, params);
+
+  const user = await db.user.findUnique({
+    where: { id: params.userId },
+    select: { timezone: true },
+  });
+  if (!user) {
+    throw new CircleMemberNotFoundError();
+  }
+
+  const day = resolveHabitDay({
+    timestamp: params.timestamp ?? new Date(),
+    timeZone: user.timezone,
+  });
+
+  const latestMutation = await findLatestCheckinMutation(db, {
+    habitId: params.habitId,
+    dateKey: day.todayKey,
+  });
+
+  if (!latestMutation || latestMutation.source !== "CIRCLE") {
+    throw new CircleUndoNotCircleSourcedError();
+  }
+
+  const result = await undoHabitForToday(
+    { db },
+    {
+      userId: params.userId,
+      habitId: params.habitId,
+      source: "circle",
+      timestamp: params.timestamp,
+    },
+  );
+  return {
+    habitId: params.habitId,
+    userId: params.userId,
+    completed: result.currentState.completed,
+    currentValue: result.currentState.value,
+  };
 }

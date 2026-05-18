@@ -32,7 +32,7 @@ the single-user flow or `@haaabit/mcp`.
       habits), and `GET /api/circles/:circleId/members/:userId/habits`
       (un-shared habits never appear). All start with `requireCircleContext`.
       See `GOAL.md` §C9.
-- [ ] **09** Circle write endpoints — implement
+- [x] **09** Circle write endpoints — implement
       `POST /api/circles/:circleId/members/:userId/habits/:habitId/complete`,
       `.../set-total`, and `.../undo`. Each runs `assertCircleHabitWritable`
       then delegates to the existing `checkin.service` with the resolved
