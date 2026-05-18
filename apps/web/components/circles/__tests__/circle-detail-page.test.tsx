@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import * as circlesClient from "../../../lib/circles-client";
 import { LocaleProvider } from "../../locale";
 import { CircleDetailPage } from "../circle-detail-page";
 
@@ -179,6 +180,19 @@ describe("CircleDetailPage — habit share panel", () => {
     const btn = within(panel).getByRole("button", { name: "Share" });
     await user.click(btn);
     expect(within(panel).getByRole("button", { name: "Shared" })).toBeInTheDocument();
+  });
+
+  it("rolls back and shows error notice when shareHabit rejects", async () => {
+    vi.mocked(circlesClient.shareHabit).mockRejectedValueOnce(new Error("Server error"));
+    const user = userEvent.setup();
+    const habits = [{ id: "h1", name: "Morning run" }];
+    renderPage({ initialHabits: habits, mySharedHabits: [] });
+    const panel = screen.getByTestId("circle-habit-shares-panel");
+    const btn = within(panel).getByRole("button", { name: "Share" });
+    await user.click(btn);
+    expect(within(panel).getByRole("button", { name: "Share" })).toBeInTheDocument();
+    expect(screen.getByText("Unable to update")).toBeInTheDocument();
+    expect(screen.getByText("Server error")).toBeInTheDocument();
   });
 });
 
