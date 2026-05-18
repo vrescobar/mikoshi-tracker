@@ -40,7 +40,7 @@ the single-user flow or `@haaabit/mcp`.
       `undo` over a `web`/`ai` mutation → `409 UNDO_NOT_CIRCLE_SOURCED` with
       the user's mutation untouched. Plus `circle-token` hash/lookup and
       `requireCircleContext` (absent/unknown/cross token) unit tests.
-- [ ] **15** Management authorization tests — Vitest covering `GOAL.md`
+- [x] **15** Management authorization tests — Vitest covering `GOAL.md`
       §C14.8: non-owner gets 403 minting a token or adding a member; a member
       cannot share a habit that is not theirs (403/404).
 
