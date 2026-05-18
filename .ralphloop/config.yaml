@@ -1,0 +1,42 @@
+# Ralphloop consumer config. All fields optional — defaults are documented in
+# the ralphloop README. CLI flags and RALPH_* env vars override values here.
+
+# Project spec (default: GOAL.md at repoRoot)
+# goal: GOAL.md
+
+# Iteration cap (default: 50)
+# maxIterations: 50
+
+# Halt-sentinel the agent writes to progress.md (default: TASK_COMPLETE)
+# stopMarker: TASK_COMPLETE
+
+# Commit-message prefixes (defaults: task / review)
+# commit:
+#   taskPrefix: task
+#   reviewPrefix: review
+
+# Agent backend (default: claude-p)
+#   claude-p — claude-p wrapper, runs on the Claude subscription login (default).
+#              Install pinned:  uv tool install 'claude-p==0.1.4'
+#              Under claude-p, token usage is recovered from the session
+#              transcript and cost is ESTIMATED from a local price table.
+#   claude   — official Claude Code CLI (API-key billing)
+# agentBackend: claude-p
+
+# Claude CLI binary + model (defaults: claude / claude-sonnet-4-6)
+# claude:
+#   bin: claude
+#   pBin: claude-p          # binary for the claude-p backend
+#   model: claude-sonnet-4-6
+#   timeoutS: 1800
+
+# Reviewer→Fixer sub-loop (default: enabled)
+# review:
+#   enabled: true
+#   reviewerModel: claude-opus-4-7
+#   fixerModel: claude-sonnet-4-6
+#   maxRounds: 5
+
+# Cooldown (hours) before `ralphloop retry-blocked` will reopen a [!] task
+# that was just blocked. Pass --force to bypass it. Default: 6
+# blockedRetryCooldownHours: 6

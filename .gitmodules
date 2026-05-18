@@ -1,0 +1,3 @@
+[submodule "claude-operator"]
+	path = claude-operator
+	url = https://github.com/vrescobar/claude-operator.git
