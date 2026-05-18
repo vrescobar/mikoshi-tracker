@@ -316,15 +316,18 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
                     <span className={styles.metaLabel}>{copy.editExternalIdLabel}:</span>
                     {isEditing ? (
                       <div className={styles.inlineEditRow}>
-                        <Input
-                          className={styles.inlineInput}
-                          type="text"
-                          value={editValue}
-                          onChange={(e) => setEditValue(e.target.value)}
-                          disabled={editPending}
-                          placeholder={copy.externalIdPlaceholder}
-                          aria-label={copy.editExternalIdLabel}
-                        />
+                        <div className={styles.inlineEditField}>
+                          <Input
+                            className={styles.inlineInput}
+                            type="text"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            disabled={editPending}
+                            placeholder={copy.externalIdPlaceholder}
+                            aria-label={copy.editExternalIdLabel}
+                          />
+                          <p className={styles.inlineEditHint}>{copy.externalIdDescription}</p>
+                        </div>
                         <Button
                           type="button"
                           size="sm"

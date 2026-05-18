@@ -69,6 +69,7 @@ export type CirclesCopy = {
     habitShares: {
       title: string;
       description: string;
+      unshareNote: string;
       emptyState: string;
       sharedLabel: string;
       shareLabel: string;
@@ -191,6 +192,8 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         title: "My Habits",
         description:
           "Choose which of your habits to share in this circle. Shared habits appear on the leaderboard and anyone holding a circle token can record check-ins on them.",
+        unshareNote:
+          "Unsharing a habit removes it from this circle immediately — the circle and any bot holding a circle token will no longer see it or record check-ins on it. Your check-in history is not deleted.",
         emptyState: "You have no active habits to share.",
         sharedLabel: "Shared",
         shareLabel: "Share",
@@ -315,6 +318,8 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
       habitShares: {
         title: "我的习惯",
         description: "选择要在此圈子中分享的习惯。已分享的习惯会出现在排行榜上，拥有圈子令牌的人可以为其打卡。",
+        unshareNote:
+          "取消分享后，该习惯将立即从此圈子中移除——圈子和持有圈子令牌的机器人将不再看到该习惯，也无法为其打卡。打卡历史不会被删除。",
         emptyState: "你没有可以分享的活跃习惯。",
         sharedLabel: "已分享",
         shareLabel: "分享",

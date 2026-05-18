@@ -176,6 +176,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
         <div className={styles.panelHeader}>
           <h2 className={styles.panelTitle}>{copy.detail.habitShares.title}</h2>
           <p className={styles.panelDesc}>{copy.detail.habitShares.description}</p>
+          <p className={styles.panelDesc}>{copy.detail.habitShares.unshareNote}</p>
         </div>
 
         {shareError ? (
@@ -191,7 +192,14 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
               const isPending = pendingHabitIds.has(habit.id);
               return (
                 <div key={habit.id} className={styles.habitRow}>
-                  <span className={styles.habitName}>{habit.name}</span>
+                  <div className={styles.habitNameStack}>
+                    <span className={styles.habitName}>{habit.name}</span>
+                    {isShared && !isPending ? (
+                      <span className={styles.habitNote}>
+                        {copy.detail.habitShares.unshareNote}
+                      </span>
+                    ) : null}
+                  </div>
                   <button
                     type="button"
                     className={styles.toggleBtn}

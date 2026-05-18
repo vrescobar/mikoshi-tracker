@@ -103,14 +103,27 @@
 .inlineEditRow {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   margin-top: 0.2rem;
 }
 
-.inlineInput {
+.inlineEditField {
   flex: 1;
   min-width: 10rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.inlineInput {
+  width: 100%;
+}
+
+.inlineEditHint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 /* ── Token list ──────────────────────────────────────────────────────────── */

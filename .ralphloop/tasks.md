@@ -79,7 +79,7 @@ the single-user flow or `@haaabit/mcp`.
       add/remove members, edit `externalId`, and mint/list/revoke circle
       tokens (show the plain token exactly once, with a copy affordance and a
       warning). Consistent with the `api-access` panel's treatment of secrets.
-- [ ] **22** Explanatory copy — for every Circles action that shares data or
+- [x] **22** Explanatory copy — for every Circles action that shares data or
       grants access (share a habit, mint a circle token, edit `externalId`,
       remove a member / unshare), add visible plain-language copy explaining
       what it does and its consequences, per `GOAL.md` §C12. Copy is added as
