@@ -205,7 +205,7 @@ Todos cuelgan de `/api/circles/:circleId` y empiezan llamando a
 | `GET`  | `/api/circles/:circleId/members/:userId/habits` | read | Hábitos **compartidos** de ese miembro + su estado de hoy. |
 | `POST` | `/api/circles/:circleId/members/:userId/habits/:habitId/complete` | write | Check-in booleano. |
 | `POST` | `/api/circles/:circleId/members/:userId/habits/:habitId/set-total` | write | Check-in cuantitativo (`{ total }`). |
-| `POST` | `/api/circles/:circleId/members/:userId/habits/:habitId/undo` | write | Deshace la última mutación de hoy de ese hábito. |
+| `POST` | `/api/circles/:circleId/members/:userId/habits/:habitId/undo` | write | Deshace la última mutación de hoy **con `source: "circle"`** de ese hábito. Nunca deshace un check-in `web`/`ai` del propio usuario (ver §5.2bis). |
 
 ### 5.2 La verificación de autorización (núcleo de seguridad)
 
@@ -228,6 +228,15 @@ existente** (`apps/api/src/modules/checkins/checkin.service.ts`) pasándole el
 `userId` ya resuelto y autorizado. No se duplica la lógica de mutación ni la de
 `HabitDayState`/`CheckInMutation`. El `circle.service` es solo la capa de
 autorización + delegación.
+
+### 5.2bis Alcance del `undo` por token de círculo
+
+Un token de círculo **no puede deshacer mutaciones que no creó él**. La ruta
+`undo` resuelve la última mutación del día para `(userId, habitId)` y **exige
+que su `source` sea `"circle"`**; si la última mutación es `web` o `ai`,
+responde `409` (`UNDO_NOT_CIRCLE_SOURCED`) sin tocar nada. Esto impide que el
+bot revierte un check-in legítimo que el usuario hizo a mano desde la web. El
+`undo` de la web (token personal) conserva su comportamiento actual sin cambios.
 
 ### 5.3 `CheckInMutation.source`
 
@@ -282,33 +291,63 @@ hábitos ajenos ni leerlos fuera del leaderboard agregado.
 
 ## 7. Web (`apps/web`)
 
-Sección "Circles" coherente con la dirección estética de `CLAUDE.md` (light-mode,
-calma, jerarquía tipográfica). Pantallas:
+La sección "Circles" es una **parte de pleno derecho de la app**, no un añadido
+diferible: mismo lenguaje visual que auth/dashboard/habits según `CLAUDE.md`
+(light-mode, calma, jerarquía tipográfica, CSS Modules, diálogos Radix),
+reutilizando los primitivos de `components/ui/`. No se ejercita "vía curl": la
+GUI se entrega completa, con estados vacío/carga/error, responsive e i18n.
 
-1. **Lista de círculos** + botón "Crear círculo".
+Pantallas:
+
+1. **Lista de círculos** + flujo "Crear círculo" (diálogo Radix), con estado
+   vacío.
 2. **Detalle de círculo**: miembros, leaderboard, y —para el propio usuario— la
    lista de sus hábitos con un toggle "compartir en este círculo".
 3. **Gestión (solo owner)**: añadir/expulsar miembros, editar `externalId`,
    acuñar/revocar tokens de círculo (mostrar el token plano una vez, con aviso).
 
-Subconjunto **crítico para la prueba** (lo demás puede ir después): crear
-círculo, añadir miembro por email, compartir hábitos, acuñar token, ver
-leaderboard. Si hace falta acelerar, este subconjunto puede ejercitarse vía
-`/api/docs` o `curl` y dejar la UI pulida para la Fase 4.
+### 7.1 La GUI debe ser explicativa
+
+Haaabit es self-hosted: el usuario es su propio administrador y necesita
+entender qué concede cada acción. **Toda opción que comparte datos o concede
+acceso lleva texto en lenguaje llano que explica qué hace y sus consecuencias**,
+visible antes de actuar (no escondido en un tooltip). Como mínimo:
+
+- **Compartir un hábito** — explicar que el círculo —y cualquier bot con token
+  de círculo— podrá ver ese hábito y registrar check-ins en él.
+- **Acuñar un token de círculo** — explicar que es una credencial que permite
+  leer los hábitos compartidos y escribir check-ins de *todo* el círculo, que
+  se muestra una sola vez, y cómo revocarla.
+- **Editar `externalId`** — explicar que vincula a ese miembro con una identidad
+  externa (p.ej. WhatsApp) y que un valor erróneo emparejaría al miembro
+  equivocado.
+- **Expulsar un miembro / dejar de compartir** — explicar qué deja de ser
+  visible y que el historial no se borra.
+
+### 7.2 Internacionalización
+
+La GUI de Haaabit es hoy bilingüe (inglés / chino). Como parte de este trabajo
+se añade una **traducción al español (`es`)** de **toda la GUI** —todas las
+pantallas existentes (auth, dashboard, habits, detalle, api-access) más la
+nueva sección Circles—, dejando la app trilingüe `en` / `zh` / `es` con
+detección por idioma del navegador. Esto incluye el texto explicativo de §7.1.
 
 ## 8. Fases de implementación
 
 | Fase | Contenido | Bloquea la prueba |
 |---|---|---|
 | **H1 — Datos** | Modelos Prisma + migración + regenerar cliente. | Sí |
-| **H2 — Auth** | `circle-token.ts` + `circle-session.ts`. | Sí |
-| **H3 — API círculo-token** | Módulo `circles/`: members, leaderboard, habits, complete/set-total/undo + `assertCircleHabitWritable`. Reutiliza `checkin.service`. | Sí |
-| **H4 — API gestión** | Endpoints de sesión: crear círculo, miembros, shares, tokens. | Sí (se necesita para crear el círculo de prueba) |
-| **H5 — Contracts + OpenAPI** | `packages/contracts/src/circles.ts`, route definitions, `/api/docs`. | No (recomendado) |
-| **H6 — Web** | Sección Circles (subconjunto crítico primero). | Parcial |
-| **H7 — Tests** | Vitest, ver §9. | No (pero exigido para cerrar) |
+| **H2 — Contracts** | `packages/contracts/src/circles.ts` (esquemas Zod + tipos de toda la superficie). Se escribe **antes** de la API para que handlers y web importen una sola definición. | Sí |
+| **H3 — Auth** | `circle-token.ts` + `circle-session.ts`. | Sí |
+| **H4 — API círculo-token** | Módulo `circles/`: members, leaderboard, habits, complete/set-total/undo + `assertCircleHabitWritable`. Reutiliza `checkin.service`. | Sí |
+| **H5 — API gestión** | Endpoints de sesión: crear círculo, miembros, shares, tokens. | Sí (se necesita para crear el círculo de prueba) |
+| **H6 — Tests del núcleo** | Vitest: matriz de denegación, ver §9. | No (pero exigido para cerrar) |
+| **H7 — OpenAPI** | Route definitions + esquema de seguridad + `/api/docs`. | No (recomendado) |
+| **H8 — Web** | Sección Circles completa: GUI consistente y **explicativa** (§7.1), estados vacío/carga/error, responsive. | Sí (la GUI es entregable) |
+| **H9 — i18n español** | Traducción `es` de **toda** la GUI (§7.2). | No (exigido para cerrar) |
+| **H10 — Verificación** | Pase de aceptación completo, ver §10. | No (cierra el trabajo) |
 
-Orden de ejecución: H1 → H2 → H3 → H4 → H7 (tests del núcleo) → H5 → H6.
+Orden de ejecución: H1 → H2 → H3 → H4 → H5 → H6 → H7 → H8 → H9 → H10.
 
 ## 9. Tests (Vitest, `apps/api`)
 
@@ -325,6 +364,9 @@ demuestra que la seguridad no depende de buena conducta del cliente:
 7. `GET /members/:userId/habits` **nunca** incluye un hábito no compartido.
 8. Gestión: un usuario no-owner recibe 403 al acuñar token o añadir miembro;
    un miembro no puede compartir un hábito que no es suyo (403/404).
+9. `undo` por token de círculo cuando la última mutación del día es `web`/`ai`
+   → **409 `UNDO_NOT_CIRCLE_SOURCED`**, y la mutación del usuario queda intacta;
+   cuando la última es `source: "circle"`, el `undo` funciona (§5.2bis).
 
 Cobertura adicional: `circle-token` hash/lookup; `requireCircleContext` con
 token ausente/desconocido/cruzado.
@@ -339,6 +381,11 @@ token ausente/desconocido/cruzado.
 - Con el token de círculo, un `POST .../members/:userId/habits/:habitId/complete`
   sobre un hábito compartido funciona; sobre uno no compartido devuelve 403.
 - `/api/docs` documenta la superficie de círculos.
+- La sección Circles de la web está completa: estados vacío/carga/error,
+  responsive, y cada acción que comparte datos o concede acceso lleva texto
+  explicativo de sus consecuencias (§7.1).
+- Toda la GUI (pantallas existentes + Circles) está traducida al español; la
+  app funciona en `en` / `zh` / `es` sin cadenas sin traducir (§7.2).
 - El paquete `@haaabit/mcp` y el flujo monousuario por token personal **siguen
   intactos** (sin regresiones en sus tests).
 

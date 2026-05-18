@@ -206,6 +206,15 @@ habits each member chooses to share — but **never** on un-shared habits and
   habit-shared-in-circle (`403`). Writes then **delegate to the existing
   check-in service** — no mutation logic is duplicated. Circle check-ins are
   recorded with `CheckInMutation.source = "circle"`.
+- A circle token's `undo` reverts **only the latest circle-sourced mutation**
+  of the day — it can never undo a member's own `web` or `ai` check-in. The
+  bot's blast radius stays limited to what the bot itself wrote.
+
+### Shared contracts come first
+
+`packages/contracts/src/circles.ts` (Zod schemas + types for every circle
+endpoint) is authored **before** the API module, so the API handlers and the
+web client both import one definition. Schemas are never redefined per layer.
 
 ### REST surface (`apps/api/src/modules/circles/`)
 
@@ -216,14 +225,27 @@ Circle-token-authenticated, under `/api/circles/:circleId`: `GET /members`,
 Session-authenticated management: `POST/GET /api/circles`,
 `GET /api/circles/:circleId`, member CRUD (owner), habit share/unshare
 (member, own habits only), and token mint/list/revoke (owner). The plain token
-is returned exactly once. Contracts go in `packages/contracts/src/circles.ts`;
-routes are added to the OpenAPI surface and `/api/docs`.
+is returned exactly once. Routes are added to the OpenAPI surface and
+`/api/docs`.
 
 ### Web
 
 A "Circles" section consistent with the `CLAUDE.md` design language: circle
 list, circle detail (members, leaderboard, own-habit share toggles), and
-owner-only management (members, `externalId`, token minting).
+owner-only management (members, `externalId`, token minting). The UI must be
+**explanatory**: every option that grants access or shares data — sharing a
+habit, minting a circle token, setting an `externalId`, removing a member —
+carries plain-language copy stating what it does and its consequences, so a
+self-hosting user understands the privacy and authority trade-off before
+acting. Secrets (the plain circle token) are shown once with an explicit
+warning, as the existing `api-access` panel does.
+
+### Internationalization
+
+Haaabit's UI is currently bilingual (English / Chinese). As part of this work
+the whole GUI — every existing screen plus the new Circles section — also gets
+a **Spanish (`es`)** translation, making the app trilingual with browser
+language detection across `en` / `zh` / `es`.
 
 ### Acceptance
 
