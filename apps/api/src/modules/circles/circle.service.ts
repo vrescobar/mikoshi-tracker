@@ -477,6 +477,9 @@ export async function updateCircleMember(
   if (!existing) {
     throw new CircleMemberNotFoundError();
   }
+  if (existing.role === "owner" && params.role !== undefined && params.role !== "owner") {
+    throw new CircleForbiddenError("Cannot change the role of the circle owner");
+  }
 
   const updated = await updateCircleMemberRecord(db, {
     membershipId: params.membershipId,

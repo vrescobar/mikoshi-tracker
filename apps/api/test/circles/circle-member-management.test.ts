@@ -243,6 +243,72 @@ describe("circle member management endpoints", () => {
     expect(response.json()).toMatchObject({ code: "NOT_FOUND" });
   });
 
+  it("PATCH /members/:membershipId promotes a member to owner", async () => {
+    context = await createTestContext();
+    const { cookie: aliceCookie } = await signUp(context.app);
+    await signUp(context.app, { email: "bob@example.com", name: "Bob" });
+
+    const circleRes = await context.app.inject({
+      method: "POST",
+      url: "/api/circles",
+      headers: { cookie: aliceCookie },
+      payload: { name: "Alice's Circle" },
+    });
+    const circleId = circleRes.json().item.id;
+
+    const addRes = await context.app.inject({
+      method: "POST",
+      url: `/api/circles/${circleId}/members`,
+      headers: { cookie: aliceCookie },
+      payload: { email: "bob@example.com" },
+    });
+    const membershipId = addRes.json().membership.membershipId;
+
+    const response = await context.app.inject({
+      method: "PATCH",
+      url: `/api/circles/${circleId}/members/${membershipId}`,
+      headers: { cookie: aliceCookie },
+      payload: { role: "owner" },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      membership: expect.objectContaining({ membershipId, role: "owner" }),
+    });
+  });
+
+  it("PATCH /members/:membershipId returns 403 when attempting to demote the owner", async () => {
+    context = await createTestContext();
+    const { cookie: aliceCookie } = await signUp(context.app);
+
+    const circleRes = await context.app.inject({
+      method: "POST",
+      url: "/api/circles",
+      headers: { cookie: aliceCookie },
+      payload: { name: "Alice's Circle" },
+    });
+    const circleId = circleRes.json().item.id;
+
+    // Get Alice's owner membership ID from the circle detail
+    const detailRes = await context.app.inject({
+      method: "GET",
+      url: `/api/circles/${circleId}`,
+      headers: { cookie: aliceCookie },
+    });
+    const members = detailRes.json().members as Array<{ membershipId: string; role: string }>;
+    const ownerMembership = members.find((m) => m.role === "owner");
+
+    const response = await context.app.inject({
+      method: "PATCH",
+      url: `/api/circles/${circleId}/members/${ownerMembership!.membershipId}`,
+      headers: { cookie: aliceCookie },
+      payload: { role: "member" },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toMatchObject({ code: "FORBIDDEN" });
+  });
+
   it("PATCH /members/:membershipId returns 403 when caller is not the owner", async () => {
     context = await createTestContext();
     const { cookie: aliceCookie } = await signUp(context.app);
