@@ -28,6 +28,7 @@ const sourceMap = {
   web: "WEB",
   ai: "AI",
   system: "SYSTEM",
+  circle: "CIRCLE",
 } as const;
 
 const mutationTypeMap = {

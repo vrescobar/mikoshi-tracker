@@ -22,7 +22,7 @@ the single-user flow or `@haaabit/mcp`.
       `circle.service.ts`: member-in-circle else 404, habit-belongs-to-user
       else 404, habit-active else 409 `HABIT_INACTIVE`, habit-shared-in-circle
       else 403. See `GOAL.md` §C8.
-- [ ] **07** Circle check-in source — add `"circle"` to the `CheckInMutation`
+- [x] **07** Circle check-in source — add `"circle"` to the `CheckInMutation`
       source enum in `apps/api/src/modules/checkins/checkin.schema.ts` and
       `packages/contracts/src/checkins.ts` (alongside `web`/`ai`/`system`).
       See `GOAL.md` §C9.
