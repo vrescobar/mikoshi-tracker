@@ -5,6 +5,7 @@ import {
   addCircleMemberInputSchema,
   circleSetTotalInputSchema,
   createCircleInputSchema,
+  createCircleTokenInputSchema,
   shareHabitInputSchema,
   updateCircleMemberInputSchema,
 } from "@haaabit/contracts/circles";
@@ -31,18 +32,17 @@ import {
   getCircleLeaderboard,
   getMemberHabitsForCircle,
   listCircleMembersForToken,
+  listCircleTokensForOwner,
   listUserCircles,
+  mintCircleToken,
   removeCircleMember,
+  revokeCircleTokenForOwner,
+  CircleTokenNotFoundError,
   shareHabit,
   TodayActionUnavailableError,
   unshareHabit,
   updateCircleMember,
 } from "./circle.service";
-
-function notImplemented(reply: FastifyReply) {
-  reply.status(501).send({ code: "NOT_IMPLEMENTED", message: "Not yet implemented" });
-  return reply;
-}
 
 function sendCircleAuthError(reply: FastifyReply, error: CircleAuthError) {
   reply.status(error.statusCode).send({
@@ -198,7 +198,8 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     error instanceof CircleUserNotFoundError ||
     error instanceof CircleMemberNotFoundError ||
     error instanceof CircleHabitNotFoundError ||
-    error instanceof CircleHabitNotSharedError
+    error instanceof CircleHabitNotSharedError ||
+    error instanceof CircleTokenNotFoundError
   ) {
     reply.status(404).send({ code: "NOT_FOUND", message: (error as Error).message });
     return reply;
@@ -314,14 +315,42 @@ export async function unshareHabitHandler(request: FastifyRequest, reply: Fastif
   }
 }
 
-export async function createCircleTokenHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function createCircleTokenHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId } = request.params as { circleId: string };
+    const { label } = createCircleTokenInputSchema.parse(request.body);
+    const result = await mintCircleToken(
+      { db: request.server.db },
+      { circleId, callerId: user.id, label },
+    );
+    reply.status(201);
+    return result;
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
-export async function listCircleTokensHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function listCircleTokensHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId } = request.params as { circleId: string };
+    return await listCircleTokensForOwner({ db: request.server.db }, { circleId, callerId: user.id });
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
-export async function revokeCircleTokenHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function revokeCircleTokenHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId, tokenId } = request.params as { circleId: string; tokenId: string };
+    await revokeCircleTokenForOwner(
+      { db: request.server.db },
+      { circleId, callerId: user.id, tokenId },
+    );
+    return reply.code(204).send();
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }

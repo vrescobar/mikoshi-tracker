@@ -24,7 +24,7 @@ the single-user flow or `@haaabit/mcp`.
       `POST /api/circles/:circleId/shares` (`{ habitId }`, verifies the habit
       belongs to the session user) and
       `DELETE /api/circles/:circleId/shares/:habitId`. See `GOAL.md` §C9.
-- [ ] **13** Circle token endpoints — implement owner-only
+- [x] **13** Circle token endpoints — implement owner-only
       `POST /api/circles/:circleId/tokens` (returns plain token once),
       `GET /api/circles/:circleId/tokens` (metadata only),
       `DELETE /api/circles/:circleId/tokens/:tokenId`. See `GOAL.md` §C9.

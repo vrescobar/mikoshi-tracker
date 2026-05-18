@@ -218,6 +218,16 @@ export async function getCircleLeaderboardData(
   return { memberships, shares };
 }
 
+export async function findCircleTokenRecord(
+  db: PrismaClient,
+  params: { circleId: string; tokenId: string },
+) {
+  return db.circleToken.findFirst({
+    where: { id: params.tokenId, circleId: params.circleId },
+    select: { id: true, circleId: true, label: true, createdAt: true, updatedAt: true },
+  });
+}
+
 export async function listSharedHabitsWithTodayState(
   db: PrismaClient,
   params: { circleId: string; userId: string; todayKey: string },

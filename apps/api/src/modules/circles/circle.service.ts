@@ -9,6 +9,11 @@ import {
   undoHabitForToday,
 } from "../checkins/checkin.service";
 import {
+  createCircleToken,
+  listCircleTokens,
+  revokeCircleToken,
+} from "../../auth/circle-token";
+import {
   addCircleMemberRecord,
   createCircleHabitShareRecord,
   createCircleRecord,
@@ -16,6 +21,7 @@ import {
   findCircleMembershipById,
   findCircleMembershipByUserId,
   findCircleRecord,
+  findCircleTokenRecord,
   findHabitForCircle,
   findUserByEmail,
   getCircleLeaderboardData,
@@ -131,6 +137,13 @@ export class CircleHabitAlreadySharedError extends Error {
   constructor() {
     super("Habit is already shared in this circle");
     this.name = "CircleHabitAlreadySharedError";
+  }
+}
+
+export class CircleTokenNotFoundError extends Error {
+  constructor() {
+    super("Circle token not found");
+    this.name = "CircleTokenNotFoundError";
   }
 }
 
@@ -584,6 +597,54 @@ export async function unshareHabit(
     circleId: params.circleId,
     habitId: params.habitId,
   });
+  return {};
+}
+
+// ─── Owner-only circle token service functions ────────────────────────────────
+
+export async function mintCircleToken(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; label?: string },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+  const { token, tokenId, createdAt } = await createCircleToken(db, params.circleId, params.label);
+  return {
+    token,
+    tokenId,
+    label: params.label ?? null,
+    createdAt: createdAt.toISOString(),
+  };
+}
+
+export async function listCircleTokensForOwner(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+  const records = await listCircleTokens(db, params.circleId);
+  return {
+    tokens: records.map((r) => ({
+      tokenId: r.id,
+      label: r.label,
+      createdAt: r.createdAt.toISOString(),
+      updatedAt: r.updatedAt.toISOString(),
+    })),
+  };
+}
+
+export async function revokeCircleTokenForOwner(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; tokenId: string },
+) {
+  await assertCircleOwner(db, params.circleId, params.callerId);
+  const existing = await findCircleTokenRecord(db, {
+    circleId: params.circleId,
+    tokenId: params.tokenId,
+  });
+  if (!existing) {
+    throw new CircleTokenNotFoundError();
+  }
+  await revokeCircleToken(db, params.tokenId);
   return {};
 }
 
