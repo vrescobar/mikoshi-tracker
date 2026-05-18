@@ -19,6 +19,7 @@ import {
   setRegistrationEnabled,
 } from "./auth/registration";
 import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session";
+import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerHabitRoutes } from "./modules/habits/habit.routes";
 import { registerStatsRoutes } from "./modules/stats/stats.routes";
 import { registerTodayRoutes } from "./modules/today/today.routes";
@@ -93,6 +94,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerHabitRoutes(app);
   await registerStatsRoutes(app);
   await registerTodayRoutes(app);
+  await registerCircleRoutes(app);
   await registerOpenApi(app);
 
   app.get("/health", async () => ({ ok: true }));

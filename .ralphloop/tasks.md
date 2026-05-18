@@ -9,44 +9,9 @@ cites the `§C…` subsection it implements. Do not duplicate check-in mutation
 logic; reuse `apps/api/src/modules/checkins/checkin.service.ts`. Do not regress
 the single-user flow or `@haaabit/mcp`.
 
-## Phase 1 — Data model
-
-- [x] **01** Add Prisma models for circles — add `Circle`, `CircleMembership`,
-      `CircleHabitShare`, `CircleToken` to `prisma/schema.prisma` exactly as
-      specified in `GOAL.md` §C3, including the inverse relations on `User`
-      (`circlesOwned Circle[] @relation("CircleOwner")`,
-      `circleMemberships CircleMembership[]`) and `Habit`
-      (`circleShares CircleHabitShare[]`). Run
-      `pnpm prisma migrate dev --name add_circles`, regenerate the Prisma
-      client into `apps/api/src/generated/prisma`, and confirm `apps/api`
-      still builds.
-
-## Phase 2 — Shared contracts
-
-- [x] **02** Circle contracts — create `packages/contracts/src/circles.ts`
-      with input/output Zod schemas + types for **every** circle endpoint
-      (both the circle-token and session-authenticated surfaces in `GOAL.md`
-      §C9), exported consistently with `habits.ts`/`today.ts` and wired into
-      the package index. Authored before the API module so handlers and the
-      web client import one definition. See `GOAL.md` §C4.
-
-## Phase 3 — Authorization primitives
-
-- [x] **03** Circle token module — create
-      `apps/api/src/auth/circle-token.ts` mirroring `api-token.ts`:
-      `generateCircleToken()` (prefix `haaabit_circle_`, 24 random bytes hex),
-      `hashCircleToken()`, `createCircleToken()`, `findCircleByToken()`,
-      `listCircleTokens()`, `revokeCircleToken()`. Plain token returned once.
-      See `GOAL.md` §C5.
-- [x] **04** Circle auth boundary — create
-      `apps/api/src/auth/circle-session.ts` with `CircleAuthError`,
-      `CircleContext`, and `requireCircleContext(request, pathCircleId)`:
-      missing Bearer → 401, unknown token → 401, token circle ≠ path circle →
-      403. See `GOAL.md` §C6.
-
 ## Phase 4 — Circle-token REST surface
 
-- [ ] **05** Circles module scaffold — create
+- [x] **05** Circles module scaffold — create
       `apps/api/src/modules/circles/` with `circle.schema.ts`,
       `circle.repository.ts`, `circle.service.ts`, `circle.controller.ts`,
       `circle.routes.ts`, following the structure of `modules/habits/`. Reuse
