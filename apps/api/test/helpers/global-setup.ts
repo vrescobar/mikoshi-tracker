@@ -42,5 +42,8 @@ export async function setup(): Promise<void> {
 }
 
 export async function teardown(): Promise<void> {
-  removeTemplate();
+  // Template lives in /dev/shm (tmpfs) and is automatically cleared on reboot.
+  // setup() removes and recreates it at the start of each run, so there is no
+  // need to delete it here — and deleting it while other workers are still
+  // copying it causes copyFileSync failures in long parallel runs.
 }
