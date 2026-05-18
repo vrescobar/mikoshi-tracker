@@ -186,3 +186,57 @@ export async function findHabitForCircle(db: PrismaClient, habitId: string) {
     select: { id: true, userId: true, isActive: true },
   });
 }
+
+export async function getCircleLeaderboardData(
+  db: PrismaClient,
+  params: { circleId: string; rangeStart: string; todayKey: string },
+) {
+  const memberships = await db.circleMembership.findMany({
+    where: { circleId: params.circleId },
+    include: { user: { select: { id: true, name: true } } },
+    orderBy: { joinedAt: "asc" },
+  });
+
+  const memberIds = memberships.map((m) => m.userId);
+
+  const shares = await db.circleHabitShare.findMany({
+    where: {
+      circleId: params.circleId,
+      habit: { userId: { in: memberIds }, isActive: true },
+    },
+    include: {
+      habit: {
+        include: {
+          dayStates: {
+            where: { dateKey: { gte: params.rangeStart, lte: params.todayKey } },
+          },
+        },
+      },
+    },
+  });
+
+  return { memberships, shares };
+}
+
+export async function listSharedHabitsWithTodayState(
+  db: PrismaClient,
+  params: { circleId: string; userId: string; todayKey: string },
+) {
+  return db.circleHabitShare.findMany({
+    where: {
+      circleId: params.circleId,
+      habit: { userId: params.userId, isActive: true },
+    },
+    include: {
+      habit: {
+        include: {
+          weekdays: { orderBy: { day: "asc" } },
+          dayStates: {
+            where: { dateKey: params.todayKey },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+}

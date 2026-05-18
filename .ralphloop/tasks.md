@@ -26,7 +26,7 @@ the single-user flow or `@haaabit/mcp`.
       source enum in `apps/api/src/modules/checkins/checkin.schema.ts` and
       `packages/contracts/src/checkins.ts` (alongside `web`/`ai`/`system`).
       See `GOAL.md` §C9.
-- [ ] **08** Circle read endpoints — implement circle-token-authenticated
+- [x] **08** Circle read endpoints — implement circle-token-authenticated
       `GET /api/circles/:circleId/members`,
       `GET /api/circles/:circleId/leaderboard` (aggregated only over shared
       habits), and `GET /api/circles/:circleId/members/:userId/habits`
