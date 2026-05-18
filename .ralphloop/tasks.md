@@ -62,7 +62,7 @@ the single-user flow or `@haaabit/mcp`.
 > does and its consequences before the user acts (`GOAL.md` §C12).
 > Empty/loading/error states and responsive layout are required.
 
-- [ ] **17** Circles navigation + data layer — add a "Circles" entry to the
+- [x] **17** Circles navigation + data layer — add a "Circles" entry to the
       `(app)` navigation and a typed API client wrapper in `apps/web` for the
       circle endpoints, consuming `packages/contracts/src/circles.ts`.
 - [ ] **18** Circles list page — `(app)/circles` route: list circles the user

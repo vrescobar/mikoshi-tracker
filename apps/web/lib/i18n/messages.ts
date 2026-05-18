@@ -72,6 +72,7 @@ export type LocaleMessages = {
     navigation: {
       dashboard: string;
       habits: string;
+      circles: string;
       apiAccess: string;
     };
     signOut: string;
@@ -292,6 +293,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       navigation: {
         dashboard: "Today",
         habits: "Habits",
+        circles: "Circles",
         apiAccess: "API Access",
       },
       signOut: "Log out",
@@ -513,6 +515,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       navigation: {
         dashboard: "今天",
         habits: "习惯",
+        circles: "圈子",
         apiAccess: "API 访问",
       },
       signOut: "退出登录",
