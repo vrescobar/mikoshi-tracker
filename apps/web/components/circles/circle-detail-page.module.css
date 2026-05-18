@@ -1,0 +1,197 @@
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* ── Back navigation ─────────────────────────────────────── */
+
+.backNav {
+  margin-bottom: 0.65rem;
+}
+
+.backLink {
+  color: var(--color-text-soft);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 120ms ease;
+}
+
+.backLink:hover {
+  color: var(--color-accent-strong);
+}
+
+/* ── Hero toolbar (role badge + member count) ────────────── */
+
+.heroToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+.memberCount {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Two-column content grid ─────────────────────────────── */
+
+.contentGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+/* ── Shared panel shell ───────────────────────────────────── */
+
+.panel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(249, 251, 249, 0.92) 0%, rgba(241, 246, 243, 0.88) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  box-shadow: 0 12px 28px rgba(42, 56, 50, 0.06);
+}
+
+.panelHeader {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-heading);
+}
+
+.panelDesc {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ── Member list ─────────────────────────────────────────── */
+
+.memberList {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.memberCard {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-border);
+}
+
+.memberCardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.memberName {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  font-size: 0.98rem;
+}
+
+.youBadge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+  background: color-mix(in srgb, var(--color-accent) 14%, white);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, white);
+}
+
+.memberMeta {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.metaLabel {
+  font-weight: 700;
+  color: var(--color-heading);
+  margin-right: 0.3rem;
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Leaderboard ranking ─────────────────────────────────── */
+
+.rankingItems {
+  display: grid;
+  gap: 0.65rem;
+  min-height: 10rem;
+}
+
+.rankingItem {
+  display: grid;
+  gap: 0.2rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+}
+
+.rankingItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rankingTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.rankingName {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.rankingMeta {
+  color: var(--color-text-soft);
+  font-size: 0.84rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 860px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .panel {
+    padding: 1rem;
+  }
+
+  .memberCard {
+    padding: 0.8rem 0.85rem;
+  }
+}

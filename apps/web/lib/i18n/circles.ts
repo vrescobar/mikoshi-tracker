@@ -42,6 +42,31 @@ export type CirclesCopy = {
       errorTitle: string;
     };
   };
+  detail: {
+    backToCircles: string;
+    header: {
+      eyebrow: string;
+    };
+    summary: {
+      membersLabel: string;
+      membersCount: (count: number) => string;
+    };
+    members: {
+      title: string;
+      description: string;
+      ownerRole: string;
+      memberRole: string;
+      joinedLabel: string;
+      youBadge: string;
+      emptyState: string;
+    };
+    leaderboard: {
+      title: string;
+      description: string;
+      statsNote: string;
+      emptyState: string;
+    };
+  };
 };
 
 const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
@@ -91,6 +116,31 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         errorTitle: "Unable to create circle",
       },
     },
+    detail: {
+      backToCircles: "← Back to circles",
+      header: {
+        eyebrow: "Circle",
+      },
+      summary: {
+        membersLabel: "Members",
+        membersCount: (count) => `${count} ${count === 1 ? "member" : "members"}`,
+      },
+      members: {
+        title: "Members",
+        description: "Everyone in this circle.",
+        ownerRole: "Owner",
+        memberRole: "Member",
+        joinedLabel: "Joined",
+        youBadge: "you",
+        emptyState: "No members yet.",
+      },
+      leaderboard: {
+        title: "Leaderboard",
+        description: "Members ranked by shared-habit activity. Live stats are visible to circle-token clients.",
+        statsNote: "Stats available via circle token",
+        emptyState: "Add members to see the leaderboard.",
+      },
+    },
   },
   "zh-CN": {
     page: {
@@ -136,6 +186,31 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         pendingSubmit: "创建中...",
         cancel: "取消",
         errorTitle: "暂时无法创建圈子",
+      },
+    },
+    detail: {
+      backToCircles: "← 返回圈子列表",
+      header: {
+        eyebrow: "圈子",
+      },
+      summary: {
+        membersLabel: "成员",
+        membersCount: (count) => `${count} 位成员`,
+      },
+      members: {
+        title: "成员",
+        description: "圈子里的所有人。",
+        ownerRole: "管理员",
+        memberRole: "成员",
+        joinedLabel: "加入于",
+        youBadge: "你",
+        emptyState: "还没有成员。",
+      },
+      leaderboard: {
+        title: "排行榜",
+        description: "按共享习惯活跃度排名。实时数据可通过圈子令牌客户端获取。",
+        statsNote: "通过圈子令牌查看统计",
+        emptyState: "添加成员后即可查看排行榜。",
       },
     },
   },

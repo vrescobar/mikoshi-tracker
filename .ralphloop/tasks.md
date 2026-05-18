@@ -69,7 +69,7 @@ the single-user flow or `@haaabit/mcp`.
       belongs to, with a "Create circle" flow (Radix dialog), reusing existing
       UI primitives and matching the habits-list visual language. Include the
       empty state.
-- [ ] **19** Circle detail page — `(app)/circles/[circleId]` route: members
+- [x] **19** Circle detail page — `(app)/circles/[circleId]` route: members
       list and leaderboard, styled consistently with the dashboard's metrics
       and ranking presentation.
 - [ ] **20** Habit-share controls — on the circle detail page, render the
