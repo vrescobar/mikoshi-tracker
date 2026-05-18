@@ -274,8 +274,7 @@ export async function removeCircleMemberHandler(request: FastifyRequest, reply: 
     const user = await requireAuthenticatedUser(request);
     const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
     await removeCircleMember({ db: request.server.db }, { circleId, callerId: user.id, membershipId });
-    reply.status(204);
-    return reply;
+    return reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
