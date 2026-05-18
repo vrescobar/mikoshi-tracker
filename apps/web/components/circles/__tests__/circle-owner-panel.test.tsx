@@ -179,6 +179,29 @@ describe("CircleOwnerPanel — member management", () => {
     const input = within(list).getByRole("textbox", { name: /edit external id/i });
     expect(input).toHaveValue("old-ext-id");
   });
+
+  it("calls updateCircleMember and invokes onMembersChange with the updated member on Save", async () => {
+    const user = userEvent.setup();
+    const member = makeMember({ membershipId: "mem-1", externalId: "old-ext-id" });
+    const updated = makeMember({ membershipId: "mem-1", externalId: "new-ext-id" });
+    vi.mocked(circlesClient.updateCircleMember).mockResolvedValueOnce(updated);
+    const onMembersChange = vi.fn();
+    renderPanel({ members: [member], onMembersChange });
+
+    await user.click(screen.getByRole("button", { name: /edit external id/i }));
+    const list = screen.getByTestId("owner-manage-members-list");
+    const input = within(list).getByRole("textbox", { name: /edit external id/i });
+    await user.clear(input);
+    await user.type(input, "new-ext-id");
+    await user.click(within(list).getByRole("button", { name: /save/i }));
+
+    expect(circlesClient.updateCircleMember).toHaveBeenCalledWith("circle-1", "mem-1", {
+      externalId: "new-ext-id",
+    });
+    expect(onMembersChange).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ membershipId: "mem-1", externalId: "new-ext-id" })]),
+    );
+  });
 });
 
 describe("CircleOwnerPanel — circle tokens", () => {
