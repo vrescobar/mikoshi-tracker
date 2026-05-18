@@ -25,6 +25,31 @@ vi.mock("next/link", () => ({
 vi.mock("../../../lib/circles-client", () => ({
   shareHabit: vi.fn().mockResolvedValue(undefined),
   unshareHabit: vi.fn().mockResolvedValue(undefined),
+  listCircleTokens: vi.fn().mockResolvedValue([]),
+  addCircleMember: vi.fn().mockResolvedValue({
+    membershipId: "mem-new",
+    userId: "user-new",
+    displayName: "New",
+    role: "member",
+    externalId: null,
+    joinedAt: "2026-01-01T00:00:00.000Z",
+  }),
+  updateCircleMember: vi.fn().mockResolvedValue({
+    membershipId: "mem-1",
+    userId: "user-1",
+    displayName: "Alice",
+    role: "member",
+    externalId: null,
+    joinedAt: "2026-01-01T00:00:00.000Z",
+  }),
+  removeCircleMember: vi.fn().mockResolvedValue(undefined),
+  mintCircleToken: vi.fn().mockResolvedValue({
+    token: "haaabit_circle_test",
+    tokenId: "tok-1",
+    label: null,
+    createdAt: "2026-01-01T00:00:00.000Z",
+  }),
+  revokeCircleToken: vi.fn().mockResolvedValue(undefined),
 }));
 
 function makeCircle(overrides: { id?: string; name?: string; ownerId?: string } = {}) {

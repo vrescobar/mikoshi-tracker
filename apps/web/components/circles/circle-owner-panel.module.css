@@ -1,0 +1,210 @@
+/* ── Panel shell (mirrors .panel in circle-detail-page.module.css) ────────── */
+
+.section {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(249, 251, 249, 0.92) 0%, rgba(241, 246, 243, 0.88) 100%);
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, white);
+  box-shadow: 0 12px 28px rgba(42, 56, 50, 0.06);
+}
+
+.panelHeader {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--color-heading);
+}
+
+.panelDesc {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+
+.form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+/* ── Manage members list ─────────────────────────────────────────────────── */
+
+.manageList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.manageRow {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--color-border);
+}
+
+.manageRowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.memberName {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  font-size: 0.96rem;
+}
+
+.externalIdRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  flex-wrap: wrap;
+}
+
+.metaLabel {
+  font-weight: 700;
+  color: var(--color-text-soft);
+}
+
+.metaValue {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.memberActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.inlineEditRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 0.2rem;
+}
+
+.inlineInput {
+  flex: 1;
+  min-width: 10rem;
+}
+
+/* ── Token list ──────────────────────────────────────────────────────────── */
+
+.tokenList {
+  display: grid;
+  gap: 0;
+}
+
+.tokenRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 78%, white);
+  flex-wrap: wrap;
+}
+
+.tokenRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tokenMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.tokenLabel {
+  font-weight: 700;
+  color: var(--color-heading);
+  font-size: 0.92rem;
+}
+
+.tokenDate {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.emptyText {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ── Fresh token block (shown once after minting) ────────────────────────── */
+
+.freshTokenBlock {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.05rem;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid color-mix(in srgb, var(--color-accent) 32%, white);
+  background: color-mix(in srgb, var(--color-accent) 6%, white);
+}
+
+.freshTokenTitle {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.freshTokenWarning {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.freshTokenActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.copyFeedback {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 560px) {
+  .section {
+    padding: 1rem;
+  }
+
+  .manageRow {
+    padding: 0.75rem 0.8rem;
+  }
+}

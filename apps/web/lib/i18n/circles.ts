@@ -75,6 +75,44 @@ export type CirclesCopy = {
       pendingLabel: string;
       errorTitle: string;
     };
+    ownerPanel: {
+      addMemberTitle: string;
+      addMemberDescription: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      externalIdLabel: string;
+      externalIdDescription: string;
+      externalIdPlaceholder: string;
+      addMemberSubmit: string;
+      addMemberPending: string;
+      manageMembersTitle: string;
+      manageMembersDescription: string;
+      externalIdNone: string;
+      editExternalIdLabel: string;
+      saveLabel: string;
+      cancelLabel: string;
+      removeLabel: string;
+      removeConfirm: (name: string) => string;
+      tokensTitle: string;
+      tokensDescription: string;
+      mintNewToken: string;
+      tokenLabelLabel: string;
+      tokenLabelPlaceholder: string;
+      mintSubmit: string;
+      mintPending: string;
+      mintCancel: string;
+      revokeLabel: string;
+      revokeConfirm: (label: string) => string;
+      tokenCreatedLabel: string;
+      noTokens: string;
+      freshTokenTitle: string;
+      freshTokenWarning: string;
+      revealLabel: string;
+      hideLabel: string;
+      copyLabel: string;
+      copySuccess: string;
+      errorTitle: string;
+    };
   };
 };
 
@@ -159,6 +197,49 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         pendingLabel: "…",
         errorTitle: "Unable to update",
       },
+      ownerPanel: {
+        addMemberTitle: "Add a member",
+        addMemberDescription:
+          "Members can share their own habits in this circle and appear on the leaderboard. Add by email — the person must already have a Haaabit account.",
+        emailLabel: "Email address",
+        emailPlaceholder: "member@example.com",
+        externalIdLabel: "External ID (optional)",
+        externalIdDescription:
+          "Links this member to an external identity, such as a WhatsApp number. An incorrect value pairs the wrong account. Leave blank if unsure.",
+        externalIdPlaceholder: "e.g. +15551234567@s.whatsapp.net",
+        addMemberSubmit: "Add member",
+        addMemberPending: "Adding…",
+        manageMembersTitle: "Manage members",
+        manageMembersDescription:
+          "Edit a member's external ID or remove them from the circle. Removing a member stops their habits from appearing here; their check-in history is not deleted.",
+        externalIdNone: "None",
+        editExternalIdLabel: "Edit external ID",
+        saveLabel: "Save",
+        cancelLabel: "Cancel",
+        removeLabel: "Remove",
+        removeConfirm: (name) => `Remove ${name} from this circle? Their habit history is not deleted.`,
+        tokensTitle: "Circle tokens",
+        tokensDescription:
+          "A circle token is a credential that lets an external agent (such as a WhatsApp bot) read shared habits and record check-ins for this whole circle. Treat it like a password — anyone who holds a token can write check-ins on behalf of any member. Revoke immediately if compromised.",
+        mintNewToken: "Mint new token",
+        tokenLabelLabel: "Label (optional)",
+        tokenLabelPlaceholder: "e.g. Mikoshi bot",
+        mintSubmit: "Mint token",
+        mintPending: "Minting…",
+        mintCancel: "Cancel",
+        revokeLabel: "Revoke",
+        revokeConfirm: (label) => `Revoke token "${label}"? Any integration using it will lose access immediately.`,
+        tokenCreatedLabel: "Created",
+        noTokens: "No tokens issued yet.",
+        freshTokenTitle: "Token created — copy it now",
+        freshTokenWarning:
+          "This token is shown only once and cannot be retrieved after you leave this page. Copy it and store it securely before continuing.",
+        revealLabel: "Reveal",
+        hideLabel: "Hide",
+        copyLabel: "Copy",
+        copySuccess: "Copied!",
+        errorTitle: "Something went wrong",
+      },
     },
   },
   "zh-CN": {
@@ -239,6 +320,46 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         shareLabel: "分享",
         pendingLabel: "…",
         errorTitle: "暂时无法更新",
+      },
+      ownerPanel: {
+        addMemberTitle: "添加成员",
+        addMemberDescription: "成员可以在此圈子中分享自己的习惯并出现在排行榜上。通过邮箱添加——此人必须已有 Haaabit 账号。",
+        emailLabel: "邮箱地址",
+        emailPlaceholder: "member@example.com",
+        externalIdLabel: "外部 ID（可选）",
+        externalIdDescription:
+          "将该成员与外部身份（如 WhatsApp 号码）关联。填写错误会绑定错误账号，不确定时请留空。",
+        externalIdPlaceholder: "例如：+15551234567@s.whatsapp.net",
+        addMemberSubmit: "添加成员",
+        addMemberPending: "添加中…",
+        manageMembersTitle: "管理成员",
+        manageMembersDescription: "编辑成员的外部 ID 或将其从圈子中移除。移除后其习惯将不再显示，但打卡历史不会被删除。",
+        externalIdNone: "未设置",
+        editExternalIdLabel: "编辑外部 ID",
+        saveLabel: "保存",
+        cancelLabel: "取消",
+        removeLabel: "移除",
+        removeConfirm: (name) => `将 ${name} 从此圈子移除？其习惯历史不会被删除。`,
+        tokensTitle: "圈子令牌",
+        tokensDescription:
+          "圈子令牌是凭证，允许外部代理（如 WhatsApp 机器人）读取共享习惯并为整个圈子记录打卡。请像保管密码一样保管它——持有令牌的任何人都可以代表任意成员写入打卡记录。如发生泄露，请立即撤销。",
+        mintNewToken: "生成新令牌",
+        tokenLabelLabel: "标签（可选）",
+        tokenLabelPlaceholder: "例如：Mikoshi 机器人",
+        mintSubmit: "生成令牌",
+        mintPending: "生成中…",
+        mintCancel: "取消",
+        revokeLabel: "撤销",
+        revokeConfirm: (label) => `撤销令牌"${label}"？使用该令牌的集成将立即失去访问权限。`,
+        tokenCreatedLabel: "创建于",
+        noTokens: "尚未发放任何令牌。",
+        freshTokenTitle: "令牌已创建——请立即复制",
+        freshTokenWarning: "此令牌仅显示一次，离开此页面后无法再次查看。请在继续操作前将其复制并安全保存。",
+        revealLabel: "显示",
+        hideLabel: "隐藏",
+        copyLabel: "复制",
+        copySuccess: "已复制！",
+        errorTitle: "操作失败",
       },
     },
   },

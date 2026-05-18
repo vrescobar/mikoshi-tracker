@@ -75,7 +75,7 @@ the single-user flow or `@haaabit/mcp`.
 - [x] **20** Habit-share controls — on the circle detail page, render the
       current user's own habits with a "share in this circle" toggle wired to
       the share/unshare endpoints; reflect shared state immediately.
-- [ ] **21** Owner management UI — owner-only panel on the circle detail page:
+- [x] **21** Owner management UI — owner-only panel on the circle detail page:
       add/remove members, edit `externalId`, and mint/list/revoke circle
       tokens (show the plain token exactly once, with a copy affordance and a
       warning). Consistent with the `api-access` panel's treatment of secrets.

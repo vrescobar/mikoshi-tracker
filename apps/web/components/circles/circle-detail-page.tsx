@@ -9,6 +9,7 @@ import { getCirclesCopy } from "../../lib/i18n/circles";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
 import { Badge, Notice, PageFrame, PageHeader, Surface } from "../ui";
+import { CircleOwnerPanel } from "./circle-owner-panel";
 import styles from "./circle-detail-page.module.css";
 
 type HabitItem = {
@@ -41,8 +42,10 @@ function sortMembersForLeaderboard(members: CircleMember[]): CircleMember[] {
 export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }: CircleDetailPageProps) {
   const { locale } = useLocale();
   const copy = getCirclesCopy(locale);
-  const { circle, members } = initialDetail;
+  const { circle } = initialDetail;
   const isOwner = circle.ownerId === currentUserId;
+
+  const [members, setMembers] = useState<CircleMember[]>(initialDetail.members);
   const rankedMembers = sortMembersForLeaderboard(members);
 
   const [sharedHabitIds, setSharedHabitIds] = useState<Set<string>>(
@@ -211,6 +214,15 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
           <p className={styles.emptyText}>{copy.detail.habitShares.emptyState}</p>
         )}
       </section>
+
+      {isOwner ? (
+        <CircleOwnerPanel
+          circleId={circle.id}
+          currentUserId={currentUserId}
+          members={members}
+          onMembersChange={setMembers}
+        />
+      ) : null}
     </div>
   );
 }
