@@ -32,7 +32,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 3 — Authorization primitives
 
-- [ ] **03** Circle token module — create
+- [x] **03** Circle token module — create
       `apps/api/src/auth/circle-token.ts` mirroring `api-token.ts`:
       `generateCircleToken()` (prefix `haaabit_circle_`, 24 random bytes hex),
       `hashCircleToken()`, `createCircleToken()`, `findCircleByToken()`,
