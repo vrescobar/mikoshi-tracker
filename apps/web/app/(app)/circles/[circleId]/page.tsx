@@ -14,7 +14,7 @@ export default async function CircleDetailServerPage({ params }: { params: Promi
   const [detail, session, habits] = await Promise.all([
     getCircleDetailFromCookieHeader(cookieHeader, circleId),
     getSessionFromCookieHeader(cookieHeader),
-    listHabitsFromCookieHeader(cookieHeader),
+    listHabitsFromCookieHeader(cookieHeader, { status: "active" }),
   ]);
 
   if (!detail) {
