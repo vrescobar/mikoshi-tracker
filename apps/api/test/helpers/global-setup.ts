@@ -1,13 +1,43 @@
 import { execFileSync } from "node:child_process";
-import { closeSync, openSync, rmSync } from "node:fs";
+import { readdirSync, rmSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-import { REPO_ROOT, TEMPLATE_DB_PATH } from "./test-db";
+import { makeTemplateDbPath, REPO_ROOT, TEST_DB_DIR } from "./test-db";
 
 const SCHEMA_PATH = "prisma/schema.prisma";
 
-function removeTemplate(): void {
+/** Files older than this are assumed orphaned (no test run lasts an hour). */
+const STALE_DB_AGE_MS = 60 * 60 * 1000;
+
+function removeTemplate(path: string): void {
   for (const suffix of ["", "-wal", "-shm"]) {
-    rmSync(`${TEMPLATE_DB_PATH}${suffix}`, { force: true });
+    rmSync(`${path}${suffix}`, { force: true });
+  }
+}
+
+/**
+ * Sweep orphaned `haaabit-test-*` DBs left in `TEST_DB_DIR`. Per-test DBs are
+ * normally removed by `createTestContext().cleanup()`, but a test run killed
+ * mid-flight (e.g. an autonomous loop hitting its timeout) skips cleanup and
+ * leaks them. Only files older than `STALE_DB_AGE_MS` are removed, so DBs
+ * belonging to a concurrent in-flight run are never touched.
+ */
+function sweepStaleDbs(): void {
+  const cutoff = Date.now() - STALE_DB_AGE_MS;
+  let entries: string[];
+  try {
+    entries = readdirSync(TEST_DB_DIR);
+  } catch {
+    return;
+  }
+  for (const name of entries) {
+    if (!name.startsWith("haaabit-test-")) continue;
+    const full = join(TEST_DB_DIR, name);
+    try {
+      if (statSync(full).mtimeMs < cutoff) rmSync(full, { force: true });
+    } catch {
+      // Raced with another run's cleanup — ignore.
+    }
   }
 }
 
@@ -15,11 +45,23 @@ function removeTemplate(): void {
  * Vitest globalSetup: materialize the Prisma schema into a template SQLite
  * DB exactly once per test run. `createTestContext()` then copies this file
  * per test instead of spawning `prisma db push` ~56 times.
+ *
+ * The template path is unique per `vitest` invocation (process id + time)
+ * and published via `HAAABIT_TEST_TEMPLATE_DB`. globalSetup runs in the main
+ * vitest process before any worker is forked, so the env var propagates to
+ * every forked test worker. This keeps concurrent test runs fully isolated:
+ * one run can never delete or truncate another run's template.
  */
 export async function setup(): Promise<void> {
-  removeTemplate();
-  closeSync(openSync(TEMPLATE_DB_PATH, "w"));
+  sweepStaleDbs();
 
+  const templatePath = makeTemplateDbPath();
+  process.env.HAAABIT_TEST_TEMPLATE_DB = templatePath;
+  removeTemplate(templatePath);
+
+  // `prisma db push` creates the SQLite file itself — no need to pre-create
+  // an empty placeholder (a placeholder is also a hazard: anything copying it
+  // before the push finishes gets a 0-byte, schema-less DB).
   execFileSync(
     "pnpm",
     [
@@ -32,7 +74,7 @@ export async function setup(): Promise<void> {
       "--schema",
       SCHEMA_PATH,
       "--url",
-      `file:${TEMPLATE_DB_PATH}`,
+      `file:${templatePath}`,
     ],
     {
       cwd: REPO_ROOT,
@@ -42,8 +84,9 @@ export async function setup(): Promise<void> {
 }
 
 export async function teardown(): Promise<void> {
-  // Template lives in /dev/shm (tmpfs) and is automatically cleared on reboot.
-  // setup() removes and recreates it at the start of each run, so there is no
-  // need to delete it here — and deleting it while other workers are still
-  // copying it causes copyFileSync failures in long parallel runs.
+  // The template path is unique to this run, so deleting it on teardown is
+  // safe (no other run shares it) and keeps /dev/shm from accumulating stale
+  // template DBs. teardown runs only after every worker has finished.
+  const templatePath = process.env.HAAABIT_TEST_TEMPLATE_DB;
+  if (templatePath) removeTemplate(templatePath);
 }
