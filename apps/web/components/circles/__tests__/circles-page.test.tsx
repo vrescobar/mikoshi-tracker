@@ -94,4 +94,39 @@ describe("CirclesPage — create flow", () => {
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
+
+  it("clears the pending feedback banner after createCircle rejects", async () => {
+    mockCreateCircle.mockRejectedValueOnce(new Error("Server error"));
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /new circle/i }));
+    await user.type(screen.getByRole("textbox"), "My Circle");
+    await user.click(screen.getByRole("button", { name: /create circle/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Server error")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText("Creating circle")).not.toBeInTheDocument();
+  });
+
+  it("closes the dialog and renders the new card after a successful create", async () => {
+    const newCircle = makeCircle({ id: "c-new", name: "New Circle", ownerId: "user-1" });
+    mockCreateCircle.mockResolvedValueOnce(newCircle);
+    mockListCircles.mockResolvedValueOnce([newCircle]);
+    renderPage();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /new circle/i }));
+    await user.type(screen.getByRole("textbox"), "New Circle");
+    await user.click(screen.getByRole("button", { name: /create circle/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    expect(screen.getByText("New Circle")).toBeInTheDocument();
+    expect(screen.getByText("Circle created")).toBeInTheDocument();
+  });
 });
