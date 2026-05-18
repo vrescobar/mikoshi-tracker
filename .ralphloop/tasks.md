@@ -11,7 +11,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 1 — Data model
 
-- [ ] **01** Add Prisma models for circles — add `Circle`, `CircleMembership`,
+- [x] **01** Add Prisma models for circles — add `Circle`, `CircleMembership`,
       `CircleHabitShare`, `CircleToken` to `prisma/schema.prisma` exactly as
       specified in `GOAL.md` §C3, including the inverse relations on `User`
       (`circlesOwned Circle[] @relation("CircleOwner")`,
