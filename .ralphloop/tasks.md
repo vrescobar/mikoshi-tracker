@@ -72,7 +72,7 @@ the single-user flow or `@haaabit/mcp`.
 - [x] **19** Circle detail page — `(app)/circles/[circleId]` route: members
       list and leaderboard, styled consistently with the dashboard's metrics
       and ranking presentation.
-- [ ] **20** Habit-share controls — on the circle detail page, render the
+- [x] **20** Habit-share controls — on the circle detail page, render the
       current user's own habits with a "share in this circle" toggle wired to
       the share/unshare endpoints; reflect shared state immediately.
 - [ ] **21** Owner management UI — owner-only panel on the circle detail page:

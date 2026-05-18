@@ -66,6 +66,15 @@ export type CirclesCopy = {
       statsNote: string;
       emptyState: string;
     };
+    habitShares: {
+      title: string;
+      description: string;
+      emptyState: string;
+      sharedLabel: string;
+      shareLabel: string;
+      pendingLabel: string;
+      errorTitle: string;
+    };
   };
 };
 
@@ -140,6 +149,16 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         statsNote: "Stats available via circle token",
         emptyState: "Add members to see the leaderboard.",
       },
+      habitShares: {
+        title: "My Habits",
+        description:
+          "Choose which of your habits to share in this circle. Shared habits appear on the leaderboard and anyone holding a circle token can record check-ins on them.",
+        emptyState: "You have no active habits to share.",
+        sharedLabel: "Shared",
+        shareLabel: "Share",
+        pendingLabel: "…",
+        errorTitle: "Unable to update",
+      },
     },
   },
   "zh-CN": {
@@ -211,6 +230,15 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         description: "按共享习惯活跃度排名。实时数据可通过圈子令牌客户端获取。",
         statsNote: "通过圈子令牌查看统计",
         emptyState: "添加成员后即可查看排行榜。",
+      },
+      habitShares: {
+        title: "我的习惯",
+        description: "选择要在此圈子中分享的习惯。已分享的习惯会出现在排行榜上，拥有圈子令牌的人可以为其打卡。",
+        emptyState: "你没有可以分享的活跃习惯。",
+        sharedLabel: "已分享",
+        shareLabel: "分享",
+        pendingLabel: "…",
+        errorTitle: "暂时无法更新",
       },
     },
   },
