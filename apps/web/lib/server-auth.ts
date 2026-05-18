@@ -1,4 +1,5 @@
 import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
+import type { CircleRecord } from "@haaabit/contracts/circles";
 import type { HabitDetail, HabitListFilters, Weekday } from "@haaabit/contracts/habits";
 import type { OverviewStats } from "@haaabit/contracts/stats";
 import type { TodaySummary } from "@haaabit/contracts/today";
@@ -196,6 +197,24 @@ export async function getApiAccessTokenFromCookieHeader(cookieHeader: string): P
   }
 
   return (await response.json()) as ApiAccessTokenPayload;
+}
+
+export async function listCirclesFromCookieHeader(cookieHeader: string): Promise<CircleRecord[]> {
+  const response = await fetch(createServerApiUrl("/api/circles"), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load circles");
+  }
+
+  const body = (await response.json()) as { items: CircleRecord[] };
+  return body.items;
 }
 
 export async function getHabitDetailFromCookieHeader(

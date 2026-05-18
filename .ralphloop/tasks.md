@@ -65,7 +65,7 @@ the single-user flow or `@haaabit/mcp`.
 - [x] **17** Circles navigation + data layer — add a "Circles" entry to the
       `(app)` navigation and a typed API client wrapper in `apps/web` for the
       circle endpoints, consuming `packages/contracts/src/circles.ts`.
-- [ ] **18** Circles list page — `(app)/circles` route: list circles the user
+- [x] **18** Circles list page — `(app)/circles` route: list circles the user
       belongs to, with a "Create circle" flow (Radix dialog), reusing existing
       UI primitives and matching the habits-list visual language. Include the
       empty state.
