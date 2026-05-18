@@ -46,7 +46,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 7 — OpenAPI
 
-- [ ] **16** OpenAPI + docs — add `circleApiRouteDefinitions` in
+- [x] **16** OpenAPI + docs — add `circleApiRouteDefinitions` in
       `circle.routes.ts`, register them in
       `apps/api/src/plugins/openapi.ts`, add a `CircleBearerAuth` security
       scheme (or extend `BearerAuth`), and surface a "Circles" section in

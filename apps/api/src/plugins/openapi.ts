@@ -2,11 +2,12 @@ import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { API_DOCS_PATH, API_SPEC_PATH } from "../auth/api-token";
+import { circleApiRouteDefinitions } from "../modules/circles/circle.routes";
 import { habitApiRouteDefinitions } from "../modules/habits/habit.routes";
 import { statsApiRouteDefinitions } from "../modules/stats/stats.routes";
 import { todayApiRouteDefinitions } from "../modules/today/today.routes";
 
-type HttpMethod = "GET" | "POST" | "PATCH";
+type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 type SupportedLocale = "en" | "zh-CN";
 
 type ExampleDefinition = {
@@ -41,6 +42,7 @@ const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
   ...habitApiRouteDefinitions,
   ...todayApiRouteDefinitions,
   ...statsApiRouteDefinitions,
+  ...circleApiRouteDefinitions,
 ];
 
 const localeCookieName = "haaabit-locale";
@@ -63,7 +65,7 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     eyebrow: "OpenAPI + Interactive Reference",
     localeHint: "This page follows your current app language. API contract items stay in English.",
     intro:
-      "This reference is generated from the same route metadata that powers the bearer-authenticated habits, today, and stats runtime.",
+      "This reference is generated from the same route metadata that powers the bearer-authenticated habits, today, stats, and circles runtime.",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "Request Example",
     responseExampleLabel: (statusCode) => `${statusCode} Example`,
@@ -74,7 +76,7 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     eyebrow: "OpenAPI + 交互式参考",
     localeHint: "当前页面会跟随你在应用中的语言。API 合同项保持英文。",
     intro:
-      "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 habits、today 和 stats 运行时。",
+      "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 habits、today、stats 和 circles 运行时。",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "请求示例",
     responseExampleLabel: (statusCode) => `${statusCode} 示例`,
@@ -254,7 +256,8 @@ function buildOpenApiDocument() {
     info: {
       title: "Haaabit API",
       version: "1.0.0",
-      description: "Bearer-authenticated REST API for habits, today's workflow, and overview stats.",
+      description:
+        "Bearer-authenticated REST API for habits, today's workflow, overview stats, and Habit Circles collaboration.",
     },
     servers: [
       {
@@ -266,8 +269,15 @@ function buildOpenApiDocument() {
         BearerAuth: {
           type: "http",
           scheme: "bearer",
-          bearerFormat: "API token",
+          bearerFormat: "Personal API token",
           description: "Use the personal API token generated from the signed-in API Access page.",
+        },
+        CircleBearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "Circle token",
+          description:
+            "A circle-scoped token (prefix: haaabit_circle_). It is authorised to read shared habits and write check-ins for exactly one circle. Minted by the circle owner from the Circles management page.",
         },
       },
     },
@@ -318,27 +328,50 @@ function renderResponseExamples(route: PublicApiRouteDefinition, copy: ApiDocsCo
     .join("");
 }
 
+function renderOperation(route: PublicApiRouteDefinition, copy: ApiDocsCopy) {
+  return `
+    <details class="operation">
+      <summary>
+        <span class="method">${escapeHtml(route.method)}</span>
+        <code>${escapeHtml(route.path)}</code>
+        <span class="summary-text">${escapeHtml(route.summary)}</span>
+      </summary>
+      <div class="operation-body">
+        <p>${escapeHtml(route.description)}</p>
+        <p><strong>${escapeHtml(copy.operationIdLabel)}:</strong> ${escapeHtml(route.operationId)}</p>
+        ${renderRequestExamples(route, copy)}
+        ${renderResponseExamples(route, copy)}
+      </div>
+    </details>
+  `;
+}
+
 function renderDocsPage(locale: SupportedLocale) {
   const copy = apiDocsCopy[locale];
-  const operations = publicApiRouteDefinitions
+
+  const grouped = new Map<string, PublicApiRouteDefinition[]>();
+  for (const route of publicApiRouteDefinitions) {
+    const tag = route.tags[0] ?? "Other";
+    const bucket = grouped.get(tag);
+    if (bucket) {
+      bucket.push(route);
+    } else {
+      grouped.set(tag, [route]);
+    }
+  }
+
+  const sections = [...grouped.entries()]
     .map(
-      (route) => `
-        <details class="operation">
-          <summary>
-            <span class="method">${escapeHtml(route.method)}</span>
-            <code>${escapeHtml(route.path)}</code>
-            <span class="summary-text">${escapeHtml(route.summary)}</span>
-          </summary>
-          <div class="operation-body">
-            <p>${escapeHtml(route.description)}</p>
-            <p><strong>${escapeHtml(copy.operationIdLabel)}:</strong> ${escapeHtml(route.operationId)}</p>
-            ${renderRequestExamples(route, copy)}
-            ${renderResponseExamples(route, copy)}
-          </div>
-        </details>
+      ([tag, routes]) => `
+        <section class="tag-section">
+          <h2 class="tag-heading">${escapeHtml(tag)}</h2>
+          ${routes.map((r) => renderOperation(r, copy)).join("")}
+        </section>
       `,
     )
     .join("");
+
+  const operations = sections;
 
   return `<!doctype html>
 <html lang="${locale}">
@@ -433,6 +466,16 @@ function renderDocsPage(locale: SupportedLocale) {
       .example-block + .example-block, .response-block + .response-block {
         margin-top: 1rem;
       }
+      .tag-section {
+        margin-top: 2rem;
+      }
+      .tag-heading {
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #756858;
+      }
     </style>
   </head>
   <body>
@@ -440,7 +483,7 @@ function renderDocsPage(locale: SupportedLocale) {
       <section class="hero">
         <p style="margin:0; letter-spacing:0.08em; text-transform:uppercase; color:#756858; font-size:0.8rem;">${escapeHtml(copy.eyebrow)}</p>
         <h1 style="margin:0.4rem 0 0; font-size:2.4rem;">Haaabit API</h1>
-        <p>Authorization: Bearer <code>&lt;personal-token&gt;</code></p>
+        <p>Authorization: Bearer <code>&lt;personal-token&gt;</code> or <code>&lt;circle-token&gt;</code></p>
         <p>${escapeHtml(copy.localeHint)}</p>
         <p>${escapeHtml(copy.intro)}</p>
         <div class="meta-links">
