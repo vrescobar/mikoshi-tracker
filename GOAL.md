@@ -148,6 +148,92 @@ hierarchy; no noisy gamification, no purple-on-white SaaS defaults.
   `BETTER_AUTH_URL`, `CORS_ORIGIN`, `PORT`, `HAAABIT_PUBLIC_PORT`,
   `HAAABIT_SITE_ADDRESS` (see `.env.example`).
 
+## Collaboration — Habit Circles (planned feature, not yet implemented)
+
+> **Status: target, not current state.** Everything above describes Haaabit as
+> it exists today: strictly single-user — one `ApiToken` (SHA-256 hash,
+> `haaabit_<hex>`) maps to exactly one `User`, and the API filters everything by
+> `userId`. The section below is the **next feature to build**: a social /
+> collaboration layer called *Circles*. The full implementation plan and
+> phasing live in `PLAN-CIRCLES.md` and in `.ralphloop/tasks.md`.
+
+### Concept
+
+A **Circle** is a habit contest: several people, each with their own Haaabit
+account, form a group with a shared leaderboard. An external agent (a WhatsApp
+bot driven by the Mikoshi project) can **read and record check-ins** on the
+habits each member chooses to share — but **never** on un-shared habits and
+**never** on another person's account.
+
+### Governing design decisions
+
+- The concept is named `Circle` to avoid colliding with the WhatsApp "group".
+- **Authorization authority lives in Haaabit and is enforced server-side.** The
+  bot gets a narrow-scope token; the server never trusts the client (or its
+  LLM) to self-limit. Out-of-scope requests get `403`/`404`. This is the
+  central security property.
+- A **circle token is not a global admin token.** It is scoped to *one* circle,
+  *only* the habits shared in it, and *only* check-in writes. A leaked token's
+  blast radius is one circle, not the instance.
+- **Sharing a habit into a circle is the owner's consent act**, performed with
+  the owner's own session. A circle owner cannot touch another member's habits.
+- Circles are a **new REST surface** (`/api/circles/...`) consumed directly by
+  the Mikoshi skill via `fetch`. The feature does **not** go through the
+  `@haaabit/mcp` package, which stays the single-user personal-token bridge.
+
+### New data model (`prisma/schema.prisma`)
+
+- **Circle** — id, name, `ownerId`, timestamps.
+- **CircleMembership** — `circleId`, `userId`, `role` (`owner` | `member`),
+  `externalId` (opaque integration id, e.g. a Mikoshi identity), `joinedAt`;
+  unique `(circleId, userId)` and `(circleId, externalId)`.
+- **CircleHabitShare** — `(circleId, habitId)`; a habit is visible/mutable to a
+  circle *only* if a row exists here. This is the per-habit privacy opt-in.
+- **CircleToken** — `circleId`, `token` (SHA-256 hash), `label`, timestamps;
+  prefix `haaabit_circle_`. Scope is enforced in code, not modeled as a column.
+
+### Authorization core
+
+- `apps/api/src/auth/circle-token.ts` — mint/hash/lookup/revoke circle tokens
+  (mirror of `api-token.ts`).
+- `apps/api/src/auth/circle-session.ts` — `requireCircleContext(request,
+  pathCircleId)`: a circle token authenticates a *circle*, not a user. Missing
+  Bearer → `401`; unknown token → `401`; token's circle ≠ URL `:circleId` →
+  `403`. This file is the authority boundary.
+- `circle.service.ts` exposes `assertCircleHabitWritable(circleId, userId,
+  habitId)` which every write path runs before mutating: member-of-circle
+  (`404`), habit-belongs-to-user (`404`), habit-active (`409 HABIT_INACTIVE`),
+  habit-shared-in-circle (`403`). Writes then **delegate to the existing
+  check-in service** — no mutation logic is duplicated. Circle check-ins are
+  recorded with `CheckInMutation.source = "circle"`.
+
+### REST surface (`apps/api/src/modules/circles/`)
+
+Circle-token-authenticated, under `/api/circles/:circleId`: `GET /members`,
+`GET /leaderboard`, `GET /members/:userId/habits`, and
+`POST .../habits/:habitId/{complete,set-total,undo}`.
+
+Session-authenticated management: `POST/GET /api/circles`,
+`GET /api/circles/:circleId`, member CRUD (owner), habit share/unshare
+(member, own habits only), and token mint/list/revoke (owner). The plain token
+is returned exactly once. Contracts go in `packages/contracts/src/circles.ts`;
+routes are added to the OpenAPI surface and `/api/docs`.
+
+### Web
+
+A "Circles" section consistent with the `CLAUDE.md` design language: circle
+list, circle detail (members, leaderboard, own-habit share toggles), and
+owner-only management (members, `externalId`, token minting).
+
+### Acceptance
+
+The single-user flow and `@haaabit/mcp` package must remain intact (no
+regressions). The defining test is the **circle-token denial matrix** (see
+`PLAN-CIRCLES.md` §9): cross-circle token → `403`, non-member → `404`,
+foreign habit → `404`, un-shared habit → `403`, archived habit → `409`, and a
+happy path producing a `CheckInMutation` with `source: "circle"` reflected in
+the leaderboard.
+
 ## Quality gates
 
 - `pnpm test` — API unit tests (Vitest)
