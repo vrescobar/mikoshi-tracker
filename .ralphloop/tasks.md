@@ -20,7 +20,7 @@ the single-user flow or `@haaabit/mcp`.
       `PATCH /api/circles/:circleId/members/:membershipId` (edit `role`,
       `externalId`), `DELETE /api/circles/:circleId/members/:membershipId`.
       See `GOAL.md` §C9–§C10.
-- [ ] **12** Habit-share endpoints — implement member endpoints
+- [x] **12** Habit-share endpoints — implement member endpoints
       `POST /api/circles/:circleId/shares` (`{ habitId }`, verifies the habit
       belongs to the session user) and
       `DELETE /api/circles/:circleId/shares/:habitId`. See `GOAL.md` §C9.

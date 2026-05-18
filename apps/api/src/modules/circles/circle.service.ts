@@ -10,6 +10,7 @@ import {
 } from "../checkins/checkin.service";
 import {
   addCircleMemberRecord,
+  createCircleHabitShareRecord,
   createCircleRecord,
   findCircleHabitShare,
   findCircleMembershipById,
@@ -22,6 +23,7 @@ import {
   listCircleMemberRecords,
   listCirclesByUserId,
   listSharedHabitsWithTodayState,
+  removeCircleHabitShareRecord,
   removeCircleMemberRecord,
   updateCircleMemberRecord,
 } from "./circle.repository";
@@ -122,6 +124,13 @@ export class CircleMemberAlreadyExistsError extends Error {
   constructor() {
     super("User is already a member of this circle");
     this.name = "CircleMemberAlreadyExistsError";
+  }
+}
+
+export class CircleHabitAlreadySharedError extends Error {
+  constructor() {
+    super("Habit is already shared in this circle");
+    this.name = "CircleHabitAlreadySharedError";
   }
 }
 
@@ -507,6 +516,74 @@ export async function removeCircleMember(
   }
 
   await removeCircleMemberRecord(db, params.membershipId);
+  return {};
+}
+
+export async function shareHabit(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; habitId: string },
+) {
+  const membership = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: params.callerId,
+  });
+  if (!membership) {
+    throw new CircleForbiddenError("You are not a member of this circle");
+  }
+
+  const habit = await findHabitForCircle(db, params.habitId);
+  if (!habit || habit.userId !== params.callerId) {
+    throw new CircleHabitNotFoundError();
+  }
+
+  const existing = await findCircleHabitShare(db, {
+    circleId: params.circleId,
+    habitId: params.habitId,
+  });
+  if (existing) {
+    throw new CircleHabitAlreadySharedError();
+  }
+
+  const share = await createCircleHabitShareRecord(db, {
+    circleId: params.circleId,
+    habitId: params.habitId,
+  });
+  return {
+    habitId: params.habitId,
+    circleId: params.circleId,
+    createdAt: share.createdAt.toISOString(),
+  };
+}
+
+export async function unshareHabit(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; callerId: string; habitId: string },
+) {
+  const membership = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: params.callerId,
+  });
+  if (!membership) {
+    throw new CircleForbiddenError("You are not a member of this circle");
+  }
+
+  const habit = await findHabitForCircle(db, params.habitId);
+  if (!habit || habit.userId !== params.callerId) {
+    throw new CircleHabitNotFoundError();
+  }
+
+  const share = await findCircleHabitShare(db, {
+    circleId: params.circleId,
+    habitId: params.habitId,
+  });
+  if (!share) {
+    throw new CircleHabitNotSharedError();
+  }
+
+  await removeCircleHabitShareRecord(db, {
+    circleId: params.circleId,
+    habitId: params.habitId,
+  });
   return {};
 }
 

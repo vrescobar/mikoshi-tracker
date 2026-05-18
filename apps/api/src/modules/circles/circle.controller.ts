@@ -5,6 +5,7 @@ import {
   addCircleMemberInputSchema,
   circleSetTotalInputSchema,
   createCircleInputSchema,
+  shareHabitInputSchema,
   updateCircleMemberInputSchema,
 } from "@haaabit/contracts/circles";
 import { CircleAuthError, requireCircleContext } from "../../auth/circle-session";
@@ -14,6 +15,7 @@ import {
   addCircleMember,
   circleCompleteHabit,
   CircleForbiddenError,
+  CircleHabitAlreadySharedError,
   CircleHabitInactiveError,
   CircleHabitNotFoundError,
   CircleHabitNotSharedError,
@@ -31,7 +33,9 @@ import {
   listCircleMembersForToken,
   listUserCircles,
   removeCircleMember,
+  shareHabit,
   TodayActionUnavailableError,
+  unshareHabit,
   updateCircleMember,
 } from "./circle.service";
 
@@ -189,7 +193,13 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     sendAuthError(reply, error);
     return reply;
   }
-  if (error instanceof CircleNotFoundError || error instanceof CircleUserNotFoundError || error instanceof CircleMemberNotFoundError) {
+  if (
+    error instanceof CircleNotFoundError ||
+    error instanceof CircleUserNotFoundError ||
+    error instanceof CircleMemberNotFoundError ||
+    error instanceof CircleHabitNotFoundError ||
+    error instanceof CircleHabitNotSharedError
+  ) {
     reply.status(404).send({ code: "NOT_FOUND", message: (error as Error).message });
     return reply;
   }
@@ -197,8 +207,8 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     reply.status(403).send({ code: "FORBIDDEN", message: error.message });
     return reply;
   }
-  if (error instanceof CircleMemberAlreadyExistsError) {
-    reply.status(409).send({ code: "CONFLICT", message: error.message });
+  if (error instanceof CircleMemberAlreadyExistsError || error instanceof CircleHabitAlreadySharedError) {
+    reply.status(409).send({ code: "CONFLICT", message: (error as Error).message });
     return reply;
   }
   if (error instanceof ZodError) {
@@ -280,12 +290,28 @@ export async function removeCircleMemberHandler(request: FastifyRequest, reply: 
   }
 }
 
-export async function shareHabitHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function shareHabitHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId } = request.params as { circleId: string };
+    const { habitId } = shareHabitInputSchema.parse(request.body);
+    const result = await shareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+    reply.status(201);
+    return result;
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
-export async function unshareHabitHandler(_request: FastifyRequest, reply: FastifyReply) {
-  return notImplemented(reply);
+export async function unshareHabitHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const { circleId, habitId } = request.params as { circleId: string; habitId: string };
+    await unshareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+    return reply.code(204).send();
+  } catch (error) {
+    return sendCircleManagementError(reply, error);
+  }
 }
 
 export async function createCircleTokenHandler(_request: FastifyRequest, reply: FastifyReply) {
