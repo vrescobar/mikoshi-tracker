@@ -8,7 +8,8 @@
     "./habits": "./src/habits.ts",
     "./checkins": "./src/checkins.ts",
     "./today": "./src/today.ts",
-    "./stats": "./src/stats.ts"
+    "./stats": "./src/stats.ts",
+    "./circles": "./src/circles.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

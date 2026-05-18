@@ -23,7 +23,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 2 — Shared contracts
 
-- [ ] **02** Circle contracts — create `packages/contracts/src/circles.ts`
+- [x] **02** Circle contracts — create `packages/contracts/src/circles.ts`
       with input/output Zod schemas + types for **every** circle endpoint
       (both the circle-token and session-authenticated surfaces in `GOAL.md`
       §C9), exported consistently with `habits.ts`/`today.ts` and wired into
