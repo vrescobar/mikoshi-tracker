@@ -179,3 +179,10 @@ export async function findCircleHabitShare(
     },
   });
 }
+
+export async function findHabitForCircle(db: PrismaClient, habitId: string) {
+  return db.habit.findUnique({
+    where: { id: habitId },
+    select: { id: true, userId: true, isActive: true },
+  });
+}

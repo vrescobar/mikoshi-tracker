@@ -1,4 +1,9 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import {
+  findCircleMembershipByUserId,
+  findCircleHabitShare,
+  findHabitForCircle,
+} from "./circle.repository";
 
 export class CircleNotFoundError extends Error {
   constructor() {
@@ -51,10 +56,34 @@ export class CircleUndoNotCircleSourcedError extends Error {
 
 export type CircleServiceDependencies = { db: PrismaClient };
 
-// Implemented in task 06
 export async function assertCircleHabitWritable(
-  _dependencies: CircleServiceDependencies,
-  _params: { circleId: string; userId: string; habitId: string },
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; userId: string; habitId: string },
 ): Promise<void> {
-  throw new Error("assertCircleHabitWritable: not yet implemented");
+  // Rule 1: userId must have a CircleMembership in circleId
+  const membership = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: params.userId,
+  });
+  if (!membership) {
+    throw new CircleMemberNotFoundError();
+  }
+
+  // Rule 2: habitId must belong to userId; Rule 3: habit must be active
+  const habit = await findHabitForCircle(db, params.habitId);
+  if (habit?.userId !== params.userId) {
+    throw new CircleHabitNotFoundError();
+  }
+  if (!habit.isActive) {
+    throw new CircleHabitInactiveError();
+  }
+
+  // Rule 4: (circleId, habitId) must exist in CircleHabitShare
+  const share = await findCircleHabitShare(db, {
+    circleId: params.circleId,
+    habitId: params.habitId,
+  });
+  if (!share) {
+    throw new CircleHabitNotSharedError();
+  }
 }

@@ -17,7 +17,7 @@ the single-user flow or `@haaabit/mcp`.
       `circle.routes.ts`, following the structure of `modules/habits/`. Reuse
       the contracts from task 02. Register the routes in
       `apps/api/src/server.ts`. See `GOAL.md` §C7.
-- [ ] **06** Authorization core — implement
+- [x] **06** Authorization core — implement
       `assertCircleHabitWritable(circleId, userId, habitId)` in
       `circle.service.ts`: member-in-circle else 404, habit-belongs-to-user
       else 404, habit-active else 409 `HABIT_INACTIVE`, habit-shared-in-circle
