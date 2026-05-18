@@ -38,7 +38,7 @@ the single-user flow or `@haaabit/mcp`.
       `hashCircleToken()`, `createCircleToken()`, `findCircleByToken()`,
       `listCircleTokens()`, `revokeCircleToken()`. Plain token returned once.
       See `GOAL.md` §C5.
-- [ ] **04** Circle auth boundary — create
+- [x] **04** Circle auth boundary — create
       `apps/api/src/auth/circle-session.ts` with `CircleAuthError`,
       `CircleContext`, and `requireCircleContext(request, pathCircleId)`:
       missing Bearer → 401, unknown token → 401, token circle ≠ path circle →
