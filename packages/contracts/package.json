@@ -9,7 +9,8 @@
     "./checkins": "./src/checkins.ts",
     "./today": "./src/today.ts",
     "./stats": "./src/stats.ts",
-    "./circles": "./src/circles.ts"
+    "./circles": "./src/circles.ts",
+    "./admin": "./src/admin.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"

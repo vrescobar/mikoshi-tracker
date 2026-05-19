@@ -19,6 +19,7 @@ import {
   setRegistrationEnabled,
 } from "./auth/registration";
 import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session";
+import { registerAdminRoutes } from "./modules/admin/admin.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerHabitRoutes } from "./modules/habits/habit.routes";
 import { registerStatsRoutes } from "./modules/stats/stats.routes";
@@ -91,6 +92,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerCors(app);
   await registerSecurity(app);
   await registerAuth(app);
+  await registerAdminRoutes(app);
   await registerHabitRoutes(app);
   await registerStatsRoutes(app);
   await registerTodayRoutes(app);

@@ -33,7 +33,7 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       role. Document `HAAABIT_ADMIN_API_KEY` in `.env.example`. Unit tests for
       the guard (absent / wrong / unset). See `GOAL.md` §C17.2.
 
-- [ ] **28** User provisioning endpoint — `POST /api/admin/provision-user`
+- [x] **28** User provisioning endpoint — `POST /api/admin/provision-user`
       (system-key auth), in a new `apps/api/src/modules/admin/` module
       registered in `apps/api/src/server.ts`. Body `{ externalId, name?,
       timezone? }` (Zod in `packages/contracts`). Existing `externalId` →

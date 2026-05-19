@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { API_DOCS_PATH, API_SPEC_PATH } from "../auth/api-token";
+import { adminApiRouteDefinitions } from "../modules/admin/admin.routes";
 import { circleApiRouteDefinitions } from "../modules/circles/circle.routes";
 import { habitApiRouteDefinitions } from "../modules/habits/habit.routes";
 import { statsApiRouteDefinitions } from "../modules/stats/stats.routes";
@@ -43,6 +44,7 @@ const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
   ...todayApiRouteDefinitions,
   ...statsApiRouteDefinitions,
   ...circleApiRouteDefinitions,
+  ...adminApiRouteDefinitions,
 ];
 
 const localeCookieName = "haaabit-locale";
@@ -278,6 +280,13 @@ function buildOpenApiDocument() {
           bearerFormat: "Circle token",
           description:
             "A circle-scoped token (prefix: haaabit_circle_). It is authorised to read shared habits and write check-ins for exactly one circle. Minted by the circle owner from the Circles management page.",
+        },
+        AdminKeyAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "Admin API key",
+          description:
+            "The operator-configured system key set via the HAAABIT_ADMIN_API_KEY environment variable. Required for all /api/admin/* provisioning routes. Distinct from personal tokens, circle tokens, and the User.isAdmin role.",
         },
       },
     },
