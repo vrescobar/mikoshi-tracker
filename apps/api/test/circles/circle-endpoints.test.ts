@@ -292,6 +292,32 @@ describe("circle read endpoints", () => {
       // Today's completion does not count toward streak — streak starts from yesterday
       expect(aliceEntry.currentStreak).toBe(0);
     });
+
+    it("surfaces externalId for a member enrolled with one, and null for a member without", async () => {
+      context = await createTestContext();
+      const { body: alice } = await signUp(context.app, { email: "alice@example.com", name: "Alice" });
+      const { body: bob } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
+
+      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Test Circle" });
+      await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id, externalId: "ext-bob-42" });
+      const { token } = await createCircleToken(context.app.db, circle.id);
+
+      const response = await context.app.inject({
+        method: "GET",
+        url: `/api/circles/${circle.id}/leaderboard`,
+        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const { leaderboard } = response.json() as { leaderboard: Array<{ userId: string; externalId: string | null }> };
+
+      const aliceEntry = leaderboard.find((e) => e.userId === alice.user.id)!;
+      const bobEntry = leaderboard.find((e) => e.userId === bob.user.id)!;
+      // Alice was added via createCircleRecord (owner, no externalId)
+      expect(aliceEntry.externalId).toBeNull();
+      // Bob was enrolled with externalId
+      expect(bobEntry.externalId).toBe("ext-bob-42");
+    });
   });
 
   // ─── GET /members/:userId/habits ──────────────────────────────────────────────
