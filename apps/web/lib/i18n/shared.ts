@@ -2,7 +2,7 @@ import type { SupportedLocale } from "./messages";
 
 export const localeCookieName = "haaabit-locale";
 export const defaultLocale: SupportedLocale = "en";
-export const supportedLocales = ["en", "zh-CN"] as const satisfies readonly SupportedLocale[];
+export const supportedLocales = ["en", "zh-CN", "es"] as const satisfies readonly SupportedLocale[];
 export const localeCookieMaxAge = 60 * 60 * 24 * 365;
 
 export function normalizeLocale(value: string | null | undefined): SupportedLocale | null {
@@ -18,6 +18,10 @@ export function normalizeLocale(value: string | null | undefined): SupportedLoca
 
   if (normalized.startsWith("en")) {
     return "en";
+  }
+
+  if (normalized.startsWith("es")) {
+    return "es";
   }
 
   return null;

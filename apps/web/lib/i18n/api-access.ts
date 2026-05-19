@@ -179,6 +179,70 @@ const apiAccessCopy: Record<SupportedLocale, ApiAccessCopy> = {
       },
     },
   },
+  es: {
+    feedback: {
+      rotatePendingTitle: (hasToken) => (hasToken ? "Rotando token" : "Generando token"),
+      refreshPendingTitle: "Actualizando token",
+      pendingMessage: "Los controles del token permanecen bloqueados hasta que termine la solicitud actual.",
+      rotateSuccessTitle: (hasToken) => (hasToken ? "Token rotado" : "Token generado"),
+      rotateSuccessMessage:
+        "Guarda este token de portador ahora. Reemplazarlo invalida el valor anterior de inmediato.",
+      updateErrorTitle: "No se puede actualizar el acceso API",
+      copySuccessTitle: "Token copiado",
+      copySuccessMessage:
+        "El token está en tu portapapeles. Pégalo solo en un cliente de confianza o almacén de secretos.",
+      copyErrorTitle: "No se puede copiar el token",
+    },
+    page: {
+      eyebrow: "Integración con IA",
+      title: "Acceso API",
+      description:
+        "Gestiona el token de portador personal que tus scripts y asistentes deben usar al llamar a Haaabit.",
+      tokenLabel: "Token API personal",
+      tokenDescriptions: {
+        empty: "Genera un token antes de intentar llamadas API autenticadas con portador.",
+        fresh: "Oculto por defecto. Revélalo solo cuando necesites copiarlo en un cliente de confianza ahora mismo.",
+        stored: "Este token ya está almacenado de forma segura. Rótalo para obtener un nuevo valor que puedas copiar.",
+      },
+      guidanceTitle: "Trata este token como una contraseña.",
+      guidanceLines: [
+        "Guárdalo en un almacén de secretos de confianza o en un archivo de entorno privado.",
+        "La rotación invalida el token anterior de inmediato.",
+      ],
+      storedStateTitle: "Token ya almacenado de forma segura",
+      storedStateDescription: "Los valores brutos del token se muestran solo una vez, justo después de su generación o rotación.",
+      storedTokenValue: "Almacenado de forma segura — rota para revelar un nuevo token",
+      lastRotatedLabel: "Última rotación",
+      emptyStateTitle: "Aún no hay token API personal",
+      emptyStateDescription: "Aún no se ha generado ningún token API personal.",
+      actions: {
+        generate: "Generar token",
+        rotate: "Rotar token",
+        reveal: "Revelar token",
+        hide: "Ocultar token",
+        copy: "Copiar token",
+      },
+      rotateConfirm: "Rotar este token invalida el valor anterior de inmediato. ¿Continuar?",
+      disabledHint: "Los controles del token se desbloquean cuando se complete la solicitud actual.",
+      quickstart: {
+        eyebrow: "Inicio rápido",
+        title: "Primera llamada",
+        description: "Empieza con el encabezado portador, luego verifica la conexión con el endpoint del resumen de hoy.",
+        docsLink: "Abrir documentación API",
+        specLink: "OpenAPI JSON",
+      },
+      registration: {
+        eyebrow: "Admin",
+        title: "Acceso al registro",
+        description: "Controla si los nuevos usuarios pueden crear cuentas locales desde la página de inicio de sesión.",
+        enabled: "El registro está abierto",
+        disabled: "El registro está cerrado",
+        enableAction: "Reabrir registro",
+        disableAction: "Cerrar registro",
+        pendingHint: "Los controles de registro se desbloquean cuando se complete la solicitud actual.",
+      },
+    },
+  },
 };
 
 export function getApiAccessCopy(locale: SupportedLocale) {

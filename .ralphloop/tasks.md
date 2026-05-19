@@ -90,7 +90,7 @@ the single-user flow or `@haaabit/mcp`.
 
 ## Phase 9 — Internationalization (Spanish)
 
-- [ ] **24** Spanish translation of the whole GUI — add a Spanish (`es`)
+- [x] **24** Spanish translation of the whole GUI — add a Spanish (`es`)
       locale to `apps/web` and translate **every** screen: the existing auth,
       dashboard, habits, habit-detail and api-access surfaces *and* the new
       Circles section, including all explanatory copy from task 22. Wire `es`

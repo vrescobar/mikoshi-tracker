@@ -377,6 +377,138 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
       },
     },
   },
+  es: {
+    page: {
+      header: {
+        eyebrow: "Colaboración",
+        title: "Círculos",
+        description: "Los círculos te permiten compartir hábitos seleccionados con un grupo y seguir una clasificación compartida.",
+      },
+      toolbar: {
+        label: "Tus círculos",
+        summary: (count) => {
+          if (count === 0) return "No hay círculos en vista";
+          return `${count} ${count === 1 ? "círculo" : "círculos"} en vista`;
+        },
+        newCircle: "Nuevo círculo",
+      },
+      feedback: {
+        createPendingTitle: "Creando círculo",
+        createPendingMessage: "La lista se actualizará una vez que el nuevo círculo esté listo.",
+        createSuccessTitle: "Círculo creado",
+        createSuccessMessage: "Invita miembros y comparte hábitos para empezar a construir tu clasificación.",
+        updatingErrorTitle: "No se pueden actualizar los círculos",
+      },
+      card: {
+        ownerRole: "Propietario",
+        memberRole: "Miembro",
+        createdLabel: "Creado",
+        viewDetails: "Ver círculo",
+      },
+      emptyState: {
+        title: "Aún no hay círculos",
+        description: "Crea un círculo para compartir hábitos con otros y ver una clasificación compartida.",
+      },
+      overlay: {
+        createTitle: "Crear un círculo",
+        createDescription:
+          "Un círculo es un espacio compartido donde los miembros siguen sus hábitos juntos. Te conviertes en el propietario y puedes invitar a otros, compartir tus propios hábitos y emitir tokens del círculo para acceso externo.",
+        closeLabel: "Cerrar",
+        nameLabel: "Nombre del círculo",
+        namePlaceholder: "p. ej. Rutinas matutinas",
+        nameRequired: "Añade un nombre para este círculo.",
+        createSubmit: "Crear círculo",
+        pendingSubmit: "Creando...",
+        cancel: "Cancelar",
+        errorTitle: "No se puede crear el círculo",
+      },
+    },
+    detail: {
+      backToCircles: "← Volver a círculos",
+      header: {
+        eyebrow: "Círculo",
+      },
+      summary: {
+        membersLabel: "Miembros",
+        membersCount: (count) => `${count} ${count === 1 ? "miembro" : "miembros"}`,
+      },
+      members: {
+        title: "Miembros",
+        description: "Todos en este círculo.",
+        ownerRole: "Propietario",
+        memberRole: "Miembro",
+        joinedLabel: "Se unió",
+        youBadge: "tú",
+        emptyState: "Aún no hay miembros.",
+      },
+      leaderboard: {
+        title: "Clasificación",
+        description:
+          "Miembros clasificados por actividad en hábitos compartidos. Las estadísticas en vivo son visibles para los clientes con token del círculo.",
+        statsNote: "Estadísticas disponibles vía token del círculo",
+        emptyState: "Añade miembros para ver la clasificación.",
+      },
+      habitShares: {
+        title: "Mis hábitos",
+        description:
+          "Elige cuáles de tus hábitos compartir en este círculo. Los hábitos compartidos aparecen en la clasificación y cualquiera con un token del círculo puede registrar registros en ellos.",
+        unshareNote:
+          "Dejar de compartir un hábito lo elimina de este círculo de inmediato — el círculo y cualquier bot con un token del círculo ya no lo verán ni registrarán registros en él. Tu historial de registros no se elimina.",
+        emptyState: "No tienes hábitos activos para compartir.",
+        sharedLabel: "Compartido",
+        shareLabel: "Compartir",
+        pendingLabel: "…",
+        errorTitle: "No se puede actualizar",
+      },
+      ownerPanel: {
+        addMemberTitle: "Añadir miembro",
+        addMemberDescription:
+          "Los miembros pueden compartir sus propios hábitos en este círculo y aparecer en la clasificación. Añadir por correo — la persona debe tener ya una cuenta de Haaabit.",
+        emailLabel: "Dirección de correo",
+        emailPlaceholder: "miembro@ejemplo.com",
+        externalIdLabel: "ID externo (opcional)",
+        externalIdDescription:
+          "Vincula este miembro a una identidad externa, como un número de WhatsApp. Un valor incorrecto empareja la cuenta equivocada. Déjalo en blanco si no estás seguro.",
+        externalIdPlaceholder: "p. ej. +15551234567@s.whatsapp.net",
+        addMemberSubmit: "Añadir miembro",
+        addMemberPending: "Añadiendo…",
+        manageMembersTitle: "Gestionar miembros",
+        manageMembersDescription:
+          "Edita el ID externo de un miembro o elimínalo del círculo. Eliminar a un miembro impide que sus hábitos aparezcan aquí; su historial de registros no se elimina.",
+        manageMembersEmpty: "Aún no hay otros miembros que gestionar.",
+        externalIdNone: "Ninguno",
+        editExternalIdLabel: "Editar ID externo",
+        saveLabel: "Guardar",
+        cancelLabel: "Cancelar",
+        removeLabel: "Eliminar",
+        removeConfirm: (name) => `¿Eliminar a ${name} de este círculo? Su historial de hábitos no se elimina.`,
+        tokensTitle: "Tokens del círculo",
+        tokensDescription:
+          "Un token del círculo es una credencial que permite a un agente externo (como un bot de WhatsApp) leer hábitos compartidos y registrar registros para todo el círculo. Trátalo como una contraseña — cualquiera que tenga un token puede escribir registros en nombre de cualquier miembro. Revócalo inmediatamente si se ve comprometido.",
+        mintNewToken: "Generar nuevo token",
+        tokenLabelLabel: "Etiqueta (opcional)",
+        tokenLabelPlaceholder: "p. ej. Bot de Mikoshi",
+        mintSubmit: "Generar token",
+        mintPending: "Generando…",
+        mintCancel: "Cancelar",
+        revokeLabel: "Revocar",
+        revokeConfirm: (label) =>
+          `¿Revocar el token "${label}"? Cualquier integración que lo use perderá el acceso de inmediato.`,
+        confirmLabel: "Confirmar",
+        tokenCreatedLabel: "Creado",
+        noTokens: "Aún no se han emitido tokens.",
+        tokensLoadError: "No se pueden cargar los tokens.",
+        freshTokenTitle: "Token creado — cópialo ahora",
+        freshTokenWarning:
+          "Este token se muestra solo una vez y no se puede recuperar después de salir de esta página. Cópialo y guárdalo de forma segura antes de continuar.",
+        revealLabel: "Mostrar",
+        hideLabel: "Ocultar",
+        copyLabel: "Copiar",
+        copySuccess: "¡Copiado!",
+        errorTitle: "Algo salió mal",
+      },
+    },
+  },
 };
 
 export function getCirclesCopy(locale: SupportedLocale): CirclesCopy {

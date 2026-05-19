@@ -35,7 +35,7 @@ type Feedback = {
 };
 
 function formatDate(isoString: string, locale: string) {
-  return new Date(isoString).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : "en-US", {
+  return new Date(isoString).toLocaleDateString(locale === "zh-CN" ? "zh-CN" : locale === "es" ? "es" : "en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
