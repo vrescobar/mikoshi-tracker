@@ -15,6 +15,7 @@ model User {
   image             String?
   isAdmin           Boolean            @default(false)
   timezone          String             @default("Asia/Shanghai")
+  externalId        String?            @unique
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   sessions          Session[]

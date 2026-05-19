@@ -9,102 +9,65 @@ cites the `§C…` subsection it implements. Do not duplicate check-in mutation
 logic; reuse `apps/api/src/modules/checkins/checkin.service.ts`. Do not regress
 the single-user flow or `@haaabit/mcp`.
 
-## Phase 5 — Circle management REST surface (user session)
+## Phase 11 — External provisioning for bot-operated circles
 
-- [x] **10** Circle lifecycle endpoints — implement session-authenticated
-      `POST /api/circles` (creator becomes `owner` + first membership),
-      `GET /api/circles` (circles the user belongs to), and
-      `GET /api/circles/:circleId` (detail, member-only). See `GOAL.md` §C9.
-- [x] **11** Member management endpoints — implement owner-only
-      `POST /api/circles/:circleId/members` (add by email),
-      `PATCH /api/circles/:circleId/members/:membershipId` (edit `role`,
-      `externalId`), `DELETE /api/circles/:circleId/members/:membershipId`.
-      See `GOAL.md` §C9–§C10.
-- [x] **12** Habit-share endpoints — implement member endpoints
-      `POST /api/circles/:circleId/shares` (`{ habitId }`, verifies the habit
-      belongs to the session user) and
-      `DELETE /api/circles/:circleId/shares/:habitId`. See `GOAL.md` §C9.
-- [x] **13** Circle token endpoints — implement owner-only
-      `POST /api/circles/:circleId/tokens` (returns plain token once),
-      `GET /api/circles/:circleId/tokens` (metadata only),
-      `DELETE /api/circles/:circleId/tokens/:tokenId`. See `GOAL.md` §C9.
+Additive layer so an external agent (Mikoshi) can run a circle as a contest
+where each participant's check-ins are written with that participant's **own
+personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
+§C17. Changes nothing in §C1–§C16. Do not regress the single-user flow,
+`@haaabit/mcp`, or the §C14 circle-token denial matrix. Marker:
+`PHASE_11_COMPLETE` (written by task 31), not the generic `TASK_COMPLETE`.
 
-## Phase 6 — Core security tests
+- [x] **26** `User.externalId` — add `externalId String? @unique` to the `User`
+      model in `prisma/schema.prisma` (an opaque integration id; Haaabit does
+      not know it is a WhatsApp identity). Run
+      `pnpm prisma migrate dev --name add_user_external_id`, regenerate the
+      Prisma client, confirm `apps/api` builds. See `GOAL.md` §C17.1.
 
-- [x] **14** Circle-token denial matrix — Vitest in `apps/api` covering
-      `GOAL.md` §C14: cross-circle token → 403, non-member write → 404,
-      foreign habit → 404, un-shared habit → 403, archived habit → 409,
-      happy-path check-in producing `CheckInMutation` with `source: "circle"`
-      reflected in the leaderboard, `GET /members/:userId/habits` never
-      leaking un-shared habits, and the `undo` scope rule (§C14.9): circle
-      `undo` over a `web`/`ai` mutation → `409 UNDO_NOT_CIRCLE_SOURCED` with
-      the user's mutation untouched. Plus `circle-token` hash/lookup and
-      `requireCircleContext` (absent/unknown/cross token) unit tests.
-- [x] **15** Management authorization tests — Vitest covering `GOAL.md`
-      §C14.8: non-owner gets 403 minting a token or adding a member; a member
-      cannot share a habit that is not theirs (403/404).
+- [ ] **27** System-key auth — new `apps/api/src/auth/admin-key.ts`: a Fastify
+      guard/preHandler that validates `Authorization: Bearer <key>` against the
+      env var `HAAABIT_ADMIN_API_KEY` with a **timing-safe** compare
+      (`crypto.timingSafeEqual`). Missing/wrong key → `401`; env var unset →
+      the `/api/admin/*` provisioning routes respond `503` (feature disabled).
+      Distinct from sessions, `ApiToken`s, circle tokens and the `User.isAdmin`
+      role. Document `HAAABIT_ADMIN_API_KEY` in `.env.example`. Unit tests for
+      the guard (absent / wrong / unset). See `GOAL.md` §C17.2.
 
-## Phase 7 — OpenAPI
+- [ ] **28** User provisioning endpoint — `POST /api/admin/provision-user`
+      (system-key auth), in a new `apps/api/src/modules/admin/` module
+      registered in `apps/api/src/server.ts`. Body `{ externalId, name?,
+      timezone? }` (Zod in `packages/contracts`). Existing `externalId` →
+      `200 { userId, alreadyExists: true }`. New → create the `User` directly
+      via Prisma (synthetic unique `email`, `emailVerified: true`, **no
+      `Account` row**, default `timezone`), mint a personal token via the
+      existing `generatePersonalApiToken` / `ApiToken` machinery, **bypass** the
+      `AppSettings.registrationEnabled` gate → `201 { userId, personalToken,
+      alreadyExists: false }`. Add companion `POST
+      /api/admin/provision-user/reset-token` `{ externalId }` that rotates the
+      token. See `GOAL.md` §C17.3.
 
-- [x] **16** OpenAPI + docs — add `circleApiRouteDefinitions` in
-      `circle.routes.ts`, register them in
-      `apps/api/src/plugins/openapi.ts`, add a `CircleBearerAuth` security
-      scheme (or extend `BearerAuth`), and surface a "Circles" section in
-      `/api/docs`. See `GOAL.md` §C11.
+- [ ] **29** Member enrolment by `externalId` — `POST
+      /api/admin/circles/:circleId/members` (system-key auth). Body
+      `{ externalId }`: resolve the `User` by `externalId` (`404` if not
+      provisioned), create a `CircleMembership` (`role: "member"`, `externalId`
+      set); idempotent — an existing membership is returned, not duplicated.
+      → `{ membershipId, userId, externalId }`. The circle token still cannot
+      add members. See `GOAL.md` §C17.4.
 
-## Phase 8 — Web GUI (consistent + explanatory)
+- [ ] **30** Expose `externalId` in circle reads — ensure
+      `GET /api/circles/:circleId/leaderboard` includes `externalId` per member
+      (like `GET .../members` already does, §C9). Update the Zod schemas in
+      `packages/contracts/src/circles.ts` and `circle.service.ts`/repository as
+      needed. See `GOAL.md` §C17.5.
 
-> The Circles UI is a first-class, consistent part of the app — same visual
-> language as auth/dashboard/habits per `CLAUDE.md` (light-mode-first, calm,
-> typographic hierarchy, CSS Modules, Radix dialogs), reusing existing
-> `components/ui/` primitives. The UI must also be **explanatory**: every
-> option that shares data or grants access states, in plain language, what it
-> does and its consequences before the user acts (`GOAL.md` §C12).
-> Empty/loading/error states and responsive layout are required.
-
-- [x] **17** Circles navigation + data layer — add a "Circles" entry to the
-      `(app)` navigation and a typed API client wrapper in `apps/web` for the
-      circle endpoints, consuming `packages/contracts/src/circles.ts`.
-- [x] **18** Circles list page — `(app)/circles` route: list circles the user
-      belongs to, with a "Create circle" flow (Radix dialog), reusing existing
-      UI primitives and matching the habits-list visual language. Include the
-      empty state.
-- [x] **19** Circle detail page — `(app)/circles/[circleId]` route: members
-      list and leaderboard, styled consistently with the dashboard's metrics
-      and ranking presentation.
-- [x] **20** Habit-share controls — on the circle detail page, render the
-      current user's own habits with a "share in this circle" toggle wired to
-      the share/unshare endpoints; reflect shared state immediately.
-- [x] **21** Owner management UI — owner-only panel on the circle detail page:
-      add/remove members, edit `externalId`, and mint/list/revoke circle
-      tokens (show the plain token exactly once, with a copy affordance and a
-      warning). Consistent with the `api-access` panel's treatment of secrets.
-- [x] **22** Explanatory copy — for every Circles action that shares data or
-      grants access (share a habit, mint a circle token, edit `externalId`,
-      remove a member / unshare), add visible plain-language copy explaining
-      what it does and its consequences, per `GOAL.md` §C12. Copy is added as
-      i18n strings (English + Chinese) so task 24 can translate it.
-- [x] **23** Circles UX polish — verify and complete loading/empty/error
-      states and responsive behavior across every Circles screen so the
-      section is indistinguishable in polish from the rest of the app.
-
-## Phase 9 — Internationalization (Spanish)
-
-- [x] **24** Spanish translation of the whole GUI — add a Spanish (`es`)
-      locale to `apps/web` and translate **every** screen: the existing auth,
-      dashboard, habits, habit-detail and api-access surfaces *and* the new
-      Circles section, including all explanatory copy from task 22. Wire `es`
-      into the language switcher and browser language detection so the app is
-      trilingual `en` / `zh` / `es` with no untranslated strings.
-      See `GOAL.md` §C13.
-
-## Phase 10 — Final verification
-
-- [ ] **25** Full acceptance pass — confirm `GOAL.md` §C15: `pnpm -r build`
-      and workspace typecheck green after Prisma regen, `pnpm -r lint` green,
-      `pnpm --filter @haaabit/api test` green (incl. the denial matrix and
-      undo-scope test), `pnpm test:e2e` and `pnpm verify:openclaw` green with
-      no single-user / `@haaabit/mcp` regressions, the Circles web section
-      complete and explanatory, and the whole GUI translated to
-      `en` / `zh` / `es`. Fix anything outstanding, then write `TASK_COMPLETE`
+- [ ] **31** Tests, OpenAPI + Phase 11 acceptance — Vitest in `apps/api`:
+      provisioning creates an account-less, password-less user with a usable
+      personal token; a repeat call with the same `externalId` is idempotent;
+      reset-token rotates; member enrolment by `externalId` is idempotent and
+      `404`s an unknown id; the system-key guard rejects missing/wrong keys and
+      `503`s when unset. Add the `/api/admin/*` routes to the OpenAPI
+      definitions (`apps/api/src/plugins/openapi.ts`) with the system-key
+      security scheme. Confirm no regression of the single-user flow, the §C14
+      denial matrix, or `@haaabit/mcp`. `pnpm -r build` / typecheck / `pnpm -r
+      lint` / `pnpm --filter @haaabit/api test` green. Write `PHASE_11_COMPLETE`
       on its own line in `progress.md`.

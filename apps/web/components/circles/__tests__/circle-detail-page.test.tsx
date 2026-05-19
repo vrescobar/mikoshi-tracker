@@ -75,7 +75,7 @@ function makeMember(
     membershipId: overrides.membershipId ?? "mem-1",
     userId: overrides.userId ?? "user-1",
     displayName: overrides.displayName ?? "Alice",
-    role: (overrides.role ?? "member") as "owner" | "member",
+    role: overrides.role ?? "member",
     externalId: null,
     joinedAt: overrides.joinedAt ?? "2026-01-01T00:00:00.000Z",
   };

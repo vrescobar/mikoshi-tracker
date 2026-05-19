@@ -7,8 +7,10 @@
 # Iteration cap (default: 50)
 # maxIterations: 50
 
-# Halt-sentinel the agent writes to progress.md (default: TASK_COMPLETE)
-# stopMarker: TASK_COMPLETE
+# Halt-sentinel the agent writes to progress.md (default: TASK_COMPLETE).
+# Phase 11 uses a per-phase marker so the historical TASK_COMPLETE (Phase 10)
+# stays inert.
+stopMarker: PHASE_11_COMPLETE
 
 # Commit-message prefixes (defaults: task / review)
 # commit:

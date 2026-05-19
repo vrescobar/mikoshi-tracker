@@ -148,16 +148,13 @@ hierarchy; no noisy gamification, no purple-on-white SaaS defaults.
   `BETTER_AUTH_URL`, `CORS_ORIGIN`, `PORT`, `HAAABIT_PUBLIC_PORT`,
   `HAAABIT_SITE_ADDRESS` (see `.env.example`).
 
-## Collaboration — Habit Circles (planned feature, not yet implemented)
+## Collaboration — Habit Circles
 
-> **Status: target, not current state.** Everything above describes Haaabit as
-> it exists today: strictly single-user — one `ApiToken` (SHA-256 hash,
-> `haaabit_<hex>`) maps to exactly one `User`, and the API filters everything by
-> `userId` (`requireAuthenticatedUser` in `apps/api/src/auth/session.ts`). The
-> section below is the **next feature to build**: a social / collaboration
-> layer called *Circles*. This section is the full, self-contained
-> specification; `.ralphloop/tasks.md` is the phased checklist that implements
-> it and cites the `§C…` subsections below.
+> **Status.** §C1–§C16 (the Circles social layer) are **implemented and
+> shipped**. §C17 (external provisioning for bot-operated circles) is the
+> **current in-progress addition** — see `PLAN.md`. This section is the full,
+> self-contained specification; `.ralphloop/tasks.md` is the phased checklist
+> that implements it and cites the `§C…` subsections below.
 
 ### C1 — Concept
 
@@ -504,6 +501,54 @@ absent / unknown / cross-circle token.
   add a `scope` column to `CircleToken`.
 - Circle endpoints fall under the existing global rate limit; revisit a
   per-`CircleToken` limit if the feature opens to many circles.
+
+### C17 — External provisioning for bot-operated circles
+
+A small **additive** layer (it changes none of §C1–§C16) so an external agent —
+Mikoshi — can run a circle as a contest where **each participant's check-ins are
+written with that participant's own personal token**, never a shared cross-user
+token. Without it, every participant would have to self-register through the web
+UI. Full plan: `PLAN.md`. Phased checklist: `.ralphloop/tasks.md` → Phase 11.
+
+**C17.1 — `User.externalId`.** Add `externalId String? @unique` to `User` — an
+opaque integration id (a Mikoshi `identityId`), one external identity ⇄ one
+Haaabit user. Deliberately opaque: Haaabit does not know it is a WhatsApp
+identity. Migration: `pnpm prisma migrate dev --name add_user_external_id`.
+
+**C17.2 — System-key auth (`apps/api/src/auth/admin-key.ts`).** A fourth auth
+path, distinct from sessions, personal `ApiToken`s, circle tokens, and the
+`User.isAdmin` role. Env var `HAAABIT_ADMIN_API_KEY`; a Fastify guard validates
+`Authorization: Bearer <key>` with a **timing-safe** compare. Missing/wrong →
+`401`. If the env var is unset, every `/api/admin/*` provisioning route →
+`503` (feature disabled, never an open endpoint). It is an env-configured
+operator secret, not a DB token.
+
+**C17.3 — `POST /api/admin/provision-user`** (system-key auth). Body
+`{ externalId, name?, timezone? }`. Existing `externalId` → `200 { userId,
+alreadyExists: true }` (the personal token is minted once at creation, not
+re-issued). New → create the `User` directly via Prisma, bypassing better-auth
+sign-up: synthetic unique `email`, `emailVerified: true`, **no `Account` row**
+(API-only user, no password login), `timezone` default; mint a personal token
+via the existing `generatePersonalApiToken` / `ApiToken` machinery; **bypass**
+the `AppSettings.registrationEnabled` gate (admin action, not public sign-up).
+→ `201 { userId, personalToken, alreadyExists: false }`. Companion
+`POST /api/admin/provision-user/reset-token` `{ externalId }` rotates the token.
+
+**C17.4 — `POST /api/admin/circles/:circleId/members`** (system-key auth). Body
+`{ externalId }`. Resolves the `User` by `externalId` (`404` if not
+provisioned), creates a `CircleMembership` (`role: "member"`, same `externalId`).
+Idempotent. → `{ membershipId, userId, externalId }`. This is the bot's
+enrolment path — adding members is otherwise owner-only (§C9); the **circle
+token still cannot add members** (§C2).
+
+**C17.5 — Expose `externalId` in circle reads.** `GET .../leaderboard` (like
+`GET .../members`, §C9) includes `externalId` per member, so the bot maps
+standings back to external identities. Update `packages/contracts/src/circles.ts`.
+
+**Unchanged.** Circle-token check-in endpoints, habit sharing, circle models and
+tokens, and the web GUI are untouched. Mikoshi writes contest check-ins with
+each user's **personal** token against `/api/today/*`; it uses the circle token
+**read-only** for the leaderboard.
 
 ## Quality gates
 

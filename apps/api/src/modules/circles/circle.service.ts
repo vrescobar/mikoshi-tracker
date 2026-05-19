@@ -407,7 +407,7 @@ export async function circleUndoHabit(
     dateKey: day.todayKey,
   });
 
-  if (!latestMutation || latestMutation.source !== "CIRCLE") {
+  if (latestMutation?.source !== "CIRCLE") {
     throw new CircleUndoNotCircleSourcedError();
   }
 
@@ -436,7 +436,7 @@ async function assertCircleOwner(
   userId: string,
 ): Promise<void> {
   const membership = await findCircleMembershipByUserId(db, { circleId, userId });
-  if (!membership || membership.role !== "owner") {
+  if (membership?.role !== "owner") {
     throw new CircleForbiddenError("Only the circle owner can perform this action");
   }
 }
@@ -545,7 +545,7 @@ export async function shareHabit(
   }
 
   const habit = await findHabitForCircle(db, params.habitId);
-  if (!habit || habit.userId !== params.callerId) {
+  if (habit?.userId !== params.callerId) {
     throw new CircleHabitNotFoundError();
   }
 
@@ -581,7 +581,7 @@ export async function unshareHabit(
   }
 
   const habit = await findHabitForCircle(db, params.habitId);
-  if (!habit || habit.userId !== params.callerId) {
+  if (habit?.userId !== params.callerId) {
     throw new CircleHabitNotFoundError();
   }
 

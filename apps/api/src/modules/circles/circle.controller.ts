@@ -57,7 +57,7 @@ function sendCircleWriteError(reply: FastifyReply, error: unknown) {
     return reply;
   }
   if (error instanceof CircleMemberNotFoundError || error instanceof CircleHabitNotFoundError) {
-    reply.status(404).send({ code: "NOT_FOUND", message: (error as Error).message });
+    reply.status(404).send({ code: "NOT_FOUND", message: error.message });
     return reply;
   }
   if (error instanceof CircleHabitNotSharedError) {
@@ -201,7 +201,7 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     error instanceof CircleHabitNotSharedError ||
     error instanceof CircleTokenNotFoundError
   ) {
-    reply.status(404).send({ code: "NOT_FOUND", message: (error as Error).message });
+    reply.status(404).send({ code: "NOT_FOUND", message: error.message });
     return reply;
   }
   if (error instanceof CircleForbiddenError) {
@@ -209,7 +209,7 @@ function sendCircleManagementError(reply: FastifyReply, error: unknown) {
     return reply;
   }
   if (error instanceof CircleMemberAlreadyExistsError || error instanceof CircleHabitAlreadySharedError) {
-    reply.status(409).send({ code: "CONFLICT", message: (error as Error).message });
+    reply.status(409).send({ code: "CONFLICT", message: error.message });
     return reply;
   }
   if (error instanceof ZodError) {
@@ -285,7 +285,7 @@ export async function removeCircleMemberHandler(request: FastifyRequest, reply: 
     const user = await requireAuthenticatedUser(request);
     const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
     await removeCircleMember({ db: request.server.db }, { circleId, callerId: user.id, membershipId });
-    return reply.code(204).send();
+    return await reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
@@ -309,7 +309,7 @@ export async function unshareHabitHandler(request: FastifyRequest, reply: Fastif
     const user = await requireAuthenticatedUser(request);
     const { circleId, habitId } = request.params as { circleId: string; habitId: string };
     await unshareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
-    return reply.code(204).send();
+    return await reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
@@ -349,7 +349,7 @@ export async function revokeCircleTokenHandler(request: FastifyRequest, reply: F
       { db: request.server.db },
       { circleId, callerId: user.id, tokenId },
     );
-    return reply.code(204).send();
+    return await reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
