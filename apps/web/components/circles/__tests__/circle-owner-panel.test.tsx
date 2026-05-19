@@ -67,6 +67,7 @@ function renderPanel(props: {
 }
 
 beforeEach(() => {
+  vi.clearAllMocks();
   vi.mocked(circlesClient.listCircleTokens).mockResolvedValue([]);
   vi.mocked(circlesClient.addCircleMember).mockResolvedValue(
     makeMember({ membershipId: "mem-new", userId: "user-new", displayName: "New Person" }),
@@ -166,6 +167,27 @@ describe("CircleOwnerPanel — member management", () => {
     expect(onMembersChange).toHaveBeenCalledWith(
       expect.not.arrayContaining([expect.objectContaining({ membershipId: "m-bob" })]),
     );
+  });
+
+  it("clicking Remove then Cancel dismisses the inline confirm and does NOT call removeCircleMember", async () => {
+    const user = userEvent.setup();
+    const bob = makeMember({ membershipId: "m-bob", userId: "user-bob", displayName: "Bob" });
+    const onMembersChange = vi.fn();
+    renderPanel({
+      currentUserId: "user-owner",
+      members: [makeMember({ membershipId: "m-owner", userId: "user-owner", role: "owner" }), bob],
+      onMembersChange,
+    });
+
+    const list = screen.getByTestId("owner-manage-members-list");
+    await user.click(within(list).getByRole("button", { name: /remove/i }));
+    expect(within(list).getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+
+    await user.click(within(list).getByRole("button", { name: /cancel/i }));
+
+    expect(within(list).queryByRole("button", { name: /confirm/i })).not.toBeInTheDocument();
+    expect(circlesClient.removeCircleMember).not.toHaveBeenCalled();
+    expect(onMembersChange).not.toHaveBeenCalled();
   });
 
   it("shows inline edit for external ID when Edit button clicked", async () => {
@@ -268,6 +290,21 @@ describe("CircleOwnerPanel — circle tokens", () => {
 
     expect(circlesClient.revokeCircleToken).toHaveBeenCalledWith("circle-1", "tok-1");
     expect(screen.queryByText("My bot")).not.toBeInTheDocument();
+  });
+
+  it("clicking Revoke then Cancel dismisses the inline confirm and does NOT call revokeCircleToken", async () => {
+    vi.mocked(circlesClient.listCircleTokens).mockResolvedValueOnce([makeToken({ tokenId: "tok-1", label: "My bot" })]);
+    const user = userEvent.setup();
+    renderPanel({});
+
+    const tokenList = await screen.findByTestId("token-list");
+    await user.click(within(tokenList).getByRole("button", { name: /revoke/i }));
+    expect(within(tokenList).getByRole("button", { name: /confirm/i })).toBeInTheDocument();
+
+    await user.click(within(tokenList).getByRole("button", { name: /cancel/i }));
+
+    expect(within(tokenList).queryByRole("button", { name: /confirm/i })).not.toBeInTheDocument();
+    expect(circlesClient.revokeCircleToken).not.toHaveBeenCalled();
   });
 
   it("shows no-tokens message when token list is empty", async () => {
