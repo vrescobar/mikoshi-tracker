@@ -80,7 +80,6 @@ beforeEach(() => {
     createdAt: "2026-02-01T00:00:00.000Z",
   });
   vi.mocked(circlesClient.revokeCircleToken).mockResolvedValue();
-  vi.spyOn(window, "confirm").mockReturnValue(true);
 });
 
 describe("CircleOwnerPanel — member management", () => {
@@ -149,7 +148,7 @@ describe("CircleOwnerPanel — member management", () => {
     expect(removeButtons).toHaveLength(1);
   });
 
-  it("calls removeCircleMember and updates members list after confirmation", async () => {
+  it("calls removeCircleMember and updates members list after inline confirmation", async () => {
     const user = userEvent.setup();
     const bob = makeMember({ membershipId: "m-bob", userId: "user-bob", displayName: "Bob" });
     const onMembersChange = vi.fn();
@@ -160,8 +159,8 @@ describe("CircleOwnerPanel — member management", () => {
     });
 
     const list = screen.getByTestId("owner-manage-members-list");
-    const removeBtn = within(list).getByRole("button", { name: /remove/i });
-    await user.click(removeBtn);
+    await user.click(within(list).getByRole("button", { name: /remove/i }));
+    await user.click(within(list).getByRole("button", { name: /confirm/i }));
 
     expect(circlesClient.removeCircleMember).toHaveBeenCalledWith("circle-1", "m-bob");
     expect(onMembersChange).toHaveBeenCalledWith(
@@ -258,13 +257,14 @@ describe("CircleOwnerPanel — circle tokens", () => {
     expect(within(tokenList).getByText("Test bot")).toBeInTheDocument();
   });
 
-  it("calls revokeCircleToken and removes token from list after confirmation", async () => {
+  it("calls revokeCircleToken and removes token from list after inline confirmation", async () => {
     vi.mocked(circlesClient.listCircleTokens).mockResolvedValueOnce([makeToken({ tokenId: "tok-1", label: "My bot" })]);
     const user = userEvent.setup();
     renderPanel({});
 
     const tokenList = await screen.findByTestId("token-list");
     await user.click(within(tokenList).getByRole("button", { name: /revoke/i }));
+    await user.click(within(tokenList).getByRole("button", { name: /confirm/i }));
 
     expect(circlesClient.revokeCircleToken).toHaveBeenCalledWith("circle-1", "tok-1");
     expect(screen.queryByText("My bot")).not.toBeInTheDocument();
@@ -274,5 +274,12 @@ describe("CircleOwnerPanel — circle tokens", () => {
     vi.mocked(circlesClient.listCircleTokens).mockResolvedValueOnce([]);
     renderPanel({});
     expect(await screen.findByText(/no tokens issued yet/i)).toBeInTheDocument();
+  });
+
+  it("shows a load-error message when listCircleTokens rejects", async () => {
+    vi.mocked(circlesClient.listCircleTokens).mockRejectedValueOnce(new Error("Network error"));
+    renderPanel({});
+    expect(await screen.findByText(/unable to load tokens/i)).toBeInTheDocument();
+    expect(screen.queryByText(/no tokens issued yet/i)).not.toBeInTheDocument();
   });
 });

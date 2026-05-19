@@ -202,9 +202,9 @@ describe("CircleDetailPage — habit share panel", () => {
     const habits = [{ id: "h1", name: "Morning run" }];
     renderPage({ initialHabits: habits, mySharedHabits: [] });
     const panel = screen.getByTestId("circle-habit-shares-panel");
-    const btn = within(panel).getByRole("button", { name: "Share" });
+    const btn = within(panel).getByRole("button", { name: "Morning run: Share" });
     await user.click(btn);
-    expect(within(panel).getByRole("button", { name: "Shared" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Morning run: Shared" })).toBeInTheDocument();
   });
 
   it("rolls back and shows error notice when shareHabit rejects", async () => {
@@ -213,9 +213,9 @@ describe("CircleDetailPage — habit share panel", () => {
     const habits = [{ id: "h1", name: "Morning run" }];
     renderPage({ initialHabits: habits, mySharedHabits: [] });
     const panel = screen.getByTestId("circle-habit-shares-panel");
-    const btn = within(panel).getByRole("button", { name: "Share" });
+    const btn = within(panel).getByRole("button", { name: "Morning run: Share" });
     await user.click(btn);
-    expect(within(panel).getByRole("button", { name: "Share" })).toBeInTheDocument();
+    expect(within(panel).getByRole("button", { name: "Morning run: Share" })).toBeInTheDocument();
     expect(screen.getByText("Unable to update")).toBeInTheDocument();
     expect(screen.getByText("Server error")).toBeInTheDocument();
   });

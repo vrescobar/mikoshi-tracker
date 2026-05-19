@@ -88,6 +88,7 @@ export type CirclesCopy = {
       addMemberPending: string;
       manageMembersTitle: string;
       manageMembersDescription: string;
+      manageMembersEmpty: string;
       externalIdNone: string;
       editExternalIdLabel: string;
       saveLabel: string;
@@ -104,8 +105,10 @@ export type CirclesCopy = {
       mintCancel: string;
       revokeLabel: string;
       revokeConfirm: (label: string) => string;
+      confirmLabel: string;
       tokenCreatedLabel: string;
       noTokens: string;
+      tokensLoadError: string;
       freshTokenTitle: string;
       freshTokenWarning: string;
       revealLabel: string;
@@ -215,6 +218,7 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         manageMembersTitle: "Manage members",
         manageMembersDescription:
           "Edit a member's external ID or remove them from the circle. Removing a member stops their habits from appearing here; their check-in history is not deleted.",
+        manageMembersEmpty: "No other members to manage yet.",
         externalIdNone: "None",
         editExternalIdLabel: "Edit external ID",
         saveLabel: "Save",
@@ -232,8 +236,10 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         mintCancel: "Cancel",
         revokeLabel: "Revoke",
         revokeConfirm: (label) => `Revoke token "${label}"? Any integration using it will lose access immediately.`,
+        confirmLabel: "Confirm",
         tokenCreatedLabel: "Created",
         noTokens: "No tokens issued yet.",
+        tokensLoadError: "Unable to load tokens.",
         freshTokenTitle: "Token created — copy it now",
         freshTokenWarning:
           "This token is shown only once and cannot be retrieved after you leave this page. Copy it and store it securely before continuing.",
@@ -339,6 +345,7 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         addMemberPending: "添加中…",
         manageMembersTitle: "管理成员",
         manageMembersDescription: "编辑成员的外部 ID 或将其从圈子中移除。移除后其习惯将不再显示，但打卡历史不会被删除。",
+        manageMembersEmpty: "暂无其他成员可管理。",
         externalIdNone: "未设置",
         editExternalIdLabel: "编辑外部 ID",
         saveLabel: "保存",
@@ -356,8 +363,10 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
         mintCancel: "取消",
         revokeLabel: "撤销",
         revokeConfirm: (label) => `撤销令牌"${label}"？使用该令牌的集成将立即失去访问权限。`,
+        confirmLabel: "确认",
         tokenCreatedLabel: "创建于",
         noTokens: "尚未发放任何令牌。",
+        tokensLoadError: "暂时无法加载令牌。",
         freshTokenTitle: "令牌已创建——请立即复制",
         freshTokenWarning: "此令牌仅显示一次，离开此页面后无法再次查看。请在继续操作前将其复制并安全保存。",
         revealLabel: "显示",

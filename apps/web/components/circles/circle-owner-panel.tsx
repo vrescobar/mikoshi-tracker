@@ -67,10 +67,12 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
   // ─── Remove member state ──────────────────────────────────────────────────
   const [removePendingId, setRemovePendingId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null);
 
   // ─── Token state ──────────────────────────────────────────────────────────
   const [tokens, setTokens] = useState<CircleTokenMeta[]>([]);
   const [tokensLoading, setTokensLoading] = useState(true);
+  const [tokensLoadFailed, setTokensLoadFailed] = useState(false);
   const [freshToken, setFreshToken] = useState<string | null>(null);
   const [freshTokenId, setFreshTokenId] = useState<string | null>(null);
   const [freshRevealed, setFreshRevealed] = useState(false);
@@ -81,6 +83,7 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
   const [mintError, setMintError] = useState<string | null>(null);
   const [revokePendingId, setRevokePendingId] = useState<string | null>(null);
   const [revokeError, setRevokeError] = useState<string | null>(null);
+  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
 
   // ─── Load tokens on mount ─────────────────────────────────────────────────
   useEffect(() => {
@@ -90,7 +93,7 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
         if (!cancelled) setTokens(t);
       })
       .catch(() => {
-        // non-fatal: tokens list stays empty
+        if (!cancelled) setTokensLoadFailed(true);
       })
       .finally(() => {
         if (!cancelled) setTokensLoading(false);
@@ -146,7 +149,7 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
 
   // ─── Remove member ────────────────────────────────────────────────────────
   async function handleRemove(member: CircleMember) {
-    if (!window.confirm(copy.removeConfirm(member.displayName))) return;
+    setConfirmRemoveId(null);
     setRemovePendingId(member.membershipId);
     setRemoveError(null);
     try {
@@ -206,9 +209,8 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
   }
 
   // ─── Revoke token ─────────────────────────────────────────────────────────
-  async function handleRevoke(tokenId: string, label: string | null) {
-    const displayName = label ?? tokenId.slice(0, 8);
-    if (!window.confirm(copy.revokeConfirm(displayName))) return;
+  async function handleRevoke(tokenId: string) {
+    setConfirmRevokeId(null);
     setRevokePendingId(tokenId);
     setRevokeError(null);
     try {
@@ -361,15 +363,37 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
                             {copy.editExternalIdLabel}
                           </Button>
                           {!isSelf ? (
-                            <Button
-                              type="button"
-                              variant="danger"
-                              size="sm"
-                              disabled={isRemoving}
-                              onClick={() => void handleRemove(member)}
-                            >
-                              {isRemoving ? "…" : copy.removeLabel}
-                            </Button>
+                            confirmRemoveId === member.membershipId ? (
+                              <>
+                                <Button
+                                  type="button"
+                                  variant="danger"
+                                  size="sm"
+                                  disabled={isRemoving}
+                                  onClick={() => void handleRemove(member)}
+                                >
+                                  {copy.confirmLabel}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setConfirmRemoveId(null)}
+                                >
+                                  {copy.cancelLabel}
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                type="button"
+                                variant="danger"
+                                size="sm"
+                                disabled={isRemoving}
+                                onClick={() => setConfirmRemoveId(member.membershipId)}
+                              >
+                                {isRemoving ? "…" : copy.removeLabel}
+                              </Button>
+                            )
                           ) : null}
                         </div>
                       </>
@@ -380,7 +404,7 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
             })}
           </div>
         ) : (
-          <p className={styles.emptyText}>{copy.manageMembersDescription}</p>
+          <p className={styles.emptyText}>{copy.manageMembersEmpty}</p>
         )}
       </section>
 
@@ -426,6 +450,7 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
                 value={mintLabel}
                 onChange={(e) => setMintLabel(e.target.value)}
                 disabled={mintPending}
+                autoFocus
               />
             </Field>
 
@@ -474,6 +499,8 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
 
         {tokensLoading ? (
           <SkeletonBlock height="3rem" />
+        ) : tokensLoadFailed ? (
+          <p className={styles.emptyText}>{copy.tokensLoadError}</p>
         ) : tokens.length > 0 ? (
           <div className={styles.tokenList} data-testid="token-list">
             {tokens.map((token) => (
@@ -484,15 +511,37 @@ export function CircleOwnerPanel({ circleId, currentUserId, members, onMembersCh
                     {copy.tokenCreatedLabel} {formatTokenDate(token.createdAt)}
                   </span>
                 </div>
-                <Button
-                  type="button"
-                  variant="danger"
-                  size="sm"
-                  disabled={revokePendingId === token.tokenId}
-                  onClick={() => void handleRevoke(token.tokenId, token.label)}
-                >
-                  {revokePendingId === token.tokenId ? "…" : copy.revokeLabel}
-                </Button>
+                {confirmRevokeId === token.tokenId ? (
+                  <div className={styles.memberActions}>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      disabled={revokePendingId === token.tokenId}
+                      onClick={() => void handleRevoke(token.tokenId)}
+                    >
+                      {copy.confirmLabel}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmRevokeId(null)}
+                    >
+                      {copy.cancelLabel}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    disabled={revokePendingId === token.tokenId}
+                    onClick={() => setConfirmRevokeId(token.tokenId)}
+                  >
+                    {revokePendingId === token.tokenId ? "…" : copy.revokeLabel}
+                  </Button>
+                )}
               </div>
             ))}
           </div>

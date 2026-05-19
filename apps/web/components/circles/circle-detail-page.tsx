@@ -192,14 +192,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
               const isPending = pendingHabitIds.has(habit.id);
               return (
                 <div key={habit.id} className={styles.habitRow}>
-                  <div className={styles.habitNameStack}>
-                    <span className={styles.habitName}>{habit.name}</span>
-                    {isShared && !isPending ? (
-                      <span className={styles.habitNote}>
-                        {copy.detail.habitShares.unshareNote}
-                      </span>
-                    ) : null}
-                  </div>
+                  <span className={styles.habitName}>{habit.name}</span>
                   <button
                     type="button"
                     className={styles.toggleBtn}
@@ -207,6 +200,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
                     disabled={isPending}
                     onClick={() => void handleToggle(habit.id)}
                     aria-pressed={isShared}
+                    aria-label={`${habit.name}: ${isShared ? copy.detail.habitShares.sharedLabel : copy.detail.habitShares.shareLabel}`}
                   >
                     {isPending
                       ? copy.detail.habitShares.pendingLabel

@@ -84,7 +84,7 @@ the single-user flow or `@haaabit/mcp`.
       remove a member / unshare), add visible plain-language copy explaining
       what it does and its consequences, per `GOAL.md` §C12. Copy is added as
       i18n strings (English + Chinese) so task 24 can translate it.
-- [ ] **23** Circles UX polish — verify and complete loading/empty/error
+- [x] **23** Circles UX polish — verify and complete loading/empty/error
       states and responsive behavior across every Circles screen so the
       section is indistinguishable in polish from the rest of the app.
 
