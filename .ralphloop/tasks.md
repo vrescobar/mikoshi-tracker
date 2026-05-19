@@ -24,7 +24,7 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       `pnpm prisma migrate dev --name add_user_external_id`, regenerate the
       Prisma client, confirm `apps/api` builds. See `GOAL.md` §C17.1.
 
-- [ ] **27** System-key auth — new `apps/api/src/auth/admin-key.ts`: a Fastify
+- [x] **27** System-key auth — new `apps/api/src/auth/admin-key.ts`: a Fastify
       guard/preHandler that validates `Authorization: Bearer <key>` against the
       env var `HAAABIT_ADMIN_API_KEY` with a **timing-safe** compare
       (`crypto.timingSafeEqual`). Missing/wrong key → `401`; env var unset →
