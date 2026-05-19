@@ -6,6 +6,9 @@ import {
   unauthorizedErrorSchema,
 } from "@haaabit/contracts/api";
 import {
+  adminCirclePathParamsSchema,
+  enrollMemberInputSchema,
+  enrollMemberResponseSchema,
   provisionUserInputSchema,
   provisionUserExistsResponseSchema,
   provisionUserCreatedResponseSchema,
@@ -14,7 +17,11 @@ import {
   serviceUnavailableErrorSchema,
 } from "@haaabit/contracts/admin";
 
-import { provisionUserHandler, resetProvisionedTokenHandler } from "./admin.controller";
+import {
+  enrollMemberByExternalIdHandler,
+  provisionUserHandler,
+  resetProvisionedTokenHandler,
+} from "./admin.controller";
 import type { PublicApiRouteDefinition } from "../../plugins/openapi";
 
 const serviceUnavailableResponse = {
@@ -156,9 +163,77 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
       503: serviceUnavailableResponse,
     },
   },
+  {
+    method: "POST",
+    path: "/api/admin/circles/:circleId/members",
+    operationId: "enrollCircleMemberByExternalId",
+    summary: "Enrol a member in a circle by externalId",
+    description:
+      "Resolves a provisioned user by their externalId and creates a CircleMembership with role 'member'. Idempotent: if the user is already a member the existing membership is returned (200). Requires the HAAABIT_ADMIN_API_KEY system key. The circle token cannot add members.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: {
+      params: adminCirclePathParamsSchema,
+      body: enrollMemberInputSchema,
+      bodyExamples: {
+        enrol: {
+          summary: "Enrol by externalId",
+          value: { externalId: "mikoshi-identity-abc123" },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: "User was already a member — existing membership returned.",
+        schema: enrollMemberResponseSchema,
+        examples: {
+          existing: {
+            summary: "Already enrolled",
+            value: {
+              membershipId: "mem_abc123",
+              userId: "user_abc123",
+              externalId: "mikoshi-identity-abc123",
+            },
+          },
+        },
+      },
+      201: {
+        description: "New CircleMembership created.",
+        schema: enrollMemberResponseSchema,
+        examples: {
+          created: {
+            summary: "Freshly enrolled",
+            value: {
+              membershipId: "mem_abc123",
+              userId: "user_abc123",
+              externalId: "mikoshi-identity-abc123",
+            },
+          },
+        },
+      },
+      400: {
+        description: "Invalid request payload.",
+        schema: badRequestErrorSchema,
+        examples: {
+          invalid: {
+            summary: "Missing externalId",
+            value: {
+              code: "BAD_REQUEST",
+              message: "Invalid request payload",
+              issues: { formErrors: [], fieldErrors: { externalId: ["Required"] } },
+            },
+          },
+        },
+      },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
 ];
 
 export async function registerAdminRoutes(app: FastifyInstance) {
   app.post("/api/admin/provision-user", provisionUserHandler);
   app.post("/api/admin/provision-user/reset-token", resetProvisionedTokenHandler);
+  app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
 }

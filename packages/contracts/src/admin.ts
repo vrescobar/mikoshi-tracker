@@ -33,9 +33,25 @@ export const serviceUnavailableErrorSchema = z.object({
   message: nonEmptyString,
 });
 
+export const enrollMemberInputSchema = z.object({
+  externalId: nonEmptyString,
+});
+
+export const enrollMemberResponseSchema = z.object({
+  membershipId: nonEmptyString,
+  userId: nonEmptyString,
+  externalId: nonEmptyString,
+});
+
+export const adminCirclePathParamsSchema = z.object({
+  circleId: nonEmptyString,
+});
+
 export type ProvisionUserInput = z.infer<typeof provisionUserInputSchema>;
 export type ProvisionUserExistsResponse = z.infer<typeof provisionUserExistsResponseSchema>;
 export type ProvisionUserCreatedResponse = z.infer<typeof provisionUserCreatedResponseSchema>;
 export type ResetProvisionedTokenInput = z.infer<typeof resetProvisionedTokenInputSchema>;
 export type ResetProvisionedTokenResponse = z.infer<typeof resetProvisionedTokenResponseSchema>;
 export type ServiceUnavailableError = z.infer<typeof serviceUnavailableErrorSchema>;
+export type EnrollMemberInput = z.infer<typeof enrollMemberInputSchema>;
+export type EnrollMemberResponse = z.infer<typeof enrollMemberResponseSchema>;

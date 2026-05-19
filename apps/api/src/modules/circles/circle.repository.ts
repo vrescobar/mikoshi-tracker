@@ -73,6 +73,13 @@ export async function findUserByEmail(
   });
 }
 
+export async function findUserByExternalId(db: PrismaClient, externalId: string) {
+  return db.user.findUnique({
+    where: { externalId },
+    select: { id: true },
+  });
+}
+
 export async function addCircleMemberRecord(
   db: PrismaClient,
   params: { circleId: string; userId: string; externalId?: string | null },

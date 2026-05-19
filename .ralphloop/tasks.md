@@ -46,7 +46,7 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       /api/admin/provision-user/reset-token` `{ externalId }` that rotates the
       token. See `GOAL.md` §C17.3.
 
-- [ ] **29** Member enrolment by `externalId` — `POST
+- [x] **29** Member enrolment by `externalId` — `POST
       /api/admin/circles/:circleId/members` (system-key auth). Body
       `{ externalId }`: resolve the `User` by `externalId` (`404` if not
       provisioned), create a `CircleMembership` (`role: "member"`, `externalId`
