@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
+import { Prisma } from "../../generated/prisma/client";
 import { AdminKeyError, requireAdminKey } from "../../auth/admin-key";
 import { resetPersonalApiToken } from "../../auth/api-token";
 import { normalizeUserTimeZone } from "../../shared/timezone";
@@ -57,20 +58,39 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
     const timezone = normalizeUserTimeZone(input.timezone);
     const name = input.name ?? input.externalId;
 
-    const user = await request.server.db.user.create({
-      data: {
-        name,
-        email,
-        emailVerified: true,
-        timezone,
-        externalId: input.externalId,
-      },
-    });
+    try {
+      const user = await request.server.db.user.create({
+        data: {
+          name,
+          email,
+          emailVerified: true,
+          timezone,
+          externalId: input.externalId,
+        },
+      });
 
-    const { token } = await resetPersonalApiToken(request.server.db, user.id);
+      const { token } = await resetPersonalApiToken(request.server.db, user.id);
 
-    reply.status(201);
-    return { userId: user.id, personalToken: token, alreadyExists: false as const };
+      reply.status(201);
+      return { userId: user.id, personalToken: token, alreadyExists: false as const };
+    } catch (createError) {
+      // Concurrent provision calls: both pass findUnique, second hits unique constraint.
+      // Re-resolve idempotently as a 200 instead of surfacing a 500.
+      if (
+        createError instanceof Prisma.PrismaClientKnownRequestError &&
+        createError.code === "P2002"
+      ) {
+        const race = await request.server.db.user.findUnique({
+          where: { externalId: input.externalId },
+          select: { id: true },
+        });
+        if (race) {
+          reply.status(200);
+          return { userId: race.id, alreadyExists: true as const };
+        }
+      }
+      throw createError;
+    }
   } catch (error) {
     return sendAdminError(reply, error);
   }
