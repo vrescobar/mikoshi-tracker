@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { createTestContext, type TestContext } from "../helpers/app";
+import { createCircleRecord } from "../../src/modules/circles/circle.repository";
+import { createTestContext, signUp, type TestContext } from "../helpers/app";
 
 const ADMIN_KEY = "test-admin-key-for-provisioning";
 
@@ -159,6 +160,184 @@ describe("admin provisioning routes", () => {
         where: { id: (response.json() as { userId: string }).userId },
       });
       expect(user?.timezone).toBe("Asia/Shanghai");
+    });
+  });
+
+  describe("POST /api/admin/circles/:circleId/members", () => {
+    it("creates a new membership and returns 201 with membershipId, userId, externalId", async () => {
+      context = await createTestContext();
+
+      const provisionRes = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-new-1" },
+      });
+      expect(provisionRes.statusCode).toBe(201);
+      const { userId } = provisionRes.json() as { userId: string };
+
+      const { body: owner } = await signUp(context.app);
+      const circle = await createCircleRecord(context.app.db, {
+        ownerId: owner.user.id,
+        name: "Test Circle",
+      });
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-new-1" },
+      });
+
+      expect(res.statusCode).toBe(201);
+      expect(res.json()).toMatchObject({
+        membershipId: expect.any(String),
+        userId,
+        externalId: "ext-enrol-new-1",
+      });
+    });
+
+    it("re-enrolling an already-member user returns 200 with the existing membership", async () => {
+      context = await createTestContext();
+
+      await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-idempotent-1" },
+      });
+
+      const { body: owner } = await signUp(context.app);
+      const circle = await createCircleRecord(context.app.db, {
+        ownerId: owner.user.id,
+        name: "Test Circle",
+      });
+
+      const first = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-idempotent-1" },
+      });
+      expect(first.statusCode).toBe(201);
+      const { membershipId } = first.json() as { membershipId: string };
+
+      const second = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-idempotent-1" },
+      });
+      expect(second.statusCode).toBe(200);
+      expect(second.json()).toMatchObject({ membershipId });
+    });
+
+    it("returns 404 for an unknown externalId", async () => {
+      context = await createTestContext();
+
+      const { body: owner } = await signUp(context.app);
+      const circle = await createCircleRecord(context.app.db, {
+        ownerId: owner.user.id,
+        name: "Test Circle",
+      });
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-does-not-exist" },
+      });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.json()).toMatchObject({ code: "NOT_FOUND" });
+    });
+
+    it("returns 404 for an unknown circleId", async () => {
+      context = await createTestContext();
+
+      await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-bad-circle-1" },
+      });
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/circles/nonexistent-circle-id/members",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-enrol-bad-circle-1" },
+      });
+
+      expect(res.statusCode).toBe(404);
+      expect(res.json()).toMatchObject({ code: "NOT_FOUND" });
+    });
+
+    it("returns 400 when externalId is missing", async () => {
+      context = await createTestContext();
+
+      const { body: owner } = await signUp(context.app);
+      const circle = await createCircleRecord(context.app.db, {
+        ownerId: owner.user.id,
+        name: "Test Circle",
+      });
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ code: "BAD_REQUEST" });
+    });
+
+    it("returns 400 when externalId is empty string", async () => {
+      context = await createTestContext();
+
+      const { body: owner } = await signUp(context.app);
+      const circle = await createCircleRecord(context.app.db, {
+        ownerId: owner.user.id,
+        name: "Test Circle",
+      });
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: `/api/admin/circles/${circle.id}/members`,
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "" },
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.json()).toMatchObject({ code: "BAD_REQUEST" });
+    });
+
+    it("returns 401 when admin key is missing", async () => {
+      context = await createTestContext();
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/circles/some-circle-id/members",
+        payload: { externalId: "ext-no-key" },
+      });
+
+      expect(res.statusCode).toBe(401);
+      expect(res.json()).toMatchObject({ code: "UNAUTHORIZED" });
+    });
+
+    it("returns 401 when admin key is wrong", async () => {
+      context = await createTestContext();
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/circles/some-circle-id/members",
+        headers: { authorization: "Bearer wrong-key" },
+        payload: { externalId: "ext-wrong-key" },
+      });
+
+      expect(res.statusCode).toBe(401);
+      expect(res.json()).toMatchObject({ code: "UNAUTHORIZED" });
     });
   });
 
