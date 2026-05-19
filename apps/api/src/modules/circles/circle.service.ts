@@ -256,6 +256,7 @@ export async function getCircleLeaderboard(
       userId: membership.userId,
       displayName: membership.user.name,
       role: membership.role as "owner" | "member",
+      externalId: membership.externalId,
       completedTodayCount,
       sharedHabitCount,
       currentStreak,

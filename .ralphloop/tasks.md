@@ -54,7 +54,7 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       → `{ membershipId, userId, externalId }`. The circle token still cannot
       add members. See `GOAL.md` §C17.4.
 
-- [ ] **30** Expose `externalId` in circle reads — ensure
+- [x] **30** Expose `externalId` in circle reads — ensure
       `GET /api/circles/:circleId/leaderboard` includes `externalId` per member
       (like `GET .../members` already does, §C9). Update the Zod schemas in
       `packages/contracts/src/circles.ts` and `circle.service.ts`/repository as

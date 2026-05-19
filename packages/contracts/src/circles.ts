@@ -40,6 +40,7 @@ export const circleLeaderboardEntrySchema = z.object({
   userId: nonEmptyString,
   displayName: nonEmptyString,
   role: circleMemberRoleSchema,
+  externalId: nullableNonEmptyString,
   completedTodayCount: z.number().int().nonnegative(),
   sharedHabitCount: z.number().int().nonnegative(),
   currentStreak: z.number().int().nonnegative(),
