@@ -1,1 +1,1 @@
-export { createServer, type CreateServerOptions, type HaaabitMcpServer } from "./server/create-server.js";
+export { createServer, type CreateServerOptions, type MikoshiTrackerMcpServer } from "./server/create-server.js";

@@ -1,6 +1,6 @@
 import type { SupportedLocale } from "./messages";
 
-export const localeCookieName = "haaabit-locale";
+export const localeCookieName = "mikoshi-tracker-locale";
 export const defaultLocale: SupportedLocale = "en";
 export const supportedLocales = ["en", "zh-CN", "es"] as const satisfies readonly SupportedLocale[];
 export const localeCookieMaxAge = 60 * 60 * 24 * 365;

@@ -75,7 +75,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members`,
-        headers: { authorization: "Bearer haaabit_circle_not_a_real_token" },
+        headers: { authorization: "Bearer mikoshi_tracker_circle_not_a_real_token" },
       });
 
       expect(response.statusCode).toBe(401);
@@ -154,7 +154,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -184,7 +184,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -233,7 +233,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -252,7 +252,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -283,7 +283,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -305,7 +305,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -331,7 +331,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${outsider.user.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(404);
@@ -351,7 +351,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${alice.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -382,7 +382,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${alice.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -411,7 +411,7 @@ describe("circle read endpoints", () => {
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${alice.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
       });
 
       expect(response.statusCode).toBe(200);
@@ -421,7 +421,7 @@ describe("circle read endpoints", () => {
       expect(habits.find((h) => h.habitId === completedHabit.id)!.todayStatus).toBe("completed");
     });
 
-    it("uses the member's timezone to determine today when x-haaabit-now is set", async () => {
+    it("uses the member's timezone to determine today when x-mikoshi-tracker-now is set", async () => {
       context = await createTestContext();
 
       // Alice signed up with Asia/Shanghai (UTC+8); at 19:59 UTC that is 03:59 Shanghai
@@ -445,7 +445,7 @@ describe("circle read endpoints", () => {
       const beforeRollover = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${alice.user.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": "2026-05-18T19:59:00.000Z" },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": "2026-05-18T19:59:00.000Z" },
       });
       expect(beforeRollover.statusCode).toBe(200);
       expect(beforeRollover.json().habits[0].todayStatus).toBe("completed");
@@ -454,7 +454,7 @@ describe("circle read endpoints", () => {
       const afterRollover = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/members/${alice.user.id}/habits`,
-        headers: { authorization: `Bearer ${token}`, "x-haaabit-now": "2026-05-18T20:01:00.000Z" },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": "2026-05-18T20:01:00.000Z" },
       });
       expect(afterRollover.statusCode).toBe(200);
       expect(afterRollover.json().habits[0].todayStatus).toBe("pending");

@@ -10,7 +10,7 @@ import {
   enrollMemberInputSchema,
   provisionUserInputSchema,
   resetProvisionedTokenInputSchema,
-} from "@haaabit/contracts/admin";
+} from "@mikoshi-tracker/contracts/admin";
 import {
   addCircleMemberRecord,
   findCircleMembershipByUserId,
@@ -63,7 +63,7 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
     // Derive a deterministic synthetic email from the externalId hash so it is
     // unique and stable but never a real address (API-only user, no password login).
     const emailHash = createHash("sha256").update(input.externalId).digest("hex").slice(0, 24);
-    const email = `provisioned-${emailHash}@haaabit.internal`;
+    const email = `provisioned-${emailHash}@mikoshi-tracker.internal`;
     const timezone = normalizeUserTimeZone(input.timezone);
     const name = input.name ?? input.externalId;
 

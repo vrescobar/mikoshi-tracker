@@ -14,10 +14,10 @@ Generic MCP baseline:
 
 Steady-state runtime contract:
 
-- `HAAABIT_API_URL`
-- `HAAABIT_API_TOKEN`
+- `MIKOSHI_TRACKER_API_URL`
+- `MIKOSHI_TRACKER_API_TOKEN`
 
-If you only have account credentials, run `npx -y @haaabit/mcp bootstrap-token ...` once, then continue with the same env names above.
+If you only have account credentials, run `npx -y @mikoshi-tracker/mcp bootstrap-token ...` once, then continue with the same env names above.
 
 ## Contract Checks
 
@@ -55,7 +55,7 @@ pnpm verify:openclaw:full
 The quick/full gates now do two things together:
 
 - prove the native plugin manifest/bootstrap/env/registration/docs contract
-- keep targeted MCP/shared-runtime regressions so the native plugin does not drift from the reused Haaabit API seam
+- keep targeted MCP/shared-runtime regressions so the native plugin does not drift from the reused MikoshiTracker API seam
 
 The full gate also proves one real API-backed native read flow and one safe native mutation flow through the plugin boundary.
 
@@ -66,8 +66,8 @@ They still do not replace real host validation for the actual OpenClaw UI/plugin
 These remain external-host-only because the repository test harness does not boot the real OpenClaw UI/plugin loader.
 
 1. Load the native plugin using [`../packages/openclaw-plugin/examples/openclaw-plugin.jsonc`](../packages/openclaw-plugin/examples/openclaw-plugin.jsonc).
-2. Inject `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`.
-3. Confirm the host sees Haaabit native tools directly.
+2. Inject `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`.
+3. Confirm the host sees MikoshiTracker native tools directly.
 4. Run one read flow with `today_get_summary`.
 5. Run one safe mutation flow with `today_complete` or `today_set_total`.
 6. Trigger one failure and confirm the host returns structured fields like `error.category`, `error.resolution`, and `error.suggestedTool`.

@@ -4,7 +4,7 @@ import { createEnv } from "../../src/plugins/env";
 
 const baseEnv = {
   NODE_ENV: "production" as const,
-  DATABASE_URL: "file:/data/haaabit.db",
+  DATABASE_URL: "file:/data/mikoshi-tracker.db",
   BETTER_AUTH_SECRET: "12345678901234567890123456789012",
 };
 

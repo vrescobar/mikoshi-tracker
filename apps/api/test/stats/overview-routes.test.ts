@@ -54,7 +54,7 @@ describe("overview stats routes", () => {
       url: "/api/stats/overview",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 

@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 27 turns the Phase 26 native OpenClaw plugin scaffold into a real API-backed tool surface. The goal is not to redesign Haaabit behavior or invent a second OpenClaw-only contract. The goal is to reuse the shipped Haaabit API client, contracts, auth semantics, and tool vocabulary so `packages/openclaw-plugin` can execute the same habits/today/stats operations directly against the real Haaabit API.
+Phase 27 turns the Phase 26 native OpenClaw plugin scaffold into a real API-backed tool surface. The goal is not to redesign MikoshiTracker behavior or invent a second OpenClaw-only contract. The goal is to reuse the shipped MikoshiTracker API client, contracts, auth semantics, and tool vocabulary so `packages/openclaw-plugin` can execute the same habits/today/stats operations directly against the real MikoshiTracker API.
 
 This phase should replace the current `PHASE_27_PENDING` placeholders with real handlers. It should do that by extracting or exposing host-neutral runtime seams from the current MCP implementation, not by copying request logic, route knowledge, or business validation into the plugin package.
 
@@ -16,17 +16,17 @@ This phase should replace the current `PHASE_27_PENDING` placeholders with real 
 ## Implementation Decisions
 
 ### Reuse boundary
-- Reuse the existing Haaabit API client, contracts/types, and bearer-token auth semantics.
+- Reuse the existing MikoshiTracker API client, contracts/types, and bearer-token auth semantics.
 - Do not fork tool names, route paths, or input/output schemas for OpenClaw.
 - If reusable runtime pieces are currently mixed with MCP-only wrappers, split the host-neutral parts out instead of copying them.
 
 ### Native plugin behavior
 - `packages/openclaw-plugin` must stay a native OpenClaw package.
 - Replace deferred placeholders with real handlers for habits, today, and stats tools.
-- Keep tool registration native; do not route execution through `@haaabit/mcp`, `mcporter`, or `McpServer`.
+- Keep tool registration native; do not route execution through `@mikoshi-tracker/mcp`, `mcporter`, or `McpServer`.
 
 ### Domain source of truth
-- Haaabit business rules stay in the shipped Haaabit API.
+- MikoshiTracker business rules stay in the shipped MikoshiTracker API.
 - The plugin should call the same REST endpoints the MCP package already calls.
 - Wrong-kind checks, archived-habit conflicts, auth failures, and validation errors should still originate from the API/runtime seam rather than a duplicated plugin-only ruleset.
 
@@ -46,7 +46,7 @@ This phase should replace the current `PHASE_27_PENDING` placeholders with real 
 ## Specific Ideas
 
 - `packages/mcp/src/client/api-client.ts` is already host-neutral and should be reused directly or re-exported through a shared seam.
-- `packages/mcp/src/client/errors.ts` currently mixes reusable `HaaabitApiError` data with MCP-specific `CallToolResult` serialization; that seam likely needs to split.
+- `packages/mcp/src/client/errors.ts` currently mixes reusable `MikoshiTrackerApiError` data with MCP-specific `CallToolResult` serialization; that seam likely needs to split.
 - `packages/mcp/src/tools/habits.ts`, `today.ts`, and `stats.ts` already know the correct endpoints, schema parsing, and summary wording. Those functions are the best starting point for a shared handler layer, but they currently terminate in MCP result builders.
 - `packages/openclaw-plugin/src/register-tools.ts` already accepts explicit handlers. Phase 27 should fill that seam with real implementations instead of changing the plugin contract again.
 

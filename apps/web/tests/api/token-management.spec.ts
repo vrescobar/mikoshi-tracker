@@ -62,7 +62,7 @@ test("signed-in users can generate and view their personal api token", async ({ 
   await page.getByRole("button", { name: "生成 token" }).click();
 
   const tokenField = page.getByLabel("个人 API token");
-  await expect(tokenField).not.toHaveValue(/haaabit_/);
+  await expect(tokenField).not.toHaveValue(/mikoshi_tracker_/);
   await expect(page.getByText("请像保管密码一样保管这个 token。")).toBeVisible();
   await expect(page.getByText("轮换后，旧 token 会立即失效。")).toBeVisible();
   await expect(page.getByRole("heading", { name: "第一条调用" })).toBeVisible();
@@ -76,7 +76,7 @@ test("signed-in users can generate and view their personal api token", async ({ 
   const revealButton = page.getByRole("button", { name: "显示 token" });
   await revealButton.focus();
   await revealButton.press("Enter");
-  await expect(tokenField).toHaveValue(/haaabit_/);
+  await expect(tokenField).toHaveValue(/mikoshi_tracker_/);
   await expect(page.getByRole("button", { name: "隐藏 token" })).toBeFocused();
   await expect(page.getByRole("button", { name: "复制 token" })).toBeEnabled();
 
@@ -116,12 +116,12 @@ test("signed-in users can generate and view their personal api token", async ({ 
   await expect.poll(() => secondDialogMessage).toContain("旧 token 会立即失效");
 
   await expect(tokenField).not.toHaveValue(firstToken);
-  await expect(tokenField).not.toHaveValue(/haaabit_/);
+  await expect(tokenField).not.toHaveValue(/mikoshi_tracker_/);
   await expect(rotateButton).toBeFocused();
 
   await page.getByRole("button", { name: "显示 token" }).click();
   await expect(tokenField).not.toHaveValue(firstToken);
-  await expect(tokenField).toHaveValue(/haaabit_/);
+  await expect(tokenField).toHaveValue(/mikoshi_tracker_/);
 });
 
 test("api access keeps token rotation failures in context", async ({ page, request, context }) => {

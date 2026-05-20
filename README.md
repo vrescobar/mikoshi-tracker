@@ -1,4 +1,4 @@
-# Haaabit
+# MikoshiTracker
 
 Self-hosted habit tracker that makes "what should I do today?" legible to both humans and AI.
 
@@ -12,7 +12,7 @@ Self-hosted habit tracker that makes "what should I do today?" legible to both h
 - **Reversible check-ins** — every action creates an immutable mutation record; undo anytime
 - **Streaks and analytics** — current/longest streaks, 7-day and 30-day trends, stability ranking
 - **REST API with OpenAPI docs** — bearer-authenticated endpoints for habits, today, stats, and check-ins
-- **MCP package for AI hosts** — publishable `@haaabit/mcp` package that exposes the same personal-token-compatible habits, today, and stats surface over local `stdio`
+- **MCP package for AI hosts** — publishable `@mikoshi-tracker/mcp` package that exposes the same personal-token-compatible habits, today, and stats surface over local `stdio`
 - **AI-ready** — structured API and provenance-tracked mutations let AI agents check in on your behalf
 - **Bilingual UI** — English and Chinese with browser-language detection and manual switching
 - **Archive and restore** — shelve habits without losing history
@@ -33,8 +33,8 @@ Self-hosted habit tracker that makes "what should I do today?" legible to both h
 ## Quick Start (Docker or Podman) / 快速开始
 
 ```bash
-git clone https://github.com/vrescobar/haaabit.git
-cd haaabit
+git clone https://github.com/vrescobar/mikoshi-tracker.git
+cd mikoshi-tracker
 cp .env.example .env
 # Edit .env — set BETTER_AUTH_SECRET (run: openssl rand -hex 32)
 
@@ -109,33 +109,33 @@ Full request/response examples are available at `/api/docs`.
 
 ## OpenClaw Native Plugin / OpenClaw 原生插件
 
-Haaabit now ships a native OpenClaw plugin for the OpenClaw host:
+MikoshiTracker now ships a native OpenClaw plugin for the OpenClaw host:
 
-- Package: [`@haaabit/openclaw-plugin`](./packages/openclaw-plugin/README.md)
+- Package: [`@mikoshi-tracker/openclaw-plugin`](./packages/openclaw-plugin/README.md)
 - Canonical OpenClaw setup asset: [`packages/openclaw-plugin/examples/openclaw-plugin.jsonc`](./packages/openclaw-plugin/examples/openclaw-plugin.jsonc)
-- Runtime env: `HAAABIT_API_URL` + `HAAABIT_API_TOKEN`
-- Tool contract: direct `habits_*`, `today_*`, and `stats_get_overview` tools backed by the Haaabit API
+- Runtime env: `MIKOSHI_TRACKER_API_URL` + `MIKOSHI_TRACKER_API_TOKEN`
+- Tool contract: direct `habits_*`, `today_*`, and `stats_get_overview` tools backed by the MikoshiTracker API
 - Result contract: stable JSON envelopes shaped as `{ ok, toolName, summary, data }` on success and `{ ok, toolName, error }` on failure
-- Optional workflow guidance: [`skills/haaabit-mcp`](./skills/haaabit-mcp/SKILL.md) and [`.agents/skills/haaabit-mcp`](./.agents/skills/haaabit-mcp/SKILL.md)
+- Optional workflow guidance: [`skills/mikoshi-tracker-mcp`](./skills/mikoshi-tracker-mcp/SKILL.md) and [`.agents/skills/mikoshi-tracker-mcp`](./.agents/skills/mikoshi-tracker-mcp/SKILL.md)
 
 Recommended OpenClaw strategy:
 
 1. Load the native plugin first with [`packages/openclaw-plugin/examples/openclaw-plugin.jsonc`](./packages/openclaw-plugin/examples/openclaw-plugin.jsonc).
-2. Inject `HAAABIT_API_URL` and `HAAABIT_API_TOKEN` into the plugin runtime.
-3. If the host also supports workspace Skills, add [`skills/haaabit-mcp`](./skills/haaabit-mcp/SKILL.md) as optional routing guidance. Do not treat the Skill as the transport layer.
-4. If you only have account credentials, run `npx -y @haaabit/mcp bootstrap-token --api-url <...> --email <...>` once, then store the returned personal API token as `HAAABIT_API_TOKEN`.
+2. Inject `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN` into the plugin runtime.
+3. If the host also supports workspace Skills, add [`skills/mikoshi-tracker-mcp`](./skills/mikoshi-tracker-mcp/SKILL.md) as optional routing guidance. Do not treat the Skill as the transport layer.
+4. If you only have account credentials, run `npx -y @mikoshi-tracker/mcp bootstrap-token --api-url <...> --email <...>` once, then store the returned personal API token as `MIKOSHI_TRACKER_API_TOKEN`.
 
 ## MCP Package / MCP 包
 
-Haaabit also ships a standalone MCP package for generic MCP clients:
+MikoshiTracker also ships a standalone MCP package for generic MCP clients:
 
-- Package: [`@haaabit/mcp`](./packages/mcp/README.md)
+- Package: [`@mikoshi-tracker/mcp`](./packages/mcp/README.md)
 - Transport: local `stdio`
 - Canonical generic-host setup: [`packages/mcp/README.md`](./packages/mcp/README.md)
-- Built-in guidance: `haaabit_assistant_workflow` prompt and `haaabit://guides/workflow` resource
+- Built-in guidance: `mikoshi_tracker_assistant_workflow` prompt and `mikoshi-tracker://guides/workflow` resource
 - Best fit: generic MCP clients, Claude Code MCP, Inspector, one-shot `bootstrap-token`
 
-If the agent also supports repo-local Skills, invoke `$haaabit-mcp` for stronger today-first guidance, including bilingual trigger phrases like `今天还剩哪些习惯没做？`, `撤销刚才的打卡。`, or `How am I doing this week?`.
+If the agent also supports repo-local Skills, invoke `$mikoshi-tracker-mcp` for stronger today-first guidance, including bilingual trigger phrases like `今天还剩哪些习惯没做？`, `撤销刚才的打卡。`, or `How am I doing this week?`.
 
 See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md) for the native OpenClaw path, [`packages/mcp/README.md`](./packages/mcp/README.md) for generic MCP hosts, [AI Agent Integration / AI 机器人接入](./docs/ai-agent-integration.md) for host-by-host guidance, and [OpenClaw Troubleshooting](./docs/openclaw-troubleshooting.md) for symptom-driven fixes.
 

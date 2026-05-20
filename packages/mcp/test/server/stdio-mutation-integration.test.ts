@@ -152,7 +152,7 @@ describe("stdio mutation integration", () => {
   it("lets a stdio client call built mutation tools against a real API", async () => {
     const cliPath = await resolveBuiltCliPath();
     const client = new Client({
-      name: "haaabit-mutation-test-client",
+      name: "mikoshi-tracker-mutation-test-client",
       version: "0.1.0",
     });
     const transport = new StdioClientTransport({
@@ -161,8 +161,8 @@ describe("stdio mutation integration", () => {
       cwd: workspaceRoot,
       stderr: "pipe",
       env: {
-        HAAABIT_API_URL: apiUrl,
-        HAAABIT_API_TOKEN: apiToken,
+        MIKOSHI_TRACKER_API_URL: apiUrl,
+        MIKOSHI_TRACKER_API_TOKEN: apiToken,
       },
     });
 

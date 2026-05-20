@@ -12,7 +12,7 @@ import type {
   CreateCircleTokenInput,
   ShareHabitInput,
   UpdateCircleMemberInput,
-} from "@haaabit/contracts/circles";
+} from "@mikoshi-tracker/contracts/circles";
 
 import { createApiUrl } from "./api";
 

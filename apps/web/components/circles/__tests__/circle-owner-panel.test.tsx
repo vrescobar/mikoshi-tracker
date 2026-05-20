@@ -1,4 +1,4 @@
-import type { CircleMember, CircleTokenMeta } from "@haaabit/contracts/circles";
+import type { CircleMember, CircleTokenMeta } from "@mikoshi-tracker/contracts/circles";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
@@ -75,7 +75,7 @@ beforeEach(() => {
   vi.mocked(circlesClient.updateCircleMember).mockResolvedValue(makeMember());
   vi.mocked(circlesClient.removeCircleMember).mockResolvedValue();
   vi.mocked(circlesClient.mintCircleToken).mockResolvedValue({
-    token: "haaabit_circle_abc123",
+    token: "mikoshi_tracker_circle_abc123",
     tokenId: "tok-new",
     label: "My bot",
     createdAt: "2026-02-01T00:00:00.000Z",
@@ -262,13 +262,13 @@ describe("CircleOwnerPanel — circle tokens", () => {
 
     const block = await screen.findByTestId("fresh-token-block");
     const tokenInput = within(block).getByRole("textbox");
-    expect(tokenInput).not.toHaveValue("haaabit_circle_abc123");
+    expect(tokenInput).not.toHaveValue("mikoshi_tracker_circle_abc123");
 
     await user.click(within(block).getByRole("button", { name: /reveal/i }));
-    expect(tokenInput).toHaveValue("haaabit_circle_abc123");
+    expect(tokenInput).toHaveValue("mikoshi_tracker_circle_abc123");
 
     await user.click(within(block).getByRole("button", { name: /hide/i }));
-    expect(tokenInput).not.toHaveValue("haaabit_circle_abc123");
+    expect(tokenInput).not.toHaveValue("mikoshi_tracker_circle_abc123");
   });
 
   it("shows existing tokens loaded from the API", async () => {

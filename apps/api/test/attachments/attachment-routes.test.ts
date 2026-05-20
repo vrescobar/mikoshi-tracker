@@ -23,7 +23,7 @@ async function makeMutation(context: TestContext, userId: string): Promise<strin
 }
 
 function multipartBody(parts: Array<{ name: string; value: string | Buffer; filename?: string; contentType?: string }>) {
-  const boundary = `----haaabittest${Math.random().toString(36).slice(2)}`;
+  const boundary = `----mikoshi-trackertest${Math.random().toString(36).slice(2)}`;
   const chunks: Buffer[] = [];
   for (const part of parts) {
     chunks.push(Buffer.from(`--${boundary}\r\n`));
@@ -87,7 +87,7 @@ describe("attachment routes", () => {
     const completed = await context.app.inject({
       method: "POST",
       url: "/api/today/complete",
-      headers: { cookie, "x-haaabit-now": TODAY },
+      headers: { cookie, "x-mikoshi-tracker-now": TODAY },
       payload: { habitId: habit.id },
     });
     expect(completed.statusCode).toBe(200);

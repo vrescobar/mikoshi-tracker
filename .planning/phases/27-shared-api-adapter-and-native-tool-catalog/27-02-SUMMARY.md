@@ -30,7 +30,7 @@ completed: 2026-03-11
 
 # Phase 27 Plan 02: Native Read Tools Summary
 
-**The OpenClaw plugin now executes the shipped Haaabit read tools directly against the API through the shared runtime seam**
+**The OpenClaw plugin now executes the shipped MikoshiTracker read tools directly against the API through the shared runtime seam**
 
 ## Performance
 
@@ -63,8 +63,8 @@ No task commits were created in this workspace session. Phase 27 work is being f
 ## Verification
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/read-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/tools/habits-read.test.ts test/tools/today-stats-read.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/read-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/tools/habits-read.test.ts test/tools/today-stats-read.test.ts`
 
 ## Next Plan Readiness
 

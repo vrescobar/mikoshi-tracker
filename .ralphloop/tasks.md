@@ -7,7 +7,7 @@ Feature: **Habit Circles** — the collaboration / social layer. The full,
 self-contained spec is `GOAL.md` → "Collaboration — Habit Circles"; each task
 cites the `§C…` subsection it implements. Do not duplicate check-in mutation
 logic; reuse `apps/api/src/modules/checkins/checkin.service.ts`. Do not regress
-the single-user flow or `@haaabit/mcp`.
+the single-user flow or `@mikoshi-tracker/mcp`.
 
 ## Phase 11 — External provisioning for bot-operated circles
 
@@ -15,22 +15,22 @@ Additive layer so an external agent (Mikoshi) can run a circle as a contest
 where each participant's check-ins are written with that participant's **own
 personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
 §C17. Changes nothing in §C1–§C16. Do not regress the single-user flow,
-`@haaabit/mcp`, or the §C14 circle-token denial matrix. Marker:
+`@mikoshi-tracker/mcp`, or the §C14 circle-token denial matrix. Marker:
 `PHASE_11_COMPLETE` (written by task 31), not the generic `TASK_COMPLETE`.
 
 - [x] **26** `User.externalId` — add `externalId String? @unique` to the `User`
-      model in `prisma/schema.prisma` (an opaque integration id; Haaabit does
+      model in `prisma/schema.prisma` (an opaque integration id; MikoshiTracker does
       not know it is a WhatsApp identity). Run
       `pnpm prisma migrate dev --name add_user_external_id`, regenerate the
       Prisma client, confirm `apps/api` builds. See `GOAL.md` §C17.1.
 
 - [x] **27** System-key auth — new `apps/api/src/auth/admin-key.ts`: a Fastify
       guard/preHandler that validates `Authorization: Bearer <key>` against the
-      env var `HAAABIT_ADMIN_API_KEY` with a **timing-safe** compare
+      env var `MIKOSHI_TRACKER_ADMIN_API_KEY` with a **timing-safe** compare
       (`crypto.timingSafeEqual`). Missing/wrong key → `401`; env var unset →
       the `/api/admin/*` provisioning routes respond `503` (feature disabled).
       Distinct from sessions, `ApiToken`s, circle tokens and the `User.isAdmin`
-      role. Document `HAAABIT_ADMIN_API_KEY` in `.env.example`. Unit tests for
+      role. Document `MIKOSHI_TRACKER_ADMIN_API_KEY` in `.env.example`. Unit tests for
       the guard (absent / wrong / unset). See `GOAL.md` §C17.2.
 
 - [x] **28** User provisioning endpoint — `POST /api/admin/provision-user`
@@ -68,6 +68,6 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       `503`s when unset. Add the `/api/admin/*` routes to the OpenAPI
       definitions (`apps/api/src/plugins/openapi.ts`) with the system-key
       security scheme. Confirm no regression of the single-user flow, the §C14
-      denial matrix, or `@haaabit/mcp`. `pnpm -r build` / typecheck / `pnpm -r
-      lint` / `pnpm --filter @haaabit/api test` green. Write `PHASE_11_COMPLETE`
+      denial matrix, or `@mikoshi-tracker/mcp`. `pnpm -r build` / typecheck / `pnpm -r
+      lint` / `pnpm --filter @mikoshi-tracker/api test` green. Write `PHASE_11_COMPLETE`
       on its own line in `progress.md`.

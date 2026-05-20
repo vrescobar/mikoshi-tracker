@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { createServer } from "../../src/server/create-server";
-import { HaaabitApiError, toMcpErrorResult } from "../../src/client/errors";
+import { MikoshiTrackerApiError, toMcpErrorResult } from "../../src/client/errors";
 
 describe("mutation error semantics", () => {
   it("preserves validation fieldErrors in structuredContent", () => {
-    const error = new HaaabitApiError({
+    const error = new MikoshiTrackerApiError({
       status: 400,
       code: "BAD_REQUEST",
       message: "Invalid habit payload",
@@ -51,13 +51,13 @@ describe("mutation error semantics", () => {
   });
 
   it("explains wrong-kind failures and points to the correct today tool", () => {
-    const error = new HaaabitApiError({
+    const error = new MikoshiTrackerApiError({
       status: 400,
       code: "BAD_REQUEST",
       message: "Only quantified habits can use set-total",
     });
     const result = toMcpErrorResult(error, { toolName: "today_set_total" });
-    const machine = JSON.parse((result.structuredContent as { _haaabit_json: string })._haaabit_json) as {
+    const machine = JSON.parse((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json) as {
       hint: string;
       message: string;
     };
@@ -78,7 +78,7 @@ describe("mutation error semantics", () => {
   });
 
   it("turns archived-habit conflicts into restore guidance with read-only hint", () => {
-    const error = new HaaabitApiError({
+    const error = new MikoshiTrackerApiError({
       status: 409,
       code: "HABIT_INACTIVE",
       message: "Archived habits are read-only until restored",
@@ -99,7 +99,7 @@ describe("mutation error semantics", () => {
   });
 
   it("rephrases not actionable right now as a validation-class user-facing message", () => {
-    const error = new HaaabitApiError({
+    const error = new MikoshiTrackerApiError({
       status: 400,
       code: "BAD_REQUEST",
       message: "This habit is not actionable in today right now",
@@ -119,12 +119,12 @@ describe("mutation error semantics", () => {
   });
 
   it("adds a next-step hint for auth and not-found failures", () => {
-    const authError = new HaaabitApiError({
+    const authError = new MikoshiTrackerApiError({
       status: 401,
       code: "UNAUTHORIZED",
       message: "Authentication required",
     });
-    const notFoundError = new HaaabitApiError({
+    const notFoundError = new MikoshiTrackerApiError({
       status: 404,
       code: "NOT_FOUND",
       message: "Habit not found",

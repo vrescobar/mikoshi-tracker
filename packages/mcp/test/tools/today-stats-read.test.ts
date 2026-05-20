@@ -226,7 +226,7 @@ describe("today and stats read tools", () => {
       type: "text",
       text: expect.stringContaining("3 active habits"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       stats: { metrics: { activeHabitCount: 3 } },
     });
     expect(JSON.stringify(result)).toContain("behind");

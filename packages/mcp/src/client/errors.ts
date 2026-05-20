@@ -3,21 +3,21 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { sanitizeErrorMessage, toToolErrorPayload } from "./error-payload.js";
 import { buildMachineReadableToolResult } from "../tools/read-results.js";
 
-type HaaabitApiErrorOptions = {
+type MikoshiTrackerApiErrorOptions = {
   status: number;
   code: string;
   message: string;
   details?: unknown;
 };
 
-export class HaaabitApiError extends Error {
+export class MikoshiTrackerApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly details?: unknown;
 
-  constructor(options: HaaabitApiErrorOptions) {
+  constructor(options: MikoshiTrackerApiErrorOptions) {
     super(options.message);
-    this.name = "HaaabitApiError";
+    this.name = "MikoshiTrackerApiError";
     this.status = options.status;
     this.code = options.code;
     this.details = options.details;
@@ -25,7 +25,7 @@ export class HaaabitApiError extends Error {
 }
 
 export function toMcpErrorResult(
-  error: HaaabitApiError,
+  error: MikoshiTrackerApiError,
   context: {
     toolName?: string;
   } = {},

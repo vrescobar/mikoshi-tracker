@@ -1,5 +1,5 @@
-import { HaaabitApiClient } from "../../mcp/src/client/api-client.js";
-import { HaaabitApiError } from "../../mcp/src/client/errors.js";
+import { MikoshiTrackerApiClient } from "../../mcp/src/client/api-client.js";
+import { MikoshiTrackerApiError } from "../../mcp/src/client/errors.js";
 import { toToolErrorPayload } from "../../mcp/src/client/error-payload.js";
 import { adaptToolResult } from "../../mcp/src/tools/result-adapters.js";
 import { createToolOperations } from "../../mcp/src/tools/runtime.js";
@@ -12,7 +12,7 @@ export function createNativeHandlers(
     fetch?: typeof fetch;
   } = {},
 ): Record<string, OpenClawToolHandler> {
-  const client = new HaaabitApiClient({
+  const client = new MikoshiTrackerApiClient({
     apiUrl: config.apiUrl,
     apiToken: config.apiToken,
     timeoutMs: config.timeoutMs,
@@ -55,7 +55,7 @@ export function createNativeHandlers(
             data,
           };
         } catch (error) {
-          if (error instanceof HaaabitApiError) {
+          if (error instanceof MikoshiTrackerApiError) {
             return {
               ok: false,
               toolName,

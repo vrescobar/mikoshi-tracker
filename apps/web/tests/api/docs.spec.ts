@@ -46,7 +46,7 @@ test("signed-in users can open english interactive api docs from api access", as
 
   await expect(page).toHaveURL(/\/api\/docs$/, { timeout: 15_000 });
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { name: "Haaabit API" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "MikoshiTracker API" })).toBeVisible();
   await expect(page.getByText("This page follows your current app language.")).toBeVisible();
   await expect(page.getByText("Authorization: Bearer")).toBeVisible();
   await expect(page.getByText("/api/openapi.json")).toBeVisible();
@@ -77,7 +77,7 @@ test("signed-in users can open chinese interactive api docs while technical lite
 
   await expect(page).toHaveURL(/\/api\/docs$/, { timeout: 15_000 });
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
-  await expect(page.getByRole("heading", { name: "Haaabit API" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "MikoshiTracker API" })).toBeVisible();
   await expect(page.getByText("当前页面会跟随你在应用中的语言。")).toBeVisible();
   await expect(page.getByText("Authorization: Bearer")).toBeVisible();
   await expect(page.getByText("/api/openapi.json")).toBeVisible();

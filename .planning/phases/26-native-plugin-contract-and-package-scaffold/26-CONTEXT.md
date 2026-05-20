@@ -6,9 +6,9 @@
 <domain>
 ## Phase Boundary
 
-Phase 26 starts v1.7 by replacing the OpenClaw `skill -> mcporter -> MCP -> API` chain with a first-party native plugin package. The output of this phase is not full Haaabit domain parity yet. It is the native package contract and runtime scaffold that OpenClaw can load directly, with the right manifest, entrypoints, env contract, and startup diagnostics in place for later phases to fill with real tool behavior.
+Phase 26 starts v1.7 by replacing the OpenClaw `skill -> mcporter -> MCP -> API` chain with a first-party native plugin package. The output of this phase is not full MikoshiTracker domain parity yet. It is the native package contract and runtime scaffold that OpenClaw can load directly, with the right manifest, entrypoints, env contract, and startup diagnostics in place for later phases to fill with real tool behavior.
 
-This phase should not wrap the existing MCP server, spawn `@haaabit/mcp`, or introduce a second copy of Haaabit business logic. It should set the native host contract, package shape, and fail-fast runtime rules so subsequent phases can add the shared API-backed tool implementation cleanly.
+This phase should not wrap the existing MCP server, spawn `@mikoshi-tracker/mcp`, or introduce a second copy of MikoshiTracker business logic. It should set the native host contract, package shape, and fail-fast runtime rules so subsequent phases can add the shared API-backed tool implementation cleanly.
 
 </domain>
 
@@ -16,24 +16,24 @@ This phase should not wrap the existing MCP server, spawn `@haaabit/mcp`, or int
 ## Implementation Decisions
 
 ### Transport boundary
-- The OpenClaw path must become `OpenClaw plugin tool -> Haaabit API`.
-- Do not introduce a hidden MCP bridge, mcporter hop, or child process that launches `@haaabit/mcp`.
+- The OpenClaw path must become `OpenClaw plugin tool -> MikoshiTracker API`.
+- Do not introduce a hidden MCP bridge, mcporter hop, or child process that launches `@mikoshi-tracker/mcp`.
 - Native OpenClaw tool registration should follow the host plugin contract rather than MCP server semantics.
 
 ### Package and host contract
 - Add a new package at `packages/openclaw-plugin`.
 - Treat `openclaw.plugin.json` plus the native plugin entrypoint as the authoritative OpenClaw integration contract.
-- The plugin should expose the existing Haaabit habits/today/stats vocabulary rather than inventing an OpenClaw-only tool taxonomy.
+- The plugin should expose the existing MikoshiTracker habits/today/stats vocabulary rather than inventing an OpenClaw-only tool taxonomy.
 
 ### Runtime config
-- The native plugin runtime must read only `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`.
+- The native plugin runtime must read only `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`.
 - Missing, empty, or malformed config should fail fast with actionable, redaction-safe startup errors.
 - The plugin must not accept account credentials or any alternative steady-state auth shape.
 
 ### Reuse boundary
-- Reuse the existing Haaabit API client, shared contracts/types, and bearer-token auth semantics wherever possible.
+- Reuse the existing MikoshiTracker API client, shared contracts/types, and bearer-token auth semantics wherever possible.
 - If current MCP package files mix reusable logic with MCP-only wrappers, split the host-neutral parts instead of copying them.
-- Keep Haaabit domain truth in the shipped REST API rather than duplicating it in the OpenClaw package.
+- Keep MikoshiTracker domain truth in the shipped REST API rather than duplicating it in the OpenClaw package.
 
 ### Phase boundary
 - Phase 26 should establish manifest, package scaffold, registration shell, env validation, and startup diagnostics.
@@ -41,7 +41,7 @@ This phase should not wrap the existing MCP server, spawn `@haaabit/mcp`, or int
 - Rich structured result envelopes and mutation-specific failure semantics belong to Phase 28.
 
 ### Claude's Discretion
-- Exact package name (`@haaabit/openclaw-plugin` is the likely fit).
+- Exact package name (`@mikoshi-tracker/openclaw-plugin` is the likely fit).
 - Whether host-neutral reuse lands first as extracted modules or thin re-exports.
 - Exact test/build config files for the new package as long as they match the monorepo style.
 

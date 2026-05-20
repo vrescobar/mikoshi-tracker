@@ -1,6 +1,6 @@
 "use client";
 
-import type { CircleDetailResponse, CircleMember } from "@haaabit/contracts/circles";
+import type { CircleDetailResponse, CircleMember } from "@mikoshi-tracker/contracts/circles";
 import Link from "next/link";
 import { useState } from "react";
 

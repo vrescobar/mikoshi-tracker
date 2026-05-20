@@ -17,11 +17,11 @@ test.describe("locale switching", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
     await expect(switchButton).toBeFocused();
-    await expect(page.getByRole("heading", { name: "登录 Haaabit" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "登录 MikoshiTracker" })).toBeVisible();
     await expect(page.getByLabel("邮箱")).toHaveValue("typed@example.com");
 
     await page.reload();
-    await expect(page.getByRole("heading", { name: "登录 Haaabit" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "登录 MikoshiTracker" })).toBeVisible();
     await expect(page.getByLabel("邮箱")).toHaveValue("typed@example.com");
   });
 

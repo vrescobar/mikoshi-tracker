@@ -52,7 +52,7 @@ describe("api token auth", () => {
 
     expect(issueResponse.statusCode).toBe(200);
     expect(issueResponse.json()).toMatchObject({
-      token: expect.stringMatching(/^haaabit_/),
+      token: expect.stringMatching(/^mikoshi_tracker_/),
       hasToken: true,
       lastRotatedAt: expect.any(String),
       docsPath: "/api/docs",
@@ -68,7 +68,7 @@ describe("api token auth", () => {
 
     expect(storedToken?.token).toBeTruthy();
     expect(storedToken?.token).not.toBe(token);
-    expect(storedToken?.token.startsWith("haaabit_")).toBe(false);
+    expect(storedToken?.token.startsWith("mikoshi_tracker_")).toBe(false);
 
     const habitsResponse = await context.app.inject({
       method: "GET",
@@ -94,7 +94,7 @@ describe("api token auth", () => {
       url: "/api/today",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 
@@ -110,7 +110,7 @@ describe("api token auth", () => {
       url: "/api/stats/overview",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 
@@ -130,7 +130,7 @@ describe("api token auth", () => {
       method: "GET",
       url: "/api/habits",
       headers: {
-        authorization: "Bearer haaabit_invalid-token",
+        authorization: "Bearer mikoshi_tracker_invalid-token",
       },
     });
 
@@ -207,7 +207,7 @@ describe("api token auth", () => {
 
     expect(migratedRecord?.token).toBeTruthy();
     expect(migratedRecord?.token).not.toBe(issuedToken);
-    expect(migratedRecord?.token.startsWith("haaabit_")).toBe(false);
+    expect(migratedRecord?.token.startsWith("mikoshi_tracker_")).toBe(false);
 
     const authenticatedUser = await findUserByApiToken(context.app.db, issuedToken);
     expect(authenticatedUser?.id).toBe(body.user.id);

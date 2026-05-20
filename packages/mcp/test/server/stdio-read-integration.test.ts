@@ -136,7 +136,7 @@ describe("stdio read integration", () => {
   it("lets a stdio client call the built read tools against a real API", async () => {
     const cliPath = await resolveBuiltCliPath();
     const client = new Client({
-      name: "haaabit-read-test-client",
+      name: "mikoshi-tracker-read-test-client",
       version: "0.1.0",
     });
     const transport = new StdioClientTransport({
@@ -145,8 +145,8 @@ describe("stdio read integration", () => {
       cwd: workspaceRoot,
       stderr: "pipe",
       env: {
-        HAAABIT_API_URL: apiUrl,
-        HAAABIT_API_TOKEN: apiToken,
+        MIKOSHI_TRACKER_API_URL: apiUrl,
+        MIKOSHI_TRACKER_API_TOKEN: apiToken,
       },
     });
 
@@ -181,7 +181,7 @@ describe("stdio read integration", () => {
           name: "Deep Work",
         }),
       ],
-      _haaabit_json: expect.any(String),
+      _mikoshi_tracker_json: expect.any(String),
     });
     expect(habitDetail.structuredContent).toMatchObject({
       item: {
@@ -203,10 +203,10 @@ describe("stdio read integration", () => {
         },
       },
     });
-    const habitsListJson = JSON.parse((habitsList.structuredContent as { _haaabit_json: string })._haaabit_json) as {
+    const habitsListJson = JSON.parse((habitsList.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json) as {
       items: Array<{ name: string; targetValue: number; unit: string | null }>;
     };
-    const habitDetailJson = JSON.parse((habitDetail.structuredContent as { _haaabit_json: string })._haaabit_json) as {
+    const habitDetailJson = JSON.parse((habitDetail.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json) as {
       item: {
         habit: {
           targetValue: number;
@@ -215,7 +215,7 @@ describe("stdio read integration", () => {
       };
     };
     const todaySummaryJson = JSON.parse(
-      (todaySummary.structuredContent as { _haaabit_json: string })._haaabit_json,
+      (todaySummary.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json,
     ) as {
       today: {
         pendingItems: Array<{ progress: { unit: string | null; targetValue: number | null } }>;

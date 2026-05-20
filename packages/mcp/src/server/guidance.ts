@@ -2,25 +2,25 @@ import { z } from "zod";
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-export const HAAABIT_WORKFLOW_RESOURCE = {
-  name: "haaabit_workflow_guide",
-  uri: "haaabit://guides/workflow",
-  title: "Haaabit Workflow Guide",
+export const MIKOSHI_TRACKER_WORKFLOW_RESOURCE = {
+  name: "mikoshi_tracker_workflow_guide",
+  uri: "mikoshi-tracker://guides/workflow",
+  title: "MikoshiTracker Workflow Guide",
   description:
-    "Read-only playbook for choosing Haaabit MCP tools, sequencing reads before writes, and avoiding ambiguous mutations.",
+    "Read-only playbook for choosing MikoshiTracker MCP tools, sequencing reads before writes, and avoiding ambiguous mutations.",
   mimeType: "text/markdown",
 } as const;
 
-export const HAAABIT_WORKFLOW_PROMPT = {
-  name: "haaabit_assistant_workflow",
-  title: "Haaabit Assistant Workflow",
+export const MIKOSHI_TRACKER_WORKFLOW_PROMPT = {
+  name: "mikoshi_tracker_assistant_workflow",
+  title: "MikoshiTracker Assistant Workflow",
   description:
-    "Prompt template for habit and today requests. Use it to decide whether to inspect, update, undo, or analyze through the Haaabit MCP tools.",
+    "Prompt template for habit and today requests. Use it to decide whether to inspect, update, undo, or analyze through the MikoshiTracker MCP tools.",
 } as const;
 
-export const WORKFLOW_GUIDE_TEXT = `# Haaabit MCP workflow guide
+export const WORKFLOW_GUIDE_TEXT = `# MikoshiTracker MCP workflow guide
 
-Use this playbook when deciding which Haaabit MCP tool to call.
+Use this playbook when deciding which MikoshiTracker MCP tool to call.
 
 ## Core rules
 
@@ -69,18 +69,18 @@ Use this playbook when deciding which Haaabit MCP tool to call.
 2. Optionally follow with \`today_get_summary\` if the user also wants today's concrete next steps.
 `;
 
-export type GuidancePromptDefinition = typeof HAAABIT_WORKFLOW_PROMPT;
-export type GuidanceResourceDefinition = typeof HAAABIT_WORKFLOW_RESOURCE;
+export type GuidancePromptDefinition = typeof MIKOSHI_TRACKER_WORKFLOW_PROMPT;
+export type GuidanceResourceDefinition = typeof MIKOSHI_TRACKER_WORKFLOW_RESOURCE;
 
 export function registerGuidance(server: McpServer): {
   prompts: GuidancePromptDefinition[];
   resources: GuidanceResourceDefinition[];
 } {
   server.registerPrompt(
-    HAAABIT_WORKFLOW_PROMPT.name,
+    MIKOSHI_TRACKER_WORKFLOW_PROMPT.name,
     {
-      title: HAAABIT_WORKFLOW_PROMPT.title,
-      description: HAAABIT_WORKFLOW_PROMPT.description,
+      title: MIKOSHI_TRACKER_WORKFLOW_PROMPT.title,
+      description: MIKOSHI_TRACKER_WORKFLOW_PROMPT.description,
       argsSchema: {
         userRequest: z
           .string()
@@ -101,17 +101,17 @@ export function registerGuidance(server: McpServer): {
   );
 
   server.registerResource(
-    HAAABIT_WORKFLOW_RESOURCE.name,
-    HAAABIT_WORKFLOW_RESOURCE.uri,
+    MIKOSHI_TRACKER_WORKFLOW_RESOURCE.name,
+    MIKOSHI_TRACKER_WORKFLOW_RESOURCE.uri,
     {
-      title: HAAABIT_WORKFLOW_RESOURCE.title,
-      description: HAAABIT_WORKFLOW_RESOURCE.description,
-      mimeType: HAAABIT_WORKFLOW_RESOURCE.mimeType,
+      title: MIKOSHI_TRACKER_WORKFLOW_RESOURCE.title,
+      description: MIKOSHI_TRACKER_WORKFLOW_RESOURCE.description,
+      mimeType: MIKOSHI_TRACKER_WORKFLOW_RESOURCE.mimeType,
     },
     async () => ({
       contents: [
         {
-          uri: HAAABIT_WORKFLOW_RESOURCE.uri,
+          uri: MIKOSHI_TRACKER_WORKFLOW_RESOURCE.uri,
           text: WORKFLOW_GUIDE_TEXT,
         },
       ],
@@ -119,14 +119,14 @@ export function registerGuidance(server: McpServer): {
   );
 
   return {
-    prompts: [HAAABIT_WORKFLOW_PROMPT],
-    resources: [HAAABIT_WORKFLOW_RESOURCE],
+    prompts: [MIKOSHI_TRACKER_WORKFLOW_PROMPT],
+    resources: [MIKOSHI_TRACKER_WORKFLOW_RESOURCE],
   };
 }
 
 function createWorkflowPrompt(userRequest: string) {
   return [
-    "You are handling a Haaabit request through MCP tools.",
+    "You are handling a MikoshiTracker request through MCP tools.",
     "Follow the workflow guide below.",
     "",
     WORKFLOW_GUIDE_TEXT,

@@ -1,6 +1,6 @@
 "use client";
 
-import type { HabitDetailHistoryRow } from "@haaabit/contracts/habits";
+import type { HabitDetailHistoryRow } from "@mikoshi-tracker/contracts/habits";
 
 import { getHabitsCopy } from "../../lib/i18n/habits";
 import { useLocale } from "../locale";

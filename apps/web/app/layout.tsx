@@ -6,7 +6,7 @@ import "./globals.css";
 import { getRequestLocale } from "../lib/i18n/server";
 
 export const metadata = {
-  title: "Haaabit",
+  title: "MikoshiTracker",
   description: "AI-first habit tracking",
 };
 

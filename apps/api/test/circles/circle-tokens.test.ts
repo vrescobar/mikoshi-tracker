@@ -38,7 +38,7 @@ describe("circle token endpoints", () => {
       expect(mintRes.statusCode).toBe(201);
       const minted = mintRes.json() as { token: string; tokenId: string; label: string | null; createdAt: string };
       expect(typeof minted.token).toBe("string");
-      expect(minted.token.startsWith("haaabit_circle_")).toBe(true);
+      expect(minted.token.startsWith("mikoshi_tracker_circle_")).toBe(true);
       expect(typeof minted.tokenId).toBe("string");
       expect(minted.label).toBe("My Token");
 

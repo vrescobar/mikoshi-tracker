@@ -17,7 +17,7 @@ if [[ -f ".env" ]]; then
   set +a
 fi
 
-APP_BASE_URL="${APP_BASE_URL:-http://localhost:${HAAABIT_PUBLIC_PORT:-8080}}"
+APP_BASE_URL="${APP_BASE_URL:-http://localhost:${MIKOSHI_TRACKER_PUBLIC_PORT:-8080}}"
 
 echo "==> Checking ${COMPOSE} services"
 running_services="$(${COMPOSE} ps --services --status running)"

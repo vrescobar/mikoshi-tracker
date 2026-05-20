@@ -87,7 +87,7 @@ describe("today routes", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 
@@ -142,7 +142,7 @@ describe("today routes", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-07T19:59:59.000Z",
+        "x-mikoshi-tracker-now": "2026-03-07T19:59:59.000Z",
       },
     });
     const afterCutoff = await context.app.inject({
@@ -150,7 +150,7 @@ describe("today routes", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-07T20:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-07T20:00:00.000Z",
       },
     });
 

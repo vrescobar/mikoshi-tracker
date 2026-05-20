@@ -138,7 +138,7 @@ describe("today write tools", () => {
       type: "text",
       text: expect.stringContaining("Completed Walk"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       habit: { id: "habit_walk", name: "Walk" },
       today: { pendingCount: 1 },
     });
@@ -228,7 +228,7 @@ describe("today write tools", () => {
       type: "text",
       text: expect.stringContaining("10/10 pages"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       habit: { id: "habit_read", name: "Read" },
       today: { completedCount: 2 },
     });
@@ -318,7 +318,7 @@ describe("today write tools", () => {
       type: "text",
       text: expect.stringContaining("Undid today's set total for Read"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       habit: { id: "habit_read", name: "Read" },
       today: { pendingCount: 1 },
     });

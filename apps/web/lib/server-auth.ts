@@ -1,8 +1,8 @@
-import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
-import type { CircleDetailResponse, CircleRecord } from "@haaabit/contracts/circles";
-import type { HabitDetail, HabitListFilters, Weekday } from "@haaabit/contracts/habits";
-import type { OverviewStats } from "@haaabit/contracts/stats";
-import type { TodaySummary } from "@haaabit/contracts/today";
+import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
+import type { CircleDetailResponse, CircleRecord } from "@mikoshi-tracker/contracts/circles";
+import type { HabitDetail, HabitListFilters, Weekday } from "@mikoshi-tracker/contracts/habits";
+import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
+import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 import "server-only";
 
 import { cookies } from "next/headers";

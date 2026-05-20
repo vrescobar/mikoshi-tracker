@@ -30,18 +30,18 @@ function getBearerToken(request: FastifyRequest): string | null {
 
 /**
  * Fastify preHandler: validates `Authorization: Bearer <key>` against
- * `HAAABIT_ADMIN_API_KEY` using a timing-safe compare.
+ * `MIKOSHI_TRACKER_ADMIN_API_KEY` using a timing-safe compare.
  *
  * - Env var unset or empty → 503 (feature disabled, never an open endpoint)
  * - Missing/wrong key → 401
  */
 export async function requireAdminKey(request: FastifyRequest): Promise<void> {
-  const configuredKey = process.env.HAAABIT_ADMIN_API_KEY;
+  const configuredKey = process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
 
   if (!configuredKey) {
     throw new AdminKeyError(
       503,
-      "Admin provisioning API is disabled (HAAABIT_ADMIN_API_KEY not set)",
+      "Admin provisioning API is disabled (MIKOSHI_TRACKER_ADMIN_API_KEY not set)",
     );
   }
 

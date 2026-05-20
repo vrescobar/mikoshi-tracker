@@ -1,19 +1,19 @@
-import { HaaabitApiError } from "./errors.js";
+import { MikoshiTrackerApiError } from "./errors.js";
 
-export type HaaabitApiClientOptions = {
+export type MikoshiTrackerApiClientOptions = {
   apiUrl: string;
   apiToken: string;
   timeoutMs: number;
   fetch?: typeof fetch;
 };
 
-export class HaaabitApiClient {
+export class MikoshiTrackerApiClient {
   private readonly apiUrl: string;
   private readonly apiToken: string;
   private readonly timeoutMs: number;
   private readonly fetchImpl: typeof fetch;
 
-  constructor(options: HaaabitApiClientOptions) {
+  constructor(options: MikoshiTrackerApiClientOptions) {
     this.apiUrl = options.apiUrl.replace(/\/+$/, "");
     this.apiToken = options.apiToken;
     this.timeoutMs = options.timeoutMs;
@@ -37,7 +37,7 @@ export class HaaabitApiClient {
       const body = await parseResponseBody(response);
 
       if (!response.ok) {
-        throw new HaaabitApiError({
+        throw new MikoshiTrackerApiError({
           status: response.status,
           code: extractErrorCode(body),
           message: extractErrorMessage(body, response.statusText),
@@ -47,19 +47,19 @@ export class HaaabitApiClient {
 
       return body as T;
     } catch (error) {
-      if (error instanceof HaaabitApiError) {
+      if (error instanceof MikoshiTrackerApiError) {
         throw error;
       }
 
       if (error instanceof Error && error.name === "AbortError") {
-        throw new HaaabitApiError({
+        throw new MikoshiTrackerApiError({
           status: 504,
           code: "TIMEOUT",
           message: `Request timed out after ${this.timeoutMs}ms`,
         });
       }
 
-      throw new HaaabitApiError({
+      throw new MikoshiTrackerApiError({
         status: 503,
         code: "NETWORK_ERROR",
         message: error instanceof Error ? error.message : "Network request failed",
@@ -71,7 +71,7 @@ export class HaaabitApiClient {
 
   /**
    * Fetch a non-JSON response (e.g. an image) as raw bytes. Errors are still
-   * surfaced as HaaabitApiError so callers can handle them uniformly.
+   * surfaced as MikoshiTrackerApiError so callers can handle them uniformly.
    */
   async requestBinary(path: string, init: RequestInit = {}): Promise<{ bytes: Uint8Array; mimeType: string }> {
     const controller = new AbortController();
@@ -89,7 +89,7 @@ export class HaaabitApiClient {
 
       if (!response.ok) {
         const body = await parseResponseBody(response);
-        throw new HaaabitApiError({
+        throw new MikoshiTrackerApiError({
           status: response.status,
           code: extractErrorCode(body),
           message: extractErrorMessage(body, response.statusText),
@@ -104,19 +104,19 @@ export class HaaabitApiClient {
         mimeType: response.headers.get("content-type") ?? "application/octet-stream",
       };
     } catch (error) {
-      if (error instanceof HaaabitApiError) {
+      if (error instanceof MikoshiTrackerApiError) {
         throw error;
       }
 
       if (error instanceof Error && error.name === "AbortError") {
-        throw new HaaabitApiError({
+        throw new MikoshiTrackerApiError({
           status: 504,
           code: "TIMEOUT",
           message: `Request timed out after ${this.timeoutMs}ms`,
         });
       }
 
-      throw new HaaabitApiError({
+      throw new MikoshiTrackerApiError({
         status: 503,
         code: "NETWORK_ERROR",
         message: error instanceof Error ? error.message : "Network request failed",

@@ -47,7 +47,7 @@ const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
   ...adminApiRouteDefinitions,
 ];
 
-const localeCookieName = "haaabit-locale";
+const localeCookieName = "mikoshi-tracker-locale";
 const defaultLocale: SupportedLocale = "en";
 
 type ApiDocsCopy = {
@@ -63,7 +63,7 @@ type ApiDocsCopy = {
 
 const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
   en: {
-    title: "Haaabit API Docs",
+    title: "MikoshiTracker API Docs",
     eyebrow: "OpenAPI + Interactive Reference",
     localeHint: "This page follows your current app language. API contract items stay in English.",
     intro:
@@ -74,7 +74,7 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     specLinkLabel: "OpenAPI JSON",
   },
   "zh-CN": {
-    title: "Haaabit API 文档",
+    title: "MikoshiTracker API 文档",
     eyebrow: "OpenAPI + 交互式参考",
     localeHint: "当前页面会跟随你在应用中的语言。API 合同项保持英文。",
     intro:
@@ -256,7 +256,7 @@ function buildOpenApiDocument() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Haaabit API",
+      title: "MikoshiTracker API",
       version: "1.0.0",
       description:
         "Bearer-authenticated REST API for habits, today's workflow, overview stats, and Habit Circles collaboration.",
@@ -279,14 +279,14 @@ function buildOpenApiDocument() {
           scheme: "bearer",
           bearerFormat: "Circle token",
           description:
-            "A circle-scoped token (prefix: haaabit_circle_). It is authorised to read shared habits and write check-ins for exactly one circle. Minted by the circle owner from the Circles management page.",
+            "A circle-scoped token (prefix: mikoshi_tracker_circle_). It is authorised to read shared habits and write check-ins for exactly one circle. Minted by the circle owner from the Circles management page.",
         },
         AdminKeyAuth: {
           type: "http",
           scheme: "bearer",
           bearerFormat: "Admin API key",
           description:
-            "The operator-configured system key set via the HAAABIT_ADMIN_API_KEY environment variable. Required for all /api/admin/* provisioning routes. Distinct from personal tokens, circle tokens, and the User.isAdmin role.",
+            "The operator-configured system key set via the MIKOSHI_TRACKER_ADMIN_API_KEY environment variable. Required for all /api/admin/* provisioning routes. Distinct from personal tokens, circle tokens, and the User.isAdmin role.",
         },
       },
     },
@@ -491,7 +491,7 @@ function renderDocsPage(locale: SupportedLocale) {
     <main>
       <section class="hero">
         <p style="margin:0; letter-spacing:0.08em; text-transform:uppercase; color:#756858; font-size:0.8rem;">${escapeHtml(copy.eyebrow)}</p>
-        <h1 style="margin:0.4rem 0 0; font-size:2.4rem;">Haaabit API</h1>
+        <h1 style="margin:0.4rem 0 0; font-size:2.4rem;">MikoshiTracker API</h1>
         <p>Authorization: Bearer <code>&lt;personal-token&gt;</code> or <code>&lt;circle-token&gt;</code></p>
         <p>${escapeHtml(copy.localeHint)}</p>
         <p>${escapeHtml(copy.intro)}</p>

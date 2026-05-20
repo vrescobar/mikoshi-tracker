@@ -19,7 +19,7 @@ key-files:
   modified: [packages/openclaw-plugin/tsconfig.json, pnpm-lock.yaml]
 key-decisions:
   - "The new OpenClaw path ships as a first-class workspace package instead of wrapping the existing MCP runtime."
-  - "Bootstrap tests explicitly forbid `@haaabit/mcp`, `mcporter`, and subprocess-based fallback paths."
+  - "Bootstrap tests explicitly forbid `@mikoshi-tracker/mcp`, `mcporter`, and subprocess-based fallback paths."
   - "The package contract stays thin in Phase 26; real API-backed handlers are deferred."
 patterns-established:
   - "OpenClaw-native packaging is validated with manifest/bootstrap smoke tests before handler implementation expands."
@@ -30,7 +30,7 @@ completed: 2026-03-11
 
 # Phase 26 Plan 01: Native Plugin Contract and Package Scaffold Summary
 
-**Haaabit now ships a first-class OpenClaw plugin package scaffold with a native manifest, bootstrap entrypoint, and build/test surface**
+**MikoshiTracker now ships a first-class OpenClaw plugin package scaffold with a native manifest, bootstrap entrypoint, and build/test surface**
 
 ## Performance
 
@@ -42,7 +42,7 @@ completed: 2026-03-11
 ## Accomplishments
 - Added `packages/openclaw-plugin` as a real workspace package with package metadata, `openclaw.plugin.json`, and a native activation entrypoint.
 - Added package-local `tsup` and `vitest` config so the plugin builds and tests like a first-class monorepo package.
-- Locked the native contract with smoke tests that fail if the bootstrap path starts mentioning `@haaabit/mcp`, `mcporter`, or subprocess fallback.
+- Locked the native contract with smoke tests that fail if the bootstrap path starts mentioning `@mikoshi-tracker/mcp`, `mcporter`, or subprocess fallback.
 
 ## Task Commits
 
@@ -66,12 +66,12 @@ No task commits were created in this workspace session. Phase 26 work is being f
 
 ## Verification
 
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts`
-- `pnpm --filter @haaabit/openclaw-plugin build`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin build`
 
 ## Next Plan Readiness
 
-- The native package scaffold is stable enough for Plan 02 to wire the Haaabit tool catalog and registration shell.
+- The native package scaffold is stable enough for Plan 02 to wire the MikoshiTracker tool catalog and registration shell.
 
 ---
 *Phase: 26-native-plugin-contract-and-package-scaffold*

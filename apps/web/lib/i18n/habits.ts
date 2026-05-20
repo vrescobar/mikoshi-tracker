@@ -1,4 +1,4 @@
-import type { HabitDetailHistoryRow, Weekday } from "@haaabit/contracts/habits";
+import type { HabitDetailHistoryRow, Weekday } from "@mikoshi-tracker/contracts/habits";
 
 import type { SupportedLocale } from "./messages";
 

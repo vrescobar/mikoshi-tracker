@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { activateHaaabitOpenClawPlugin } from "../src/index";
+import { activateMikoshiTrackerOpenClawPlugin } from "../src/index";
 import type { OpenClawRegisteredTool } from "../src/types";
 
 function createJsonResponse(body: unknown, status = 200) {
@@ -15,14 +15,14 @@ function createJsonResponse(body: unknown, status = 200) {
 function registerHandlers(fetchImpl: typeof fetch) {
   const registerTool = vi.fn();
 
-  activateHaaabitOpenClawPlugin(
+  activateMikoshiTrackerOpenClawPlugin(
     {
       registerTool,
     },
     {
       env: {
-        HAAABIT_API_URL: "https://habit.example.com/api",
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       },
       fetch: fetchImpl,
     },

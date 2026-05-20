@@ -5,7 +5,7 @@ test("logged-out users land on auth page and protected shell redirects back to l
 }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Sign in to Haaabit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to MikoshiTracker" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   await expect(page.getByText("Use your account to continue.")).toHaveCount(0);
   await expect(page.getByText("Use the email you want tied to this self-hosted account.")).toHaveCount(0);
@@ -19,7 +19,7 @@ test("logged-out users land on auth page and protected shell redirects back to l
   await page.goto("/dashboard");
 
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole("heading", { name: "Sign in to Haaabit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to MikoshiTracker" })).toBeVisible();
 });
 
 test("auth keeps sign-in failures in context", async ({ page }) => {
@@ -50,7 +50,7 @@ test("auth keeps sign-in failures in context", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
   await expect(page).toHaveURL(/\/$/);
 
-  const draft = await page.evaluate(() => window.sessionStorage.getItem("haaabit-auth-form-draft"));
+  const draft = await page.evaluate(() => window.sessionStorage.getItem("mikoshi-tracker-auth-form-draft"));
   expect(draft).toContain('"email":"wrong@example.com"');
   expect(draft).not.toContain("password123");
 
@@ -67,7 +67,7 @@ test("auth draft keeps only non-secret fields across reloads", async ({ page }) 
   await page.getByLabel("Email").fill("draft@example.com");
   await page.getByLabel("Password").fill("password123");
 
-  const draft = await page.evaluate(() => window.sessionStorage.getItem("haaabit-auth-form-draft"));
+  const draft = await page.evaluate(() => window.sessionStorage.getItem("mikoshi-tracker-auth-form-draft"));
   expect(draft).toContain('"name":"Draft User"');
   expect(draft).toContain('"email":"draft@example.com"');
   expect(draft).not.toContain("password123");

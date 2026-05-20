@@ -11,7 +11,7 @@ import {
   createCircleTokenInputSchema,
   shareHabitInputSchema,
   updateCircleMemberInputSchema,
-} from "@haaabit/contracts/circles";
+} from "@mikoshi-tracker/contracts/circles";
 
 export type {
   AddCircleMemberInput,

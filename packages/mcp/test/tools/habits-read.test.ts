@@ -90,7 +90,7 @@ describe("habits read tools", () => {
       type: "text",
       text: expect.stringContaining("default active filter"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       items: [expect.objectContaining({ name: "Deep Work" }), expect.objectContaining({ name: "Read" })],
     });
     expect(JSON.stringify(result)).toContain("Deep Work");
@@ -251,7 +251,7 @@ describe("habits read tools", () => {
       type: "text",
       text: expect.stringContaining("needs attention today"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       item: {
         habit: {
           id: "habit_1",

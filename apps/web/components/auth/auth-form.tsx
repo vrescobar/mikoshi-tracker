@@ -30,7 +30,7 @@ type FormErrors = Partial<Record<keyof FormValues, string>>;
 type AuthFormCopy = LocaleMessages["auth"]["form"];
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const AUTH_DRAFT_STORAGE_KEY = "haaabit-auth-form-draft";
+const AUTH_DRAFT_STORAGE_KEY = "mikoshi-tracker-auth-form-draft";
 
 export function AuthForm({ copy, registrationEnabled }: { copy: AuthFormCopy; registrationEnabled: boolean }) {
   const router = useRouter();

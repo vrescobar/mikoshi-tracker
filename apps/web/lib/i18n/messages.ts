@@ -230,7 +230,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     auth: {
       page: {
         eyebrow: "Welcome back",
-        title: "Sign in to Haaabit",
+        title: "Sign in to MikoshiTracker",
         description: "Sign in to continue.",
         values: [],
       },
@@ -453,7 +453,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     auth: {
       page: {
         eyebrow: "欢迎回来",
-        title: "登录 Haaabit",
+        title: "登录 MikoshiTracker",
         description: "登录后继续使用。",
         values: [],
       },
@@ -671,7 +671,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     auth: {
       page: {
         eyebrow: "Bienvenido de nuevo",
-        title: "Inicia sesión en Haaabit",
+        title: "Inicia sesión en MikoshiTracker",
         description: "Inicia sesión para continuar.",
         values: [],
       },

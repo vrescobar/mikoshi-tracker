@@ -2,7 +2,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 import { adaptToolResult } from "../schemas/adapters.js";
 
-const MACHINE_JSON_FIELD = "_haaabit_json";
+const MACHINE_JSON_FIELD = "_mikoshi_tracker_json";
 
 export function createReadToolResult(toolName: string, payload: unknown, summary: string): CallToolResult {
   return createSuccessToolResult(toolName, payload, summary);

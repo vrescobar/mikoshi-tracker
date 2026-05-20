@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { activateHaaabitOpenClawPlugin, EXPECTED_TOOL_NAMES } from "../src/index";
+import { activateMikoshiTrackerOpenClawPlugin, EXPECTED_TOOL_NAMES } from "../src/index";
 import type { OpenClawRegisteredTool, OpenClawToolHandler } from "../src/types";
 
 const packageRoot = path.resolve(import.meta.dirname, "..");
@@ -114,14 +114,14 @@ describe("native plugin integration", () => {
   it("proves one native read flow and one safe mutation flow against the real API app", async () => {
     const registerTool = vi.fn();
 
-    const activation = activateHaaabitOpenClawPlugin(
+    const activation = activateMikoshiTrackerOpenClawPlugin(
       {
         registerTool,
       },
       {
         env: {
-          HAAABIT_API_URL: apiUrl,
-          HAAABIT_API_TOKEN: apiToken,
+          MIKOSHI_TRACKER_API_URL: apiUrl,
+          MIKOSHI_TRACKER_API_TOKEN: apiToken,
         },
       },
     );

@@ -3,7 +3,7 @@ import {
   MAX_ATTACHMENTS_PER_MUTATION,
   type AttachmentListResponse,
   type AttachmentMetadata,
-} from "@haaabit/contracts/attachments";
+} from "@mikoshi-tracker/contracts/attachments";
 
 import type { PrismaClient } from "../../generated/prisma/client";
 

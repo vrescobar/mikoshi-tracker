@@ -97,7 +97,7 @@ describe("habits write tools", () => {
       type: "text",
       text: expect.stringContaining("Created Read"),
     });
-    expect(JSON.parse(String((result.structuredContent as { _haaabit_json: string })._haaabit_json))).toMatchObject({
+    expect(JSON.parse(String((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json))).toMatchObject({
       item: { id: "habit_1", name: "Read", targetValue: 30 },
     });
     expect(JSON.stringify(result)).toContain("30");

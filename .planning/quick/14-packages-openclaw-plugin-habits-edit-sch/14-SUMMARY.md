@@ -7,7 +7,7 @@
 ## Root Cause
 
 - `habits_edit` 的源码 schema 虽然已经改成了顶层对象，但 OpenClaw 侧的入口链路和构建 metadata 还没有被固定到一个专门的兼容入口，宿主命中旧入口或旧产物时仍可能重新暴露不稳定的注册路径。
-- `parsePluginEnv()` 直接对 `env.HAAABIT_API_URL` / `env.HAAABIT_API_TOKEN` 调 `trim()`，默认假设值一定是字符串；当 OpenClaw 通过 `api.config.env`、`options.config.env` 或 secret-ref 风格对象注入值时，就会抛出 `Cannot read properties of undefined (reading 'trim')` 这一类启动错误。
+- `parsePluginEnv()` 直接对 `env.MIKOSHI_TRACKER_API_URL` / `env.MIKOSHI_TRACKER_API_TOKEN` 调 `trim()`，默认假设值一定是字符串；当 OpenClaw 通过 `api.config.env`、`options.config.env` 或 secret-ref 风格对象注入值时，就会抛出 `Cannot read properties of undefined (reading 'trim')` 这一类启动错误。
 
 ## What Changed
 
@@ -34,8 +34,8 @@
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-bootstrap.test.ts test/plugin-manifest.test.ts test/tool-registration.test.ts test/tool-catalog.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/tools/habits-write.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-bootstrap.test.ts test/plugin-manifest.test.ts test/tool-registration.test.ts test/tool-catalog.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/tools/habits-write.test.ts`
 - `pnpm verify:openclaw`
 
 ## Outcome

@@ -8,12 +8,12 @@ services:
       web:
         condition: service_healthy
     ports:
-      - "${HAAABIT_PUBLIC_PORT:-8080}:80"
+      - "${MIKOSHI_TRACKER_PUBLIC_PORT:-8080}:80"
       # For a public HTTPS deployment, also publish 443 and set
-      # HAAABIT_SITE_ADDRESS below so Caddy can provision Let's Encrypt TLS:
+      # MIKOSHI_TRACKER_SITE_ADDRESS below so Caddy can provision Let's Encrypt TLS:
       # - "443:443"
     # environment:
-    #   HAAABIT_SITE_ADDRESS: ${HAAABIT_SITE_ADDRESS}
+    #   MIKOSHI_TRACKER_SITE_ADDRESS: ${MIKOSHI_TRACKER_SITE_ADDRESS}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -53,7 +53,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
-      DATABASE_URL: ${DATABASE_URL:-file:/data/haaabit.db}
+      DATABASE_URL: ${DATABASE_URL:-file:/data/mikoshi-tracker.db}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
@@ -82,7 +82,7 @@ services:
       NODE_ENV: production
       PORT: 3001
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
-      DATABASE_URL: ${DATABASE_URL:-file:/data/haaabit.db}
+      DATABASE_URL: ${DATABASE_URL:-file:/data/mikoshi-tracker.db}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}

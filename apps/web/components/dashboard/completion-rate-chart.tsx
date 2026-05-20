@@ -1,5 +1,5 @@
-import type { HabitTrendPoint } from "@haaabit/contracts/habits";
-import type { OverviewTrendPoint } from "@haaabit/contracts/stats";
+import type { HabitTrendPoint } from "@mikoshi-tracker/contracts/habits";
+import type { OverviewTrendPoint } from "@mikoshi-tracker/contracts/stats";
 
 import styles from "./completion-rate-chart.module.css";
 

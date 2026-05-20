@@ -30,7 +30,7 @@ completed: 2026-03-11
 
 # Phase 27 Plan 03: Native Mutation Tools Summary
 
-**The OpenClaw plugin now performs the full shipped Haaabit mutation surface directly against the API with shared runtime and error semantics**
+**The OpenClaw plugin now performs the full shipped MikoshiTracker mutation surface directly against the API with shared runtime and error semantics**
 
 ## Performance
 
@@ -63,9 +63,9 @@ No task commits were created in this workspace session. Phase 27 work is being f
 ## Verification
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin build`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/tools/habits-write.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin build`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/tools/habits-write.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 
 ## Next Plan Readiness
 

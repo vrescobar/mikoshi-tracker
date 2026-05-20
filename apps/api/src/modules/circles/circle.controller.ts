@@ -8,7 +8,7 @@ import {
   createCircleTokenInputSchema,
   shareHabitInputSchema,
   updateCircleMemberInputSchema,
-} from "@haaabit/contracts/circles";
+} from "@mikoshi-tracker/contracts/circles";
 import { CircleAuthError, requireCircleContext } from "../../auth/circle-session";
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";

@@ -1,0 +1,4 @@
+interface:
+  display_name: "MikoshiTracker MCP"
+  short_description: "Today-first routing for MikoshiTracker MCP habit tasks."
+  default_prompt: "Use $mikoshi-tracker-mcp to route today's habits, 打卡, 进度, 修改习惯, or stats requests through the safest MikoshiTracker MCP tool sequence."

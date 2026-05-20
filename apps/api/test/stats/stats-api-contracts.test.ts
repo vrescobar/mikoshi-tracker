@@ -71,7 +71,7 @@ describe("stats api contracts", () => {
       url: "/api/stats/overview",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 
@@ -102,7 +102,7 @@ describe("stats api contracts", () => {
       method: "GET",
       url: "/api/stats/overview",
       headers: {
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 

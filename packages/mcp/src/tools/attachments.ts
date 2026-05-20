@@ -9,7 +9,7 @@ import {
   type AttachmentListResponse,
 } from "../contracts/attachments.js";
 
-import type { HaaabitApiClient } from "../client/api-client.js";
+import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { InventoryTool } from "./catalog.js";
 import type { ToolOperation } from "./operation-types.js";
 
@@ -56,7 +56,7 @@ function summarizeList(payload: AttachmentListResponse): string {
   return `${payload.attachments.length} attachment(s); ${payload.remaining} more slot(s) free on this entry.`;
 }
 
-export function createAttachmentReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createAttachmentReadOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     attachment_list: async (input: unknown) => {
       const parsed = attachmentListInputSchema.parse(input ?? {});
@@ -97,7 +97,7 @@ export function createAttachmentReadOperations(client: HaaabitApiClient): Record
   };
 }
 
-export function createAttachmentWriteOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createAttachmentWriteOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     attachment_upload: async (input: unknown) => {
       const parsed = attachmentUploadInputSchema.parse(input);

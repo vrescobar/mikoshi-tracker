@@ -75,7 +75,7 @@ const apiAccessCopy: Record<SupportedLocale, ApiAccessCopy> = {
     page: {
       eyebrow: "AI integration",
       title: "API access",
-      description: "Manage the personal bearer token your scripts and assistants should use when calling Haaabit.",
+      description: "Manage the personal bearer token your scripts and assistants should use when calling MikoshiTracker.",
       tokenLabel: "Personal API token",
       tokenDescriptions: {
         empty: "Generate a token before trying bearer-authenticated API calls.",
@@ -136,7 +136,7 @@ const apiAccessCopy: Record<SupportedLocale, ApiAccessCopy> = {
     page: {
       eyebrow: "AI 集成",
       title: "API 访问",
-      description: "管理脚本和助手在调用 Haaabit 时应使用的个人 bearer token。",
+      description: "管理脚本和助手在调用 MikoshiTracker 时应使用的个人 bearer token。",
       tokenLabel: "个人 API token",
       tokenDescriptions: {
         empty: "先生成 token，再去发起 bearer 鉴权的 API 调用。",
@@ -197,7 +197,7 @@ const apiAccessCopy: Record<SupportedLocale, ApiAccessCopy> = {
       eyebrow: "Integración con IA",
       title: "Acceso API",
       description:
-        "Gestiona el token de portador personal que tus scripts y asistentes deben usar al llamar a Haaabit.",
+        "Gestiona el token de portador personal que tus scripts y asistentes deben usar al llamar a MikoshiTracker.",
       tokenLabel: "Token API personal",
       tokenDescriptions: {
         empty: "Genera un token antes de intentar llamadas API autenticadas con portador.",

@@ -101,7 +101,7 @@ describe("habit history integrity", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-09T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-09T08:00:00.000Z",
       },
     });
 
@@ -118,7 +118,7 @@ describe("habit history integrity", () => {
       url: "/api/today/set-total",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-09T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-09T08:00:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -147,7 +147,7 @@ describe("habit history integrity", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
     });
 

@@ -13,11 +13,11 @@ function makeRequest(authorization?: string): FastifyRequest {
 
 describe("requireAdminKey", () => {
   beforeEach(() => {
-    process.env.HAAABIT_ADMIN_API_KEY = CORRECT_KEY;
+    process.env.MIKOSHI_TRACKER_ADMIN_API_KEY = CORRECT_KEY;
   });
 
   afterEach(() => {
-    delete process.env.HAAABIT_ADMIN_API_KEY;
+    delete process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
   });
 
   it("resolves when the correct key is provided", async () => {
@@ -53,15 +53,15 @@ describe("requireAdminKey", () => {
     await expect(requireAdminKey(request)).rejects.toMatchObject({ statusCode: 401 });
   });
 
-  it("throws AdminKeyError 503 when HAAABIT_ADMIN_API_KEY is not set", async () => {
-    delete process.env.HAAABIT_ADMIN_API_KEY;
+  it("throws AdminKeyError 503 when MIKOSHI_TRACKER_ADMIN_API_KEY is not set", async () => {
+    delete process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
     const request = makeRequest(`Bearer ${CORRECT_KEY}`);
     await expect(requireAdminKey(request)).rejects.toBeInstanceOf(AdminKeyError);
     await expect(requireAdminKey(request)).rejects.toMatchObject({ statusCode: 503 });
   });
 
-  it("throws AdminKeyError 503 when HAAABIT_ADMIN_API_KEY is an empty string", async () => {
-    process.env.HAAABIT_ADMIN_API_KEY = "";
+  it("throws AdminKeyError 503 when MIKOSHI_TRACKER_ADMIN_API_KEY is an empty string", async () => {
+    process.env.MIKOSHI_TRACKER_ADMIN_API_KEY = "";
     const request = makeRequest(`Bearer ${CORRECT_KEY}`);
     await expect(requireAdminKey(request)).rejects.toMatchObject({ statusCode: 503 });
   });

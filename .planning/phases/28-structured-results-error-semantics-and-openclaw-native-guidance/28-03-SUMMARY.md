@@ -42,7 +42,7 @@ completed: 2026-03-11
 
 ## Accomplishments
 - Added package-local native plugin docs and a canonical OpenClaw-native setup asset.
-- Rewrote root and host-facing docs so OpenClaw defaults to `@haaabit/openclaw-plugin` instead of the older MCP bridge path.
+- Rewrote root and host-facing docs so OpenClaw defaults to `@mikoshi-tracker/openclaw-plugin` instead of the older MCP bridge path.
 - Added doc smoke tests to guard against drifting back to MCP-first OpenClaw guidance.
 
 ## Task Commits
@@ -60,15 +60,15 @@ No task commits were created in this workspace session. Phase 28 work is being f
 
 ## Decisions Made
 - Documented MCP as still supported and necessary for generic hosts plus `bootstrap-token`, but not as the default OpenClaw runtime.
-- Kept the Haaabit Skill as optional guidance for hosts that support it instead of deleting that workflow layer.
+- Kept the MikoshiTracker Skill as optional guidance for hosts that support it instead of deleting that workflow layer.
 - Added explicit success/error envelope examples so docs match the runtime contract.
 
 ## Verification
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin build`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin build`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 
 ## Next Plan Readiness
 

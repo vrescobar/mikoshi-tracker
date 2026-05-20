@@ -24,14 +24,14 @@ function normalizeCookie(setCookie: string | string[] | undefined): string {
 }
 
 export async function createTestContext(): Promise<TestContext> {
-  const databasePath = join(TEST_DB_DIR, `haaabit-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
+  const databasePath = join(TEST_DB_DIR, `mikoshi-tracker-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
   const databaseUrl = `file:${databasePath}`;
 
   // Copy the pre-built schema template instead of re-running `prisma db push`
   // (see test/helpers/global-setup.ts). Each test still gets its own isolated DB.
   copyFileSync(TEMPLATE_DB_PATH, databasePath);
 
-  const attachmentsDir = join(tmpdir(), `haaabit-attachments-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const attachmentsDir = join(tmpdir(), `mikoshi-tracker-attachments-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const app = await createApp({
     env: {

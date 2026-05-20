@@ -3,7 +3,7 @@
 This guide covers two things the base `docs/self-hosting.md` does not:
 
 1. Running the stack with **Podman** (rootless) instead of Docker.
-2. Hardening required before exposing Haaabit **publicly on the internet**.
+2. Hardening required before exposing MikoshiTracker **publicly on the internet**.
 
 It complements — does not replace — `docs/self-hosting.md`.
 
@@ -39,7 +39,7 @@ container engine automatically (Docker preferred, Podman fallback).
 
 ### Notes specific to rootless Podman
 
-- **Ports**: the proxy publishes host port `8080` (or `HAAABIT_PUBLIC_PORT`),
+- **Ports**: the proxy publishes host port `8080` (or `MIKOSHI_TRACKER_PUBLIC_PORT`),
   which is >1024 and binds fine rootless. Publishing 80/443 for public TLS
   needs `sysctl net.ipv4.ip_unprivileged_port_start=80`, or a host firewall
   DNAT, or running the proxy under a small rootful exception.
@@ -59,7 +59,7 @@ container engine automatically (Docker preferred, Podman fallback).
 
 ## 2. Hardening for public internet exposure
 
-Haaabit is multi-user with correct per-user data isolation, but the defaults
+MikoshiTracker is multi-user with correct per-user data isolation, but the defaults
 target localhost. Before putting it on the public internet:
 
 ### TLS (required)
@@ -67,7 +67,7 @@ target localhost. Before putting it on the public internet:
 Without TLS, session cookies and API bearer tokens travel in clear text.
 
 1. Point a DNS record at the host.
-2. In `.env`, set `HAAABIT_SITE_ADDRESS=your-hostname`.
+2. In `.env`, set `MIKOSHI_TRACKER_SITE_ADDRESS=your-hostname`.
 3. In `docker-compose.yml`, publish port `443` and uncomment the proxy
    `environment:` block so the variable reaches Caddy.
 4. Re-create the proxy: `podman-compose up -d proxy`.

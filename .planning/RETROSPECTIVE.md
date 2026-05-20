@@ -8,13 +8,13 @@
 **Phases:** 4 | **Plans:** 11 | **Sessions:** session-spanning
 
 ### What Was Built
-- A standalone `packages/mcp` package that can be published as `@haaabit/mcp` and launched by generic MCP clients over local `stdio`.
+- A standalone `packages/mcp` package that can be published as `@mikoshi-tracker/mcp` and launched by generic MCP clients over local `stdio`.
 - Full MCP tool coverage for the personal-token-compatible habits, today, and stats API surface, including both read and write flows.
 - Centralized MCP-facing error semantics layered on top of the existing REST API behavior.
 - Package-local README/operator docs plus a release gate that verifies package metadata, docs alignment, built stdio runtime, and upstream API parity.
 
 ### What Worked
-- Keeping MCP as a thin adapter over the existing REST API and `@haaabit/contracts` avoided semantic drift and kept implementation fast.
+- Keeping MCP as a thin adapter over the existing REST API and `@mikoshi-tracker/contracts` avoided semantic drift and kept implementation fast.
 - Built-artifact stdio integration tests gave high-confidence runtime proof without needing a separate integration harness.
 - Splitting the milestone into foundation, read surface, mutation surface, and release shaping kept sequencing clear.
 

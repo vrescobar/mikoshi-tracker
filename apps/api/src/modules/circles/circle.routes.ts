@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 
-import { commonAuthErrorResponses, commonNotFoundResponse } from "@haaabit/contracts/api";
+import { commonAuthErrorResponses, commonNotFoundResponse } from "@mikoshi-tracker/contracts/api";
 import {
   addCircleMemberInputSchema,
   circleDetailResponseSchema,
@@ -26,7 +26,7 @@ import {
   shareHabitInputSchema,
   undoNotCircleSourcedErrorSchema,
   updateCircleMemberInputSchema,
-} from "@haaabit/contracts/circles";
+} from "@mikoshi-tracker/contracts/circles";
 
 import type { PublicApiRouteDefinition } from "../../plugins/openapi";
 import {
@@ -233,7 +233,7 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "addCircleMember",
     summary: "Add a circle member",
     description:
-      "Adds an existing Haaabit user to the circle by email (owner only). Optionally sets an externalId for integration purposes.",
+      "Adds an existing MikoshiTracker user to the circle by email (owner only). Optionally sets an externalId for integration purposes.",
     tags: ["Circles"],
     security: [{ BearerAuth: [] }],
     request: {
@@ -355,7 +355,7 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
           created: {
             summary: "Minted token",
             value: {
-              token: "haaabit_circle_abc123...",
+              token: "mikoshi_tracker_circle_abc123...",
               tokenId: "tok_xyz",
               label: "Mikoshi bridge",
               createdAt: "2026-05-18T10:00:00.000Z",

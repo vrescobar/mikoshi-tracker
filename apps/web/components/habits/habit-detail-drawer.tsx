@@ -1,6 +1,6 @@
 "use client";
 
-import type { HabitDetail } from "@haaabit/contracts/habits";
+import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
 import { useRouter } from "next/navigation";
 
 import { getHabitsCopy } from "../../lib/i18n/habits";

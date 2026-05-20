@@ -8,7 +8,7 @@
 
 - 上一版修复已经把 OpenClaw 入口切到了 `dist/openclaw.js`，所以入口兼容链路本身基本接上了。
 - 剩余问题不在 entry，而在 env 解析模型仍然过于“扁平”：它只擅长处理 string 和少数 `{ value }` 风格包装值，没有把 OpenClaw 运行时可能传入的 env reference object 当成“一类需要二次解析的值”。
-- 结果就是：插件虽然已经拿到了 `api.config.env` / `options.env` 一类容器，但这些容器里的 `HAAABIT_API_URL` / `HAAABIT_API_TOKEN` 仍可能是引用对象而不是最终字符串。如果后续任何路径把它们当作字符串去 `trim()`，就会回到你本地看到的启动崩溃。
+- 结果就是：插件虽然已经拿到了 `api.config.env` / `options.env` 一类容器，但这些容器里的 `MIKOSHI_TRACKER_API_URL` / `MIKOSHI_TRACKER_API_TOKEN` 仍可能是引用对象而不是最终字符串。如果后续任何路径把它们当作字符串去 `trim()`，就会回到你本地看到的启动崩溃。
 
 ## Minimal Patch
 
@@ -34,22 +34,22 @@
 ```diff
 - export function parsePluginEnv(input: unknown = process.env): NativePluginConfig {
 -   const env = flattenPluginEnv(input);
--   const apiUrl = env.HAAABIT_API_URL?.trim();
--   const apiToken = env.HAAABIT_API_TOKEN?.trim();
+-   const apiUrl = env.MIKOSHI_TRACKER_API_URL?.trim();
+-   const apiToken = env.MIKOSHI_TRACKER_API_TOKEN?.trim();
 + export function parsePluginEnv(env: NodeJS.ProcessEnv = process.env): NativePluginConfig {
-+   const apiUrl = readEnvString(env, "HAAABIT_API_URL")?.trim();
-+   const apiToken = readEnvString(env, "HAAABIT_API_TOKEN")?.trim();
++   const apiUrl = readEnvString(env, "MIKOSHI_TRACKER_API_URL")?.trim();
++   const apiToken = readEnvString(env, "MIKOSHI_TRACKER_API_TOKEN")?.trim();
 ```
 
 ```diff
 - export function register(api, options = {}) {
--   return activateHaaabitOpenClawPlugin(api, {
+-   return activateMikoshiTrackerOpenClawPlugin(api, {
 -     ...options,
 -     env: resolvePluginRuntimeEnv(api, options),
 -   });
 - }
 + export function register(api, options = {}) {
-+   return activateHaaabitOpenClawPlugin(api, options);
++   return activateMikoshiTrackerOpenClawPlugin(api, options);
 + }
 ```
 
@@ -62,20 +62,20 @@
 
 ## Why This Covers OpenClaw Secret / Env Reference Objects
 
-- 现在插件不再假设 `HAAABIT_API_URL` / `HAAABIT_API_TOKEN` 在第一次读到时就是字符串。
+- 现在插件不再假设 `MIKOSHI_TRACKER_API_URL` / `MIKOSHI_TRACKER_API_TOKEN` 在第一次读到时就是字符串。
 - 如果 OpenClaw 传的是：
-  - `{ source: "env", id: "HAAABIT_API_URL" }`
-  - `{ source: "env", key: "HAAABIT_API_TOKEN" }`
-  - `{ env: "HAAABIT_API_URL" }`
-  - `{ name: "HAAABIT_API_TOKEN" }`
+  - `{ source: "env", id: "MIKOSHI_TRACKER_API_URL" }`
+  - `{ source: "env", key: "MIKOSHI_TRACKER_API_TOKEN" }`
+  - `{ env: "MIKOSHI_TRACKER_API_URL" }`
+  - `{ name: "MIKOSHI_TRACKER_API_TOKEN" }`
   插件会把它识别成 env 引用，再去候选 env 容器和 `process.env` 里找真实值。
 - 如果最终还是找不到真实字符串，结果只会是明确的 `MISSING_PLUGIN_ENV`，而不是 JS 运行时的 `undefined.trim` / `trim-related` crash。
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec tsc --noEmit`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/tool-registration.test.ts test/plugin-manifest.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/tools/habits-write.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec tsc --noEmit`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/tool-registration.test.ts test/plugin-manifest.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/tools/habits-write.test.ts`
 - `pnpm verify:openclaw`
 
 ## Outcome

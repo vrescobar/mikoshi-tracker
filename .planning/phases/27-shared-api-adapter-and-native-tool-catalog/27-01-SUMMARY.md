@@ -7,7 +7,7 @@ requires:
   - phase: 26-native-plugin-contract-and-package-scaffold
     provides: Native plugin package scaffold, registration seam, env validation, and startup diagnostics
 provides:
-  - host-neutral error payload seam for Haaabit API failures
+  - host-neutral error payload seam for MikoshiTracker API failures
   - host-neutral tool catalog, result adapters, and operation runtime aggregation
   - native plugin wiring that uses real shared handlers instead of phase placeholders by default
 affects: [phase-27, phase-28, openclaw, mcp, shared-runtime]
@@ -30,7 +30,7 @@ completed: 2026-03-11
 
 # Phase 27 Plan 01: Shared Runtime Extraction Summary
 
-**The native plugin now reuses a host-neutral Haaabit runtime seam instead of a placeholder-only registration path**
+**The native plugin now reuses a host-neutral MikoshiTracker runtime seam instead of a placeholder-only registration path**
 
 ## Performance
 
@@ -66,8 +66,8 @@ No task commits were created in this workspace session. Phase 27 work is being f
 ## Verification
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/tool-registration.test.ts test/plugin-bootstrap.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/tool-registration.test.ts test/plugin-bootstrap.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts`
 
 ## Next Plan Readiness
 

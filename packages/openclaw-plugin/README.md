@@ -1,15 +1,15 @@
-# @haaabit/openclaw-plugin
+# @mikoshi-tracker/openclaw-plugin
 
-`@haaabit/openclaw-plugin` is the native OpenClaw integration for Haaabit.
+`@mikoshi-tracker/openclaw-plugin` is the native OpenClaw integration for MikoshiTracker.
 
-Use this package when the host can load OpenClaw plugins directly. It calls the shipped Haaabit API without inserting MCP, mcporter, or another bridge in the middle.
+Use this package when the host can load OpenClaw plugins directly. It calls the shipped MikoshiTracker API without inserting MCP, mcporter, or another bridge in the middle.
 
 ## Runtime Contract
 
-- `HAAABIT_API_URL` - required Haaabit API base URL
-- `HAAABIT_API_TOKEN` - required personal API token
+- `MIKOSHI_TRACKER_API_URL` - required MikoshiTracker API base URL
+- `MIKOSHI_TRACKER_API_TOKEN` - required personal API token
 - Auth model: bearer token only
-- Bootstrap helper: if you only have account credentials, run `npx -y @haaabit/mcp bootstrap-token ...` once, then store the returned personal token as `HAAABIT_API_TOKEN`
+- Bootstrap helper: if you only have account credentials, run `npx -y @mikoshi-tracker/mcp bootstrap-token ...` once, then store the returned personal token as `MIKOSHI_TRACKER_API_TOKEN`
 
 Canonical setup asset:
 
@@ -19,13 +19,13 @@ Canonical setup asset:
 
 Use the native plugin first:
 
-1. Install or link `@haaabit/openclaw-plugin` in the OpenClaw plugin environment.
-2. Inject `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`.
-3. Load the plugin. The published package advertises the OpenClaw-compatible wrapper entry `./dist/openclaw.js` through `package.json -> openclaw.extensions`, and the shipped `openclaw.plugin.json` points to the same wrapper while keeping the same plugin id: `@haaabit/openclaw-plugin`.
-4. OpenClaw should discover and enable the built plugin without any local manifest patching. It registers the Haaabit `habits_*`, `today_*`, and `stats_get_overview` tools directly.
-5. If your OpenClaw build also supports workspace Skills, add [`../../skills/haaabit-mcp/SKILL.md`](../../skills/haaabit-mcp/SKILL.md) as an optional guidance layer. Do not use it as a transport substitute.
+1. Install or link `@mikoshi-tracker/openclaw-plugin` in the OpenClaw plugin environment.
+2. Inject `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`.
+3. Load the plugin. The published package advertises the OpenClaw-compatible wrapper entry `./dist/openclaw.js` through `package.json -> openclaw.extensions`, and the shipped `openclaw.plugin.json` points to the same wrapper while keeping the same plugin id: `@mikoshi-tracker/openclaw-plugin`.
+4. OpenClaw should discover and enable the built plugin without any local manifest patching. It registers the MikoshiTracker `habits_*`, `today_*`, and `stats_get_overview` tools directly.
+5. If your OpenClaw build also supports workspace Skills, add [`../../skills/mikoshi-tracker-mcp/SKILL.md`](../../skills/mikoshi-tracker-mcp/SKILL.md) as an optional guidance layer. Do not use it as a transport substitute.
 
-This path is native-first. Do not launch `@haaabit/mcp` just to make OpenClaw talk to Haaabit.
+This path is native-first. Do not launch `@mikoshi-tracker/mcp` just to make OpenClaw talk to MikoshiTracker.
 
 ## Tool Result Contract
 
@@ -81,7 +81,7 @@ Agents should branch on `error.category`, `error.resolution`, `error.retryable`,
 
 ## When To Use MCP Instead
 
-Use [`@haaabit/mcp`](../mcp/README.md) for generic MCP hosts that do not load OpenClaw native plugins.
+Use [`@mikoshi-tracker/mcp`](../mcp/README.md) for generic MCP hosts that do not load OpenClaw native plugins.
 
 That package remains the right path for:
 

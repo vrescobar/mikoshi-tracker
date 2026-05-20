@@ -6,7 +6,7 @@ export const API_DOCS_PATH = "/api/docs";
 export const API_SPEC_PATH = "/api/openapi.json";
 
 function generatePersonalApiToken() {
-  return `haaabit_${randomBytes(24).toString("hex")}`;
+  return `mikoshi_tracker_${randomBytes(24).toString("hex")}`;
 }
 
 function hashPersonalApiToken(token: string) {
@@ -14,7 +14,7 @@ function hashPersonalApiToken(token: string) {
 }
 
 function isLegacyStoredToken(token: string) {
-  return token.startsWith("haaabit_");
+  return token.startsWith("mikoshi_tracker_");
 }
 
 export async function migrateLegacyPersonalApiTokens(db: PrismaClient) {

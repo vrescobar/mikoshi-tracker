@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { HaaabitApiClient } from "../../src/client/api-client";
-describe("HaaabitApiClient", () => {
+import { MikoshiTrackerApiClient } from "../../src/client/api-client";
+describe("MikoshiTrackerApiClient", () => {
   it("sends bearer auth requests against the configured base URL", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {
@@ -11,7 +11,7 @@ describe("HaaabitApiClient", () => {
         },
       }),
     );
-    const client = new HaaabitApiClient({
+    const client = new MikoshiTrackerApiClient({
       apiUrl: "https://habit.example.com/api",
       apiToken: "secret-token",
       timeoutMs: 2500,
@@ -39,7 +39,7 @@ describe("HaaabitApiClient", () => {
         },
       }),
     );
-    const client = new HaaabitApiClient({
+    const client = new MikoshiTrackerApiClient({
       apiUrl: "https://habit.example.com",
       apiToken: "secret-token",
       timeoutMs: 2500,
@@ -66,7 +66,7 @@ describe("HaaabitApiClient", () => {
         },
       ),
     );
-    const client = new HaaabitApiClient({
+    const client = new MikoshiTrackerApiClient({
       apiUrl: "https://habit.example.com/api",
       apiToken: "secret-token",
       timeoutMs: 2500,

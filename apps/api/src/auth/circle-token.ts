@@ -3,7 +3,7 @@ import { createHash, randomBytes } from "node:crypto";
 import type { PrismaClient } from "../generated/prisma/client";
 
 export function generateCircleToken() {
-  return `haaabit_circle_${randomBytes(24).toString("hex")}`;
+  return `mikoshi_tracker_circle_${randomBytes(24).toString("hex")}`;
 }
 
 export function hashCircleToken(token: string) {

@@ -5,8 +5,8 @@
 **Phases completed:** 4 phases, 11 plans, 22 tasks
 
 **Key accomplishments:**
-- Shipped a workspace-visible `skills/haaabit-mcp/SKILL.md` plus one canonical `packages/mcp/examples/openclaw.jsonc` asset so OpenClaw operators have a single host-facing setup contract.
-- Hardened MCP startup diagnostics around `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`, including wrong-shape hints and a supported `bootstrap-token` handoff for operators who start from account credentials.
+- Shipped a workspace-visible `skills/mikoshi-tracker-mcp/SKILL.md` plus one canonical `packages/mcp/examples/openclaw.jsonc` asset so OpenClaw operators have a single host-facing setup contract.
+- Hardened MCP startup diagnostics around `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`, including wrong-shape hints and a supported `bootstrap-token` handoff for operators who start from account credentials.
 - Aligned the repo README, package README, skill guidance, and troubleshooting docs so OpenClaw clearly separates workflow guidance, MCP runtime wiring, and secret injection.
 - Added `docs/openclaw-validation-checklist.md`, `pnpm verify:openclaw`, and `pnpm verify:openclaw:full` as the reusable release gate for OpenClaw plus generic MCP-client regressions.
 - Closed the milestone without regressing the shipped generic `stdio` MCP path or the underlying API contract behavior.
@@ -20,7 +20,7 @@
 **Phases completed:** 4 phases, 11 plans, 22 tasks
 
 **Key accomplishments:**
-- Added a real `packages/mcp` workspace package that can be published as `@haaabit/mcp` and launched by generic MCP clients over local `stdio`.
+- Added a real `packages/mcp` workspace package that can be published as `@mikoshi-tracker/mcp` and launched by generic MCP clients over local `stdio`.
 - Reused the shipped bearer-authenticated API and shared contracts instead of introducing a second backend or duplicating schema definitions.
 - Shipped full habits, today, and stats read/write MCP tool coverage with centralized MCP-facing error semantics.
 - Added package-local operator docs, generic `npx` setup examples, and README smoke checks tied to the actual package metadata and tool inventory.

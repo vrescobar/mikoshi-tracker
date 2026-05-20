@@ -21,18 +21,18 @@ export const TEST_DB_DIR = existsSync("/dev/shm") ? "/dev/shm" : tmpdir();
  * the Prisma CLI. Treated as read-only once setup completes.
  *
  * The path is unique per `vitest` invocation: `globalSetup` builds it and
- * exports it via `HAAABIT_TEST_TEMPLATE_DB` so forked test workers inherit
+ * exports it via `MIKOSHI_TRACKER_TEST_TEMPLATE_DB` so forked test workers inherit
  * it. Without this, concurrent test runs (e.g. an autonomous loop running
  * `pnpm test` while another run is in flight) share one fixed path — and one
  * run's `globalSetup` removing/recreating the template mid-copy yields
  * 0-byte test DBs ("no such table") or outright ENOENT in the other run.
  */
 export const TEMPLATE_DB_PATH =
-  process.env.HAAABIT_TEST_TEMPLATE_DB ??
-  join(TEST_DB_DIR, "haaabit-test-template.db");
+  process.env.MIKOSHI_TRACKER_TEST_TEMPLATE_DB ??
+  join(TEST_DB_DIR, "mikoshi-tracker-test-template.db");
 
 /** Build a per-run-unique template path. Used by `globalSetup`. */
 export function makeTemplateDbPath(): string {
   const unique = `${process.pid}-${Date.now()}`;
-  return join(TEST_DB_DIR, `haaabit-test-template-${unique}.db`);
+  return join(TEST_DB_DIR, `mikoshi-tracker-test-template-${unique}.db`);
 }

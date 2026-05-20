@@ -23,11 +23,11 @@ The remaining gap is verification:
 
 ### Locked Decisions
 
-- Keep `@haaabit/openclaw-plugin` as the canonical OpenClaw runtime path.
-- Keep `@haaabit/mcp` as the generic-host path and one-shot `bootstrap-token` helper.
+- Keep `@mikoshi-tracker/openclaw-plugin` as the canonical OpenClaw runtime path.
+- Keep `@mikoshi-tracker/mcp` as the generic-host path and one-shot `bootstrap-token` helper.
 - Treat real OpenClaw UI/plugin loading as external-host-only; do not pretend the repository can boot the real host.
 - Use repository-native verification to prove manifest/runtime loading, env validation, tool registration, and at least one real API-backed read + safe mutation through the native plugin boundary.
-- Preserve the existing Haaabit API test-helper seam instead of inventing a second fake backend.
+- Preserve the existing MikoshiTracker API test-helper seam instead of inventing a second fake backend.
 - Capture migration notes from the older OpenClaw MCP setup to the native plugin path before closing the milestone.
 
 ### Claude's Discretion
@@ -42,7 +42,7 @@ The remaining gap is verification:
 ## Specific Ideas
 
 - Reuse `apps/api/test/helpers/app.ts` and token issuance helpers like the existing MCP stdio integration tests already do.
-- Exercise the native path through `activateHaaabitOpenClawPlugin(...)` plus a fake `registerTool(...)` collector, not through MCP transport.
+- Exercise the native path through `activateMikoshiTrackerOpenClawPlugin(...)` plus a fake `registerTool(...)` collector, not through MCP transport.
 - Verify a read flow starting with `today_get_summary` or `habits_list`.
 - Verify a safe mutation flow such as `today_complete` or `today_set_total`, followed by readback/asserted refreshed state.
 - Upgrade the root verification scripts so `pnpm verify:openclaw` reflects the native plugin story the docs now describe.

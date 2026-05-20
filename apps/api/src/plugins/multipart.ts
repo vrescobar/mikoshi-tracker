@@ -1,7 +1,7 @@
 import fastifyMultipart from "@fastify/multipart";
 import type { FastifyInstance } from "fastify";
 
-import { MAX_ATTACHMENT_BYTES } from "@haaabit/contracts/attachments";
+import { MAX_ATTACHMENT_BYTES } from "@mikoshi-tracker/contracts/attachments";
 
 /**
  * Register multipart/form-data parsing for attachment uploads. The per-file

@@ -1,6 +1,6 @@
 "use client";
 
-import type { CircleRecord } from "@haaabit/contracts/circles";
+import type { CircleRecord } from "@mikoshi-tracker/contracts/circles";
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 

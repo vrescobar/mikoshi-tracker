@@ -1,11 +1,11 @@
-type HaaabitApiErrorLike = {
+type MikoshiTrackerApiErrorLike = {
   status: number;
   code: string;
   message: string;
   details?: unknown;
 };
 
-export type HaaabitToolErrorCategory =
+export type MikoshiTrackerToolErrorCategory =
   | "timeout"
   | "network"
   | "auth"
@@ -16,7 +16,7 @@ export type HaaabitToolErrorCategory =
   | "upstream"
   | "unknown";
 
-export type HaaabitToolErrorResolution =
+export type MikoshiTrackerToolErrorResolution =
   | "retry"
   | "reauth"
   | "fix_input"
@@ -26,24 +26,24 @@ export type HaaabitToolErrorResolution =
   | "wait_until_due"
   | "inspect_upstream";
 
-export type HaaabitToolErrorPayload = {
-  category: HaaabitToolErrorCategory;
+export type MikoshiTrackerToolErrorPayload = {
+  category: MikoshiTrackerToolErrorCategory;
   status: number;
   code: string;
   message: string;
   hint?: string;
   issues?: unknown;
   retryable?: boolean;
-  resolution?: HaaabitToolErrorResolution;
+  resolution?: MikoshiTrackerToolErrorResolution;
   suggestedTool?: string;
 };
 
 export function toToolErrorPayload(
-  error: HaaabitApiErrorLike,
+  error: MikoshiTrackerApiErrorLike,
   context: {
     toolName?: string;
   } = {},
-): HaaabitToolErrorPayload {
+): MikoshiTrackerToolErrorPayload {
   const category = categorizeError(error, context.toolName);
   const hint = deriveHint(error, category, context.toolName);
   const resolution = deriveResolution(error, category);
@@ -66,7 +66,7 @@ export function sanitizeErrorMessage(message: string) {
   return message.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").replace(/token\s+\S+/gi, "token [REDACTED]");
 }
 
-function categorizeError(error: HaaabitApiErrorLike, toolName: string | undefined): HaaabitToolErrorCategory {
+function categorizeError(error: MikoshiTrackerApiErrorLike, toolName: string | undefined): MikoshiTrackerToolErrorCategory {
   if (error.code === "TIMEOUT" || error.status === 504) {
     return "timeout";
   }
@@ -102,7 +102,7 @@ function categorizeError(error: HaaabitApiErrorLike, toolName: string | undefine
   return "unknown";
 }
 
-function deriveMessage(error: HaaabitApiErrorLike, toolName: string | undefined) {
+function deriveMessage(error: MikoshiTrackerApiErrorLike, toolName: string | undefined) {
   const message = sanitizeErrorMessage(error.message);
 
   if (error.code === "HABIT_INACTIVE" || message === "Archived habits are read-only until restored") {
@@ -128,16 +128,16 @@ function deriveMessage(error: HaaabitApiErrorLike, toolName: string | undefined)
   return message;
 }
 
-function deriveHint(error: HaaabitApiErrorLike, category: HaaabitToolErrorCategory, toolName: string | undefined) {
+function deriveHint(error: MikoshiTrackerApiErrorLike, category: MikoshiTrackerToolErrorCategory, toolName: string | undefined) {
   const message = sanitizeErrorMessage(error.message);
 
   switch (category) {
     case "timeout":
       return "Retry the same tool call. If this keeps timing out, check API latency or raise the timeout budget.";
     case "network":
-      return "Retry after confirming HAAABIT_API_URL is reachable from this runtime.";
+      return "Retry after confirming MIKOSHI_TRACKER_API_URL is reachable from this runtime.";
     case "auth":
-      return "Check HAAABIT_API_TOKEN and confirm the token can access this Haaabit API.";
+      return "Check MIKOSHI_TRACKER_API_TOKEN and confirm the token can access this MikoshiTracker API.";
     case "not_found":
       return toolName?.startsWith("habits_") || toolName?.startsWith("today_")
         ? "Check the habitId and make sure that habit still exists for this user."
@@ -162,16 +162,16 @@ function deriveHint(error: HaaabitApiErrorLike, category: HaaabitToolErrorCatego
       }
       return undefined;
     case "upstream":
-      return "The Haaabit API failed upstream. Retry once, then inspect server health if it persists.";
+      return "The MikoshiTracker API failed upstream. Retry once, then inspect server health if it persists.";
     default:
       return undefined;
   }
 }
 
 function deriveResolution(
-  error: HaaabitApiErrorLike,
-  category: HaaabitToolErrorCategory,
-): HaaabitToolErrorResolution | undefined {
+  error: MikoshiTrackerApiErrorLike,
+  category: MikoshiTrackerToolErrorCategory,
+): MikoshiTrackerToolErrorResolution | undefined {
   const message = sanitizeErrorMessage(error.message);
 
   switch (category) {
@@ -202,8 +202,8 @@ function deriveResolution(
 }
 
 function deriveSuggestedTool(
-  error: HaaabitApiErrorLike,
-  category: HaaabitToolErrorCategory,
+  error: MikoshiTrackerApiErrorLike,
+  category: MikoshiTrackerToolErrorCategory,
   toolName: string | undefined,
 ) {
   const message = sanitizeErrorMessage(error.message);
@@ -228,7 +228,7 @@ function deriveSuggestedTool(
   return undefined;
 }
 
-function isRetryable(category: HaaabitToolErrorCategory) {
+function isRetryable(category: MikoshiTrackerToolErrorCategory) {
   if (category === "timeout" || category === "network" || category === "upstream") {
     return true;
   }
@@ -246,7 +246,7 @@ function isRetryable(category: HaaabitToolErrorCategory) {
   return undefined;
 }
 
-function isWrongKindError(error: HaaabitApiErrorLike, toolName: string | undefined) {
+function isWrongKindError(error: MikoshiTrackerApiErrorLike, toolName: string | undefined) {
   const message = sanitizeErrorMessage(error.message);
 
   return (

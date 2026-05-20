@@ -18,7 +18,7 @@ function hasSchemaKey(value: unknown, targetKey: string): boolean {
 }
 
 describe("createToolCatalog", () => {
-  it("reuses the shipped Haaabit tool vocabulary", () => {
+  it("reuses the shipped MikoshiTracker tool vocabulary", () => {
     const catalog = createToolCatalog();
 
     expect(catalog.map((tool) => tool.name)).toEqual(EXPECTED_TOOL_NAMES);

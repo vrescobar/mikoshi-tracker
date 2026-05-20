@@ -107,7 +107,7 @@ async function runBootstrapTokenCommand(
 async function promptForPassword(stdin: NodeJS.ReadStream, stdout: NodeJS.WriteStream) {
   if (!stdin.isTTY || !stdout.isTTY) {
     throw new Error(
-      "Missing bootstrap password. Provide --password, HAAABIT_BOOTSTRAP_PASSWORD, or run interactively to enter it.",
+      "Missing bootstrap password. Provide --password, MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD, or run interactively to enter it.",
     );
   }
 
@@ -118,7 +118,7 @@ async function promptForPassword(stdin: NodeJS.ReadStream, stdout: NodeJS.WriteS
   });
 
   try {
-    const password = await rl.question("Haaabit account password: ");
+    const password = await rl.question("MikoshiTracker account password: ");
 
     if (!password) {
       throw new Error("Bootstrap password cannot be empty.");

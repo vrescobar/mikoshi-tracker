@@ -41,7 +41,7 @@ describe("controller helpers", () => {
   it("uses the test override timestamp header only in test env", () => {
     const request = {
       headers: {
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
       server: {
         env: {

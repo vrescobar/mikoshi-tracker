@@ -60,7 +60,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
           <div className={styles.brandRow}>
             <div className={styles.brand}>
               <Link href={routes.dashboard} className={styles.brandMark}>
-                Haaabit
+                MikoshiTracker
               </Link>
               <p className={styles.brandCopy}>{copy.shell.brandCopy}</p>
             </div>

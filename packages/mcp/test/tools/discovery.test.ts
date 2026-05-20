@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createServer } from "../../src/server/create-server";
-import { HAAABIT_WORKFLOW_PROMPT, HAAABIT_WORKFLOW_RESOURCE, WORKFLOW_GUIDE_TEXT } from "../../src/server/guidance";
+import { MIKOSHI_TRACKER_WORKFLOW_PROMPT, MIKOSHI_TRACKER_WORKFLOW_RESOURCE, WORKFLOW_GUIDE_TEXT } from "../../src/server/guidance";
 import { toolInventory } from "../../src/tools/inventory";
 
 describe("server discovery wiring", () => {
@@ -76,10 +76,10 @@ describe("server discovery wiring", () => {
       fetch: vi.fn<typeof fetch>(),
     });
 
-    expect(listRegisteredPrompts()).toEqual([HAAABIT_WORKFLOW_PROMPT]);
-    expect(listRegisteredResources()).toEqual([HAAABIT_WORKFLOW_RESOURCE]);
-    expect(HAAABIT_WORKFLOW_PROMPT.name).toBe("haaabit_assistant_workflow");
-    expect(HAAABIT_WORKFLOW_RESOURCE.uri).toBe("haaabit://guides/workflow");
+    expect(listRegisteredPrompts()).toEqual([MIKOSHI_TRACKER_WORKFLOW_PROMPT]);
+    expect(listRegisteredResources()).toEqual([MIKOSHI_TRACKER_WORKFLOW_RESOURCE]);
+    expect(MIKOSHI_TRACKER_WORKFLOW_PROMPT.name).toBe("mikoshi_tracker_assistant_workflow");
+    expect(MIKOSHI_TRACKER_WORKFLOW_RESOURCE.uri).toBe("mikoshi-tracker://guides/workflow");
     expect(WORKFLOW_GUIDE_TEXT).toContain("today_get_summary");
     expect(WORKFLOW_GUIDE_TEXT).toContain("read-first");
   });

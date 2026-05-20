@@ -281,7 +281,7 @@ describe("habit routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie: firstUser.cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
       payload: {
         habitId: firstHabit.id,
@@ -320,7 +320,7 @@ describe("habit routes", () => {
       url: "/api/today",
       headers: {
         cookie: firstUser.cookie,
-        "x-haaabit-now": "2026-03-11T08:30:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:30:00.000Z",
       },
     });
 

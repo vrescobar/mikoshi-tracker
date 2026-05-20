@@ -1,6 +1,6 @@
 "use client";
 
-import type { HabitDetail } from "@haaabit/contracts/habits";
+import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 
 import { archiveHabit, getHabitDetail, listHabits, restoreHabit, type HabitRecord } from "../../lib/auth-client";

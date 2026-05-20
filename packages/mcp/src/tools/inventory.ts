@@ -1,5 +1,5 @@
-import type { HaaabitApiClient } from "../client/api-client.js";
-import { HaaabitApiError, createNotImplementedToolResult, toMcpErrorResult } from "../client/errors.js";
+import type { MikoshiTrackerApiClient } from "../client/api-client.js";
+import { MikoshiTrackerApiError, createNotImplementedToolResult, toMcpErrorResult } from "../client/errors.js";
 import { EXPECTED_TOOL_NAMES, toolInventory } from "./catalog.js";
 import { isImageResult, type ToolOperation } from "./operation-types.js";
 import { createImageToolResult, createMutationToolResult, createReadToolResult } from "./read-results.js";
@@ -7,7 +7,7 @@ import { createToolOperations } from "./runtime.js";
 
 export { EXPECTED_TOOL_NAMES, toolInventory } from "./catalog.js";
 
-export function createDiscoveryHandlers(options: { client: HaaabitApiClient }) {
+export function createDiscoveryHandlers(options: { client: MikoshiTrackerApiClient }) {
   const operations = createToolOperations({
     client: options.client,
   });
@@ -31,7 +31,7 @@ function wrapToolHandler(toolName: string, isMutation: boolean, handler: ToolOpe
         ? createMutationToolResult(toolName, outcome.payload, outcome.summary)
         : createReadToolResult(toolName, outcome.payload, outcome.summary);
     } catch (error) {
-      if (error instanceof HaaabitApiError) {
+      if (error instanceof MikoshiTrackerApiError) {
         return toMcpErrorResult(error, {
           toolName,
         });

@@ -12,4 +12,4 @@
 
 1. 在 `packages/mcp/src/tools/today.ts` 为 `today_get_summary` 添加空的 `inputSchema`，保持现有读接口和输出契约不变。
 2. 增加 OpenClaw 插件侧回归测试，断言 `today_get_summary` 注册出来的 `parameters` 是合法 object schema，而不是 `undefined`。
-3. 重新构建 `@haaabit/openclaw-plugin`，并运行覆盖 `today_get_summary` 注册与真实调用路径的测试，确认不再出现 AJV schema 报错。
+3. 重新构建 `@mikoshi-tracker/openclaw-plugin`，并运行覆盖 `today_get_summary` 注册与真实调用路径的测试，确认不再出现 AJV schema 报错。

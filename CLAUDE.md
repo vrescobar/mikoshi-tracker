@@ -2,7 +2,7 @@
 
 ### Users
 
-Haaabit serves individual self-hosting users who open the product throughout the day to understand what must be done now, what is already complete, and whether their habit system is healthy overall. The interface needs to support fast scanning, low cognitive load, and strong trust because the same data also powers AI-assisted check-ins.
+MikoshiTracker serves individual self-hosting users who open the product throughout the day to understand what must be done now, what is already complete, and whether their habit system is healthy overall. The interface needs to support fast scanning, low cognitive load, and strong trust because the same data also powers AI-assisted check-ins.
 
 ### Brand Personality
 

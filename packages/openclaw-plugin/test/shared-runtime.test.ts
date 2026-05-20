@@ -8,7 +8,7 @@ import { EXPECTED_TOOL_NAMES } from "../src/tool-catalog";
 const packageRoot = new URL("../", import.meta.url);
 
 describe("shared native runtime", () => {
-  it("creates native handlers for the full shipped Haaabit tool vocabulary", () => {
+  it("creates native handlers for the full shipped MikoshiTracker tool vocabulary", () => {
     const handlers = createNativeHandlers({
       apiUrl: "https://habit.example.com/api",
       apiToken: "secret-token",

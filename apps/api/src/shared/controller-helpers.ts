@@ -10,7 +10,7 @@ export function sendAuthError(reply: FastifyReply, error: AuthSessionError): voi
 }
 
 export function getRequestTimestamp(request: FastifyRequest) {
-  const header = request.headers["x-haaabit-now"];
+  const header = request.headers["x-mikoshi-tracker-now"];
 
   if (request.server.env.NODE_ENV === "test" && typeof header === "string" && header.length > 0) {
     return header;

@@ -13,9 +13,9 @@
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec tsx -e 'import { createToolCatalog } from "./src/tool-catalog.ts"; const tool = createToolCatalog().find((t) => t.name === "habits_edit"); console.log(JSON.stringify(tool?.inputSchema, null, 2));'`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/tool-catalog.test.ts test/tool-registration.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/tools/habits-write.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec tsx -e 'import { createToolCatalog } from "./src/tool-catalog.ts"; const tool = createToolCatalog().find((t) => t.name === "habits_edit"); console.log(JSON.stringify(tool?.inputSchema, null, 2));'`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/tool-catalog.test.ts test/tool-registration.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/tools/habits-write.test.ts`
 - `pnpm verify:openclaw`
 
 ## Outcome

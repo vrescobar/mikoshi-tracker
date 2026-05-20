@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-Phase 28 does not add new tool coverage. Phase 27 already gave the native OpenClaw plugin real habits/today/stats handlers on top of the shared Haaabit API runtime. What remains is contract hardening: the native plugin now returns a thin shape like `{ ok, summary, data }` or `{ ok, error }`, but that shape is still an implementation convenience, not a fully locked agent-facing contract.
+Phase 28 does not add new tool coverage. Phase 27 already gave the native OpenClaw plugin real habits/today/stats handlers on top of the shared MikoshiTracker API runtime. What remains is contract hardening: the native plugin now returns a thin shape like `{ ok, summary, data }` or `{ ok, error }`, but that shape is still an implementation convenience, not a fully locked agent-facing contract.
 
 This phase should formalize that native success/error contract so agents can rely on it, make failure categories explicit enough to distinguish network/auth/not-found/wrong-tool cases, and update operator-facing docs/examples so OpenClaw no longer defaults to the old `skill -> mcporter -> MCP -> API` story.
 
@@ -27,7 +27,7 @@ This phase should formalize that native success/error contract so agents can rel
 
 ### OpenClaw-native guidance
 - OpenClaw-facing docs/examples should now prefer the native plugin path first.
-- The generic `@haaabit/mcp` path still exists for non-OpenClaw hosts, but it should no longer be the default answer for OpenClaw.
+- The generic `@mikoshi-tracker/mcp` path still exists for non-OpenClaw hosts, but it should no longer be the default answer for OpenClaw.
 - Operator docs must explain the difference between OpenClaw-native plugin usage and the generic MCP package cleanly.
 
 ### Scope boundary

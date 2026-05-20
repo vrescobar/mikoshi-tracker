@@ -1,5 +1,5 @@
 {
-  "name": "@haaabit/api",
+  "name": "@mikoshi-tracker/api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/multipart": "^10.0.0",
     "@fastify/rate-limit": "^10.3.0",
-    "@haaabit/contracts": "workspace:*",
+    "@mikoshi-tracker/contracts": "workspace:*",
     "@prisma/adapter-libsql": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "better-auth": "^1.6.11",

@@ -171,7 +171,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const beforeRes = await context.app.inject({
       method: "GET",
       url: `/api/circles/${circle.id}/leaderboard`,
-      headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+      headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
     });
     expect(beforeRes.statusCode).toBe(200);
     const beforeBoard = beforeRes.json() as { leaderboard: Array<{ userId: string; completedTodayCount: number }> };
@@ -180,7 +180,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const completeRes = await context.app.inject({
       method: "POST",
       url: `/api/circles/${circle.id}/members/${alice.id}/habits/${aliceHabit.id}/complete`,
-      headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+      headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
     });
     expect(completeRes.statusCode).toBe(200);
 
@@ -194,7 +194,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const afterRes = await context.app.inject({
       method: "GET",
       url: `/api/circles/${circle.id}/leaderboard`,
-      headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+      headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
     });
     expect(afterRes.statusCode).toBe(200);
     const afterBoard = afterRes.json() as { leaderboard: Array<{ userId: string; completedTodayCount: number }> };
@@ -218,7 +218,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const response = await context.app.inject({
       method: "GET",
       url: `/api/circles/${circle.id}/members/${alice.id}/habits`,
-      headers: { authorization: `Bearer ${token}`, "x-haaabit-now": NOW },
+      headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
     });
 
     expect(response.statusCode).toBe(200);

@@ -21,9 +21,9 @@ const ENV_REFERENCE_SOURCES = new Set(["env", "environment", "process.env", "pro
 type EnvCandidateMap = Record<string, unknown>;
 
 export function parsePluginEnv(env: NodeJS.ProcessEnv = process.env): NativePluginConfig {
-  const apiUrl = readEnvString(env, "HAAABIT_API_URL")?.trim();
-  const apiToken = readEnvString(env, "HAAABIT_API_TOKEN")?.trim();
-  const missing = [apiUrl ? null : "HAAABIT_API_URL", apiToken ? null : "HAAABIT_API_TOKEN"].filter(
+  const apiUrl = readEnvString(env, "MIKOSHI_TRACKER_API_URL")?.trim();
+  const apiToken = readEnvString(env, "MIKOSHI_TRACKER_API_TOKEN")?.trim();
+  const missing = [apiUrl ? null : "MIKOSHI_TRACKER_API_URL", apiToken ? null : "MIKOSHI_TRACKER_API_TOKEN"].filter(
     (value): value is string => value !== null,
   );
 
@@ -38,7 +38,7 @@ export function parsePluginEnv(env: NodeJS.ProcessEnv = process.env): NativePlug
   if (apiUrl === undefined || apiToken === undefined) {
     throw createConfigError(
       "MISSING_PLUGIN_ENV",
-      "Missing required plugin configuration: HAAABIT_API_URL, HAAABIT_API_TOKEN.",
+      "Missing required plugin configuration: MIKOSHI_TRACKER_API_URL, MIKOSHI_TRACKER_API_TOKEN.",
       "Set both env vars before loading the native OpenClaw plugin.",
     );
   }
@@ -50,40 +50,40 @@ export function parsePluginEnv(env: NodeJS.ProcessEnv = process.env): NativePlug
   } catch {
     throw createConfigError(
       "INVALID_API_URL",
-      "HAAABIT_API_URL must be a valid absolute URL.",
-      "Use the Haaabit API base URL, for example https://habit.example.com/api.",
+      "MIKOSHI_TRACKER_API_URL must be a valid absolute URL.",
+      "Use the MikoshiTracker API base URL, for example https://habit.example.com/api.",
     );
   }
 
   if (!["http:", "https:"].includes(parsedUrl.protocol)) {
     throw createConfigError(
       "INVALID_API_URL",
-      "HAAABIT_API_URL must use http or https.",
-      "Use the Haaabit API base URL, for example https://habit.example.com/api.",
+      "MIKOSHI_TRACKER_API_URL must use http or https.",
+      "Use the MikoshiTracker API base URL, for example https://habit.example.com/api.",
     );
   }
 
   if (/\s/.test(apiToken)) {
     throw createConfigError(
       "INVALID_API_TOKEN",
-      "HAAABIT_API_TOKEN must not contain whitespace.",
-      "Use a Haaabit personal API token, not a pasted multi-part secret or password.",
+      "MIKOSHI_TRACKER_API_TOKEN must not contain whitespace.",
+      "Use a MikoshiTracker personal API token, not a pasted multi-part secret or password.",
     );
   }
 
   if (apiToken.includes("@")) {
     throw createConfigError(
       "INVALID_API_TOKEN",
-      "HAAABIT_API_TOKEN looks more like an email address than a Haaabit personal API token.",
-      "Use a Haaabit personal API token, not an email address or account credential.",
+      "MIKOSHI_TRACKER_API_TOKEN looks more like an email address than a MikoshiTracker personal API token.",
+      "Use a MikoshiTracker personal API token, not an email address or account credential.",
     );
   }
 
   if (/^https?:\/\//i.test(apiToken)) {
     throw createConfigError(
       "INVALID_API_TOKEN",
-      "HAAABIT_API_TOKEN looks more like a URL than a Haaabit personal API token.",
-      "Use a Haaabit personal API token, not a URL.",
+      "MIKOSHI_TRACKER_API_TOKEN looks more like a URL than a MikoshiTracker personal API token.",
+      "Use a MikoshiTracker personal API token, not a URL.",
     );
   }
 

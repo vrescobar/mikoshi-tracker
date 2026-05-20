@@ -10,7 +10,7 @@ cd "$ROOT_DIR"
 source "${SCRIPT_DIR}/lib.sh"
 COMPOSE="$(detect_compose)"
 
-export APP_BASE_URL="${APP_BASE_URL:-http://localhost:${HAAABIT_PUBLIC_PORT:-8080}}"
+export APP_BASE_URL="${APP_BASE_URL:-http://localhost:${MIKOSHI_TRACKER_PUBLIC_PORT:-8080}}"
 export BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-12345678901234567890123456789012}"
 
 cleanup() {

@@ -17,7 +17,7 @@ score: 3/3 truths verified
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | The repository-level OpenClaw verification gate now targets the native plugin path. | ✓ VERIFIED | `package.json` scripts `verify:openclaw` and `verify:openclaw:full` now run `@haaabit/openclaw-plugin` tests first; `packages/openclaw-plugin/test/verification-smoke.test.ts` passed. |
+| 1 | The repository-level OpenClaw verification gate now targets the native plugin path. | ✓ VERIFIED | `package.json` scripts `verify:openclaw` and `verify:openclaw:full` now run `@mikoshi-tracker/openclaw-plugin` tests first; `packages/openclaw-plugin/test/verification-smoke.test.ts` passed. |
 | 2 | The repository now proves one native read flow and one safe native mutation flow against the real API test app. | ✓ VERIFIED | `packages/openclaw-plugin/test/native-integration.test.ts` passed against the real Fastify test app and token issuance flow. |
 | 3 | Operators now have explicit migration guidance from the older OpenClaw MCP bridge path to the native plugin path. | ✓ VERIFIED | `docs/openclaw-migration.md` exists and is referenced by `docs/ai-agent-integration.md`, `docs/openclaw-validation-checklist.md`, and `docs/openclaw-troubleshooting.md`; doc smoke stayed green. |
 
@@ -55,10 +55,10 @@ One external-host check remains non-blocking:
 
 ## Commands Run
 
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/verification-smoke.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/native-integration.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/verification-smoke.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/native-integration.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 - `pnpm verify:openclaw`
 - `pnpm verify:openclaw:full`
 

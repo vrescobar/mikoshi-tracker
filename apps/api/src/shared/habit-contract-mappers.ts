@@ -1,4 +1,4 @@
-import type { HabitKind, Weekday } from "@haaabit/contracts/habits";
+import type { HabitKind, Weekday } from "@mikoshi-tracker/contracts/habits";
 
 const reverseHabitKindMap = {
   BOOLEAN: "boolean",

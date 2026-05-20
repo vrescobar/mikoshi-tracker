@@ -64,7 +64,7 @@ No task commits were created in this workspace session. Phase 28 work is being f
 ## Verification
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/tool-catalog.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/tool-catalog.test.ts`
 
 ## Next Plan Readiness
 

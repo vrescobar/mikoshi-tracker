@@ -1,6 +1,6 @@
 "use client";
 
-import type { CircleMember, CircleTokenMeta } from "@haaabit/contracts/circles";
+import type { CircleMember, CircleTokenMeta } from "@mikoshi-tracker/contracts/circles";
 import { type FormEvent, useEffect, useId, useState } from "react";
 
 import {

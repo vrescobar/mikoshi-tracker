@@ -7,7 +7,7 @@ import {
   createHabitInputSchema,
   habitListFiltersSchema,
   updateHabitInputSchema,
-} from "@haaabit/contracts/habits";
+} from "@mikoshi-tracker/contracts/habits";
 
 export type NormalizedCreateHabitInput = {
   name: string;

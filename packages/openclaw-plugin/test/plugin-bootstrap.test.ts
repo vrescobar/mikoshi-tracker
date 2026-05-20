@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it, vi } from "vitest";
 
-import defaultRegister, { activate, activateHaaabitOpenClawPlugin, EXPECTED_TOOL_NAMES, register } from "../src/index";
+import defaultRegister, { activate, activateMikoshiTrackerOpenClawPlugin, EXPECTED_TOOL_NAMES, register } from "../src/index";
 import openClawDefaultRegister, {
   activate as activateOpenClawEntry,
   register as registerOpenClawEntry,
@@ -11,17 +11,17 @@ import type { OpenClawRegisteredTool } from "../src/types";
 
 const packageRoot = new URL("../", import.meta.url);
 
-describe("activateHaaabitOpenClawPlugin", () => {
-  it("registers the planned Haaabit tool catalog through the native plugin API", () => {
+describe("activateMikoshiTrackerOpenClawPlugin", () => {
+  it("registers the planned MikoshiTracker tool catalog through the native plugin API", () => {
     const registerTool = vi.fn();
-    const result = activateHaaabitOpenClawPlugin(
+    const result = activateMikoshiTrackerOpenClawPlugin(
       {
         registerTool,
       },
       {
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api",
-          HAAABIT_API_TOKEN: "secret-token",
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+          MIKOSHI_TRACKER_API_TOKEN: "secret-token",
         },
       },
     );
@@ -39,8 +39,8 @@ describe("activateHaaabitOpenClawPlugin", () => {
       },
       {
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api",
-          HAAABIT_API_TOKEN: "secret-token",
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+          MIKOSHI_TRACKER_API_TOKEN: "secret-token",
         },
       },
     );
@@ -59,20 +59,20 @@ describe("activateHaaabitOpenClawPlugin", () => {
         registerTool,
         config: {
           env: {
-            HAAABIT_API_URL: "https://api-config.example.com/api",
-            HAAABIT_API_TOKEN: "api-config-token",
+            MIKOSHI_TRACKER_API_URL: "https://api-config.example.com/api",
+            MIKOSHI_TRACKER_API_TOKEN: "api-config-token",
           },
         },
       },
       {
         config: {
           env: {
-            HAAABIT_API_TOKEN: "options-config-token",
+            MIKOSHI_TRACKER_API_TOKEN: "options-config-token",
           },
         },
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api/",
-          HAAABIT_API_TOKEN: {
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api/",
+          MIKOSHI_TRACKER_API_TOKEN: {
             value: "secret-token",
           },
         },
@@ -99,8 +99,8 @@ describe("activateHaaabitOpenClawPlugin", () => {
       },
       {
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api",
-          HAAABIT_API_TOKEN: "secret-token",
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+          MIKOSHI_TRACKER_API_TOKEN: "secret-token",
         },
       },
     );
@@ -121,10 +121,10 @@ describe("activateHaaabitOpenClawPlugin", () => {
         registerTool,
         config: {
           env: {
-            HAAABIT_API_URL: {
+            MIKOSHI_TRACKER_API_URL: {
               value: "https://habit.example.com/api/",
             },
-            HAAABIT_API_TOKEN: {
+            MIKOSHI_TRACKER_API_TOKEN: {
               value: "secret-token",
             },
           },
@@ -149,11 +149,11 @@ describe("activateHaaabitOpenClawPlugin", () => {
 
   it("starts successfully when api.config.env uses env reference objects resolved from process.env", () => {
     const registerTool = vi.fn();
-    const previousApiUrl = process.env.HAAABIT_API_URL;
-    const previousApiToken = process.env.HAAABIT_API_TOKEN;
+    const previousApiUrl = process.env.MIKOSHI_TRACKER_API_URL;
+    const previousApiToken = process.env.MIKOSHI_TRACKER_API_TOKEN;
 
-    process.env.HAAABIT_API_URL = "https://habit.example.com/api/";
-    process.env.HAAABIT_API_TOKEN = "secret-token";
+    process.env.MIKOSHI_TRACKER_API_URL = "https://habit.example.com/api/";
+    process.env.MIKOSHI_TRACKER_API_TOKEN = "secret-token";
 
     try {
       const result = registerOpenClawEntry(
@@ -161,14 +161,14 @@ describe("activateHaaabitOpenClawPlugin", () => {
           registerTool,
           config: {
             env: {
-              HAAABIT_API_URL: {
+              MIKOSHI_TRACKER_API_URL: {
                 source: "env",
-                id: "HAAABIT_API_URL",
+                id: "MIKOSHI_TRACKER_API_URL",
                 provider: "default",
               },
-              HAAABIT_API_TOKEN: {
+              MIKOSHI_TRACKER_API_TOKEN: {
                 source: "env",
-                key: "HAAABIT_API_TOKEN",
+                key: "MIKOSHI_TRACKER_API_TOKEN",
                 provider: "default",
               },
             },
@@ -186,8 +186,8 @@ describe("activateHaaabitOpenClawPlugin", () => {
         EXPECTED_TOOL_NAMES,
       );
     } finally {
-      resetProcessEnv("HAAABIT_API_URL", previousApiUrl);
-      resetProcessEnv("HAAABIT_API_TOKEN", previousApiToken);
+      resetProcessEnv("MIKOSHI_TRACKER_API_URL", previousApiUrl);
+      resetProcessEnv("MIKOSHI_TRACKER_API_TOKEN", previousApiToken);
     }
   });
 
@@ -195,17 +195,17 @@ describe("activateHaaabitOpenClawPlugin", () => {
     const registerTool = vi.fn();
 
     expect(() =>
-      activateHaaabitOpenClawPlugin(
+      activateMikoshiTrackerOpenClawPlugin(
         {
           registerTool,
         },
         {
           env: {
-            HAAABIT_API_URL: "https://habit.example.com/api",
+            MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
           },
         },
       ),
-    ).toThrowError(/HAAABIT_API_TOKEN/);
+    ).toThrowError(/MIKOSHI_TRACKER_API_TOKEN/);
     expect(registerTool).not.toHaveBeenCalled();
   });
 
@@ -214,11 +214,11 @@ describe("activateHaaabitOpenClawPlugin", () => {
     const openClawSource = await readFile(new URL("src/openclaw.ts", packageRoot), "utf8");
 
     expect(source).not.toContain("@modelcontextprotocol/sdk");
-    expect(source).not.toContain("@haaabit/mcp");
+    expect(source).not.toContain("@mikoshi-tracker/mcp");
     expect(source).not.toContain("mcporter");
     expect(source).not.toContain("child_process");
     expect(openClawSource).not.toContain("@modelcontextprotocol/sdk");
-    expect(openClawSource).not.toContain("@haaabit/mcp");
+    expect(openClawSource).not.toContain("@mikoshi-tracker/mcp");
     expect(openClawSource).not.toContain("mcporter");
     expect(openClawSource).not.toContain("child_process");
   });

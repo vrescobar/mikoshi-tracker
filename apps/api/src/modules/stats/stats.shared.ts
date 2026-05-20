@@ -1,4 +1,4 @@
-import type { HabitTrendPoint } from "@haaabit/contracts/habits";
+import type { HabitTrendPoint } from "@mikoshi-tracker/contracts/habits";
 
 import {
   serializeContractFrequencyType,

@@ -44,14 +44,14 @@ describe("mcp package bootstrap", () => {
     expect(pkg.description).toBeTruthy();
     expect(pkg.repository).toEqual({
       type: "git",
-      url: "git+https://github.com/booooodv/haaabit.git",
+      url: "git+https://github.com/booooodv/mikoshi-tracker.git",
       directory: "packages/mcp",
     });
-    expect(pkg.homepage).toBe("https://github.com/booooodv/haaabit/tree/main/packages/mcp");
+    expect(pkg.homepage).toBe("https://github.com/booooodv/mikoshi-tracker/tree/main/packages/mcp");
     expect(pkg.bugs).toEqual({
-      url: "https://github.com/booooodv/haaabit/issues",
+      url: "https://github.com/booooodv/mikoshi-tracker/issues",
     });
-    expect(pkg.keywords).toEqual(expect.arrayContaining(["mcp", "model-context-protocol", "haaabit", "habits"]));
+    expect(pkg.keywords).toEqual(expect.arrayContaining(["mcp", "model-context-protocol", "mikoshi-tracker", "habits"]));
     expect(pkg.engines).toEqual({
       node: ">=20",
     });
@@ -132,15 +132,15 @@ describe("mcp package bootstrap", () => {
   });
 
   it("keeps the built CLI alive when launched through a symlinked bin path", async () => {
-    const tempDir = await mkdtemp(path.join(os.tmpdir(), "haaabit-mcp-bin-"));
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "mikoshi-tracker-mcp-bin-"));
     const shimPath = path.join(tempDir, "mcp");
     await symlink(builtCliPath, shimPath);
 
     const child = spawn(process.execPath, [shimPath, "--timeout", "15000"], {
       env: {
         ...process.env,
-        HAAABIT_API_URL: "https://habit.example.com/api",
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       },
       stdio: ["pipe", "pipe", "pipe"],
     });
@@ -163,15 +163,15 @@ describe("mcp package bootstrap", () => {
 
     formatStartupError(
       new Error(
-        "Missing required configuration: HAAABIT_API_TOKEN. Run bootstrap-token before starting the MCP server. token secret-token",
+        "Missing required configuration: MIKOSHI_TRACKER_API_TOKEN. Run bootstrap-token before starting the MCP server. token secret-token",
       ),
       {
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       },
     );
     formatBootstrapError(new Error("Invalid email or password password123 cookie session=abc123"), {
       env: {
-        HAAABIT_BOOTSTRAP_PASSWORD: "password123",
+        MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD: "password123",
       },
       secrets: ["abc123"],
     });

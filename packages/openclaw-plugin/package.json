@@ -1,8 +1,8 @@
 {
-  "name": "@haaabit/openclaw-plugin",
+  "name": "@mikoshi-tracker/openclaw-plugin",
   "version": "0.1.0",
   "private": true,
-  "description": "Native OpenClaw plugin for Haaabit habits, today, and stats tools with structured JSON results.",
+  "description": "Native OpenClaw plugin for MikoshiTracker habits, today, and stats tools with structured JSON results.",
   "license": "MIT",
   "type": "module",
   "engines": {

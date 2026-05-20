@@ -11,9 +11,9 @@ import { createCircleRecord } from "../../src/modules/circles/circle.repository"
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 
 describe("generateCircleToken / hashCircleToken", () => {
-  it("generateCircleToken() returns a string starting with haaabit_circle_", () => {
+  it("generateCircleToken() returns a string starting with mikoshi_tracker_circle_", () => {
     const token = generateCircleToken();
-    expect(token.startsWith("haaabit_circle_")).toBe(true);
+    expect(token.startsWith("mikoshi_tracker_circle_")).toBe(true);
   });
 
   it("generateCircleToken() produces a unique value each call", () => {
@@ -22,19 +22,19 @@ describe("generateCircleToken / hashCircleToken", () => {
   });
 
   it("hashCircleToken() is deterministic for the same input", () => {
-    const token = "haaabit_circle_abc123deadbeef";
+    const token = "mikoshi_tracker_circle_abc123deadbeef";
     expect(hashCircleToken(token)).toBe(hashCircleToken(token));
   });
 
   it("hashCircleToken() produces different digests for different inputs", () => {
-    expect(hashCircleToken("haaabit_circle_aaa")).not.toBe(hashCircleToken("haaabit_circle_bbb"));
+    expect(hashCircleToken("mikoshi_tracker_circle_aaa")).not.toBe(hashCircleToken("mikoshi_tracker_circle_bbb"));
   });
 
   it("hashCircleToken() output does not contain the plain token", () => {
-    const token = "haaabit_circle_secret";
+    const token = "mikoshi_tracker_circle_secret";
     const hash = hashCircleToken(token);
     expect(hash).not.toContain("secret");
-    expect(hash).not.toContain("haaabit_circle_");
+    expect(hash).not.toContain("mikoshi_tracker_circle_");
   });
 });
 
@@ -50,7 +50,7 @@ describe("circle-token DB operations", () => {
 
   it("findCircleByToken() returns null for an unknown token", async () => {
     context = await createTestContext();
-    const result = await findCircleByToken(context.app.db, "haaabit_circle_doesnotexist");
+    const result = await findCircleByToken(context.app.db, "mikoshi_tracker_circle_doesnotexist");
     expect(result).toBeNull();
   });
 

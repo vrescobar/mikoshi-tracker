@@ -1,6 +1,6 @@
 "use client";
 
-import type { TodaySummary } from "@haaabit/contracts/today";
+import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 import { useEffect, useState } from "react";
 
 import { completeTodayHabit, setTodayHabitTotal, undoTodayHabit } from "../../lib/auth-client";

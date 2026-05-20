@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "@haaabit/openclaw-plugin",
-  "name": "Haaabit",
-  "description": "Native OpenClaw tools for Haaabit habits, today, and stats.",
+  "id": "@mikoshi-tracker/openclaw-plugin",
+  "name": "MikoshiTracker",
+  "description": "Native OpenClaw tools for MikoshiTracker habits, today, and stats.",
   "runtime": "node",
   "entry": "./dist/openclaw.js",
   "configSchema": {}

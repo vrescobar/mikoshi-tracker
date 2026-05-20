@@ -1,7 +1,7 @@
 import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import { ATTACHMENT_MAX_DIMENSION, attachmentUploadBase64InputSchema } from "@haaabit/contracts/attachments";
+import { ATTACHMENT_MAX_DIMENSION, attachmentUploadBase64InputSchema } from "@mikoshi-tracker/contracts/attachments";
 
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { sendAuthError } from "../../shared/controller-helpers";

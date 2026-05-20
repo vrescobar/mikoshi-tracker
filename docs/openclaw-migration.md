@@ -6,15 +6,15 @@ This is a transport migration, not a credential-model migration.
 
 What stays the same:
 
-- `HAAABIT_API_URL`
-- `HAAABIT_API_TOKEN`
-- optional Haaabit Skill guidance
+- `MIKOSHI_TRACKER_API_URL`
+- `MIKOSHI_TRACKER_API_TOKEN`
+- optional MikoshiTracker Skill guidance
 - `bootstrap-token` as a one-shot helper when you do not already have a personal API token
 
 What changes:
 
-- OpenClaw should load [`@haaabit/openclaw-plugin`](../packages/openclaw-plugin/README.md) directly.
-- OpenClaw should stop using the older paired MCP runner as its primary Haaabit runtime.
+- OpenClaw should load [`@mikoshi-tracker/openclaw-plugin`](../packages/openclaw-plugin/README.md) directly.
+- OpenClaw should stop using the older paired MCP runner as its primary MikoshiTracker runtime.
 
 ## Old vs New
 
@@ -23,21 +23,21 @@ What changes:
 - workspace Skill or repo-local Skill
 - paired MCP runner
 - optional mcporter/bridge layer
-- Haaabit API
+- MikoshiTracker API
 
 ### New native path
 
 - optional Skill guidance
 - native OpenClaw plugin
-- Haaabit API
+- MikoshiTracker API
 
 ## Migration Steps
 
-1. Keep your existing `HAAABIT_API_URL`.
-2. Keep your existing `HAAABIT_API_TOKEN`.
-3. Remove the older OpenClaw MCP runner block that existed only to make OpenClaw talk to Haaabit.
+1. Keep your existing `MIKOSHI_TRACKER_API_URL`.
+2. Keep your existing `MIKOSHI_TRACKER_API_TOKEN`.
+3. Remove the older OpenClaw MCP runner block that existed only to make OpenClaw talk to MikoshiTracker.
 4. Add the native plugin block from [`../packages/openclaw-plugin/examples/openclaw-plugin.jsonc`](../packages/openclaw-plugin/examples/openclaw-plugin.jsonc).
-5. If your OpenClaw build supports workspace Skills, keep [`../skills/haaabit-mcp/SKILL.md`](../skills/haaabit-mcp/SKILL.md) only as routing guidance, not as transport.
+5. If your OpenClaw build supports workspace Skills, keep [`../skills/mikoshi-tracker-mcp/SKILL.md`](../skills/mikoshi-tracker-mcp/SKILL.md) only as routing guidance, not as transport.
 6. Re-run `pnpm verify:openclaw` for the repository gate and `pnpm verify:openclaw:full` for the full native read/write gate.
 
 ## If You Only Have Account Credentials
@@ -46,8 +46,8 @@ Do not switch to email/password runtime auth.
 
 Instead:
 
-1. Run `npx -y @haaabit/mcp bootstrap-token --api-url <...> --email <...>` once.
-2. Store the returned personal API token as `HAAABIT_API_TOKEN`.
+1. Run `npx -y @mikoshi-tracker/mcp bootstrap-token --api-url <...> --email <...>` once.
+2. Store the returned personal API token as `MIKOSHI_TRACKER_API_TOKEN`.
 3. Continue with the native plugin path.
 
 ## What The Repo Can And Cannot Prove

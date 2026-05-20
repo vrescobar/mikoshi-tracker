@@ -19,7 +19,7 @@ function makeRequest(authorization?: string): FastifyRequest {
 }
 
 const CIRCLE_ID = "circle-abc";
-const TOKEN = "haaabit_circle_deadbeef";
+const TOKEN = "mikoshi_tracker_circle_deadbeef";
 const TOKEN_ID = "token-xyz";
 const CIRCLE = { id: CIRCLE_ID, name: "Test Circle", ownerId: "owner-1" };
 

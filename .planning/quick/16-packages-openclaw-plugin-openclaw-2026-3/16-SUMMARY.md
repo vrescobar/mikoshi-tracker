@@ -71,8 +71,8 @@
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec tsc --noEmit`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/tool-registration.test.ts test/result-envelope.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/plugin-bootstrap.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec tsc --noEmit`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/tool-registration.test.ts test/result-envelope.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/plugin-bootstrap.test.ts`
 - `pnpm verify:openclaw`
 
 ## Outcome

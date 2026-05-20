@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
 
-import { commonAuthErrorResponses, commonBadRequestResponses, habitInactiveResponse } from "@haaabit/contracts/api";
-import { completeHabitInputSchema, setHabitTotalInputSchema, undoHabitInputSchema } from "@haaabit/contracts/checkins";
-import { todayActionResponseSchema, todaySummaryResponseSchema } from "@haaabit/contracts/today";
+import { commonAuthErrorResponses, commonBadRequestResponses, habitInactiveResponse } from "@mikoshi-tracker/contracts/api";
+import { completeHabitInputSchema, setHabitTotalInputSchema, undoHabitInputSchema } from "@mikoshi-tracker/contracts/checkins";
+import { todayActionResponseSchema, todaySummaryResponseSchema } from "@mikoshi-tracker/contracts/today";
 
 import {
   completeTodayHabitHandler,

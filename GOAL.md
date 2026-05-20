@@ -1,13 +1,13 @@
-# Haaabit — Project Goal
+# MikoshiTracker — Project Goal
 
 > Project spec consumed by ralphloop. This document describes the **current
-> implemented state** of Haaabit so an autonomous agent has a faithful baseline
+> implemented state** of MikoshiTracker so an autonomous agent has a faithful baseline
 > to reason against. It is descriptive, not aspirational: every feature listed
 > below exists in the codebase today.
 
-## What Haaabit is
+## What MikoshiTracker is
 
-Haaabit is a self-hosted habit-tracking application for individual users. It is
+MikoshiTracker is a self-hosted habit-tracking application for individual users. It is
 designed to be opened throughout the day to answer three questions at a glance:
 what must be done now, what is already complete, and whether the habit system is
 healthy overall. The same data powers both a web UI and an AI-assisted check-in
@@ -78,7 +78,7 @@ tests/                 Playwright E2E tests
 ## REST API (`apps/api`)
 
 All endpoints are authenticated by session cookie or `Authorization: Bearer
-haaabit_<token>`.
+mikoshi_tracker_<token>`.
 
 - `GET/POST /api/habits`, `GET/PATCH /api/habits/:id`,
   `POST /api/habits/:id/archive`, `POST /api/habits/:id/restore`
@@ -130,7 +130,7 @@ hierarchy; no noisy gamification, no purple-on-white SaaS defaults.
 
 - Email/password sessions via better-auth; first user becomes admin and can
   toggle registration globally.
-- Personal API tokens (`haaabit_<48-hex>`), SHA-256-hashed at rest, rotatable
+- Personal API tokens (`mikoshi_tracker_<48-hex>`), SHA-256-hashed at rest, rotatable
   from the web UI, used for MCP / programmatic access.
 - Helmet security headers + CSP (inline styles only, no remote scripts).
 - Rate limiting: 300 req/min global, 20 req/min on auth endpoints; trusts the
@@ -139,14 +139,14 @@ hierarchy; no noisy gamification, no purple-on-white SaaS defaults.
 ## Deployment
 
 - Multi-stage `Dockerfile.api` / `Dockerfile.web`, run as non-root `node` user.
-- SQLite database mounted as a volume (`/data/haaabit.db`).
-- Caddy reverse proxy fronts the stack; `HAAABIT_SITE_ADDRESS` enables
+- SQLite database mounted as a volume (`/data/mikoshi-tracker.db`).
+- Caddy reverse proxy fronts the stack; `MIKOSHI_TRACKER_SITE_ADDRESS` enables
   automatic Let's Encrypt TLS for public deployment.
 - `docker compose run --rm migrate` applies Prisma migrations;
   `docker compose up -d` starts the stack. Podman-compatible.
 - Required env: `BETTER_AUTH_SECRET`. Optional: `APP_BASE_URL`, `DATABASE_URL`,
-  `BETTER_AUTH_URL`, `CORS_ORIGIN`, `PORT`, `HAAABIT_PUBLIC_PORT`,
-  `HAAABIT_SITE_ADDRESS` (see `.env.example`).
+  `BETTER_AUTH_URL`, `CORS_ORIGIN`, `PORT`, `MIKOSHI_TRACKER_PUBLIC_PORT`,
+  `MIKOSHI_TRACKER_SITE_ADDRESS` (see `.env.example`).
 
 ## Collaboration — Habit Circles
 
@@ -158,23 +158,23 @@ hierarchy; no noisy gamification, no purple-on-white SaaS defaults.
 
 ### C1 — Concept
 
-A **Circle** is a habit contest: several people, each with their own Haaabit
+A **Circle** is a habit contest: several people, each with their own MikoshiTracker
 account, form a group with a shared leaderboard. An external agent (a WhatsApp
 bot driven by the separate Mikoshi project) can **read and record check-ins**
 on the habits each member chooses to share — but **never** on un-shared habits
 and **never** on another person's account. The Mikoshi side (the bridge skill
-and WhatsApp wiring) is out of scope here; Haaabit's circle API must exist
+and WhatsApp wiring) is out of scope here; MikoshiTracker's circle API must exist
 first so that skill can consume it.
 
 ### C2 — Governing design decisions
 
 - The concept is named `Circle` to avoid colliding with the WhatsApp "group"
   and with any future internal grouping.
-- **Authorization authority lives in Haaabit and is enforced server-side.** The
+- **Authorization authority lives in MikoshiTracker and is enforced server-side.** The
   bot gets a narrow-scope token; the server never trusts the client (or its
   LLM) to self-limit. Out-of-scope requests get `403`/`404`. This is the
   central security property.
-- A **circle token is not a global admin token.** There is no "read-all-Haaabit"
+- A **circle token is not a global admin token.** There is no "read-all-MikoshiTracker"
   token. It is scoped to *one* circle, *only* the habits shared in it, and
   *only* check-in writes. A leaked token's blast radius is one circle, not the
   instance.
@@ -184,7 +184,7 @@ first so that skill can consume it.
   leaderboard).
 - Circles are a **new REST surface** (`/api/circles/...`) consumed directly by
   the Mikoshi skill via `fetch`. The feature does **not** go through the
-  `@haaabit/mcp` package, which stays the single-user personal-token bridge.
+  `@mikoshi-tracker/mcp` package, which stays the single-user personal-token bridge.
 
 ### C3 — Data model (`prisma/schema.prisma`)
 
@@ -251,7 +251,7 @@ Inverse relations to add on existing models: on `User`,
 
 Schema design notes:
 
-- **`externalId` is deliberately opaque.** Haaabit stores one string per
+- **`externalId` is deliberately opaque.** MikoshiTracker stores one string per
   membership and does *not* know it is a WhatsApp JID or a Mikoshi identity.
   This keeps the social layer decoupled from WhatsApp and reusable for other
   integrations. JID→account resolution happens in the Mikoshi skill, not here.
@@ -278,7 +278,7 @@ redefined per layer.
 
 Mirror of `api-token.ts`. Functions:
 
-- `generateCircleToken()` → `haaabit_circle_${randomBytes(24).toString("hex")}`.
+- `generateCircleToken()` → `mikoshi_tracker_circle_${randomBytes(24).toString("hex")}`.
 - `hashCircleToken(token)` → `createHash("sha256")…` (same pattern as personal
   tokens).
 - `createCircleToken(db, circleId, label?)` → generates, hashes, inserts a
@@ -289,7 +289,7 @@ Mirror of `api-token.ts`. Functions:
 - `listCircleTokens(db, circleId)` → metadata only (no token value), for the UI.
 - `revokeCircleToken(db, tokenId)` → deletes the row.
 
-The `haaabit_circle_` prefix visually distinguishes a circle token from a
+The `mikoshi_tracker_circle_` prefix visually distinguishes a circle token from a
 personal one.
 
 ### C6 — Circle auth boundary (`apps/api/src/auth/circle-session.ts`)
@@ -427,7 +427,7 @@ circle" toggle; (3) owner-only management — add/remove members, edit
 `externalId`, mint/list/revoke circle tokens (plain token shown once, with a
 copy affordance and warning, like the `api-access` panel).
 
-**The GUI must be explanatory.** Haaabit is self-hosted — the user is their own
+**The GUI must be explanatory.** MikoshiTracker is self-hosted — the user is their own
 administrator and must understand what each action grants. Every option that
 shares data or grants access carries plain-language copy, visible before acting
 (not hidden in a tooltip), stating what it does and its consequences. At
@@ -444,7 +444,7 @@ minimum:
 
 ### C13 — Internationalization
 
-Haaabit's UI is currently bilingual (English / Chinese). As part of this work
+MikoshiTracker's UI is currently bilingual (English / Chinese). As part of this work
 the **whole GUI** — every existing screen (auth, dashboard, habits, detail,
 api-access) plus the new Circles section, including all explanatory copy from
 §C12 — also gets a **Spanish (`es`)** translation, wired into the language
@@ -476,7 +476,7 @@ absent / unknown / cross-circle token.
 
 ### C15 — Acceptance
 
-- `pnpm --filter @haaabit/api test` green, including the §C14 matrix.
+- `pnpm --filter @mikoshi-tracker/api test` green, including the §C14 matrix.
 - `pnpm -r build` / workspace typecheck green after regenerating Prisma.
 - `pnpm -r lint` green.
 - A circle with one owner and one member, each with shared habits, exposes a
@@ -487,7 +487,7 @@ absent / unknown / cross-circle token.
   and every access-/data-sharing action carries explanatory copy (§C12).
 - The whole GUI is translated to Spanish; the app runs in `en` / `zh` / `es`
   with no untranslated strings (§C13).
-- The `@haaabit/mcp` package and the single-user personal-token flow remain
+- The `@mikoshi-tracker/mcp` package and the single-user personal-token flow remain
   **intact** (no test regressions).
 
 ### C16 — Open risks (not in scope, tracked for later)
@@ -512,12 +512,12 @@ UI. Full plan: `PLAN.md`. Phased checklist: `.ralphloop/tasks.md` → Phase 11.
 
 **C17.1 — `User.externalId`.** Add `externalId String? @unique` to `User` — an
 opaque integration id (a Mikoshi `identityId`), one external identity ⇄ one
-Haaabit user. Deliberately opaque: Haaabit does not know it is a WhatsApp
+MikoshiTracker user. Deliberately opaque: MikoshiTracker does not know it is a WhatsApp
 identity. Migration: `pnpm prisma migrate dev --name add_user_external_id`.
 
 **C17.2 — System-key auth (`apps/api/src/auth/admin-key.ts`).** A fourth auth
 path, distinct from sessions, personal `ApiToken`s, circle tokens, and the
-`User.isAdmin` role. Env var `HAAABIT_ADMIN_API_KEY`; a Fastify guard validates
+`User.isAdmin` role. Env var `MIKOSHI_TRACKER_ADMIN_API_KEY`; a Fastify guard validates
 `Authorization: Bearer <key>` with a **timing-safe** compare. Missing/wrong →
 `401`. If the env var is unset, every `/api/admin/*` provisioning route →
 `503` (feature disabled, never an open endpoint). It is an env-configured

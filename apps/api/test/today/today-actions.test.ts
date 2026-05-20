@@ -56,7 +56,7 @@ describe("today action routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
       payload: {
         habitId: booleanHabit.id,
@@ -84,7 +84,7 @@ describe("today action routes", () => {
       url: "/api/today/set-total",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T09:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:00:00.000Z",
       },
       payload: {
         habitId: quantityHabit.id,
@@ -117,7 +117,7 @@ describe("today action routes", () => {
       url: "/api/today/set-total",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T10:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T10:00:00.000Z",
       },
       payload: {
         habitId: quantityHabit.id,
@@ -149,7 +149,7 @@ describe("today action routes", () => {
       url: "/api/today/undo",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T10:05:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T10:05:00.000Z",
       },
       payload: {
         habitId: quantityHabit.id,
@@ -221,7 +221,7 @@ describe("today action routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
       payload: {
         habitId: booleanHabit.id,
@@ -239,7 +239,7 @@ describe("today action routes", () => {
       url: "/api/today/set-total",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T09:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:00:00.000Z",
       },
       payload: {
         habitId: quantityHabit.id,
@@ -258,7 +258,7 @@ describe("today action routes", () => {
       url: "/api/today/undo",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T10:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T10:00:00.000Z",
       },
       payload: {
         habitId: quantityHabit.id,
@@ -290,7 +290,7 @@ describe("today action routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-10T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-10T08:00:00.000Z",
       },
       payload: {
         habitId: weekdayHabit.id,
@@ -309,7 +309,7 @@ describe("today action routes", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-10T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-10T08:00:00.000Z",
       },
     });
 
@@ -340,7 +340,7 @@ describe("today action routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-10T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-10T08:00:00.000Z",
       },
       payload: {
         habitId: weekdayHabit.id,
@@ -355,7 +355,7 @@ describe("today action routes", () => {
       url: "/api/today/undo",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-10T08:05:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-10T08:05:00.000Z",
       },
       payload: {
         habitId: weekdayHabit.id,
@@ -386,7 +386,7 @@ describe("today action routes", () => {
       url: "/api/today/undo",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:05:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:05:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -417,7 +417,7 @@ describe("today action routes", () => {
       url: "/api/today/complete",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -432,7 +432,7 @@ describe("today action routes", () => {
       url: "/api/today",
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
     });
 

@@ -8,11 +8,11 @@ describe("formatStartupError", () => {
       new OpenClawPluginError({
         category: "config",
         code: "INVALID_API_TOKEN",
-        message: "HAAABIT_API_TOKEN secret-token is invalid",
-        hint: "Replace secret-token with a valid Haaabit personal API token.",
+        message: "MIKOSHI_TRACKER_API_TOKEN secret-token is invalid",
+        hint: "Replace secret-token with a valid MikoshiTracker personal API token.",
       }),
       {
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       },
     );
 
@@ -42,9 +42,9 @@ describe("formatStartupError", () => {
 
   it("does not re-crash when redactSecrets receives a non-string env structure", () => {
     const payload = formatStartupError(new Error("boom"), {
-      HAAABIT_API_TOKEN: {
+      MIKOSHI_TRACKER_API_TOKEN: {
         source: "env",
-        id: "HAAABIT_API_TOKEN",
+        id: "MIKOSHI_TRACKER_API_TOKEN",
       },
     });
 

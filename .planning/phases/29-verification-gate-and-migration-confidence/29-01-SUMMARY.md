@@ -22,7 +22,7 @@ key-decisions:
   - "Quick verification stays focused on manifest/bootstrap/env/registration/docs while preserving targeted MCP regressions."
   - "Real API-backed native read/write verification remains in the full/native integration layer, not the quick smoke gate."
 patterns-established:
-  - "OpenClaw verification scripts should mention `@haaabit/openclaw-plugin` explicitly."
+  - "OpenClaw verification scripts should mention `@mikoshi-tracker/openclaw-plugin` explicitly."
 requirements-completed: [VER-01]
 duration: ~15min
 completed: 2026-03-11
@@ -61,8 +61,8 @@ No task commits were created in this workspace session. Phase 29 work is being f
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/verification-smoke.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/verification-smoke.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts`
 - `pnpm verify:openclaw`
 
 ## Next Plan Readiness

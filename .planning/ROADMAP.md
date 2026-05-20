@@ -1,4 +1,4 @@
-# Roadmap: Haaabit
+# Roadmap: MikoshiTracker
 
 ## Milestones
 
@@ -48,7 +48,7 @@ Use `$gsd-new-milestone` to define the next milestone and recreate `.planning/RE
 
 ## Carry-Forward Candidates
 
-- Remote Streamable HTTP transport for Haaabit MCP
+- Remote Streamable HTTP transport for MikoshiTracker MCP
 - MCP Registry publication metadata
 - Additional host-ready integration bundles beyond OpenClaw
 - Future product expansion items from archived requirements (`NOTF-01`, `NOTF-02`, `VISX-01`, `PROD-01`)

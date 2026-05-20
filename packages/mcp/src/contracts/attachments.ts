@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// Mirror of @haaabit/contracts/attachments — the MCP package keeps a local
+// Mirror of @mikoshi-tracker/contracts/attachments — the MCP package keeps a local
 // copy of every contract it depends on (see sibling files in this folder).
 
 const nonEmptyString = z.string().trim().min(1);

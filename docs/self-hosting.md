@@ -42,7 +42,7 @@ openssl rand -hex 32
 Default first-install values:
 
 - `APP_BASE_URL=http://localhost:8080`
-- `HAAABIT_PUBLIC_PORT=8080` is optional and only needed when the host port should differ from the URL default
+- `MIKOSHI_TRACKER_PUBLIC_PORT=8080` is optional and only needed when the host port should differ from the URL default
 
 Advanced overrides remain optional:
 
@@ -64,7 +64,7 @@ docker compose build web api
 docker compose run --rm migrate
 ```
 
-`docker compose run --rm migrate` is the canonical schema lifecycle command. It also handles first-time SQLite file creation for the default `file:/data/haaabit.db` path.
+`docker compose run --rm migrate` is the canonical schema lifecycle command. It also handles first-time SQLite file creation for the default `file:/data/mikoshi-tracker.db` path.
 
 #### Step 2: Start and verify
 
@@ -90,7 +90,7 @@ The shipped product uses one shared locale model for the main app and docs surfa
 - On first visit, the app chooses between Chinese and English from the browser language.
 - Unsupported browser locales fall back to English.
 - The user can switch language from the auth page and from the signed-in shell.
-- Once a user switches language manually, the browser remembers that preference with the `haaabit-locale` cookie.
+- Once a user switches language manually, the browser remembers that preference with the `mikoshi-tracker-locale` cookie.
 - The main app keeps the same route structure instead of using `/zh` or `/en` route prefixes.
 
 ### What the health check validates
@@ -173,7 +173,7 @@ openssl rand -hex 32
 首次安装的默认值：
 
 - `APP_BASE_URL=http://localhost:8080`
-- `HAAABIT_PUBLIC_PORT=8080` 是可选项，只有当宿主机端口需要和默认 URL 端口不一致时才需要设置
+- `MIKOSHI_TRACKER_PUBLIC_PORT=8080` 是可选项，只有当宿主机端口需要和默认 URL 端口不一致时才需要设置
 
 高级覆盖项仍然是可选的：
 
@@ -195,7 +195,7 @@ docker compose build web api
 docker compose run --rm migrate
 ```
 
-`docker compose run --rm migrate` 是标准的 schema 生命周期命令；对于默认的 `file:/data/haaabit.db` 路径，它也会负责首次创建 SQLite 文件。
+`docker compose run --rm migrate` 是标准的 schema 生命周期命令；对于默认的 `file:/data/mikoshi-tracker.db` 路径，它也会负责首次创建 SQLite 文件。
 
 #### 第二步：启动并验证
 
@@ -221,7 +221,7 @@ docker compose up -d
 - 首次访问时，应用会根据浏览器语言在中文和英文之间选择默认语言。
 - 如果浏览器语言不受支持，会回退到英文。
 - 用户可以在登录页和登录后的应用 shell 中手动切换语言。
-- 一旦用户手动切换语言，浏览器会通过 `haaabit-locale` cookie 记住该偏好。
+- 一旦用户手动切换语言，浏览器会通过 `mikoshi-tracker-locale` cookie 记住该偏好。
 - 主应用保持同一套路由结构，不使用 `/zh` 或 `/en` 这样的语言前缀路由。
 
 ### 健康检查会验证什么

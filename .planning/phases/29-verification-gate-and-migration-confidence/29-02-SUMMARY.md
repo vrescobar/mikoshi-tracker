@@ -23,7 +23,7 @@ key-decisions:
   - "Full verification now includes one real native read flow and one safe native mutation flow."
   - "Migration guidance is explicit and separate, rather than being implied across multiple docs."
 patterns-established:
-  - "OpenClaw transport migrations should preserve `HAAABIT_API_URL` and `HAAABIT_API_TOKEN` and change only the host transport layer."
+  - "OpenClaw transport migrations should preserve `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN` and change only the host transport layer."
 requirements-completed: [VER-01]
 duration: ~25min
 completed: 2026-03-11
@@ -65,8 +65,8 @@ No task commits were created in this workspace session. Phase 29 work is being f
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/native-integration.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/native-integration.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 - `pnpm verify:openclaw:full`
 
 ## Next Plan Readiness

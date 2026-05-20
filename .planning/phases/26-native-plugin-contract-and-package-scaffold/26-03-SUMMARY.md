@@ -7,7 +7,7 @@ requires:
   - phase: 26-native-plugin-contract-and-package-scaffold
     provides: Native plugin scaffold plus native tool registration shell
 provides:
-  - strict parsing for `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`
+  - strict parsing for `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`
   - structured startup/config errors with token redaction
   - bootstrap activation that fails before registration when runtime config is bad
 affects: [phase-26, phase-27, openclaw, runtime, diagnostics]
@@ -18,7 +18,7 @@ key-files:
   created: [packages/openclaw-plugin/src/config/env.ts, packages/openclaw-plugin/src/errors.ts, packages/openclaw-plugin/test/config/env.test.ts, packages/openclaw-plugin/test/plugin-startup-errors.test.ts]
   modified: [packages/openclaw-plugin/src/index.ts, packages/mcp/src/server/create-server.ts, packages/mcp/test/server/stdio-read-integration.test.ts]
 key-decisions:
-  - "The native plugin runtime contract is exactly `HAAABIT_API_URL` plus `HAAABIT_API_TOKEN`."
+  - "The native plugin runtime contract is exactly `MIKOSHI_TRACKER_API_URL` plus `MIKOSHI_TRACKER_API_TOKEN`."
   - "Startup errors are returned in a host-neutral structured shape rather than MCP-specific wrappers."
   - "Existing `packages/mcp` typings were tightened so workspace-wide typecheck remains green after adding the new plugin package."
 patterns-established:
@@ -40,7 +40,7 @@ completed: 2026-03-11
 - **Files modified:** 6
 
 ## Accomplishments
-- Added strict parsing for `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`, including malformed URL, whitespace token, email-like token, and URL-like token rejection.
+- Added strict parsing for `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`, including malformed URL, whitespace token, email-like token, and URL-like token rejection.
 - Added a structured native plugin error type and startup formatter that redact bearer token material before surfacing errors.
 - Tightened existing `packages/mcp` typing so the full workspace `pnpm typecheck` gate stays green with the new plugin package in place.
 
@@ -64,7 +64,7 @@ No task commits were created in this workspace session. Phase 26 work is being f
 
 ## Verification
 
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-startup-errors.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/config/env.test.ts test/plugin-startup-errors.test.ts`
 
 ## Next Plan Readiness
 

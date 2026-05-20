@@ -1,6 +1,6 @@
 "use client";
 
-import type { OverviewStats } from "@haaabit/contracts/stats";
+import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 
 import { useLocale } from "../locale";
 import { CompletionRateChart } from "./completion-rate-chart";

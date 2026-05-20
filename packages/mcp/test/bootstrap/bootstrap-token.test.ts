@@ -84,7 +84,7 @@ describe("bootstrapPersonalApiToken", () => {
       force: false,
     });
 
-    expect(result.token.startsWith("haaabit_")).toBe(true);
+    expect(result.token.startsWith("mikoshi_tracker_")).toBe(true);
     expect(result.rotatedExistingToken).toBe(false);
 
     const storedToken = await context.app.db.apiToken.findUnique({
@@ -95,7 +95,7 @@ describe("bootstrapPersonalApiToken", () => {
 
     expect(storedToken?.token).toBeTruthy();
     expect(storedToken?.token).not.toBe(result.token);
-    expect(storedToken?.token.startsWith("haaabit_")).toBe(false);
+    expect(storedToken?.token.startsWith("mikoshi_tracker_")).toBe(false);
   });
 
   it("requires --force semantics before rotating an existing personal API token", async () => {
@@ -218,7 +218,7 @@ describe("bootstrapPersonalApiToken", () => {
     } catch (error) {
       const formatted = formatBootstrapError(error, {
         env: {
-          HAAABIT_BOOTSTRAP_PASSWORD: "wrong-password",
+          MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD: "wrong-password",
         },
       });
 

@@ -9,7 +9,7 @@ import {
 } from "../contracts/habits.js";
 import { z } from "zod";
 
-import type { HaaabitApiClient } from "../client/api-client.js";
+import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { ToolOperation } from "./operation-types.js";
 import { formatNameList } from "./read-results.js";
 import type { InventoryTool } from "./catalog.js";
@@ -89,7 +89,7 @@ export const habitsTools: InventoryTool[] = [
   },
 ];
 
-export function createHabitsReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createHabitsReadOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     habits_list: async (input: unknown) => {
       const parsed = habitListFiltersSchema.parse(input ?? {});
@@ -115,7 +115,7 @@ export function createHabitsReadOperations(client: HaaabitApiClient): Record<str
   };
 }
 
-export function createHabitsWriteOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createHabitsWriteOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     habits_add: async (input: unknown) => {
       const parsed = createHabitInputSchema.parse(input);

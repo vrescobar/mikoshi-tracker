@@ -1,4 +1,4 @@
-import type { TodayItem, TodaySummary } from "@haaabit/contracts/today";
+import type { TodayItem, TodaySummary } from "@mikoshi-tracker/contracts/today";
 
 import { compareDateKeys } from "./today-clock";
 import {

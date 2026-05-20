@@ -14,7 +14,7 @@
 
 1. 为 `today_get_summary` 添加空对象 schema：`inputSchema: z.object({})`。
 2. 增加回归测试，断言 OpenClaw 注册出来的 `today_get_summary.parameters` 是合法 object schema。
-3. 重新构建 `@haaabit/openclaw-plugin`，并跑注册测试与真实调用链路测试，确认工具可以正常调用。
+3. 重新构建 `@mikoshi-tracker/openclaw-plugin`，并跑注册测试与真实调用链路测试，确认工具可以正常调用。
 
 ## Modified Files
 
@@ -29,9 +29,9 @@
 
 ## Verification
 
-- `pnpm --filter @haaabit/openclaw-plugin build`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/tool-catalog.test.ts test/tool-registration.test.ts`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/native-integration.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin build`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/tool-catalog.test.ts test/tool-registration.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/native-integration.test.ts`
 
 ## Outcome
 

@@ -4,7 +4,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import packageJson from "../../package.json";
 
-import { HaaabitApiClient } from "../client/api-client.js";
+import { MikoshiTrackerApiClient } from "../client/api-client.js";
 import { createDiscoveryHandlers } from "../tools/inventory.js";
 import { registerGuidance, type GuidancePromptDefinition, type GuidanceResourceDefinition } from "./guidance.js";
 
@@ -15,7 +15,7 @@ export type CreateServerOptions = {
   fetch?: typeof fetch;
 };
 
-export type HaaabitMcpServer = {
+export type MikoshiTrackerMcpServer = {
   server: McpServer;
   metadata: {
     name: string;
@@ -35,13 +35,13 @@ export type HaaabitMcpServer = {
   listRegisteredResources: () => GuidanceResourceDefinition[];
 };
 
-export function createServer(options: CreateServerOptions): HaaabitMcpServer {
+export function createServer(options: CreateServerOptions): MikoshiTrackerMcpServer {
   const metadata = {
     name: packageJson.name,
     version: packageJson.version,
   };
   const server = new McpServer(metadata);
-  const client = new HaaabitApiClient({
+  const client = new MikoshiTrackerApiClient({
     apiUrl: options.apiUrl,
     apiToken: options.apiToken,
     timeoutMs: options.timeoutMs ?? 10_000,
@@ -78,7 +78,7 @@ export function createServer(options: CreateServerOptions): HaaabitMcpServer {
 function augmentOutputSchema(outputSchema: AnySchema | ZodRawShapeCompat | undefined) {
   if (outputSchema instanceof z.ZodObject) {
     return outputSchema.extend({
-      _haaabit_json: z.string().optional(),
+      _mikoshi_tracker_json: z.string().optional(),
     });
   }
 

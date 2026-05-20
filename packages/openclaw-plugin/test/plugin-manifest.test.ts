@@ -19,7 +19,7 @@ describe("openclaw plugin manifest", () => {
   it("ships a first-class native plugin package", async () => {
     const pkg = await readJson("package.json");
 
-    expect(pkg.name).toBe("@haaabit/openclaw-plugin");
+    expect(pkg.name).toBe("@mikoshi-tracker/openclaw-plugin");
     expect(pkg.type).toBe("module");
     expect(pkg.exports).toMatchObject({
       ".": "./dist/index.js",
@@ -36,12 +36,12 @@ describe("openclaw plugin manifest", () => {
 
     expect(manifest).toMatchObject({
       schemaVersion: 1,
-      id: "@haaabit/openclaw-plugin",
-      name: "Haaabit",
+      id: "@mikoshi-tracker/openclaw-plugin",
+      name: "MikoshiTracker",
       entry: "./dist/openclaw.js",
       configSchema: {},
     });
-    expect(String(manifest.description)).toContain("Haaabit");
+    expect(String(manifest.description)).toContain("MikoshiTracker");
   });
 
   it("builds a standalone dist entry that loads without a local zod install", async () => {
@@ -60,7 +60,7 @@ describe("openclaw plugin manifest", () => {
     expect(wrapperSource).not.toMatch(/import\s+["']zod["']/);
     expect(wrapperSource).not.toMatch(/require\(["']zod["']\)/);
 
-    const tempRoot = await mkdtemp(path.join(os.tmpdir(), "haaabit-openclaw-plugin-"));
+    const tempRoot = await mkdtemp(path.join(os.tmpdir(), "mikoshi-tracker-openclaw-plugin-"));
     const tempDistDir = path.join(tempRoot, "dist");
 
     await mkdir(tempDistDir, { recursive: true });
@@ -72,13 +72,13 @@ describe("openclaw plugin manifest", () => {
       default: expect.any(Function),
       register: expect.any(Function),
       activate: expect.any(Function),
-      activateHaaabitOpenClawPlugin: expect.any(Function),
+      activateMikoshiTrackerOpenClawPlugin: expect.any(Function),
     });
     await expect(import(pathToFileURL(path.join(tempDistDir, "openclaw.js")).href)).resolves.toMatchObject({
       default: expect.any(Function),
       register: expect.any(Function),
       activate: expect.any(Function),
-      activateHaaabitOpenClawPlugin: expect.any(Function),
+      activateMikoshiTrackerOpenClawPlugin: expect.any(Function),
     });
   });
 });

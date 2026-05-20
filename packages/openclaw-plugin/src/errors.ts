@@ -63,7 +63,7 @@ function readEnvToken(env: unknown) {
     return undefined;
   }
 
-  const token = (env as Record<string, unknown>).HAAABIT_API_TOKEN;
+  const token = (env as Record<string, unknown>).MIKOSHI_TRACKER_API_TOKEN;
 
   return typeof token === "string" ? token : undefined;
 }

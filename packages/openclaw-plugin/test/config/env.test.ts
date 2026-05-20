@@ -3,43 +3,43 @@ import { afterEach, describe, expect, it } from "vitest";
 import { OpenClawPluginError } from "../../src/errors";
 import { parsePluginEnv, resolvePluginRuntimeEnv } from "../../src/config/env";
 
-const ORIGINAL_API_URL = process.env.HAAABIT_API_URL;
-const ORIGINAL_API_TOKEN = process.env.HAAABIT_API_TOKEN;
+const ORIGINAL_API_URL = process.env.MIKOSHI_TRACKER_API_URL;
+const ORIGINAL_API_TOKEN = process.env.MIKOSHI_TRACKER_API_TOKEN;
 
 afterEach(() => {
-  resetProcessEnv("HAAABIT_API_URL", ORIGINAL_API_URL);
-  resetProcessEnv("HAAABIT_API_TOKEN", ORIGINAL_API_TOKEN);
+  resetProcessEnv("MIKOSHI_TRACKER_API_URL", ORIGINAL_API_URL);
+  resetProcessEnv("MIKOSHI_TRACKER_API_TOKEN", ORIGINAL_API_TOKEN);
 });
 
 describe("parsePluginEnv", () => {
-  it("requires HAAABIT_API_URL and HAAABIT_API_TOKEN", () => {
+  it("requires MIKOSHI_TRACKER_API_URL and MIKOSHI_TRACKER_API_TOKEN", () => {
     expect(() => parsePluginEnv({})).toThrowError(
-      "Missing required plugin configuration: HAAABIT_API_URL, HAAABIT_API_TOKEN.",
+      "Missing required plugin configuration: MIKOSHI_TRACKER_API_URL, MIKOSHI_TRACKER_API_TOKEN.",
     );
   });
 
   it("rejects malformed API URLs", () => {
     expect(() =>
       parsePluginEnv({
-        HAAABIT_API_URL: "not-a-url",
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_URL: "not-a-url",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       }),
-    ).toThrowError("HAAABIT_API_URL must be a valid absolute URL.");
+    ).toThrowError("MIKOSHI_TRACKER_API_URL must be a valid absolute URL.");
   });
 
   it("rejects token values that look like account identifiers", () => {
     expect(() =>
       parsePluginEnv({
-        HAAABIT_API_URL: "https://habit.example.com/api",
-        HAAABIT_API_TOKEN: "alice@example.com",
+        MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+        MIKOSHI_TRACKER_API_TOKEN: "alice@example.com",
       }),
-    ).toThrowError("HAAABIT_API_TOKEN looks more like an email address than a Haaabit personal API token.");
+    ).toThrowError("MIKOSHI_TRACKER_API_TOKEN looks more like an email address than a MikoshiTracker personal API token.");
   });
 
   it("normalizes the API URL and returns the native plugin runtime config", () => {
     const config = parsePluginEnv({
-      HAAABIT_API_URL: "https://habit.example.com/api/",
-      HAAABIT_API_TOKEN: "secret-token",
+      MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api/",
+      MIKOSHI_TRACKER_API_TOKEN: "secret-token",
     });
 
     expect(config).toEqual({
@@ -54,20 +54,20 @@ describe("parsePluginEnv", () => {
       {
         config: {
           env: {
-            HAAABIT_API_URL: "https://api-config.example.com/api",
-            HAAABIT_API_TOKEN: "api-config-token",
+            MIKOSHI_TRACKER_API_URL: "https://api-config.example.com/api",
+            MIKOSHI_TRACKER_API_TOKEN: "api-config-token",
           },
         },
       },
       {
         config: {
           env: {
-            HAAABIT_API_TOKEN: "options-config-token",
+            MIKOSHI_TRACKER_API_TOKEN: "options-config-token",
           },
         },
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api/",
-          HAAABIT_API_TOKEN: {
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api/",
+          MIKOSHI_TRACKER_API_TOKEN: {
             value: "secret-token",
           },
         },
@@ -75,8 +75,8 @@ describe("parsePluginEnv", () => {
     );
 
     expect(env).toMatchObject({
-      HAAABIT_API_URL: "https://habit.example.com/api/",
-      HAAABIT_API_TOKEN: "secret-token",
+      MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api/",
+      MIKOSHI_TRACKER_API_TOKEN: "secret-token",
     });
   });
 
@@ -85,10 +85,10 @@ describe("parsePluginEnv", () => {
       {
         config: {
           env: {
-            HAAABIT_API_URL: {
+            MIKOSHI_TRACKER_API_URL: {
               value: "https://habit.example.com/api/",
             },
-            HAAABIT_API_TOKEN: {
+            MIKOSHI_TRACKER_API_TOKEN: {
               value: "secret-token",
             },
           },
@@ -105,19 +105,19 @@ describe("parsePluginEnv", () => {
   });
 
   it("resolves OpenClaw env reference objects through process.env fallback", () => {
-    process.env.HAAABIT_API_URL = "https://habit.example.com/api/";
-    process.env.HAAABIT_API_TOKEN = "secret-token";
+    process.env.MIKOSHI_TRACKER_API_URL = "https://habit.example.com/api/";
+    process.env.MIKOSHI_TRACKER_API_TOKEN = "secret-token";
 
     const env = resolvePluginRuntimeEnv(
       {
         env: {
-          HAAABIT_API_URL: {
+          MIKOSHI_TRACKER_API_URL: {
             source: "env",
-            id: "HAAABIT_API_URL",
+            id: "MIKOSHI_TRACKER_API_URL",
           },
-          HAAABIT_API_TOKEN: {
+          MIKOSHI_TRACKER_API_TOKEN: {
             source: "env",
-            key: "HAAABIT_API_TOKEN",
+            key: "MIKOSHI_TRACKER_API_TOKEN",
           },
         },
       },
@@ -135,14 +135,14 @@ describe("parsePluginEnv", () => {
     const env = resolvePluginRuntimeEnv(
       {
         env: {
-          HAAABIT_API_URL: {
+          MIKOSHI_TRACKER_API_URL: {
             provider: "default",
-            id: "HAAABIT_API_URL",
+            id: "MIKOSHI_TRACKER_API_URL",
             source: "secret",
           },
-          HAAABIT_API_TOKEN: {
+          MIKOSHI_TRACKER_API_TOKEN: {
             provider: "default",
-            id: "HAAABIT_API_TOKEN",
+            id: "MIKOSHI_TRACKER_API_TOKEN",
             source: "secret",
           },
         },
@@ -152,15 +152,15 @@ describe("parsePluginEnv", () => {
     );
 
     expect(() => parsePluginEnv(env)).toThrowError(
-      "Missing required plugin configuration: HAAABIT_API_URL, HAAABIT_API_TOKEN.",
+      "Missing required plugin configuration: MIKOSHI_TRACKER_API_URL, MIKOSHI_TRACKER_API_TOKEN.",
     );
   });
 
   it("throws OpenClawPluginError instances for config failures", () => {
     try {
       parsePluginEnv({
-        HAAABIT_API_URL: "ftp://habit.example.com/api",
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_URL: "ftp://habit.example.com/api",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       });
       throw new Error("Expected parsePluginEnv to throw");
     } catch (error) {

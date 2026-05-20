@@ -66,7 +66,7 @@ describe("today api contracts", () => {
       url: "/api/today",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T08:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T08:00:00.000Z",
       },
     });
 
@@ -88,7 +88,7 @@ describe("today api contracts", () => {
       url: "/api/today/set-total",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T09:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:00:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -117,7 +117,7 @@ describe("today api contracts", () => {
       url: "/api/today/undo",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T09:05:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:05:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -145,7 +145,7 @@ describe("today api contracts", () => {
       url: "/api/today/complete",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T09:10:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:10:00.000Z",
       },
       payload: {
         habitId: habit.id,
@@ -172,7 +172,7 @@ describe("today api contracts", () => {
       url: "/api/today/set-total",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T09:15:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T09:15:00.000Z",
       },
       payload: {
         habitId: habit.id,

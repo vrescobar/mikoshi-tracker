@@ -42,7 +42,7 @@ score: 3/3 truths verified
 | RESP-01: Every native plugin tool returns structured JSON intended for agent consumption. | ✓ SATISFIED | - |
 | RESP-02: Network and upstream API failures clearly distinguish connectivity/timeouts from auth failures. | ✓ SATISFIED | - |
 | RESP-03: Missing habit targets and wrong-kind mutations tell the agent whether it needs a different `habitId` or tool. | ✓ SATISFIED | - |
-| VER-02: Haaabit ships one canonical OpenClaw-native setup path and updates docs/examples accordingly. | ✓ SATISFIED | - |
+| VER-02: MikoshiTracker ships one canonical OpenClaw-native setup path and updates docs/examples accordingly. | ✓ SATISFIED | - |
 
 **Coverage:** 4/4 requirements satisfied
 
@@ -61,9 +61,9 @@ One external-host check remains non-blocking:
 ## Commands Run
 
 - `pnpm typecheck`
-- `pnpm --filter @haaabit/openclaw-plugin build`
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin build`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 
 ---
 *Verified: 2026-03-11T21:23:00+08:00*

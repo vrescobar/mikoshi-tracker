@@ -23,7 +23,7 @@ async function createOwnedHabit(
 function getHeaders(cookie: string, now = "2026-03-11T12:00:00.000Z") {
   return {
     cookie,
-    "x-haaabit-now": now,
+    "x-mikoshi-tracker-now": now,
   };
 }
 

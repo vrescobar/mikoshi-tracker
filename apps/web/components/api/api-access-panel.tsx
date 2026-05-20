@@ -1,6 +1,6 @@
 "use client";
 
-import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
+import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 import { useState } from "react";
 
 import {

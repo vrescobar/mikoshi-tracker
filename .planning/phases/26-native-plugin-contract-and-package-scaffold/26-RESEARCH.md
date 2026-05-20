@@ -1,7 +1,7 @@
 # Phase 26: Native Plugin Contract and Package Scaffold - Research
 
 **Researched:** 2026-03-11
-**Domain:** OpenClaw-native plugin contract, package scaffold, and direct Haaabit API runtime reuse
+**Domain:** OpenClaw-native plugin contract, package scaffold, and direct MikoshiTracker API runtime reuse
 **Confidence:** HIGH
 
 <user_constraints>
@@ -10,8 +10,8 @@
 ### Locked Decisions
 - The OpenClaw path must become a native plugin path, not another MCP wrapper.
 - The new package should live at `packages/openclaw-plugin`.
-- Runtime config must stay `HAAABIT_API_URL` plus `HAAABIT_API_TOKEN`.
-- The plugin must reuse existing Haaabit API/auth/contracts logic rather than duplicate business rules.
+- Runtime config must stay `MIKOSHI_TRACKER_API_URL` plus `MIKOSHI_TRACKER_API_TOKEN`.
+- The plugin must reuse existing MikoshiTracker API/auth/contracts logic rather than duplicate business rules.
 - Errors for missing config, network failures, missing habits, and type mismatches must become clear structured failures over the milestone.
 
 ### Claude's Discretion
@@ -34,9 +34,9 @@ Phase 26 should be planned as three tightly scoped plans:
 1. **Native contract and package scaffold**
    Establish `packages/openclaw-plugin` as a first-class workspace package with `openclaw.plugin.json`, native bootstrap entrypoints, build/test config, and a smoke-tested plugin contract that does not spawn or embed MCP.
 2. **Native tool catalog shell**
-   Register the Haaabit habits/today/stats tool names and schemas through the OpenClaw-native registration surface using shared metadata rather than copied definitions. If real handlers are deferred to Phase 27, use explicit placeholder handlers that stay native and do not route through MCP.
+   Register the MikoshiTracker habits/today/stats tool names and schemas through the OpenClaw-native registration surface using shared metadata rather than copied definitions. If real handlers are deferred to Phase 27, use explicit placeholder handlers that stay native and do not route through MCP.
 3. **Env validation and startup diagnostics**
-   Add strict env parsing plus redaction-safe startup errors around `HAAABIT_API_URL` and `HAAABIT_API_TOKEN`, with tests that prove the plugin fails fast before any API calls when config is wrong.
+   Add strict env parsing plus redaction-safe startup errors around `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`, with tests that prove the plugin fails fast before any API calls when config is wrong.
 
 **Primary recommendation:** keep Phase 26 focused on host contract and scaffold only. The key output is a native package that OpenClaw can load directly and that later phases can fill with real API-backed tool behavior.
 </research_summary>
@@ -47,11 +47,11 @@ Phase 26 should be planned as three tightly scoped plans:
 ### OpenClaw-native plugin contract is separate from MCP
 Official OpenClaw plugin guidance for 2026 shows the native plugin path is based on a plugin manifest file (`openclaw.plugin.json`) and native tool registration via `api.registerTool(...)`. That means the plugin should integrate directly with the host's plugin API, not by wrapping an MCP server or translating OpenClaw calls through an MCP transport layer.
 
-### Current Haaabit code already has reusable API/runtime primitives
+### Current MikoshiTracker code already has reusable API/runtime primitives
 The current MCP package is already thin over the shipped REST API:
 - `packages/mcp/src/client/api-client.ts` is a host-neutral bearer-authenticated API client with timeout handling.
-- `packages/mcp/src/client/errors.ts` contains a reusable `HaaabitApiError` core, but the result adapters currently terminate in MCP-specific `CallToolResult`.
-- `packages/mcp/src/tools/inventory.ts` and the surface files under `packages/mcp/src/tools/` already centralize Haaabit tool names, route mapping, schemas, and summaries.
+- `packages/mcp/src/client/errors.ts` contains a reusable `MikoshiTrackerApiError` core, but the result adapters currently terminate in MCP-specific `CallToolResult`.
+- `packages/mcp/src/tools/inventory.ts` and the surface files under `packages/mcp/src/tools/` already centralize MikoshiTracker tool names, route mapping, schemas, and summaries.
 
 This is the right reuse seam, but not all of it is host-neutral yet.
 
@@ -88,14 +88,14 @@ So Phase 26 should stop after the plugin is native, loadable, and structurally r
 | `packages/openclaw-plugin/test/plugin-manifest.test.ts` | Contract smoke coverage | Locks manifest shape and prevents MCP fallback regressions. |
 | `packages/openclaw-plugin/test/plugin-bootstrap.test.ts` | Native bootstrap smoke coverage | Ensures the plugin registers through the OpenClaw-native surface instead of spawning another runtime. |
 | `packages/openclaw-plugin/test/config/env.test.ts` | Startup env validation | Verifies exact env names and actionable diagnostics. |
-| `packages/mcp/src/client/api-client.ts` | Reusable API client seam | Already speaks the real Haaabit API and is not inherently MCP-only. |
-| `packages/mcp/src/client/errors.ts` | Core API error semantics | The `HaaabitApiError` core is reusable once separated from MCP result formatting. |
+| `packages/mcp/src/client/api-client.ts` | Reusable API client seam | Already speaks the real MikoshiTracker API and is not inherently MCP-only. |
+| `packages/mcp/src/client/errors.ts` | Core API error semantics | The `MikoshiTrackerApiError` core is reusable once separated from MCP result formatting. |
 
 ### Recommended additions
 | Candidate | Why It Helps |
 |----------|---------------|
-| `packages/openclaw-plugin/src/tool-catalog.ts` | Gives the plugin a host-native view of the existing Haaabit tool inventory without copying schemas or names. |
-| `packages/openclaw-plugin/test/tool-registration.test.ts` | Proves the native plugin exposes the intended Haaabit tool catalog and does not hide an MCP subprocess. |
+| `packages/openclaw-plugin/src/tool-catalog.ts` | Gives the plugin a host-native view of the existing MikoshiTracker tool inventory without copying schemas or names. |
+| `packages/openclaw-plugin/test/tool-registration.test.ts` | Proves the native plugin exposes the intended MikoshiTracker tool catalog and does not hide an MCP subprocess. |
 | `packages/openclaw-plugin/src/config/env.ts` | Keeps startup contract isolated and testable before real handler work lands. |
 
 ### Implications
@@ -113,7 +113,7 @@ So Phase 26 should stop after the plugin is native, loadable, and structurally r
 - `26-03` should add strict env parsing, startup diagnostics, and redaction-safe configuration failures.
 
 ### Catalog strategy
-- Keep Haaabit tool names aligned with the existing habits/today/stats vocabulary.
+- Keep MikoshiTracker tool names aligned with the existing habits/today/stats vocabulary.
 - Reuse existing schemas and route metadata where practical.
 - If actual domain handlers are not ready in Phase 26, return explicit structured "not implemented yet" placeholders that make the deferral visible and do not tunnel through MCP.
 
@@ -136,16 +136,16 @@ So Phase 26 should stop after the plugin is native, loadable, and structurally r
 ## Common Pitfalls
 
 ### Pitfall 1: Reintroducing MCP as an implementation detail
-**What goes wrong:** The plugin "works" only because it spawns `@haaabit/mcp` or mirrors MCP server boot logic.
+**What goes wrong:** The plugin "works" only because it spawns `@mikoshi-tracker/mcp` or mirrors MCP server boot logic.
 **How to avoid:** Add smoke tests that fail if the native plugin bootstrap depends on `McpServer`, `mcporter`, or child-process MCP launch.
 
 ### Pitfall 2: Copying tool definitions into the new package
 **What goes wrong:** OpenClaw and MCP diverge on names, input schemas, or behavior.
-**How to avoid:** Plan for a shared catalog seam and prove in tests that the native plugin keeps the existing Haaabit vocabulary.
+**How to avoid:** Plan for a shared catalog seam and prove in tests that the native plugin keeps the existing MikoshiTracker vocabulary.
 
 ### Pitfall 3: Mixing reusable error cores with host-specific result adapters
 **What goes wrong:** The plugin imports MCP-only result types just to share error handling.
-**How to avoid:** Split `HaaabitApiError` and categorization logic from MCP result serialization.
+**How to avoid:** Split `MikoshiTrackerApiError` and categorization logic from MCP result serialization.
 
 ### Pitfall 4: Letting config validation become a runtime-only surprise
 **What goes wrong:** Operators only learn about missing env vars after invoking a tool.
@@ -162,23 +162,23 @@ Phase 26 has five primary risk surfaces:
 
 1. **Native contract fidelity**: the new package must follow the OpenClaw-native manifest/bootstrap model rather than regressing to MCP.
 2. **Package readiness**: the plugin must build and test as a first-class workspace package.
-3. **Catalog alignment**: native tool registration should stay aligned with the shipped Haaabit habits/today/stats vocabulary.
-4. **Config safety**: startup must fail fast for bad `HAAABIT_API_URL` / `HAAABIT_API_TOKEN` input.
+3. **Catalog alignment**: native tool registration should stay aligned with the shipped MikoshiTracker habits/today/stats vocabulary.
+4. **Config safety**: startup must fail fast for bad `MIKOSHI_TRACKER_API_URL` / `MIKOSHI_TRACKER_API_TOKEN` input.
 5. **Reuse safety**: scaffold work must not break the existing MCP package while shared seams are being introduced.
 
 Recommended validation stack:
 
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/tool-catalog.test.ts test/tool-registration.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/inventory.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/tool-catalog.test.ts test/tool-registration.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/inventory.test.ts`
 
 Recommended quick command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/tool-catalog.test.ts test/tool-registration.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/tool-catalog.test.ts test/tool-registration.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts
 ```
 
 Recommended full command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/inventory.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/inventory.test.ts
 ```
 
 Planner implications:

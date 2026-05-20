@@ -1,4 +1,4 @@
-import type { OverviewStats } from "@haaabit/contracts/stats";
+import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { serializeContractFrequencyType, serializeContractHabitKind } from "../../shared/habit-contract-mappers";

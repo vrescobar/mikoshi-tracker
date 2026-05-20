@@ -24,9 +24,9 @@ describe("package README smoke", () => {
           ? Object.values(packageJson.bin)[0]
           : undefined;
 
-    expect(readme).toContain("# @haaabit/mcp");
-    expect(readme).toContain("HAAABIT_API_URL");
-    expect(readme).toContain("HAAABIT_API_TOKEN");
+    expect(readme).toContain("# @mikoshi-tracker/mcp");
+    expect(readme).toContain("MIKOSHI_TRACKER_API_URL");
+    expect(readme).toContain("MIKOSHI_TRACKER_API_TOKEN");
     expect(readme).toContain("--api-url");
     expect(readme).toContain("--timeout");
     expect(readme).toContain(`npx -y ${packageJson.name}`);
@@ -41,14 +41,14 @@ describe("package README smoke", () => {
     expect(readme).toContain("bootstrap-token");
     expect(readme).toContain("one-shot");
     expect(readme).toContain("Connection order");
-    expect(readme).toContain("runtime still uses `HAAABIT_API_TOKEN`");
+    expect(readme).toContain("runtime still uses `MIKOSHI_TRACKER_API_TOKEN`");
     expect(readme).toContain("docs/ai-agent-integration.md");
     expect(readme).toContain("openclaw-troubleshooting.md");
     expect(readme).toContain("openclaw-validation-checklist.md");
     expect(readme).toContain("## AI Guidance");
-    expect(readme).toContain("haaabit_assistant_workflow");
-    expect(readme).toContain("haaabit://guides/workflow");
-    expect(readme).toContain(".agents/skills/haaabit-mcp");
+    expect(readme).toContain("mikoshi_tracker_assistant_workflow");
+    expect(readme).toContain("mikoshi-tracker://guides/workflow");
+    expect(readme).toContain(".agents/skills/mikoshi-tracker-mcp");
     expect(binPath).toBe("dist/cli.js");
   });
 

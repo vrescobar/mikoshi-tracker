@@ -3,7 +3,7 @@
 > **Status: target, not current state.** This plan adds a small **external
 > provisioning** layer on top of the already-built Habit Circles feature
 > (`GOAL.md` → "Collaboration — Habit Circles", §C1–§C16, shipped). It is the
-> Haaabit-side counterpart of the Mikoshi multi-user-skills work
+> MikoshiTracker-side counterpart of the Mikoshi multi-user-skills work
 > (`~/projects/mikoshi/docs/design/multi-user-skills.md`). The phased checklist
 > that implements it is `.ralphloop/tasks.md` → "Phase 11"; the self-contained
 > spec is `GOAL.md` §C17.
@@ -11,12 +11,12 @@
 ## Context
 
 Mikoshi (a WhatsApp agent) is rewriting its habit-contest skill so that **each
-participant's check-ins are written with that participant's own personal Haaabit
+participant's check-ins are written with that participant's own personal MikoshiTracker
 token** — never a shared cross-user token. For that to work without a human
-clicking through the Haaabit web UI for every participant, Haaabit must let
+clicking through the MikoshiTracker web UI for every participant, MikoshiTracker must let
 Mikoshi:
 
-1. **Provision** a Haaabit account bound to an opaque external identity (a
+1. **Provision** a MikoshiTracker account bound to an opaque external identity (a
    Mikoshi `identityId`) and get back that user's personal API token.
 2. **Enrol** that user into a circle by external identity.
 
@@ -34,7 +34,7 @@ This is purely additive.
 ### H1 — Schema (`prisma/schema.prisma`)
 
 Add `externalId String? @unique` to the `User` model — an opaque integration id
-(a Mikoshi `identityId`), so one external identity maps to exactly one Haaabit
+(a Mikoshi `identityId`), so one external identity maps to exactly one MikoshiTracker
 user. `CircleMembership.externalId` already exists; only its API exposure (H5)
 is missing. Apply with `pnpm prisma migrate dev --name add_user_external_id`,
 regenerate the Prisma client, confirm `apps/api` still builds.
@@ -44,11 +44,11 @@ regenerate the Prisma client, confirm `apps/api` still builds.
 A new auth path, distinct from sessions, personal `ApiToken`s and circle tokens,
 and distinct from the `User.isAdmin` role:
 
-- Env var `HAAABIT_ADMIN_API_KEY` (documented in `.env.example`).
+- Env var `MIKOSHI_TRACKER_ADMIN_API_KEY` (documented in `.env.example`).
 - A Fastify `preHandler` / guard that reads `Authorization: Bearer <key>` and
   compares it to the env value with a **timing-safe** comparison
   (`crypto.timingSafeEqual`). Missing or wrong → `401`.
-- If `HAAABIT_ADMIN_API_KEY` is unset, every `/api/admin/*` provisioning route
+- If `MIKOSHI_TRACKER_ADMIN_API_KEY` is unset, every `/api/admin/*` provisioning route
   responds `503` (feature disabled) — never an open endpoint.
 - This is an env-configured shared secret, not a DB token: provisioning is
   low-frequency and operator-controlled.
@@ -104,7 +104,7 @@ schemas in `packages/contracts/src/circles.ts` accordingly.
 - Add the `/api/admin/*` routes to the OpenAPI definitions
   (`apps/api/src/plugins/openapi.ts`) with the system-key security scheme.
 - No regression of the single-user flow, the circle-token denial matrix
-  (§C14) or `@haaabit/mcp`.
+  (§C14) or `@mikoshi-tracker/mcp`.
 
 ## What does NOT change
 
@@ -129,7 +129,7 @@ registration), `apps/api/src/modules/circles/circle.routes.ts` +
 
 - `pnpm prisma migrate dev` clean; `pnpm -r build` + workspace typecheck green
   after Prisma regen; `pnpm -r lint` green.
-- `pnpm --filter @haaabit/api test` green, including the new provisioning tests
+- `pnpm --filter @mikoshi-tracker/api test` green, including the new provisioning tests
   and the unchanged §C14 circle-token denial matrix.
 - End to end: `provision-user` for a new `externalId` returns a personal token;
   that token works against `/api/today/*`; `provision-user` again is idempotent;

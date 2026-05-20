@@ -21,9 +21,9 @@ const BOOTSTRAP_COMMAND = "bootstrap-token";
 
 export function parseConfig(input: ConfigInput): RuntimeConfig {
   const args = parseArgs(input.argv);
-  const apiUrl = args.apiUrl ?? input.env.HAAABIT_API_URL;
-  const apiToken = input.env.HAAABIT_API_TOKEN;
-  const missing = [apiUrl ? null : "HAAABIT_API_URL", apiToken ? null : "HAAABIT_API_TOKEN"].filter(
+  const apiUrl = args.apiUrl ?? input.env.MIKOSHI_TRACKER_API_URL;
+  const apiToken = input.env.MIKOSHI_TRACKER_API_TOKEN;
+  const missing = [apiUrl ? null : "MIKOSHI_TRACKER_API_URL", apiToken ? null : "MIKOSHI_TRACKER_API_TOKEN"].filter(
     (value): value is string => value !== null,
   );
 
@@ -34,7 +34,7 @@ export function parseConfig(input: ConfigInput): RuntimeConfig {
   const timeoutMs = parseTimeout(args.timeout);
 
   if (apiUrl === undefined || apiToken === undefined) {
-    throw new Error(buildMissingRuntimeMessage(["HAAABIT_API_URL", "HAAABIT_API_TOKEN"], input.env));
+    throw new Error(buildMissingRuntimeMessage(["MIKOSHI_TRACKER_API_URL", "MIKOSHI_TRACKER_API_TOKEN"], input.env));
   }
 
   return {
@@ -46,10 +46,10 @@ export function parseConfig(input: ConfigInput): RuntimeConfig {
 
 export function parseBootstrapConfig(input: ConfigInput): BootstrapConfig {
   const args = parseBootstrapArgs(input.argv);
-  const apiUrl = args.apiUrl ?? input.env.HAAABIT_API_URL;
-  const email = args.email ?? input.env.HAAABIT_BOOTSTRAP_EMAIL;
-  const password = args.password ?? input.env.HAAABIT_BOOTSTRAP_PASSWORD;
-  const missing = [apiUrl ? null : "HAAABIT_API_URL", email ? null : "--email or HAAABIT_BOOTSTRAP_EMAIL"].filter(
+  const apiUrl = args.apiUrl ?? input.env.MIKOSHI_TRACKER_API_URL;
+  const email = args.email ?? input.env.MIKOSHI_TRACKER_BOOTSTRAP_EMAIL;
+  const password = args.password ?? input.env.MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD;
+  const missing = [apiUrl ? null : "MIKOSHI_TRACKER_API_URL", email ? null : "--email or MIKOSHI_TRACKER_BOOTSTRAP_EMAIL"].filter(
     (value): value is string => value !== null,
   );
 
@@ -70,7 +70,7 @@ export function parseBootstrapConfig(input: ConfigInput): BootstrapConfig {
 
 export function formatStartupError(error: unknown, env: NodeJS.ProcessEnv = process.env): string {
   const message = error instanceof Error ? error.message : "Unknown startup error";
-  const formatted = redactSecrets(`Failed to start Haaabit MCP server: ${message}`, env);
+  const formatted = redactSecrets(`Failed to start MikoshiTracker MCP server: ${message}`, env);
 
   console.error(formatted);
 
@@ -85,7 +85,7 @@ export function formatBootstrapError(
   } = {},
 ): string {
   const message = error instanceof Error ? error.message : "Unknown bootstrap error";
-  const formatted = redactSecrets(`Failed to bootstrap Haaabit API token: ${message}`, options.env, options.secrets);
+  const formatted = redactSecrets(`Failed to bootstrap MikoshiTracker API token: ${message}`, options.env, options.secrets);
 
   console.error(formatted);
 
@@ -97,7 +97,7 @@ export function redactSecrets(
   env: NodeJS.ProcessEnv = process.env,
   extraSecrets: string[] = [],
 ): string {
-  const secrets = [env.HAAABIT_API_TOKEN, env.HAAABIT_BOOTSTRAP_PASSWORD, ...extraSecrets].filter(
+  const secrets = [env.MIKOSHI_TRACKER_API_TOKEN, env.MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD, ...extraSecrets].filter(
     (value): value is string => Boolean(value && value.length > 0),
   );
 
@@ -183,15 +183,15 @@ function parseBootstrapArgs(argv: string[]) {
 function buildMissingRuntimeMessage(missing: string[], env: NodeJS.ProcessEnv) {
   const details = [`Missing required configuration: ${missing.join(", ")}.`];
 
-  if (missing.includes("HAAABIT_API_TOKEN")) {
-    details.push("The normal Haaabit MCP server expects a personal API token in HAAABIT_API_TOKEN.");
+  if (missing.includes("MIKOSHI_TRACKER_API_TOKEN")) {
+    details.push("The normal MikoshiTracker MCP server expects a personal API token in MIKOSHI_TRACKER_API_TOKEN.");
     details.push(
-      `If you only have account credentials, run \`${BOOTSTRAP_COMMAND}\` first and store the returned token as HAAABIT_API_TOKEN.`,
+      `If you only have account credentials, run \`${BOOTSTRAP_COMMAND}\` first and store the returned token as MIKOSHI_TRACKER_API_TOKEN.`,
     );
-    details.push("OpenClaw secret refs and apiKey mappings still need to resolve to HAAABIT_API_TOKEN.");
+    details.push("OpenClaw secret refs and apiKey mappings still need to resolve to MIKOSHI_TRACKER_API_TOKEN.");
   }
 
-  const tokenHint = detectTokenShapeHint(env.HAAABIT_API_TOKEN);
+  const tokenHint = detectTokenShapeHint(env.MIKOSHI_TRACKER_API_TOKEN);
   if (tokenHint) {
     details.push(tokenHint);
   }
@@ -205,11 +205,11 @@ function detectTokenShapeHint(token: string | undefined) {
   }
 
   if (token.includes("@")) {
-    return "HAAABIT_API_TOKEN looks more like an email address than a Haaabit personal API token.";
+    return "MIKOSHI_TRACKER_API_TOKEN looks more like an email address than a MikoshiTracker personal API token.";
   }
 
   if (/^https?:\/\//i.test(token)) {
-    return "HAAABIT_API_TOKEN looks more like a URL than a Haaabit personal API token.";
+    return "MIKOSHI_TRACKER_API_TOKEN looks more like a URL than a MikoshiTracker personal API token.";
   }
 
   return undefined;

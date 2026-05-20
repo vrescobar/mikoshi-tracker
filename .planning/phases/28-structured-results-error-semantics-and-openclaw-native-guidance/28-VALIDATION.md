@@ -19,16 +19,16 @@ created: 2026-03-11
 |----------|-------|
 | **Framework** | Vitest |
 | **Config file** | `packages/openclaw-plugin/vitest.config.ts` |
-| **Quick run command** | `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts` |
-| **Full suite command** | `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts` |
+| **Quick run command** | `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts` |
+| **Full suite command** | `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts` |
 | **Estimated runtime** | ~180 seconds |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
-- **After every plan wave:** Run `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- **After every task commit:** Run `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
+- **After every plan wave:** Run `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 - **Before `$gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 180 seconds
 
@@ -38,12 +38,12 @@ created: 2026-03-11
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 28-01-01 | 28-01 | 1 | RESP-01 | envelope | `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts` | ✅ | ✅ green |
-| 28-01-02 | 28-01 | 1 | RESP-01 | regression | `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/read-tools.test.ts test/mutation-tools.test.ts` | ✅ | ✅ green |
-| 28-02-01 | 28-02 | 2 | RESP-02, RESP-03 | error-semantics | `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/error-semantics.test.ts` | ✅ | ✅ green |
-| 28-02-02 | 28-02 | 2 | RESP-02, RESP-03 | full plugin semantics | `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/error-semantics.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts && pnpm --filter @haaabit/mcp exec vitest run test/client/errors.test.ts test/tools/mutation-errors.test.ts` | ✅ | ✅ green |
-| 28-03-01 | 28-03 | 3 | VER-02 | doc/example smoke | `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts` | ✅ | ✅ green |
-| 28-03-02 | 28-03 | 3 | VER-02, RESP-01 | docs + runtime regression | `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts` | ✅ | ✅ green |
+| 28-01-01 | 28-01 | 1 | RESP-01 | envelope | `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts` | ✅ | ✅ green |
+| 28-01-02 | 28-01 | 1 | RESP-01 | regression | `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/read-tools.test.ts test/mutation-tools.test.ts` | ✅ | ✅ green |
+| 28-02-01 | 28-02 | 2 | RESP-02, RESP-03 | error-semantics | `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/error-semantics.test.ts` | ✅ | ✅ green |
+| 28-02-02 | 28-02 | 2 | RESP-02, RESP-03 | full plugin semantics | `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/error-semantics.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/errors.test.ts test/tools/mutation-errors.test.ts` | ✅ | ✅ green |
+| 28-03-01 | 28-03 | 3 | VER-02 | doc/example smoke | `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts` | ✅ | ✅ green |
+| 28-03-02 | 28-03 | 3 | VER-02, RESP-01 | docs + runtime regression | `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/docs-native-openclaw.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

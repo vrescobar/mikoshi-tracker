@@ -7,7 +7,7 @@ import type { AppEnv } from "../plugins/env";
 
 export function createAuth(env: AppEnv, db: PrismaClient) {
   return betterAuth({
-    appName: "haaabit",
+    appName: "mikoshi-tracker",
     baseURL: env.BETTER_AUTH_URL,
     basePath: "/api/auth",
     secret: env.BETTER_AUTH_SECRET,

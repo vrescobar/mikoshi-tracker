@@ -1,6 +1,6 @@
 "use client";
 
-import type { TodayItem } from "@haaabit/contracts/today";
+import type { TodayItem } from "@mikoshi-tracker/contracts/today";
 import { useEffect, useState } from "react";
 
 import { useLocale } from "../locale";

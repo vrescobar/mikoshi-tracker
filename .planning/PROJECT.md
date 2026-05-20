@@ -1,8 +1,8 @@
-# Haaabit
+# MikoshiTracker
 
 ## What This Is
 
-Haaabit is a shipped, self-hostable habit tracking product for individual users that is designed AI-first rather than UI-first. It now ships a web app, a bearer-authenticated REST API, a publishable `@haaabit/mcp` package, and a native `@haaabit/openclaw-plugin` package so AI hosts can either use the generic MCP path or the OpenClaw-native tool path without duplicating domain logic.
+MikoshiTracker is a shipped, self-hostable habit tracking product for individual users that is designed AI-first rather than UI-first. It now ships a web app, a bearer-authenticated REST API, a publishable `@mikoshi-tracker/mcp` package, and a native `@mikoshi-tracker/openclaw-plugin` package so AI hosts can either use the generic MCP path or the OpenClaw-native tool path without duplicating domain logic.
 
 ## Core Value
 
@@ -11,10 +11,10 @@ Let AI accurately understand what the user needs to do today and reliably comple
 ## Current State
 
 - **Latest shipped milestone:** v1.7 OpenClaw Native Plugin (shipped and archived 2026-03-11)
-- **Delivered surfaces:** web product, bearer-authenticated REST API, bilingual docs/UI, self-host deployment stack, publishable `@haaabit/mcp`, and native `@haaabit/openclaw-plugin`
+- **Delivered surfaces:** web product, bearer-authenticated REST API, bilingual docs/UI, self-host deployment stack, publishable `@mikoshi-tracker/mcp`, and native `@mikoshi-tracker/openclaw-plugin`
 - **Current MCP baseline:** local `stdio` transport, generic-client-ready package docs, full habits/today/stats read+write tool coverage, centralized shared-runtime error semantics, and release-gated build/test/API parity
 - **Current OpenClaw baseline:** native plugin manifest/bootstrap, direct habits/today/stats tool registration, structured success/error envelopes, native-first docs/examples, and migration guidance from the older MCP bridge path
-- **Current auth baseline:** steady-state MCP auth remains `HAAABIT_API_URL` plus personal API token, and `bootstrap-token` is the supported one-shot handoff for operators who start from account credentials
+- **Current auth baseline:** steady-state MCP auth remains `MIKOSHI_TRACKER_API_URL` plus personal API token, and `bootstrap-token` is the supported one-shot handoff for operators who start from account credentials
 - **Current verification baseline:** `pnpm verify:openclaw` and `pnpm verify:openclaw:full` now prove the native OpenClaw plugin path while still keeping shared MCP/runtime regressions covered
 - **Current stack:** Next.js 16, Fastify, Better Auth, Prisma with SQLite/libsql, Vitest, Playwright, Docker Compose, Caddy, and the MCP SDK
 - **Accepted tech debt:** real OpenClaw UI/plugin-loader and secret-store validation remain external-host-only, and the stable root `verify:openclaw` script names now cover native-plugin-first evidence; older accepted archive debt from v1.2/v1.3/v1.4/v1.6 remains historical context only
@@ -38,7 +38,7 @@ Current carry-forward candidates:
 | REST ships before MCP | Stable API behavior is the base contract; MCP wraps it instead of replacing it | ✓ Good |
 | Localization preserves user-authored data and API payload literals | Avoids mutating user content or destabilizing AI-facing contracts | ✓ Good |
 | Open-source prep should fix safety/publication blockers before optional polish | Security and repository quality mattered more than cosmetic extras before public release | ✓ Good |
-| MCP lives in `packages/mcp` as a thin adapter over the shipped REST API | Reuses `@haaabit/contracts`, avoids drift, and keeps API and MCP versioned together | ✓ Good |
+| MCP lives in `packages/mcp` as a thin adapter over the shipped REST API | Reuses `@mikoshi-tracker/contracts`, avoids drift, and keeps API and MCP versioned together | ✓ Good |
 | v1.5 targets generic MCP clients through local `stdio` first | Matches current operator expectations and avoids premature remote auth complexity | ✓ Good |
 | v1.6 optimizes host interoperability without assuming repo-local Skill support or automatic skill-to-MCP binding | OpenClaw-style hosts can separate guidance discovery from actual tool wiring | ✓ Good |
 | OpenClaw compatibility ships as a workspace-visible skill plus a paired MCP runtime contract | Operators need one canonical path that explains guidance, runtime, and secret injection together | ✓ Good |
@@ -59,7 +59,7 @@ Current carry-forward candidates:
 - v1.2 added the shared Simplified Chinese and English localization system across product and docs.
 - v1.3 fixed shipped bugs around today semantics, analytics correctness, registration control, and UI regressions.
 - v1.4 hardened secret handling and repository open-source readiness.
-- v1.5 added the publishable `@haaabit/mcp` package and generic MCP-client `stdio` integration path.
+- v1.5 added the publishable `@mikoshi-tracker/mcp` package and generic MCP-client `stdio` integration path.
 - v1.6 closed the OpenClaw interoperability gap with a canonical host-facing skill, config asset, bootstrap handoff, troubleshooting docs, and named verification gates.
 - v1.7 replaced the OpenClaw MCP bridge path with a native plugin package, structured agent-ready result/error envelopes, native-first verification, and explicit migration guidance.
 

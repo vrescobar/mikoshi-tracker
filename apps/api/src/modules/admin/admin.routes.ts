@@ -4,7 +4,7 @@ import {
   badRequestErrorSchema,
   commonNotFoundResponse,
   unauthorizedErrorSchema,
-} from "@haaabit/contracts/api";
+} from "@mikoshi-tracker/contracts/api";
 import {
   adminCirclePathParamsSchema,
   enrollMemberInputSchema,
@@ -15,7 +15,7 @@ import {
   resetProvisionedTokenInputSchema,
   resetProvisionedTokenResponseSchema,
   serviceUnavailableErrorSchema,
-} from "@haaabit/contracts/admin";
+} from "@mikoshi-tracker/contracts/admin";
 
 import {
   enrollMemberByExternalIdHandler,
@@ -25,14 +25,14 @@ import {
 import type { PublicApiRouteDefinition } from "../../plugins/openapi";
 
 const serviceUnavailableResponse = {
-  description: "Admin provisioning API is disabled (HAAABIT_ADMIN_API_KEY not configured).",
+  description: "Admin provisioning API is disabled (MIKOSHI_TRACKER_ADMIN_API_KEY not configured).",
   schema: serviceUnavailableErrorSchema,
   examples: {
     disabled: {
       summary: "Feature disabled",
       value: {
         code: "SERVICE_UNAVAILABLE",
-        message: "Admin provisioning API is disabled (HAAABIT_ADMIN_API_KEY not set)",
+        message: "Admin provisioning API is disabled (MIKOSHI_TRACKER_ADMIN_API_KEY not set)",
       },
     },
   },
@@ -56,7 +56,7 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "provisionUser",
     summary: "Provision a user",
     description:
-      "Creates an API-only user identified by an opaque externalId, bypassing registration settings. If the user already exists, returns the existing userId without re-issuing a token. Requires the HAAABIT_ADMIN_API_KEY system key.",
+      "Creates an API-only user identified by an opaque externalId, bypassing registration settings. If the user already exists, returns the existing userId without re-issuing a token. Requires the MIKOSHI_TRACKER_ADMIN_API_KEY system key.",
     tags: ["Admin"],
     security: [{ AdminKeyAuth: [] }],
     request: {
@@ -91,7 +91,7 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
             summary: "Freshly provisioned",
             value: {
               userId: "user_abc123",
-              personalToken: "haaabit_aabbccdd...",
+              personalToken: "mikoshi_tracker_aabbccdd...",
               alreadyExists: false,
             },
           },
@@ -121,7 +121,7 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "resetProvisionedToken",
     summary: "Rotate a provisioned user's token",
     description:
-      "Rotates the personal API token of a user identified by externalId. Returns the new token, shown once. Requires the HAAABIT_ADMIN_API_KEY system key.",
+      "Rotates the personal API token of a user identified by externalId. Returns the new token, shown once. Requires the MIKOSHI_TRACKER_ADMIN_API_KEY system key.",
     tags: ["Admin"],
     security: [{ AdminKeyAuth: [] }],
     request: {
@@ -140,7 +140,7 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
         examples: {
           rotated: {
             summary: "Token rotated",
-            value: { userId: "user_abc123", personalToken: "haaabit_aabbccdd..." },
+            value: { userId: "user_abc123", personalToken: "mikoshi_tracker_aabbccdd..." },
           },
         },
       },
@@ -169,7 +169,7 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "enrollCircleMemberByExternalId",
     summary: "Enrol a member in a circle by externalId",
     description:
-      "Resolves a provisioned user by their externalId and creates a CircleMembership with role 'member'. Idempotent: if the user is already a member the existing membership is returned (200). Requires the HAAABIT_ADMIN_API_KEY system key. The circle token cannot add members.",
+      "Resolves a provisioned user by their externalId and creates a CircleMembership with role 'member'. Idempotent: if the user is already a member the existing membership is returned (200). Requires the MIKOSHI_TRACKER_ADMIN_API_KEY system key. The circle token cannot add members.",
     tags: ["Admin"],
     security: [{ AdminKeyAuth: [] }],
     request: {

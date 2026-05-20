@@ -1,7 +1,7 @@
 import { fileTypeFromBuffer } from "file-type";
 import sharp from "sharp";
 
-import { ATTACHMENT_MAX_DIMENSION } from "@haaabit/contracts/attachments";
+import { ATTACHMENT_MAX_DIMENSION } from "@mikoshi-tracker/contracts/attachments";
 
 import { UnsupportedMediaTypeError } from "./attachment.errors";
 

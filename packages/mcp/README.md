@@ -1,20 +1,20 @@
-# @haaabit/mcp
+# @mikoshi-tracker/mcp
 
-`@haaabit/mcp` is a generic `stdio` MCP server for Haaabit. It exposes the full personal-token-compatible `habits`, `today`, and `stats` API surface to MCP clients without adding a second auth flow.
+`@mikoshi-tracker/mcp` is a generic `stdio` MCP server for MikoshiTracker. It exposes the full personal-token-compatible `habits`, `today`, and `stats` API surface to MCP clients without adding a second auth flow.
 
-This package is usable today with generic MCP clients and operators. It stays thin on purpose: it connects to an existing Haaabit API, reuses the shipped REST contracts, and expects the same personal API token you already use elsewhere.
+This package is usable today with generic MCP clients and operators. It stays thin on purpose: it connects to an existing MikoshiTracker API, reuses the shipped REST contracts, and expects the same personal API token you already use elsewhere.
 
 ## What You Need
 
-- A running Haaabit API base URL, for example `https://your-haaabit.example.com/api`
-- A personal API token created from the Haaabit web UI
+- A running MikoshiTracker API base URL, for example `https://your-mikoshi-tracker.example.com/api`
+- A personal API token created from the MikoshiTracker web UI
 - Node.js 20+
 
 Runtime configuration:
 
-- `HAAABIT_API_URL` - required
-- `HAAABIT_API_TOKEN` - required
-- `--api-url` - optional CLI override for `HAAABIT_API_URL`
+- `MIKOSHI_TRACKER_API_URL` - required
+- `MIKOSHI_TRACKER_API_TOKEN` - required
+- `--api-url` - optional CLI override for `MIKOSHI_TRACKER_API_URL`
 - `--timeout` - optional request timeout in milliseconds
 
 ## Generic MCP Client Setup
@@ -24,12 +24,12 @@ Use this shape first in any MCP client that supports `command` / `args` / `env` 
 ```json
 {
   "mcpServers": {
-    "haaabit": {
+    "mikoshi-tracker": {
       "command": "npx",
-      "args": ["-y", "@haaabit/mcp"],
+      "args": ["-y", "@mikoshi-tracker/mcp"],
       "env": {
-        "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-        "HAAABIT_API_TOKEN": "your-personal-api-token"
+        "MIKOSHI_TRACKER_API_URL": "https://your-mikoshi-tracker.example.com/api",
+        "MIKOSHI_TRACKER_API_TOKEN": "your-personal-api-token"
       }
     }
   }
@@ -41,12 +41,12 @@ Optional timeout override:
 ```json
 {
   "mcpServers": {
-    "haaabit": {
+    "mikoshi-tracker": {
       "command": "npx",
-      "args": ["-y", "@haaabit/mcp", "--timeout", "15000"],
+      "args": ["-y", "@mikoshi-tracker/mcp", "--timeout", "15000"],
       "env": {
-        "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-        "HAAABIT_API_TOKEN": "your-personal-api-token"
+        "MIKOSHI_TRACKER_API_URL": "https://your-mikoshi-tracker.example.com/api",
+        "MIKOSHI_TRACKER_API_TOKEN": "your-personal-api-token"
       }
     }
   }
@@ -62,12 +62,12 @@ For Claude Code, use the same `stdio` server shape in your MCP configuration:
 ```json
 {
   "mcpServers": {
-    "haaabit": {
+    "mikoshi-tracker": {
       "command": "npx",
-      "args": ["-y", "@haaabit/mcp", "--timeout", "15000"],
+      "args": ["-y", "@mikoshi-tracker/mcp", "--timeout", "15000"],
       "env": {
-        "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-        "HAAABIT_API_TOKEN": "your-personal-api-token"
+        "MIKOSHI_TRACKER_API_URL": "https://your-mikoshi-tracker.example.com/api",
+        "MIKOSHI_TRACKER_API_TOKEN": "your-personal-api-token"
       }
     }
   }
@@ -81,9 +81,9 @@ Claude Code MCP reference: [docs.anthropic.com/en/docs/claude-code/mcp](https://
 For manual probing and debugging, launch the server through MCP Inspector:
 
 ```bash
-HAAABIT_API_URL="https://your-haaabit.example.com/api" \
-HAAABIT_API_TOKEN="your-personal-api-token" \
-npx -y @modelcontextprotocol/inspector npx -y @haaabit/mcp
+MIKOSHI_TRACKER_API_URL="https://your-mikoshi-tracker.example.com/api" \
+MIKOSHI_TRACKER_API_TOKEN="your-personal-api-token" \
+npx -y @modelcontextprotocol/inspector npx -y @mikoshi-tracker/mcp
 ```
 
 Inspector reference: [modelcontextprotocol.io/docs/tools/inspector](https://modelcontextprotocol.io/docs/tools/inspector)
@@ -95,7 +95,7 @@ OpenClaw should now prefer the native plugin path:
 - Native package: [`../openclaw-plugin/README.md`](../openclaw-plugin/README.md)
 - Canonical native asset: [`../openclaw-plugin/examples/openclaw-plugin.jsonc`](../openclaw-plugin/examples/openclaw-plugin.jsonc)
 
-Keep `@haaabit/mcp` for these cases:
+Keep `@mikoshi-tracker/mcp` for these cases:
 
 - generic MCP hosts
 - `bootstrap-token`
@@ -104,28 +104,28 @@ Keep `@haaabit/mcp` for these cases:
 ### Connection order
 
 1. Decide whether you already have a personal API token.
-2. If not, run the one-shot `bootstrap-token` helper first so runtime still uses `HAAABIT_API_TOKEN` instead of an account password.
-3. Store the returned token in the secret slot that your host will later expose as `HAAABIT_API_TOKEN`.
+2. If not, run the one-shot `bootstrap-token` helper first so runtime still uses `MIKOSHI_TRACKER_API_TOKEN` instead of an account password.
+3. Store the returned token in the secret slot that your host will later expose as `MIKOSHI_TRACKER_API_TOKEN`.
 4. For OpenClaw, switch to the native plugin asset instead of the older MCP example.
 5. Use this MCP package only when the host still needs MCP transport.
 
-The steady-state runtime never accepts account passwords in place of `HAAABIT_API_TOKEN`. `bootstrap-token` is a one-shot setup helper for turning account credentials into the personal token that a native plugin or MCP host should inject afterward.
+The steady-state runtime never accepts account passwords in place of `MIKOSHI_TRACKER_API_TOKEN`. `bootstrap-token` is a one-shot setup helper for turning account credentials into the personal token that a native plugin or MCP host should inject afterward.
 
 Example bootstrap flow:
 
 ```bash
-npx -y @haaabit/mcp bootstrap-token \
-  --api-url https://your-haaabit.example.com/api \
+npx -y @mikoshi-tracker/mcp bootstrap-token \
+  --api-url https://your-mikoshi-tracker.example.com/api \
   --email you@example.com
 ```
 
 If the account already has a personal API token, the helper may require `--force` before rotating it. Keep the returned token in your host secret store and continue using the normal runtime env names only.
 
-For a broader explanation of workspace skills vs MCP transport and host-specific guidance, see [AI Agent Integration / AI 机器人接入](../../docs/ai-agent-integration.md). For symptom-driven fixes such as missing `HAAABIT_API_TOKEN`, `bootstrap-token`, or skill-visible/tools-missing failures, see [OpenClaw Troubleshooting](../../docs/openclaw-troubleshooting.md). For the milestone-close validation path, see [OpenClaw Validation Checklist](../../docs/openclaw-validation-checklist.md).
+For a broader explanation of workspace skills vs MCP transport and host-specific guidance, see [AI Agent Integration / AI 机器人接入](../../docs/ai-agent-integration.md). For symptom-driven fixes such as missing `MIKOSHI_TRACKER_API_TOKEN`, `bootstrap-token`, or skill-visible/tools-missing failures, see [OpenClaw Troubleshooting](../../docs/openclaw-troubleshooting.md). For the milestone-close validation path, see [OpenClaw Validation Checklist](../../docs/openclaw-validation-checklist.md).
 
 ## Tool Surface
 
-All tools use the authenticated Haaabit API behind the scenes and return structured data that matches the existing contracts.
+All tools use the authenticated MikoshiTracker API behind the scenes and return structured data that matches the existing contracts.
 
 | Tool                 | Route                           | Description                                                                                                                              |
 | -------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
@@ -148,8 +148,8 @@ All tools use the authenticated Haaabit API behind the scenes and return structu
 
 Besides the tool catalog, the MCP server exposes a small workflow layer for hosts that support MCP prompts and resources:
 
-- Prompt: `haaabit_assistant_workflow`
-- Resource: `haaabit://guides/workflow`
+- Prompt: `mikoshi_tracker_assistant_workflow`
+- Resource: `mikoshi-tracker://guides/workflow`
 - Purpose: teach a today-first, read-before-write tool sequence so hosts do not have to infer safe mutation behavior from route names alone
 
 Recommended usage:
@@ -159,11 +159,11 @@ Recommended usage:
 3. Mutate only on explicit user intent; if multiple habits could match, clarify before calling a write tool.
 4. Use `stats_get_overview` for review and trend questions, optionally pairing it with `today_get_summary` for concrete next steps.
 
-If your agent platform supports repo-local Skills, Haaabit also ships both [`.agents/skills/haaabit-mcp`](../../.agents/skills/haaabit-mcp/SKILL.md) for Codex/Claude-style agents and [`../../skills/haaabit-mcp/SKILL.md`](../../skills/haaabit-mcp/SKILL.md) for OpenClaw-style workspace skill discovery.
+If your agent platform supports repo-local Skills, MikoshiTracker also ships both [`.agents/skills/mikoshi-tracker-mcp`](../../.agents/skills/mikoshi-tracker-mcp/SKILL.md) for Codex/Claude-style agents and [`../../skills/mikoshi-tracker-mcp/SKILL.md`](../../skills/mikoshi-tracker-mcp/SKILL.md) for OpenClaw-style workspace skill discovery.
 
 For a broader explanation of when to connect MCP only, how to pair OpenClaw workspace skills with a real MCP runner, and how to explain this to robot operators, see [AI Agent Integration / AI 机器人接入](../../docs/ai-agent-integration.md).
 
-The `haaabit-mcp` Skill is documented as a bilingual trigger layer for Skill-aware agents. Typical requests include:
+The `mikoshi-tracker-mcp` Skill is documented as a bilingual trigger layer for Skill-aware agents. Typical requests include:
 
 - `What should I do today?` / `今天该做什么？`
 - `What habits are still left today?` / `今天还剩哪些习惯没做？`

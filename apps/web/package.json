@@ -1,5 +1,5 @@
 {
-  "name": "@haaabit/web",
+  "name": "@mikoshi-tracker/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,7 @@
     "playwright": "playwright"
   },
   "dependencies": {
-    "@haaabit/contracts": "workspace:*",
+    "@mikoshi-tracker/contracts": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "better-auth": "^1.6.11",
     "next": "^16.2.6",

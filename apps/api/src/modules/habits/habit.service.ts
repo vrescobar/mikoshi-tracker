@@ -5,7 +5,7 @@ import type {
   HabitFrequency,
   HabitRecord,
   UpdateHabitInput,
-} from "@haaabit/contracts/habits";
+} from "@mikoshi-tracker/contracts/habits";
 import type { PrismaClient } from "../../generated/prisma/client";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import {

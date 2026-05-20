@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { signUpThroughApi } from "../accessibility/helpers";
 
-const localeCookieName = "haaabit-locale";
+const localeCookieName = "mikoshi-tracker-locale";
 
 test.describe("locale foundation", () => {
   test.describe("browser locale detection", () => {
@@ -12,7 +12,7 @@ test.describe("locale foundation", () => {
       await page.goto("/");
 
       await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
-      await expect(page.getByRole("heading", { name: "登录 Haaabit" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "登录 MikoshiTracker" })).toBeVisible();
       await expect(page.getByRole("button", { name: "登录" })).toBeVisible();
       await expect(page.getByRole("button", { name: "创建账户" })).toBeVisible();
     });
@@ -25,7 +25,7 @@ test.describe("locale foundation", () => {
       await page.goto("/");
 
       await expect(page.locator("html")).toHaveAttribute("lang", "en");
-      await expect(page.getByRole("heading", { name: "Sign in to Haaabit" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Sign in to MikoshiTracker" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
       await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
     });

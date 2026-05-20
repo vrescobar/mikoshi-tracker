@@ -44,7 +44,7 @@ vi.mock("../../../lib/circles-client", () => ({
   }),
   removeCircleMember: vi.fn().mockResolvedValue(undefined),
   mintCircleToken: vi.fn().mockResolvedValue({
-    token: "haaabit_circle_test",
+    token: "mikoshi_tracker_circle_test",
     tokenId: "tok-1",
     label: null,
     createdAt: "2026-01-01T00:00:00.000Z",

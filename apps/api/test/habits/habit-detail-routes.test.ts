@@ -57,7 +57,7 @@ describe("habit detail routes", () => {
       url: `/api/habits/${habit.id}`,
       headers: {
         cookie,
-        "x-haaabit-now": "2026-03-04T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-04T12:00:00.000Z",
       },
     });
 
@@ -152,7 +152,7 @@ describe("habit detail routes", () => {
       url: `/api/habits/${habit.id}`,
       headers: {
         cookie,
-        "x-haaabit-now": "2026-02-23T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-02-23T12:00:00.000Z",
       },
     });
 

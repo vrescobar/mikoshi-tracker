@@ -1,14 +1,14 @@
-import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
-import type { AttachmentListResponse } from "@haaabit/contracts/attachments";
+import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
+import type { AttachmentListResponse } from "@mikoshi-tracker/contracts/attachments";
 import type {
   CreateHabitInput,
   HabitDetail,
   HabitListFilters,
   UpdateHabitInput,
   Weekday,
-} from "@haaabit/contracts/habits";
-import type { OverviewStats } from "@haaabit/contracts/stats";
-import type { TodaySummary } from "@haaabit/contracts/today";
+} from "@mikoshi-tracker/contracts/habits";
+import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
+import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 
 import { createApiUrl } from "./api";
 

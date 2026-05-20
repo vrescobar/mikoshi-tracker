@@ -61,7 +61,7 @@ The repository still points OpenClaw operators to:
 - paired MCP runner setup
 - skill + MCP coordination
 
-That was correct through v1.6, but it is now stale for the native plugin milestone. Phase 28 should add a native plugin example/story and make OpenClaw-native setup the canonical path, while leaving `@haaabit/mcp` docs in place for generic hosts.
+That was correct through v1.6, but it is now stale for the native plugin milestone. Phase 28 should add a native plugin example/story and make OpenClaw-native setup the canonical path, while leaving `@mikoshi-tracker/mcp` docs in place for generic hosts.
 
 ### The right separation is host-neutral runtime vs host-facing contract
 Phase 27 established a good architecture boundary:
@@ -125,7 +125,7 @@ Phase 28 should preserve that. Do not move envelope/docs concerns down into the 
 - Add one native OpenClaw setup asset and one native package/setup reference.
 - Update top-level docs so:
   - OpenClaw -> native plugin first
-  - generic hosts -> `@haaabit/mcp`
+  - generic hosts -> `@mikoshi-tracker/mcp`
 - Update troubleshooting and validation docs so they no longer assume OpenClaw always needs a paired MCP runner.
 </implementation_notes>
 
@@ -164,18 +164,18 @@ Phase 28 has four main risk surfaces:
 
 Recommended validation stack:
 
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 - doc smoke checks for the native example and top-level OpenClaw guidance
 
 Recommended quick command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts
 ```
 
 Recommended full command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts
 ```
 
 Planner implications:
@@ -196,21 +196,21 @@ Neither question blocks planning because the phase goal is to lock one stable an
 ## Sources
 
 ### Internal (HIGH confidence)
-- `/Users/finn/code/haaabit/.planning/phases/28-structured-results-error-semantics-and-openclaw-native-guidance/28-CONTEXT.md`
-- `/Users/finn/code/haaabit/.planning/ROADMAP.md`
-- `/Users/finn/code/haaabit/.planning/REQUIREMENTS.md`
-- `/Users/finn/code/haaabit/.planning/STATE.md`
-- `/Users/finn/code/haaabit/.planning/phases/27-shared-api-adapter-and-native-tool-catalog/27-VERIFICATION.md`
-- `/Users/finn/code/haaabit/packages/openclaw-plugin/src/native-handlers.ts`
-- `/Users/finn/code/haaabit/packages/openclaw-plugin/test/read-tools.test.ts`
-- `/Users/finn/code/haaabit/packages/openclaw-plugin/test/mutation-tools.test.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/client/error-payload.ts`
-- `/Users/finn/code/haaabit/README.md`
-- `/Users/finn/code/haaabit/docs/ai-agent-integration.md`
-- `/Users/finn/code/haaabit/docs/openclaw-validation-checklist.md`
-- `/Users/finn/code/haaabit/docs/openclaw-troubleshooting.md`
-- `/Users/finn/code/haaabit/packages/mcp/README.md`
-- `/Users/finn/code/haaabit/packages/mcp/examples/openclaw.jsonc`
+- `/Users/finn/code/mikoshi-tracker/.planning/phases/28-structured-results-error-semantics-and-openclaw-native-guidance/28-CONTEXT.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/ROADMAP.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/REQUIREMENTS.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/STATE.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/phases/27-shared-api-adapter-and-native-tool-catalog/27-VERIFICATION.md`
+- `/Users/finn/code/mikoshi-tracker/packages/openclaw-plugin/src/native-handlers.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/openclaw-plugin/test/read-tools.test.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/openclaw-plugin/test/mutation-tools.test.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/client/error-payload.ts`
+- `/Users/finn/code/mikoshi-tracker/README.md`
+- `/Users/finn/code/mikoshi-tracker/docs/ai-agent-integration.md`
+- `/Users/finn/code/mikoshi-tracker/docs/openclaw-validation-checklist.md`
+- `/Users/finn/code/mikoshi-tracker/docs/openclaw-troubleshooting.md`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/README.md`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/examples/openclaw.jsonc`
 </sources>
 
 ---

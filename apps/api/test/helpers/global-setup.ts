@@ -16,7 +16,7 @@ function removeTemplate(path: string): void {
 }
 
 /**
- * Sweep orphaned `haaabit-test-*` DBs left in `TEST_DB_DIR`. Per-test DBs are
+ * Sweep orphaned `mikoshi-tracker-test-*` DBs left in `TEST_DB_DIR`. Per-test DBs are
  * normally removed by `createTestContext().cleanup()`, but a test run killed
  * mid-flight (e.g. an autonomous loop hitting its timeout) skips cleanup and
  * leaks them. Only files older than `STALE_DB_AGE_MS` are removed, so DBs
@@ -31,7 +31,7 @@ function sweepStaleDbs(): void {
     return;
   }
   for (const name of entries) {
-    if (!name.startsWith("haaabit-test-")) continue;
+    if (!name.startsWith("mikoshi-tracker-test-")) continue;
     const full = join(TEST_DB_DIR, name);
     try {
       if (statSync(full).mtimeMs < cutoff) rmSync(full, { force: true });
@@ -47,7 +47,7 @@ function sweepStaleDbs(): void {
  * per test instead of spawning `prisma db push` ~56 times.
  *
  * The template path is unique per `vitest` invocation (process id + time)
- * and published via `HAAABIT_TEST_TEMPLATE_DB`. globalSetup runs in the main
+ * and published via `MIKOSHI_TRACKER_TEST_TEMPLATE_DB`. globalSetup runs in the main
  * vitest process before any worker is forked, so the env var propagates to
  * every forked test worker. This keeps concurrent test runs fully isolated:
  * one run can never delete or truncate another run's template.
@@ -56,7 +56,7 @@ export async function setup(): Promise<void> {
   sweepStaleDbs();
 
   const templatePath = makeTemplateDbPath();
-  process.env.HAAABIT_TEST_TEMPLATE_DB = templatePath;
+  process.env.MIKOSHI_TRACKER_TEST_TEMPLATE_DB = templatePath;
   removeTemplate(templatePath);
 
   // `prisma db push` creates the SQLite file itself — no need to pre-create
@@ -87,6 +87,6 @@ export async function teardown(): Promise<void> {
   // The template path is unique to this run, so deleting it on teardown is
   // safe (no other run shares it) and keeps /dev/shm from accumulating stale
   // template DBs. teardown runs only after every worker has finished.
-  const templatePath = process.env.HAAABIT_TEST_TEMPLATE_DB;
+  const templatePath = process.env.MIKOSHI_TRACKER_TEST_TEMPLATE_DB;
   if (templatePath) removeTemplate(templatePath);
 }

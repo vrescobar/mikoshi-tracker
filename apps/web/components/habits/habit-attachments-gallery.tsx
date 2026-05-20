@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttachmentMetadata } from "@haaabit/contracts/attachments";
+import type { AttachmentMetadata } from "@mikoshi-tracker/contracts/attachments";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { attachmentFileUrl, deleteAttachment, listHabitAttachments, uploadHabitAttachments } from "../../lib/auth-client";

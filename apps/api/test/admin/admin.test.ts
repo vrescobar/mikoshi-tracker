@@ -9,11 +9,11 @@ describe("admin provisioning routes", () => {
   let context: TestContext | undefined;
 
   beforeEach(() => {
-    process.env.HAAABIT_ADMIN_API_KEY = ADMIN_KEY;
+    process.env.MIKOSHI_TRACKER_ADMIN_API_KEY = ADMIN_KEY;
   });
 
   afterEach(async () => {
-    delete process.env.HAAABIT_ADMIN_API_KEY;
+    delete process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
     if (context) {
       await context.cleanup();
       context = undefined;
@@ -35,7 +35,7 @@ describe("admin provisioning routes", () => {
       const body = response.json();
       expect(body).toMatchObject({
         alreadyExists: false,
-        personalToken: expect.stringMatching(/^haaabit_/),
+        personalToken: expect.stringMatching(/^mikoshi_tracker_/),
         userId: expect.any(String),
       });
 
@@ -43,7 +43,7 @@ describe("admin provisioning routes", () => {
         where: { id: body.userId },
       });
       expect(user).not.toBeNull();
-      expect(user?.email).toMatch(/^provisioned-[0-9a-f]{24}@haaabit\.internal$/);
+      expect(user?.email).toMatch(/^provisioned-[0-9a-f]{24}@mikoshi-tracker\.internal$/);
       expect(user?.emailVerified).toBe(true);
       expect(user?.externalId).toBe("ext-new-user-1");
     });
@@ -102,8 +102,8 @@ describe("admin provisioning routes", () => {
       expect(response.json()).toMatchObject({ code: "UNAUTHORIZED" });
     });
 
-    it("returns 503 when HAAABIT_ADMIN_API_KEY is not set", async () => {
-      delete process.env.HAAABIT_ADMIN_API_KEY;
+    it("returns 503 when MIKOSHI_TRACKER_ADMIN_API_KEY is not set", async () => {
+      delete process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
       context = await createTestContext();
 
       const response = await context.app.inject({
@@ -391,7 +391,7 @@ describe("admin provisioning routes", () => {
 
       expect(resetResponse.statusCode).toBe(200);
       const resetBody = resetResponse.json() as { userId: string; personalToken: string };
-      expect(resetBody.personalToken).toMatch(/^haaabit_/);
+      expect(resetBody.personalToken).toMatch(/^mikoshi_tracker_/);
       expect(resetBody.personalToken).not.toBe(firstToken);
     });
 

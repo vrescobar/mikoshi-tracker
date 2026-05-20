@@ -7,7 +7,7 @@ score: 3/3 requirements verified
 
 # Phase 27: Shared API Adapter and Native Tool Catalog Verification Report
 
-**Phase Goal:** Reuse the shipped Haaabit API/client/contracts stack to expose the full habits/today/stats tool catalog as native OpenClaw tools.
+**Phase Goal:** Reuse the shipped MikoshiTracker API/client/contracts stack to expose the full habits/today/stats tool catalog as native OpenClaw tools.
 **Verified:** 2026-03-11T20:55:30+08:00
 **Status:** passed
 
@@ -28,7 +28,7 @@ score: 3/3 requirements verified
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
 | `packages/mcp/src/client/error-payload.ts` | Host-neutral error payload mapping | ✓ EXISTS + PASSED | Shared by both MCP and native plugin paths. |
-| `packages/mcp/src/tools/catalog.ts` | Shared Haaabit tool metadata | ✓ EXISTS + PASSED | Keeps tool vocabulary and schema metadata single-sourced. |
+| `packages/mcp/src/tools/catalog.ts` | Shared MikoshiTracker tool metadata | ✓ EXISTS + PASSED | Keeps tool vocabulary and schema metadata single-sourced. |
 | `packages/mcp/src/tools/runtime.ts` | Shared tool-operation aggregation | ✓ EXISTS + PASSED | Aggregates reusable read/write operations for both hosts. |
 | `packages/openclaw-plugin/src/native-handlers.ts` | Real native handlers | ✓ EXISTS + PASSED | Wraps shared operations into native success/error payloads. |
 | `packages/openclaw-plugin/test/shared-runtime.test.ts` | Shared-seam coverage | ✓ EXISTS + PASSED | Proves runtime imports are host-neutral and error payload mapping is shared. |
@@ -41,9 +41,9 @@ score: 3/3 requirements verified
 
 | Requirement | Status | Blocking Issue |
 |-------------|--------|----------------|
-| OCP-02: The native OpenClaw plugin exposes the same intent coverage as the shipped Haaabit tool surface. | ✓ SATISFIED | - |
-| SHRD-01: The plugin reuses the existing Haaabit API client, shared contracts/types, and bearer-token auth semantics. | ✓ SATISFIED | - |
-| SHRD-03: The OpenClaw-native transport layer stays thin, with domain behavior still enforced by the shipped Haaabit API. | ✓ SATISFIED | - |
+| OCP-02: The native OpenClaw plugin exposes the same intent coverage as the shipped MikoshiTracker tool surface. | ✓ SATISFIED | - |
+| SHRD-01: The plugin reuses the existing MikoshiTracker API client, shared contracts/types, and bearer-token auth semantics. | ✓ SATISFIED | - |
+| SHRD-03: The OpenClaw-native transport layer stays thin, with domain behavior still enforced by the shipped MikoshiTracker API. | ✓ SATISFIED | - |
 
 **Coverage:** 3/3 requirements satisfied
 
@@ -61,9 +61,9 @@ One external-host check remains non-blocking:
 
 ## Commands Run
 
-- `pnpm --filter @haaabit/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/tool-catalog.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts`
-- `pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/tool-catalog.test.ts test/config/env.test.ts test/plugin-startup-errors.test.ts`
+- `pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 
 ---
 *Verified: 2026-03-11T20:55:30+08:00*

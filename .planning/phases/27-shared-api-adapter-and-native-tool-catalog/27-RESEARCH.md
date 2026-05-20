@@ -1,17 +1,17 @@
 # Phase 27: Shared API Adapter and Native Tool Catalog - Research
 
 **Researched:** 2026-03-11
-**Domain:** Reusing the shipped Haaabit API/client/contracts stack to power native OpenClaw tool handlers
+**Domain:** Reusing the shipped MikoshiTracker API/client/contracts stack to power native OpenClaw tool handlers
 **Confidence:** HIGH
 
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
 ### Locked Decisions
-- Replace the native plugin placeholders with real Haaabit API-backed handlers.
+- Replace the native plugin placeholders with real MikoshiTracker API-backed handlers.
 - Reuse the shipped API client, contracts/types, auth semantics, and tool vocabulary.
 - Keep the OpenClaw package native; no MCP forwarding or hidden bridge.
-- Keep Haaabit domain truth in the shipped API rather than copying business rules into `packages/openclaw-plugin`.
+- Keep MikoshiTracker domain truth in the shipped API rather than copying business rules into `packages/openclaw-plugin`.
 
 ### Claude's Discretion
 - Exact shared-runtime file layout
@@ -36,7 +36,7 @@ Phase 27 should be planned as three execution slices:
 3. **Native mutation tools**
    Replace placeholder handlers for `habits_add`, `habits_edit`, `habits_archive`, `habits_restore`, `today_complete`, `today_set_total`, and `today_undo` with real API-backed handlers using the same auth and endpoint semantics as the MCP package.
 
-**Primary recommendation:** do not write a second implementation of Haaabit operations in the OpenClaw package. Instead, extract or expose one host-neutral runtime layer that both MCP and OpenClaw-native code can use, then let the plugin adapt that layer to the native host contract.
+**Primary recommendation:** do not write a second implementation of MikoshiTracker operations in the OpenClaw package. Instead, extract or expose one host-neutral runtime layer that both MCP and OpenClaw-native code can use, then let the plugin adapt that layer to the native host contract.
 </research_summary>
 
 <standards_and_sources>
@@ -48,13 +48,13 @@ Phase 27 should be planned as three execution slices:
 - bearer token injection,
 - timeout handling,
 - JSON/text response parsing,
-- and conversion of HTTP failures into `HaaabitApiError`.
+- and conversion of HTTP failures into `MikoshiTrackerApiError`.
 
 This is exactly the runtime seam the plugin should reuse.
 
 ### The current error layer is only partially reusable
 `packages/mcp/src/client/errors.ts` contains two different concerns:
-- reusable error data and semantic mapping (`HaaabitApiError`, status/code inspection),
+- reusable error data and semantic mapping (`MikoshiTrackerApiError`, status/code inspection),
 - MCP-only serialization (`CallToolResult`, `toMcpErrorResult`, `buildMachineReadableToolResult`).
 
 Phase 27 should split or expose the reusable core without pulling MCP result types into the native plugin.
@@ -99,9 +99,9 @@ That would violate both `SHRD-01` and `SHRD-03`.
 | Tool | Purpose | When to Use |
 |------|---------|-------------|
 | `pnpm typecheck` | Catch shared-runtime drift across packages | After every plan |
-| `pnpm --filter @haaabit/openclaw-plugin exec vitest run ...` | Native plugin contract/runtime regression coverage | After every task |
-| `pnpm --filter @haaabit/openclaw-plugin build` | Prove native package still emits after shared extraction | After every wave |
-| `pnpm --filter @haaabit/mcp exec vitest run ...` | Guard the existing MCP package while shared seams move | After shared-runtime and handler work |
+| `pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run ...` | Native plugin contract/runtime regression coverage | After every task |
+| `pnpm --filter @mikoshi-tracker/openclaw-plugin build` | Prove native package still emits after shared extraction | After every wave |
+| `pnpm --filter @mikoshi-tracker/mcp exec vitest run ...` | Guard the existing MCP package while shared seams move | After shared-runtime and handler work |
 
 ### Implications
 - Phase 27 should touch both `packages/mcp` and `packages/openclaw-plugin`.
@@ -118,8 +118,8 @@ That would violate both `SHRD-01` and `SHRD-03`.
 - `27-03` should implement native mutations second because they rely on the same runtime plus more failure-path coverage.
 
 ### Shared-runtime strategy
-- Keep `HaaabitApiClient` as the single request transport.
-- Separate `HaaabitApiError` and reusable error classification/hint derivation from MCP result serialization.
+- Keep `MikoshiTrackerApiClient` as the single request transport.
+- Separate `MikoshiTrackerApiError` and reusable error classification/hint derivation from MCP result serialization.
 - Prefer a host-neutral operation result shape such as `{ payload, summary }` or `{ data, summary }` inside the shared seam, then let each host serialize it.
 - Reuse existing route/path decisions and summary functions from the current MCP tool modules instead of restating them in the plugin package.
 
@@ -183,17 +183,17 @@ Phase 27 has four main risk surfaces:
 
 Recommended validation stack:
 
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/config/env.test.ts`
-- `pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/config/env.test.ts`
+- `pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts`
 
 Recommended quick command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/config/env.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/shared-runtime.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/plugin-bootstrap.test.ts test/tool-registration.test.ts test/config/env.test.ts
 ```
 
 Recommended full command:
 ```bash
-pnpm typecheck && pnpm --filter @haaabit/openclaw-plugin build && pnpm --filter @haaabit/openclaw-plugin exec vitest run && pnpm --filter @haaabit/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts
+pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts
 ```
 
 Planner implications:
@@ -212,24 +212,24 @@ Planner implications:
 ## Sources
 
 ### Internal (HIGH confidence)
-- `/Users/finn/code/haaabit/.planning/phases/27-shared-api-adapter-and-native-tool-catalog/27-CONTEXT.md`
-- `/Users/finn/code/haaabit/.planning/ROADMAP.md`
-- `/Users/finn/code/haaabit/.planning/REQUIREMENTS.md`
-- `/Users/finn/code/haaabit/.planning/STATE.md`
-- `/Users/finn/code/haaabit/.planning/phases/26-native-plugin-contract-and-package-scaffold/26-RESEARCH.md`
-- `/Users/finn/code/haaabit/packages/mcp/src/client/api-client.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/client/errors.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/contracts/habits.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/contracts/checkins.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/contracts/today.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/contracts/stats.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/tools/habits.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/tools/today.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/tools/stats.ts`
-- `/Users/finn/code/haaabit/packages/mcp/src/tools/inventory.ts`
-- `/Users/finn/code/haaabit/packages/openclaw-plugin/src/index.ts`
-- `/Users/finn/code/haaabit/packages/openclaw-plugin/src/register-tools.ts`
-- `/Users/finn/code/haaabit/CLAUDE.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/phases/27-shared-api-adapter-and-native-tool-catalog/27-CONTEXT.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/ROADMAP.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/REQUIREMENTS.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/STATE.md`
+- `/Users/finn/code/mikoshi-tracker/.planning/phases/26-native-plugin-contract-and-package-scaffold/26-RESEARCH.md`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/client/api-client.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/client/errors.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/contracts/habits.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/contracts/checkins.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/contracts/today.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/contracts/stats.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/tools/habits.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/tools/today.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/tools/stats.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/mcp/src/tools/inventory.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/openclaw-plugin/src/index.ts`
+- `/Users/finn/code/mikoshi-tracker/packages/openclaw-plugin/src/register-tools.ts`
+- `/Users/finn/code/mikoshi-tracker/CLAUDE.md`
 </sources>
 
 ---

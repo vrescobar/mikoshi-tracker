@@ -37,7 +37,7 @@ describe("stdio integration", () => {
   it("lets a stdio client discover the planned tool catalog", async () => {
     const cliPath = await resolveBuiltCliPath();
     const client = new Client({
-      name: "haaabit-test-client",
+      name: "mikoshi-tracker-test-client",
       version: "0.1.0",
     });
     const transport = new StdioClientTransport({
@@ -46,8 +46,8 @@ describe("stdio integration", () => {
       cwd: workspaceRoot,
       stderr: "pipe",
       env: {
-        HAAABIT_API_URL: "https://habit.example.com/api",
-        HAAABIT_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
       },
     });
     const stderrChunks: string[] = [];

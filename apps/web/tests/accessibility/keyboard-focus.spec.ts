@@ -38,7 +38,7 @@ test("keyboard locale switch keeps focus continuity on auth", async ({ page }) =
 
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(chineseButton).toBeFocused();
-  await expect(page.getByRole("heading", { name: "登录 Haaabit" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "登录 MikoshiTracker" })).toBeVisible();
 });
 
 test("keyboard closing an edit overlay returns focus to the invoking trigger", async ({ page }) => {
@@ -75,7 +75,7 @@ test("api access token controls remain keyboard-operable after reveal and rotate
   await revealButton.press("Enter");
 
   const tokenField = page.getByLabel("Personal API token");
-  await expect(tokenField).toHaveValue(/haaabit_/);
+  await expect(tokenField).toHaveValue(/mikoshi_tracker_/);
   await expect(page.getByRole("button", { name: "Copy token" })).toBeEnabled();
 
   const rotateButton = page.getByRole("button", { name: "Rotate token" });

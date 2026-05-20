@@ -5,8 +5,8 @@ import { parseBootstrapConfig, parseConfig, redactSecrets, type ConfigInput } fr
 function createInput(overrides: Partial<ConfigInput> = {}): ConfigInput {
   return {
     env: {
-      HAAABIT_API_URL: "https://habit.example.com/api",
-      HAAABIT_API_TOKEN: "secret-token",
+      MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+      MIKOSHI_TRACKER_API_TOKEN: "secret-token",
     },
     argv: [],
     ...overrides,
@@ -14,14 +14,14 @@ function createInput(overrides: Partial<ConfigInput> = {}): ConfigInput {
 }
 
 describe("parseConfig", () => {
-  it("requires HAAABIT_API_URL and HAAABIT_API_TOKEN by default", () => {
+  it("requires MIKOSHI_TRACKER_API_URL and MIKOSHI_TRACKER_API_TOKEN by default", () => {
     expect(() =>
       parseConfig({
         env: {},
         argv: [],
       }),
     ).toThrowError(
-      "Missing required configuration: HAAABIT_API_URL, HAAABIT_API_TOKEN. The normal Haaabit MCP server expects a personal API token in HAAABIT_API_TOKEN.",
+      "Missing required configuration: MIKOSHI_TRACKER_API_URL, MIKOSHI_TRACKER_API_TOKEN. The normal MikoshiTracker MCP server expects a personal API token in MIKOSHI_TRACKER_API_TOKEN.",
     );
   });
 
@@ -29,8 +29,8 @@ describe("parseConfig", () => {
     expect(() =>
       parseConfig({
         env: {
-          HAAABIT_API_URL: "https://habit.example.com/api",
-          HAAABIT_BOOTSTRAP_EMAIL: "alice@example.com",
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com/api",
+          MIKOSHI_TRACKER_BOOTSTRAP_EMAIL: "alice@example.com",
         },
         argv: [],
       }),
@@ -55,8 +55,8 @@ describe("parseConfig", () => {
     const config = parseConfig(
       createInput({
         env: {
-          HAAABIT_API_URL: "https://habit.example.com",
-          HAAABIT_API_TOKEN: "secret-token",
+          MIKOSHI_TRACKER_API_URL: "https://habit.example.com",
+          MIKOSHI_TRACKER_API_TOKEN: "secret-token",
         },
       }),
     );
@@ -79,8 +79,8 @@ describe("parseBootstrapConfig", () => {
   it("accepts the dedicated bootstrap credential inputs without changing the server runtime contract", () => {
     const config = parseBootstrapConfig({
       env: {
-        HAAABIT_BOOTSTRAP_EMAIL: "alice@example.com",
-        HAAABIT_BOOTSTRAP_PASSWORD: "password123",
+        MIKOSHI_TRACKER_BOOTSTRAP_EMAIL: "alice@example.com",
+        MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD: "password123",
       },
       argv: ["--api-url", "https://habit.example.com/api", "--force"],
     });
@@ -99,7 +99,7 @@ describe("parseBootstrapConfig", () => {
         env: {},
         argv: [],
       }),
-    ).toThrowError("Missing required bootstrap configuration: HAAABIT_API_URL, --email or HAAABIT_BOOTSTRAP_EMAIL.");
+    ).toThrowError("Missing required bootstrap configuration: MIKOSHI_TRACKER_API_URL, --email or MIKOSHI_TRACKER_BOOTSTRAP_EMAIL.");
   });
 });
 
@@ -108,8 +108,8 @@ describe("redactSecrets", () => {
     const message = redactSecrets(
       "Bearer secret-token password password123 cookie session=abc123 token secret-token",
       {
-        HAAABIT_API_TOKEN: "secret-token",
-        HAAABIT_BOOTSTRAP_PASSWORD: "password123",
+        MIKOSHI_TRACKER_API_TOKEN: "secret-token",
+        MIKOSHI_TRACKER_BOOTSTRAP_PASSWORD: "password123",
       },
       ["abc123"],
     );

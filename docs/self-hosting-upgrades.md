@@ -24,7 +24,7 @@ docker compose down
 Run the backup while the stack is stopped so the SQLite file is not changing underneath you:
 
 ```bash
-docker compose run --rm --no-deps migrate sh -lc 'cp /data/haaabit.db /data/haaabit.backup.$(date +%Y%m%d%H%M%S).db'
+docker compose run --rm --no-deps migrate sh -lc 'cp /data/mikoshi-tracker.db /data/mikoshi-tracker.backup.$(date +%Y%m%d%H%M%S).db'
 ```
 
 This uses the same named volume that backs the default production database.
@@ -121,7 +121,7 @@ docker compose down
 请在整套服务停止后执行备份，这样 SQLite 文件不会在复制时继续变化：
 
 ```bash
-docker compose run --rm --no-deps migrate sh -lc 'cp /data/haaabit.db /data/haaabit.backup.$(date +%Y%m%d%H%M%S).db'
+docker compose run --rm --no-deps migrate sh -lc 'cp /data/mikoshi-tracker.db /data/mikoshi-tracker.backup.$(date +%Y%m%d%H%M%S).db'
 ```
 
 这里使用的是默认生产数据库所在的同一个 named volume。

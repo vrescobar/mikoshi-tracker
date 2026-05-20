@@ -7,7 +7,7 @@ import {
 } from "../contracts/today.js";
 import { z } from "zod";
 
-import type { HaaabitApiClient } from "../client/api-client.js";
+import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { ToolOperation } from "./operation-types.js";
 import { formatNameList } from "./read-results.js";
 import type { InventoryTool } from "./catalog.js";
@@ -70,7 +70,7 @@ export const todayTools: InventoryTool[] = [
   },
 ];
 
-export function createTodayReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createTodayReadOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     today_get_summary: async () => {
       const payload = todaySummaryResponseSchema.parse(await client.request("/today"));
@@ -83,7 +83,7 @@ export function createTodayReadOperations(client: HaaabitApiClient): Record<stri
   };
 }
 
-export function createTodayWriteOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createTodayWriteOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     today_complete: async (input: unknown) => {
       const parsed = completeHabitInputSchema.parse(input);

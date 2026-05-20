@@ -5,7 +5,7 @@ import {
   todayHabitKindSchema,
   todaySummarySchema,
   todayWeekdaySchema,
-} from "@haaabit/contracts/today";
+} from "@mikoshi-tracker/contracts/today";
 
 export const habitDaySchema = z.object({
   todayKey: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

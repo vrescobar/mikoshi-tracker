@@ -6,7 +6,7 @@ import {
   commonNotFoundResponse,
   habitInactiveResponse,
   habitPathParamsSchema,
-} from "@haaabit/contracts/api";
+} from "@mikoshi-tracker/contracts/api";
 import {
   createHabitInputSchema,
   habitDetailResponseSchema,
@@ -14,7 +14,7 @@ import {
   habitListFiltersSchema,
   habitListResponseSchema,
   updateHabitInputSchema,
-} from "@haaabit/contracts/habits";
+} from "@mikoshi-tracker/contracts/habits";
 
 import {
   archiveHabitHandler,

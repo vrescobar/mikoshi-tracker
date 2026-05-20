@@ -1,4 +1,4 @@
-# Haaabit — Revisión de seguridad y estado del proyecto
+# MikoshiTracker — Revisión de seguridad y estado del proyecto
 
 > Auditoría realizada el 2026-05-17 sobre el commit `f23a3f6` (rama `main`).
 > Alcance: auditoría estática completa de `apps/`, `packages/`, contenedores y
@@ -49,7 +49,7 @@ mismo lote de trabajo que esta revisión — ver `docs/PUBLIC-DEPLOYMENT.md`.
   `preinstall`/`prepare` en ningún `package.json`.
 - **Sin git hooks activos:** `.git/hooks/` solo contiene ficheros `.sample`.
 - **MCP / plugin OpenClaw:** `packages/mcp` y `packages/openclaw-plugin` solo
-  hacen `fetch` contra el `HAAABIT_API_URL` que aporta el operador; rechazan
+  hacen `fetch` contra el `MIKOSHI_TRACKER_API_URL` que aporta el operador; rechazan
   URLs no http(s) y redactan los tokens en los mensajes de error.
 
 Conclusión: el proyecto es una app self-hosted cerrada sobre sí misma. Tus
@@ -107,7 +107,7 @@ IDOR. No es un fallo actual.
   y los datos provienen de definiciones de ruta estáticas, no de entrada de
   usuario.
 - **Validación de entrada:** todos los endpoints validan el cuerpo/query con
-  esquemas Zod (`@haaabit/contracts`). Entrada inválida → 400.
+  esquemas Zod (`@mikoshi-tracker/contracts`). Entrada inválida → 400.
 
 ## 5. Modelo de administrador
 

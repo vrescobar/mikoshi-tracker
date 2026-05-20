@@ -1,7 +1,7 @@
 import { overviewStatsResponseSchema, overviewStatsSchema } from "../contracts/stats.js";
 import { z } from "zod";
 
-import type { HaaabitApiClient } from "../client/api-client.js";
+import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { ToolOperation } from "./operation-types.js";
 import type { InventoryTool } from "./catalog.js";
 
@@ -20,7 +20,7 @@ export const statsTools: InventoryTool[] = [
   },
 ];
 
-export function createStatsReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
+export function createStatsReadOperations(client: MikoshiTrackerApiClient): Record<string, ToolOperation> {
   return {
     stats_get_overview: async () => {
       const payload = overviewStatsResponseSchema.parse(await client.request("/stats/overview"));

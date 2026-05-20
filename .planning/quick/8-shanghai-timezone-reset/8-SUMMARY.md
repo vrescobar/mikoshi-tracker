@@ -15,8 +15,8 @@
 
 ## Verification
 
-- `pnpm --filter @haaabit/api exec vitest run test/auth/auth-flow.test.ts test/today/today-clock.test.ts test/today/today-routes.test.ts test/habits/habit-persistence.test.ts`
-- `pnpm --filter @haaabit/api exec vitest run test/auth test/today test/checkins test/stats test/habits/habit-detail-routes.test.ts test/habits/habit-management.test.ts`
+- `pnpm --filter @mikoshi-tracker/api exec vitest run test/auth/auth-flow.test.ts test/today/today-clock.test.ts test/today/today-routes.test.ts test/habits/habit-persistence.test.ts`
+- `pnpm --filter @mikoshi-tracker/api exec vitest run test/auth test/today test/checkins test/stats test/habits/habit-detail-routes.test.ts test/habits/habit-management.test.ts`
 - `pnpm typecheck`
 
 ## Outcome

@@ -3,7 +3,7 @@ import {
   setHabitTotalInputSchema,
   undoHabitInputSchema,
   type CheckinSource,
-} from "@haaabit/contracts/checkins";
+} from "@mikoshi-tracker/contracts/checkins";
 
 export function parseCompleteHabitInput(input: unknown) {
   return completeHabitInputSchema.parse(input);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createHabitInputSchema } from "@haaabit/contracts/habits";
+import { createHabitInputSchema } from "@mikoshi-tracker/contracts/habits";
 import { normalizeCreateHabitInput } from "../../src/modules/habits/habit.schema";
 
 describe("createHabitInputSchema", () => {

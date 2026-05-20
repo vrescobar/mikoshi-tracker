@@ -1,7 +1,7 @@
 "use client";
 
-import type { OverviewStats } from "@haaabit/contracts/stats";
-import type { TodaySummary } from "@haaabit/contracts/today";
+import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
+import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

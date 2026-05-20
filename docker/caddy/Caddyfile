@@ -1,11 +1,11 @@
 # Site address. Defaults to plain HTTP on :80 (the proxy container's internal
-# port, published to the host as ${HAAABIT_PUBLIC_PORT}).
+# port, published to the host as ${MIKOSHI_TRACKER_PUBLIC_PORT}).
 #
-# For a public deployment, set HAAABIT_SITE_ADDRESS to your real hostname
+# For a public deployment, set MIKOSHI_TRACKER_SITE_ADDRESS to your real hostname
 # (e.g. "habits.example.com") and publish ports 80 and 443 from the proxy
 # service. Caddy then provisions and renews a Let's Encrypt TLS certificate
 # automatically and enables HSTS. See docs/PUBLIC-DEPLOYMENT.md.
-{$HAAABIT_SITE_ADDRESS::80} {
+{$MIKOSHI_TRACKER_SITE_ADDRESS::80} {
 	encode gzip
 
 	handle /api/* {

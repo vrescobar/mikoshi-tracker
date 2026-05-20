@@ -1,23 +1,23 @@
 {
-  "name": "@haaabit/mcp",
+  "name": "@mikoshi-tracker/mcp",
   "version": "0.1.6",
   "private": false,
-  "description": "Generic stdio MCP server for Haaabit habits, today, and stats APIs.",
+  "description": "Generic stdio MCP server for MikoshiTracker habits, today, and stats APIs.",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/booooodv/haaabit.git",
+    "url": "git+https://github.com/vrescobar/mikoshi-tracker.git",
     "directory": "packages/mcp"
   },
-  "homepage": "https://github.com/booooodv/haaabit/tree/main/packages/mcp",
+  "homepage": "https://github.com/vrescobar/mikoshi-tracker/tree/main/packages/mcp",
   "bugs": {
-    "url": "https://github.com/booooodv/haaabit/issues"
+    "url": "https://github.com/vrescobar/mikoshi-tracker/issues"
   },
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "haaabit",
+    "mikoshi-tracker",
     "habits",
     "productivity"
   ],

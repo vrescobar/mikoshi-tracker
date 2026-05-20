@@ -71,7 +71,7 @@ describe("habit api contracts", () => {
       url: `/api/habits/${habitId}`,
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 
@@ -189,7 +189,7 @@ describe("habit api contracts", () => {
       url: "/api/habits/does-not-exist",
       headers: {
         authorization: `Bearer ${token}`,
-        "x-haaabit-now": "2026-03-11T12:00:00.000Z",
+        "x-mikoshi-tracker-now": "2026-03-11T12:00:00.000Z",
       },
     });
 

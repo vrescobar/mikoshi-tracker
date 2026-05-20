@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
-import { commonAuthErrorResponses } from "@haaabit/contracts/api";
-import { overviewStatsResponseSchema } from "@haaabit/contracts/stats";
+import { commonAuthErrorResponses } from "@mikoshi-tracker/contracts/api";
+import { overviewStatsResponseSchema } from "@mikoshi-tracker/contracts/stats";
 
 import { getOverviewStatsHandler } from "./stats.controller";
 import type { PublicApiRouteDefinition } from "../../plugins/openapi";

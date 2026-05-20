@@ -29,11 +29,11 @@ describe("OpenClaw native docs", () => {
     expect(readme).toContain("native OpenClaw integration");
     expect(readme).toContain("openclaw.extensions");
     expect(readme).toContain("./dist/openclaw.js");
-    expect(readme).toContain("@haaabit/openclaw-plugin");
+    expect(readme).toContain("@mikoshi-tracker/openclaw-plugin");
     expect(readme).toContain('ok": true');
     expect(readme).toContain("error.category");
-    expect(example).toContain('"package": "@haaabit/openclaw-plugin"');
-    expect(example).toContain('"@haaabit/openclaw-plugin"');
+    expect(example).toContain('"package": "@mikoshi-tracker/openclaw-plugin"');
+    expect(example).toContain('"@mikoshi-tracker/openclaw-plugin"');
     expect(example).not.toContain('"mcpServers"');
   });
 
@@ -48,10 +48,10 @@ describe("OpenClaw native docs", () => {
     const migration = await readRepoFile("docs/openclaw-migration.md");
 
     expect(readme).toContain("packages/openclaw-plugin/examples/openclaw-plugin.jsonc");
-    expect(readme).toContain("@haaabit/openclaw-plugin");
+    expect(readme).toContain("@mikoshi-tracker/openclaw-plugin");
     expect(integration).toContain("OpenClaw native plugin");
     expect(integration).toContain("packages/openclaw-plugin/examples/openclaw-plugin.jsonc");
-    expect(integration).toContain("@haaabit/mcp");
+    expect(integration).toContain("@mikoshi-tracker/mcp");
     expect(checklist).toContain("packages/openclaw-plugin/examples/openclaw-plugin.jsonc");
     expect(checklist).toContain("native plugin");
     expect(checklist).toContain("verification gate");
@@ -61,6 +61,6 @@ describe("OpenClaw native docs", () => {
     expect(troubleshooting).toContain("openclaw-migration.md");
     expect(migration).toContain("What stays the same");
     expect(migration).toContain("What changes");
-    expect(rootPackageJson.scripts?.["verify:openclaw"]).toContain("@haaabit/openclaw-plugin");
+    expect(rootPackageJson.scripts?.["verify:openclaw"]).toContain("@mikoshi-tracker/openclaw-plugin");
   });
 });

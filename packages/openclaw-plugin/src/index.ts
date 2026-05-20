@@ -20,7 +20,7 @@ export type PluginActivationOptions = {
   handlers?: Partial<Record<string, OpenClawToolHandler>>;
 };
 
-export function activateHaaabitOpenClawPlugin(api: OpenClawPluginApi, options: PluginActivationOptions = {}) {
+export function activateMikoshiTrackerOpenClawPlugin(api: OpenClawPluginApi, options: PluginActivationOptions = {}) {
   const env = resolvePluginRuntimeEnv(api, options);
 
   try {
@@ -61,7 +61,7 @@ export function activateHaaabitOpenClawPlugin(api: OpenClawPluginApi, options: P
 }
 
 export function register(api: OpenClawPluginApi, options: PluginActivationOptions = {}) {
-  return activateHaaabitOpenClawPlugin(api, options);
+  return activateMikoshiTrackerOpenClawPlugin(api, options);
 }
 
 export function activate(api: OpenClawPluginApi, options: PluginActivationOptions = {}) {

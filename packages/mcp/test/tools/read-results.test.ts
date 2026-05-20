@@ -27,7 +27,7 @@ describe("createReadToolResult", () => {
     ]);
     expect(result.structuredContent).toEqual({
       items: [{ id: "habit_1" }],
-      _haaabit_json: machineJson,
+      _mikoshi_tracker_json: machineJson,
     });
   });
 
@@ -49,13 +49,13 @@ describe("createReadToolResult", () => {
 
     expect(todayResult.structuredContent).toEqual({
       today: { date: "2026-03-09" },
-      _haaabit_json: JSON.stringify({
+      _mikoshi_tracker_json: JSON.stringify({
         today: { date: "2026-03-09" },
       }),
     });
     expect(statsResult.structuredContent).toEqual({
       stats: { date: "2026-03-09" },
-      _haaabit_json: JSON.stringify({
+      _mikoshi_tracker_json: JSON.stringify({
         stats: { date: "2026-03-09" },
       }),
     });
@@ -81,7 +81,7 @@ describe("createReadToolResult", () => {
       "Habit detail",
     );
 
-    const parsed = JSON.parse((result.structuredContent as { _haaabit_json: string })._haaabit_json) as {
+    const parsed = JSON.parse((result.structuredContent as { _mikoshi_tracker_json: string })._mikoshi_tracker_json) as {
       item: {
         targetValue: number;
         unit: string;

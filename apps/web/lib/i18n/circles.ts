@@ -206,7 +206,7 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
       ownerPanel: {
         addMemberTitle: "Add a member",
         addMemberDescription:
-          "Members can share their own habits in this circle and appear on the leaderboard. Add by email — the person must already have a Haaabit account.",
+          "Members can share their own habits in this circle and appear on the leaderboard. Add by email — the person must already have a MikoshiTracker account.",
         emailLabel: "Email address",
         emailPlaceholder: "member@example.com",
         externalIdLabel: "External ID (optional)",
@@ -334,7 +334,7 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
       },
       ownerPanel: {
         addMemberTitle: "添加成员",
-        addMemberDescription: "成员可以在此圈子中分享自己的习惯并出现在排行榜上。通过邮箱添加——此人必须已有 Haaabit 账号。",
+        addMemberDescription: "成员可以在此圈子中分享自己的习惯并出现在排行榜上。通过邮箱添加——此人必须已有 MikoshiTracker 账号。",
         emailLabel: "邮箱地址",
         emailPlaceholder: "member@example.com",
         externalIdLabel: "外部 ID（可选）",
@@ -463,7 +463,7 @@ const circlesCopy: Record<SupportedLocale, CirclesCopy> = {
       ownerPanel: {
         addMemberTitle: "Añadir miembro",
         addMemberDescription:
-          "Los miembros pueden compartir sus propios hábitos en este círculo y aparecer en la clasificación. Añadir por correo — la persona debe tener ya una cuenta de Haaabit.",
+          "Los miembros pueden compartir sus propios hábitos en este círculo y aparecer en la clasificación. Añadir por correo — la persona debe tener ya una cuenta de MikoshiTracker.",
         emailLabel: "Dirección de correo",
         emailPlaceholder: "miembro@ejemplo.com",
         externalIdLabel: "ID externo (opcional)",

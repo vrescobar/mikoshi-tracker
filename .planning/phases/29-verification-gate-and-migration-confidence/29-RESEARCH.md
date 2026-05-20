@@ -44,7 +44,7 @@ Why first:
 
 Best scope:
 
-- add a real API-backed native plugin integration test using `activateHaaabitOpenClawPlugin(...)`
+- add a real API-backed native plugin integration test using `activateMikoshiTrackerOpenClawPlugin(...)`
 - collect registered handlers from a fake OpenClaw host API and call them directly
 - prove one read and one safe mutation through the native plugin boundary
 - capture migration notes from the old OpenClaw MCP setup to the new native plugin setup
@@ -83,9 +83,9 @@ Must cover:
 
 - remove the OpenClaw MCP runner block
 - add the native plugin block
-- keep the same `HAAABIT_API_URL` / `HAAABIT_API_TOKEN`
+- keep the same `MIKOSHI_TRACKER_API_URL` / `MIKOSHI_TRACKER_API_TOKEN`
 - keep `bootstrap-token` only as a one-shot helper
-- optionally keep the Haaabit Skill as guidance, not transport
+- optionally keep the MikoshiTracker Skill as guidance, not transport
 
 ## Planning Implications
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createHabitInputSchema, updateHabitInputSchema, type Weekday } from "@haaabit/contracts/habits";
+import { createHabitInputSchema, updateHabitInputSchema, type Weekday } from "@mikoshi-tracker/contracts/habits";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
