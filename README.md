@@ -4,6 +4,9 @@ Self-hosted habit tracker that makes "what should I do today?" legible to both h
 
 自托管习惯追踪工具，让人和 AI 都能清楚地知道"今天该做什么"。
 
+> **Origin:** MikoshiTracker is a fork of [`haaabit`](https://github.com/vrescobar/haaabit) (originally MIT-licensed,
+> Copyright © 2026 Finn). See [`LICENSE`](LICENSE) for the full attribution.
+
 ## Features / 功能
 
 - **Today-first dashboard** — see pending and completed habits at a glance, with completion rates and trends

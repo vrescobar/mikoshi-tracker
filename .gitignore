@@ -1,6 +1,7 @@
 .planning/
 .worktrees/
 .env
+backups/
 需求说明.md
 .DS_Store
 .pnpm-store/
