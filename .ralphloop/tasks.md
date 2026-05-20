@@ -60,7 +60,7 @@ personal token**. Full plan in `PLAN.md`; self-contained spec in `GOAL.md`
       `packages/contracts/src/circles.ts` and `circle.service.ts`/repository as
       needed. See `GOAL.md` §C17.5.
 
-- [ ] **31** Tests, OpenAPI + Phase 11 acceptance — Vitest in `apps/api`:
+- [x] **31** Tests, OpenAPI + Phase 11 acceptance — Vitest in `apps/api`:
       provisioning creates an account-less, password-less user with a usable
       personal token; a repeat call with the same `externalId` is idempotent;
       reset-token rotates; member enrolment by `externalId` is idempotent and

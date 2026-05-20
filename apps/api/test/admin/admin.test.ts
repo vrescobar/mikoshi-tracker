@@ -161,6 +161,34 @@ describe("admin provisioning routes", () => {
       });
       expect(user?.timezone).toBe("Asia/Shanghai");
     });
+
+    it("returned personal token authenticates API requests — the user is account-less but fully functional", async () => {
+      context = await createTestContext();
+
+      const provisionRes = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-usable-token-1", name: "Bot User" },
+      });
+      expect(provisionRes.statusCode).toBe(201);
+      const { personalToken } = provisionRes.json() as { personalToken: string };
+
+      const habitsRes = await context.app.inject({
+        method: "GET",
+        url: "/api/habits",
+        headers: { authorization: `Bearer ${personalToken}` },
+      });
+      expect(habitsRes.statusCode).toBe(200);
+      expect(habitsRes.json()).toMatchObject({ items: [] });
+
+      // Verify: no Account row — the user has no password-based login
+      const userId = (provisionRes.json() as { userId: string }).userId;
+      const account = await context.app.db.account.findFirst({
+        where: { userId },
+      });
+      expect(account).toBeNull();
+    });
   });
 
   describe("POST /api/admin/circles/:circleId/members", () => {

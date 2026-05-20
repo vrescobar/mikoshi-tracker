@@ -180,8 +180,20 @@ export type HabitsCopy = {
       last7DaysSubtitle: string;
       last30Days: string;
       last30DaysSubtitle: string;
+      attachments: string;
     };
     chartNotDue: string;
+    attachments: {
+      description: string;
+      empty: string;
+      add: string;
+      uploading: string;
+      limitReached: string;
+      deleteLabel: string;
+      unavailable: string;
+      noEntryHint: string;
+      errorTitle: string;
+    };
   };
   history: {
     status: {
@@ -415,8 +427,20 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
         last7DaysSubtitle: "Daily-granularity habit progress",
         last30Days: "Last 30 days",
         last30DaysSubtitle: "Longer habit completion trend",
+        attachments: "Photos",
       },
       chartNotDue: "Not due",
+      attachments: {
+        description: "Photos attached to this habit's check-ins.",
+        empty: "No photos attached yet.",
+        add: "Add photos",
+        uploading: "Uploading…",
+        limitReached: "This entry already has the maximum of 10 photos.",
+        deleteLabel: "Delete photo",
+        unavailable: "Photo unavailable",
+        noEntryHint: "Check in on this habit before attaching photos.",
+        errorTitle: "Could not update photos",
+      },
     },
     history: {
       status: {
@@ -620,8 +644,20 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
         last7DaysSubtitle: "按天查看这个习惯的近期进展",
         last30Days: "近 30 天",
         last30DaysSubtitle: "更长时间范围内的完成趋势",
+        attachments: "照片",
       },
       chartNotDue: "当天无任务",
+      attachments: {
+        description: "附加到这个习惯打卡记录上的照片。",
+        empty: "还没有附加照片。",
+        add: "添加照片",
+        uploading: "上传中…",
+        limitReached: "该记录已达到 10 张照片的上限。",
+        deleteLabel: "删除照片",
+        unavailable: "照片不可用",
+        noEntryHint: "请先为这个习惯打卡，然后再附加照片。",
+        errorTitle: "无法更新照片",
+      },
     },
     history: {
       status: {
@@ -825,8 +861,20 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
         last7DaysSubtitle: "Progreso diario del hábito",
         last30Days: "Últimos 30 días",
         last30DaysSubtitle: "Tendencia de compleción a largo plazo",
+        attachments: "Fotos",
       },
       chartNotDue: "Sin previsión",
+      attachments: {
+        description: "Fotos adjuntas a los registros de este hábito.",
+        empty: "Aún no hay fotos adjuntas.",
+        add: "Añadir fotos",
+        uploading: "Subiendo…",
+        limitReached: "Este registro ya tiene el máximo de 10 fotos.",
+        deleteLabel: "Eliminar foto",
+        unavailable: "Foto no disponible",
+        noEntryHint: "Haz un registro de este hábito antes de adjuntar fotos.",
+        errorTitle: "No se pudieron actualizar las fotos",
+      },
     },
     history: {
       status: {

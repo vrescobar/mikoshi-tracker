@@ -18,11 +18,19 @@ export const nativeSuccessEnvelopeSchema = <T extends z.ZodTypeAny>(dataSchema: 
     data: dataSchema,
   });
 
+export type NativeToolImage = {
+  /** Base64-encoded image bytes. */
+  data: string;
+  mimeType: string;
+};
+
 export type NativeToolSuccessResult<TData extends Record<string, unknown> = Record<string, unknown>> = {
   ok: true;
   toolName: string;
   summary: string;
   data: TData;
+  /** Present when the tool returned an image (e.g. attachment_get). */
+  image?: NativeToolImage;
 };
 
 export type NativeToolErrorResult = {
@@ -37,10 +45,17 @@ export type OpenClawToolResult<TData extends Record<string, unknown> = Record<st
 
 export type OpenClawToolHandler = (input: unknown) => Promise<OpenClawToolResult>;
 
-export type OpenClawToolContent = {
-  type: "text";
-  text: string;
-};
+export type OpenClawToolContent =
+  | {
+      type: "text";
+      text: string;
+    }
+  | {
+      type: "image";
+      /** Base64-encoded image bytes. */
+      data: string;
+      mimeType: string;
+    };
 
 export type OpenClawToolExecutionResult = {
   content: OpenClawToolContent[];

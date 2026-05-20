@@ -7,6 +7,7 @@ import { getHabitsCopy } from "../../lib/i18n/habits";
 import { Badge, OverlayPanel } from "../ui";
 import { CompletionRateChart } from "../dashboard/completion-rate-chart";
 import { useLocale } from "../locale";
+import { HabitAttachmentsGallery } from "./habit-attachments-gallery";
 import { HabitHistoryList } from "./habit-history-list";
 import styles from "./habit-detail-drawer.module.css";
 
@@ -149,6 +150,11 @@ export function HabitDetailDrawer({
         <div className={styles.section}>
           <h3>{copy.detail.sections.history}</h3>
           <HabitHistoryList rows={detail.recentHistory} />
+        </div>
+
+        <div className={styles.section}>
+          <h3>{copy.detail.sections.attachments}</h3>
+          <HabitAttachmentsGallery habitId={detail.habit.id} />
         </div>
       </div>
     </OverlayPanel>

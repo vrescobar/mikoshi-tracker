@@ -140,6 +140,9 @@ All tools use the authenticated Haaabit API behind the scenes and return structu
 | `today_set_total`    | `POST /today/set-total`         | Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today.              |
 | `today_undo`         | `POST /today/undo`              | Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action.                       |
 | `stats_get_overview` | `GET /stats/overview`           | Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot.                        |
+| `attachment_upload`  | `POST /attachments/base64`      | Attach an image to a check-in entry when the user shares a photo for a habit (a meal photo, proof a chore is done, etc.). Pass the mutationId returned by a today_* action and the image as base64.                       |
+| `attachment_list`    | `GET /attachments`              | List the image attachments of a check-in entry (mutationId) or of an entire habit (habitId), returning each attachment id and its metadata.              |
+| `attachment_get`     | `GET /attachments/:id/file`     | Fetch a stored attachment image by id and return it as an image so you can see and reason about the photo (e.g. estimate calories from a meal photo).    |
 
 ## AI Guidance
 

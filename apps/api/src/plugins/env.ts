@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 
@@ -22,6 +24,7 @@ const rawEnvSchema = z.object({
   APP_BASE_URL: optionalUrl,
   BETTER_AUTH_URL: optionalUrl,
   CORS_ORIGIN: optionalString,
+  ATTACHMENTS_DIR: optionalString,
 });
 
 export type AppEnv = ReturnType<typeof createEnv>;
@@ -40,6 +43,7 @@ export function createEnv(source: NodeJS.ProcessEnv): {
   BETTER_AUTH_URL: string;
   CORS_ORIGIN: string;
   corsOrigins: string[];
+  ATTACHMENTS_DIR: string;
 } {
   const parsed = rawEnvSchema.parse(source);
   const betterAuthUrl = parsed.BETTER_AUTH_URL ?? parsed.APP_BASE_URL;
@@ -61,6 +65,9 @@ export function createEnv(source: NodeJS.ProcessEnv): {
       .split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),
+    // Defaults to a repo-relative folder for local dev; production sets an
+    // absolute path on the persistent volume (see docker-compose.yml).
+    ATTACHMENTS_DIR: parsed.ATTACHMENTS_DIR ?? resolve(process.cwd(), "data/attachments"),
   };
 }
 

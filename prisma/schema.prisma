@@ -24,6 +24,7 @@ model User {
   habits            Habit[]
   circlesOwned      Circle[]           @relation("CircleOwner")
   circleMemberships CircleMembership[]
+  attachments       Attachment[]
 }
 
 model AppSettings {
@@ -155,9 +156,30 @@ model CheckInMutation {
   updatedAt          DateTime      @updatedAt
   habit              Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
   dayState           HabitDayState @relation(fields: [dayStateId], references: [id], onDelete: Cascade)
+  attachments        Attachment[]
 
   @@index([habitId, dateKey, createdAt])
   @@index([dayStateId, createdAt])
+}
+
+model Attachment {
+  id           String          @id @default(cuid())
+  mutationId   String
+  userId       String
+  kind         String          @default("image")
+  storageKey   String          @unique
+  originalName String?
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  mutation     CheckInMutation @relation(fields: [mutationId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([mutationId, createdAt])
+  @@index([userId])
 }
 
 model Circle {

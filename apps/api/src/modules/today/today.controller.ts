@@ -245,6 +245,7 @@ export async function completeTodayHabitHandler(request: FastifyRequest, reply: 
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {
@@ -274,6 +275,7 @@ export async function setTodayHabitTotalHandler(request: FastifyRequest, reply: 
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {
@@ -303,6 +305,7 @@ export async function undoTodayHabitHandler(request: FastifyRequest, reply: Fast
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {

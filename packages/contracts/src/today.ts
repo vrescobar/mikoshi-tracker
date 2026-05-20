@@ -73,6 +73,8 @@ export const todaySummaryResponseSchema = z.object({
 export const todayActionResponseSchema = z.object({
   affectedHabit: todayAffectedHabitSchema,
   summary: todaySummarySchema,
+  /** Id of the CheckInMutation produced by this action; attachments hang off it. */
+  mutationId: nonEmptyString.nullable(),
 });
 
 export type TodayStatus = z.infer<typeof todayStatusSchema>;

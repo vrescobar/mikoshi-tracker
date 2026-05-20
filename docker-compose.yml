@@ -57,6 +57,8 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
+      # Uploaded attachment files live on the same persistent volume as the DB.
+      ATTACHMENTS_DIR: ${ATTACHMENTS_DIR:-/data/attachments}
     volumes:
       - sqlite_data:/data
     healthcheck:

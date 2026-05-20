@@ -20,6 +20,7 @@ import {
 } from "./auth/registration";
 import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session";
 import { registerAdminRoutes } from "./modules/admin/admin.routes";
+import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerHabitRoutes } from "./modules/habits/habit.routes";
 import { registerStatsRoutes } from "./modules/stats/stats.routes";
@@ -27,6 +28,7 @@ import { registerTodayRoutes } from "./modules/today/today.routes";
 import { registerCors } from "./plugins/cors";
 import { registerDb } from "./plugins/db";
 import { registerEnv } from "./plugins/env";
+import { registerMultipart } from "./plugins/multipart";
 import { registerOpenApi } from "./plugins/openapi";
 import { authRateLimitOptions, registerSecurity } from "./plugins/security";
 import { normalizeUserTimeZone } from "./shared/timezone";
@@ -91,12 +93,14 @@ export async function createApp(options: CreateAppOptions = {}) {
   await migrateLegacyPersonalApiTokens(app.db);
   await registerCors(app);
   await registerSecurity(app);
+  await registerMultipart(app);
   await registerAuth(app);
   await registerAdminRoutes(app);
   await registerHabitRoutes(app);
   await registerStatsRoutes(app);
   await registerTodayRoutes(app);
   await registerCircleRoutes(app);
+  await registerAttachmentRoutes(app);
   await registerOpenApi(app);
 
   app.get("/health", async () => ({ ok: true }));

@@ -12,6 +12,24 @@ export function createMutationToolResult(toolName: string, payload: unknown, sum
   return createSuccessToolResult(toolName, payload, summary);
 }
 
+/**
+ * Build a tool result that carries an actual image so the model can see it.
+ * The summary and JSON metadata accompany the image as text content blocks.
+ */
+export function createImageToolResult(
+  image: { base64: string; mimeType: string },
+  summary: string,
+  metadata: Record<string, unknown>,
+): CallToolResult {
+  return {
+    content: [
+      { type: "text", text: summary },
+      { type: "image", data: image.base64, mimeType: image.mimeType },
+      { type: "text", text: JSON.stringify(metadata) },
+    ],
+  };
+}
+
 export function buildMachineReadableToolResult(
   summary: string,
   structuredContent: Record<string, unknown>,

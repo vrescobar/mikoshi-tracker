@@ -65,6 +65,46 @@ describe("openapi docs", () => {
     expect(spec.paths["/api/today/set-total"]?.post?.responses).toHaveProperty("409");
   });
 
+  it("serves an openapi spec that documents the admin provisioning surface with AdminKeyAuth", async () => {
+    context = await createTestContext();
+
+    const response = await context.app.inject({
+      method: "GET",
+      url: "/api/openapi.json",
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    const spec = response.json() as {
+      openapi: string;
+      paths: Record<
+        string,
+        Record<string, { security?: Array<Record<string, string[]>>; responses?: Record<string, unknown> }>
+      >;
+      components?: {
+        securitySchemes?: Record<string, unknown>;
+      };
+    };
+
+    // AdminKeyAuth security scheme is present
+    expect(spec.components?.securitySchemes).toMatchObject({
+      AdminKeyAuth: {
+        type: "http",
+        scheme: "bearer",
+      },
+    });
+
+    // Admin routes are documented
+    expect(spec.paths["/api/admin/provision-user"]?.post?.security).toEqual([{ AdminKeyAuth: [] }]);
+    expect(spec.paths["/api/admin/provision-user/reset-token"]?.post?.security).toEqual([{ AdminKeyAuth: [] }]);
+    expect(spec.paths["/api/admin/circles/{circleId}/members"]?.post?.security).toEqual([{ AdminKeyAuth: [] }]);
+
+    // Admin routes return 503 when feature is disabled
+    expect(spec.paths["/api/admin/provision-user"]?.post?.responses).toHaveProperty("503");
+    expect(spec.paths["/api/admin/provision-user/reset-token"]?.post?.responses).toHaveProperty("503");
+    expect(spec.paths["/api/admin/circles/{circleId}/members"]?.post?.responses).toHaveProperty("503");
+  });
+
   it("serves an interactive docs page that points at the generated openapi json", async () => {
     context = await createTestContext();
     await signUp(context.app);

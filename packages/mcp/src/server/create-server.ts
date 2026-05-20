@@ -28,7 +28,7 @@ export type HaaabitMcpServer = {
     path: string;
     description: string;
     inputSchema?: AnySchema | ZodRawShapeCompat;
-    outputSchema: AnySchema | ZodRawShapeCompat;
+    outputSchema?: AnySchema | ZodRawShapeCompat;
     handler: (input: unknown) => Promise<CallToolResult>;
   }>;
   listRegisteredPrompts: () => GuidancePromptDefinition[];

@@ -1,5 +1,6 @@
 import { copyFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 import type { FastifyInstance } from "fastify";
 
@@ -9,6 +10,7 @@ import { TEMPLATE_DB_PATH, TEST_DB_DIR } from "./test-db";
 const TEST_SECRET = "test-secret-with-at-least-thirty-two-characters";
 export type TestContext = {
   app: FastifyInstance;
+  attachmentsDir: string;
   cleanup: () => Promise<void>;
 };
 
@@ -29,6 +31,8 @@ export async function createTestContext(): Promise<TestContext> {
   // (see test/helpers/global-setup.ts). Each test still gets its own isolated DB.
   copyFileSync(TEMPLATE_DB_PATH, databasePath);
 
+  const attachmentsDir = join(tmpdir(), `haaabit-attachments-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+
   const app = await createApp({
     env: {
       NODE_ENV: "test",
@@ -36,16 +40,19 @@ export async function createTestContext(): Promise<TestContext> {
       BETTER_AUTH_SECRET: TEST_SECRET,
       BETTER_AUTH_URL: "http://127.0.0.1:3001",
       CORS_ORIGIN: "http://localhost:3000",
+      ATTACHMENTS_DIR: attachmentsDir,
     },
   });
 
   return {
     app,
+    attachmentsDir,
     cleanup: async () => {
       await app.close();
       for (const suffix of ["", "-wal", "-shm"]) {
         rmSync(`${databasePath}${suffix}`, { force: true });
       }
+      rmSync(attachmentsDir, { force: true, recursive: true });
     },
   };
 }

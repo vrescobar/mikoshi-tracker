@@ -11,7 +11,7 @@ import { z } from "zod";
 
 import type { HaaabitApiClient } from "../client/api-client.js";
 import type { ToolOperation } from "./operation-types.js";
-import { createMutationToolResult, createReadToolResult, formatNameList } from "./read-results.js";
+import { formatNameList } from "./read-results.js";
 import type { InventoryTool } from "./catalog.js";
 
 export const editHabitToolInputSchema = editableHabitFieldsSchema
@@ -88,50 +88,6 @@ export const habitsTools: InventoryTool[] = [
     adapter: "passthrough",
   },
 ];
-
-export function createHabitsReadHandlers(client: HaaabitApiClient) {
-  const operations = createHabitsReadOperations(client);
-
-  return {
-    habits_list: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_list(input);
-
-      return createReadToolResult("habits_list", payload, summary);
-    },
-    habits_get_detail: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_get_detail(input);
-
-      return createReadToolResult("habits_get_detail", payload, summary);
-    },
-  };
-}
-
-export function createHabitsWriteHandlers(client: HaaabitApiClient) {
-  const operations = createHabitsWriteOperations(client);
-
-  return {
-    habits_add: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_add(input);
-
-      return createMutationToolResult("habits_add", payload, summary);
-    },
-    habits_edit: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_edit(input);
-
-      return createMutationToolResult("habits_edit", payload, summary);
-    },
-    habits_archive: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_archive(input);
-
-      return createMutationToolResult("habits_archive", payload, summary);
-    },
-    habits_restore: async (input: unknown) => {
-      const { payload, summary } = await operations.habits_restore(input);
-
-      return createMutationToolResult("habits_restore", payload, summary);
-    },
-  };
-}
 
 export function createHabitsReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
   return {
