@@ -1,7 +1,8 @@
 import type { HaaabitApiClient } from "../client/api-client.js";
 import { HaaabitApiError, createNotImplementedToolResult, toMcpErrorResult } from "../client/errors.js";
 import { EXPECTED_TOOL_NAMES, toolInventory } from "./catalog.js";
-import { createMutationToolResult, createReadToolResult } from "./read-results.js";
+import { isImageResult, type ToolOperation } from "./operation-types.js";
+import { createImageToolResult, createMutationToolResult, createReadToolResult } from "./read-results.js";
 import { createToolOperations } from "./runtime.js";
 
 export { EXPECTED_TOOL_NAMES, toolInventory } from "./catalog.js";
@@ -19,17 +20,13 @@ export function createDiscoveryHandlers(options: { client: HaaabitApiClient }) {
   }));
 }
 
-function wrapToolHandler(
-  toolName: string,
-  isMutation: boolean,
-  handler: (input: unknown) => Promise<{
-    payload: unknown;
-    summary: string;
-  }>,
-) {
+function wrapToolHandler(toolName: string, isMutation: boolean, handler: ToolOperation) {
   return async (input: unknown) => {
     try {
       const outcome = await handler(input);
+      if (isImageResult(outcome)) {
+        return createImageToolResult(outcome.image, outcome.summary, outcome.metadata);
+      }
       return isMutation
         ? createMutationToolResult(toolName, outcome.payload, outcome.summary)
         : createReadToolResult(toolName, outcome.payload, outcome.summary);

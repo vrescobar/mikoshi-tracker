@@ -6,17 +6,7 @@ import { useLocale } from "../locale";
 import { CompletionRateChart } from "./completion-rate-chart";
 import styles from "./overview-section.module.css";
 
-function MetricCard({
-  label,
-  value,
-  hint,
-  testId,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  testId: string;
-}) {
+function MetricCard({ label, value, hint, testId }: { label: string; value: string; hint: string; testId: string }) {
   return (
     <div data-testid={testId} className={styles.metricCard}>
       <span className={styles.metricLabel}>{label}</span>
@@ -49,7 +39,9 @@ export function OverviewSection({
         <MetricCard
           label={copy.dashboard.overview.metrics.todayCompleted}
           value={String(overview.metrics.todayCompletedCount)}
-          hint={copy.dashboard.overview.metrics.todayCompletedHint(Math.round(overview.metrics.todayCompletionRate * 100))}
+          hint={copy.dashboard.overview.metrics.todayCompletedHint(
+            Math.round(overview.metrics.todayCompletionRate * 100),
+          )}
           testId="overview-metric-today-completed"
         />
         <MetricCard
@@ -85,21 +77,23 @@ export function OverviewSection({
             {rankingEntries.length > 0 ? (
               <>
                 {rankingEntries.map((entry, index) => (
-                <div key={entry.habitId} data-testid={`overview-ranking-item-${entry.habitId}`} className={styles.rankingItem}>
-                  <div className={styles.rankingTop}>
-                    <strong>
-                      {index + 1}. {entry.name}
-                    </strong>
-                    <span className={styles.rankingRate}>
-                      {Math.round(entry.completionRate * 100)}%
+                  <div
+                    key={entry.habitId}
+                    data-testid={`overview-ranking-item-${entry.habitId}`}
+                    className={styles.rankingItem}
+                  >
+                    <div className={styles.rankingTop}>
+                      <strong>
+                        {index + 1}. {entry.name}
+                      </strong>
+                      <span className={styles.rankingRate}>{Math.round(entry.completionRate * 100)}%</span>
+                    </div>
+                    <span className={styles.rankingMeta}>
+                      {entry.frequencyType === "weekly_count" || entry.frequencyType === "monthly_count"
+                        ? copy.dashboard.overview.ranking.currentPeriod(entry.completedCount, entry.totalCount)
+                        : copy.dashboard.overview.ranking.recentDays(entry.completedCount, entry.totalCount)}
                     </span>
                   </div>
-                  <span className={styles.rankingMeta}>
-                    {entry.frequencyType === "weekly_count" || entry.frequencyType === "monthly_count"
-                      ? copy.dashboard.overview.ranking.currentPeriod(entry.completedCount, entry.totalCount)
-                      : copy.dashboard.overview.ranking.recentDays(entry.completedCount, entry.totalCount)}
-                  </span>
-                </div>
                 ))}
                 {Array.from({ length: rankingPlaceholderCount }, (_, index) => (
                   <div

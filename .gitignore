@@ -26,3 +26,11 @@ playwright-report/
 skills/
 skills-lock.json
 *.tsbuildinfo
+
+# Ralphloop runtime state
+.ralphloop/state.json
+.ralphloop/state.json.tmp
+.ralphloop/lock
+.ralphloop/metrics.jsonl
+.ralphloop/logs/
+.ralphloop/archive/

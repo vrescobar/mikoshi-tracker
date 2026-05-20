@@ -15,7 +15,14 @@ import {
 } from "../../shared/habit-contract-mappers";
 import { buildHabitTrendSlice } from "../stats/stats.shared";
 
-import { addDays, compareDateKeys, getMonthBounds, getWeekBounds, getWeekday, resolveHabitDay } from "../today/today-clock";
+import {
+  addDays,
+  compareDateKeys,
+  getMonthBounds,
+  getWeekBounds,
+  getWeekday,
+  resolveHabitDay,
+} from "../today/today-clock";
 
 import {
   createHabitRecord,
@@ -302,7 +309,8 @@ function buildWeeklyHistory(
 
   while (compareDateKeys(periodStart, todayKey) <= 0) {
     const bounds = getWeekBounds(periodStart);
-    const effectiveStart = compareDateKeys(record.startDate, bounds.weekStartKey) > 0 ? record.startDate : bounds.weekStartKey;
+    const effectiveStart =
+      compareDateKeys(record.startDate, bounds.weekStartKey) > 0 ? record.startDate : bounds.weekStartKey;
     const effectiveEnd = minDateKey(bounds.weekEndKey, todayKey);
     const completionCount = countCompletedDays(dayStates, effectiveStart, effectiveEnd);
     const isCurrentPeriod = bounds.weekKey === currentWeek;
@@ -338,9 +346,8 @@ function buildMonthlyHistory(
 
   while (compareDateKeys(periodStart, todayKey) <= 0) {
     const bounds = getMonthBounds(periodStart);
-    const effectiveStart = compareDateKeys(record.startDate, bounds.monthStartKey) > 0
-      ? record.startDate
-      : bounds.monthStartKey;
+    const effectiveStart =
+      compareDateKeys(record.startDate, bounds.monthStartKey) > 0 ? record.startDate : bounds.monthStartKey;
     const effectiveEnd = minDateKey(bounds.monthEndKey, todayKey);
     const completionCount = countCompletedDays(dayStates, effectiveStart, effectiveEnd);
     const isCurrentPeriod = bounds.monthKey === currentMonth;
@@ -416,10 +423,7 @@ function buildStats(rows: ComputedHistoryRow[]): HabitDetail["stats"] {
   };
 }
 
-export async function createHabit(
-  dependencies: HabitServiceDependencies,
-  params: CreateHabitParams,
-) {
+export async function createHabit(dependencies: HabitServiceDependencies, params: CreateHabitParams) {
   const parsed = parseCreateHabitInput(params.input);
   const user = await dependencies.db.user.findUnique({
     where: {

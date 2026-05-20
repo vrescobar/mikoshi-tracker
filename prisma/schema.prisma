@@ -8,19 +8,23 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  isAdmin       Boolean   @default(false)
-  timezone      String    @default("Asia/Shanghai")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  apiToken      ApiToken?
-  habits        Habit[]
+  id                String             @id @default(cuid())
+  name              String
+  email             String             @unique
+  emailVerified     Boolean            @default(false)
+  image             String?
+  isAdmin           Boolean            @default(false)
+  timezone          String             @default("Asia/Shanghai")
+  externalId        String?            @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  sessions          Session[]
+  accounts          Account[]
+  apiToken          ApiToken?
+  habits            Habit[]
+  circlesOwned      Circle[]           @relation("CircleOwner")
+  circleMemberships CircleMembership[]
+  attachments       Attachment[]
 }
 
 model AppSettings {
@@ -100,10 +104,11 @@ model Habit {
   isActive       Boolean       @default(true)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   weekdays       HabitWeekday[]
   dayStates      HabitDayState[]
   mutations      CheckInMutation[]
+  circleShares   CircleHabitShare[]
 
   @@index([userId, isActive])
   @@index([frequencyType])
@@ -151,7 +156,79 @@ model CheckInMutation {
   updatedAt          DateTime      @updatedAt
   habit              Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
   dayState           HabitDayState @relation(fields: [dayStateId], references: [id], onDelete: Cascade)
+  attachments        Attachment[]
 
   @@index([habitId, dateKey, createdAt])
   @@index([dayStateId, createdAt])
+}
+
+model Attachment {
+  id           String          @id @default(cuid())
+  mutationId   String
+  userId       String
+  kind         String          @default("image")
+  storageKey   String          @unique
+  originalName String?
+  mimeType     String
+  size         Int
+  width        Int?
+  height       Int?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  mutation     CheckInMutation @relation(fields: [mutationId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([mutationId, createdAt])
+  @@index([userId])
+}
+
+model Circle {
+  id          String             @id @default(cuid())
+  name        String
+  ownerId     String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  owner       User               @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  memberships CircleMembership[]
+  habitShares CircleHabitShare[]
+  tokens      CircleToken[]
+}
+
+model CircleMembership {
+  id         String   @id @default(cuid())
+  circleId   String
+  userId     String
+  role       String   @default("member")
+  externalId String?
+  joinedAt   DateTime @default(now())
+  circle     Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([circleId, userId])
+  @@unique([circleId, externalId])
+  @@index([externalId])
+}
+
+model CircleHabitShare {
+  id        String   @id @default(cuid())
+  circleId  String
+  habitId   String
+  createdAt DateTime @default(now())
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([circleId, habitId])
+  @@index([habitId])
+}
+
+model CircleToken {
+  id        String   @id @default(cuid())
+  circleId  String
+  token     String   @unique
+  label     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+
+  @@index([circleId])
 }

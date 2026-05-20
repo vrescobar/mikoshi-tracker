@@ -1,10 +1,15 @@
 import { completeHabitInputSchema, setHabitTotalInputSchema, undoHabitInputSchema } from "../contracts/checkins.js";
-import { todayActionResponseSchema, todayAffectedHabitSchema, todaySummaryResponseSchema, todaySummarySchema } from "../contracts/today.js";
+import {
+  todayActionResponseSchema,
+  todayAffectedHabitSchema,
+  todaySummaryResponseSchema,
+  todaySummarySchema,
+} from "../contracts/today.js";
 import { z } from "zod";
 
 import type { HaaabitApiClient } from "../client/api-client.js";
 import type { ToolOperation } from "./operation-types.js";
-import { createMutationToolResult, createReadToolResult, formatNameList } from "./read-results.js";
+import { formatNameList } from "./read-results.js";
 import type { InventoryTool } from "./catalog.js";
 
 export const todayTools: InventoryTool[] = [
@@ -12,7 +17,8 @@ export const todayTools: InventoryTool[] = [
     name: "today_get_summary",
     method: "GET",
     path: "/today",
-    description: "Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete.",
+    description:
+      "Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete.",
     inputSchema: z.object({}),
     responseSchema: todaySummaryResponseSchema,
     outputSchema: z.object({
@@ -24,7 +30,8 @@ export const todayTools: InventoryTool[] = [
     name: "today_complete",
     method: "POST",
     path: "/today/complete",
-    description: "Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item.",
+    description:
+      "Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item.",
     inputSchema: completeHabitInputSchema,
     responseSchema: todayActionResponseSchema,
     outputSchema: z.object({
@@ -37,7 +44,8 @@ export const todayTools: InventoryTool[] = [
     name: "today_set_total",
     method: "POST",
     path: "/today/set-total",
-    description: "Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today.",
+    description:
+      "Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today.",
     inputSchema: setHabitTotalInputSchema,
     responseSchema: todayActionResponseSchema,
     outputSchema: z.object({
@@ -50,7 +58,8 @@ export const todayTools: InventoryTool[] = [
     name: "today_undo",
     method: "POST",
     path: "/today/undo",
-    description: "Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action.",
+    description:
+      "Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action.",
     inputSchema: undoHabitInputSchema,
     responseSchema: todayActionResponseSchema,
     outputSchema: z.object({
@@ -60,40 +69,6 @@ export const todayTools: InventoryTool[] = [
     adapter: "action_to_today",
   },
 ];
-
-export function createTodayReadHandlers(client: HaaabitApiClient) {
-  const operations = createTodayReadOperations(client);
-
-  return {
-    today_get_summary: async (input: unknown) => {
-      const { payload, summary } = await operations.today_get_summary(input);
-
-      return createReadToolResult("today_get_summary", payload, summary);
-    },
-  };
-}
-
-export function createTodayWriteHandlers(client: HaaabitApiClient) {
-  const operations = createTodayWriteOperations(client);
-
-  return {
-    today_complete: async (input: unknown) => {
-      const { payload, summary } = await operations.today_complete(input);
-
-      return createMutationToolResult("today_complete", payload, summary);
-    },
-    today_set_total: async (input: unknown) => {
-      const { payload, summary } = await operations.today_set_total(input);
-
-      return createMutationToolResult("today_set_total", payload, summary);
-    },
-    today_undo: async (input: unknown) => {
-      const { payload, summary } = await operations.today_undo(input);
-
-      return createMutationToolResult("today_undo", payload, summary);
-    },
-  };
-}
 
 export function createTodayReadOperations(client: HaaabitApiClient): Record<string, ToolOperation> {
   return {

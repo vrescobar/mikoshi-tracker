@@ -1,10 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
-import {
-  commonAuthErrorResponses,
-  commonBadRequestResponses,
-  habitInactiveResponse,
-} from "@haaabit/contracts/api";
+import { commonAuthErrorResponses, commonBadRequestResponses, habitInactiveResponse } from "@haaabit/contracts/api";
 import { completeHabitInputSchema, setHabitTotalInputSchema, undoHabitInputSchema } from "@haaabit/contracts/checkins";
 import { todayActionResponseSchema, todaySummaryResponseSchema } from "@haaabit/contracts/today";
 
@@ -247,7 +243,8 @@ export const todayApiRouteDefinitions: PublicApiRouteDefinition[] = [
     path: "/api/today/undo",
     operationId: "undoTodayHabit",
     summary: "Undo today's latest habit mutation",
-    description: "Restores the prior value for today's habit state and returns the affected habit plus the refreshed today summary.",
+    description:
+      "Restores the prior value for today's habit state and returns the affected habit plus the refreshed today summary.",
     tags: ["Today"],
     security: [{ BearerAuth: [] }],
     request: {

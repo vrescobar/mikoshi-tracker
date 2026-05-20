@@ -74,11 +74,7 @@ export function CompletionRateChart({
         }}
       >
         {points.map((point, index) => (
-          <div
-            key={point.date}
-            title={`${point.date} · ${getPointLabel(point, notDueLabel)}`}
-            className={styles.point}
-          >
+          <div key={point.date} title={`${point.date} · ${getPointLabel(point, notDueLabel)}`} className={styles.point}>
             <div
               className={styles.bar}
               style={{

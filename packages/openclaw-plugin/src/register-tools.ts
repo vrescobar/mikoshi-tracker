@@ -39,13 +39,23 @@ export function registerTools(
 }
 
 function toOpenClawExecuteResult(result: OpenClawToolResult): OpenClawToolExecutionResult {
+  const content: OpenClawToolExecutionResult["content"] = [
+    {
+      type: "text",
+      text: formatContentText(result),
+    },
+  ];
+
+  if (result.ok && result.image) {
+    content.push({
+      type: "image",
+      data: result.image.data,
+      mimeType: result.image.mimeType,
+    });
+  }
+
   return {
-    content: [
-      {
-        type: "text",
-        text: formatContentText(result),
-      },
-    ],
+    content,
     details: result,
   };
 }

@@ -31,7 +31,7 @@ function registerHandlers(fetchImpl: typeof fetch) {
   return Object.fromEntries(
     registerTool.mock.calls.map(([tool]) => [
       (tool as OpenClawRegisteredTool).name,
-      async (input: unknown) => ((await (tool as OpenClawRegisteredTool).execute(input)).details ?? null),
+      async (input: unknown) => (await (tool as OpenClawRegisteredTool).execute(input)).details ?? null,
     ]),
   ) as Record<string, (input: unknown) => Promise<unknown>>;
 }
@@ -205,7 +205,10 @@ describe("native read tools", () => {
               completionRate: 0.67,
             })),
             last30Days: Array.from({ length: 30 }, (_, index) => ({
-              date: index < 9 ? `2026-02-${String(index + 20).padStart(2, "0")}` : `2026-03-${String(index - 9 + 1).padStart(2, "0")}`,
+              date:
+                index < 9
+                  ? `2026-02-${String(index + 20).padStart(2, "0")}`
+                  : `2026-03-${String(index - 9 + 1).padStart(2, "0")}`,
               completedCount: 2,
               totalCount: 3,
               completionRate: 0.67,

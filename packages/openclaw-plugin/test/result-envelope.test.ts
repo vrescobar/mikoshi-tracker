@@ -105,9 +105,9 @@ describe("native success envelope", () => {
       },
     );
 
-    const habitsList = registerTool.mock.calls.find(([tool]) => (tool as OpenClawRegisteredTool).name === "habits_list")?.[0] as
-      | OpenClawRegisteredTool
-      | undefined;
+    const habitsList = registerTool.mock.calls.find(
+      ([tool]) => (tool as OpenClawRegisteredTool).name === "habits_list",
+    )?.[0] as OpenClawRegisteredTool | undefined;
 
     await expect(habitsList?.execute({})).resolves.toMatchObject({
       content: [{ type: "text", text: "No habits matched the default active filter." }],

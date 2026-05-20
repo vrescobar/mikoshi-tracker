@@ -9,7 +9,9 @@ function hasSchemaKey(value: unknown, targetKey: string): boolean {
   }
 
   if (value && typeof value === "object") {
-    return Object.entries(value).some(([key, nestedValue]) => key === targetKey || hasSchemaKey(nestedValue, targetKey));
+    return Object.entries(value).some(
+      ([key, nestedValue]) => key === targetKey || hasSchemaKey(nestedValue, targetKey),
+    );
   }
 
   return false;

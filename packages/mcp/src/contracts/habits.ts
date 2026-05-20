@@ -6,15 +6,7 @@ const nonEmptyString = z.string().trim().min(1);
 const optionalNonEmptyString = z.string().trim().min(1).optional();
 const nullableOptionalNonEmptyString = z.string().trim().min(1).nullable().optional();
 
-export const weekdaySchema = z.enum([
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-]);
+export const weekdaySchema = z.enum(["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
 
 export const habitKindSchema = z.enum(["boolean", "quantity"]);
 
@@ -169,13 +161,15 @@ export const habitDetailSchema = z.object({
   }),
 });
 
-export const habitRecordResponseSchema = habitRecordSchema.omit({
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  createdAt: isoDateTimeSchema,
-  updatedAt: isoDateTimeSchema,
-});
+export const habitRecordResponseSchema = habitRecordSchema
+  .omit({
+    createdAt: true,
+    updatedAt: true,
+  })
+  .extend({
+    createdAt: isoDateTimeSchema,
+    updatedAt: isoDateTimeSchema,
+  });
 
 export const habitDetailResponseItemSchema = habitDetailSchema.extend({
   habit: habitRecordResponseSchema,

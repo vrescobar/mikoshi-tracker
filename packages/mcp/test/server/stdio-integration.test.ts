@@ -14,11 +14,7 @@ const packageJsonPath = path.resolve(packageRoot, "package.json");
 async function resolveBuiltCliPath() {
   const contents = await readFile(packageJsonPath, "utf8");
   const pkg = JSON.parse(contents) as { bin?: Record<string, string> | string };
-  const relativeCliPath = typeof pkg.bin === "string"
-    ? pkg.bin
-    : pkg.bin
-      ? Object.values(pkg.bin)[0]
-      : undefined;
+  const relativeCliPath = typeof pkg.bin === "string" ? pkg.bin : pkg.bin ? Object.values(pkg.bin)[0] : undefined;
 
   if (!relativeCliPath) {
     throw new Error("packages/mcp/package.json is missing a bin entry");

@@ -2,8 +2,13 @@
 
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 cd "$ROOT_DIR"
+
+# shellcheck source=scripts/self-host/lib.sh
+source "${SCRIPT_DIR}/lib.sh"
+COMPOSE="$(detect_compose)"
 
 if [[ -f ".env" ]]; then
   set -a
@@ -14,8 +19,8 @@ fi
 
 APP_BASE_URL="${APP_BASE_URL:-http://localhost:${HAAABIT_PUBLIC_PORT:-8080}}"
 
-echo "==> Checking docker compose services"
-running_services="$(docker compose ps --services --status running)"
+echo "==> Checking ${COMPOSE} services"
+running_services="$(${COMPOSE} ps --services --status running)"
 
 for service in proxy web api; do
   if ! grep -qx "$service" <<<"$running_services"; then

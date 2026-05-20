@@ -5,6 +5,13 @@ export default defineConfig({
     environment: "node",
     globals: true,
     include: ["test/**/*.test.ts"],
-    fileParallelism: false,
+    globalSetup: ["./test/helpers/global-setup.ts"],
+    fileParallelism: true,
+    // forks = child processes: each test file gets an isolated Node.js instance.
+    // This prevents the libsql native bindings from sharing global state across
+    // parallel workers, which causes intermittent "no such table" failures when
+    // running with the default 'threads' pool.
+    pool: "forks",
+    testTimeout: 30000,
   },
 });

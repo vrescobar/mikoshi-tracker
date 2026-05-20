@@ -31,7 +31,7 @@ function registerHandlers(fetchImpl: typeof fetch) {
   return Object.fromEntries(
     registerTool.mock.calls.map(([tool]) => [
       (tool as OpenClawRegisteredTool).name,
-      async (input: unknown) => ((await (tool as OpenClawRegisteredTool).execute(input)).details ?? null),
+      async (input: unknown) => (await (tool as OpenClawRegisteredTool).execute(input)).details ?? null,
     ]),
   ) as Record<string, (input: unknown) => Promise<unknown>>;
 }

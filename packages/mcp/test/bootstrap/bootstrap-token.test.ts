@@ -18,12 +18,7 @@ type ApiTestContext = {
         } | null>;
       };
     };
-    inject: (options: {
-      method: string;
-      url: string;
-      headers?: Record<string, string>;
-      payload?: unknown;
-    }) => Promise<{
+    inject: (options: { method: string; url: string; headers?: Record<string, string>; payload?: unknown }) => Promise<{
       statusCode?: number;
       json: () => unknown;
     }>;

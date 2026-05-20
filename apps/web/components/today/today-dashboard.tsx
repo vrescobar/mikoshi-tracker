@@ -3,11 +3,7 @@
 import type { TodaySummary } from "@haaabit/contracts/today";
 import { useEffect, useState } from "react";
 
-import {
-  completeTodayHabit,
-  setTodayHabitTotal,
-  undoTodayHabit,
-} from "../../lib/auth-client";
+import { completeTodayHabit, setTodayHabitTotal, undoTodayHabit } from "../../lib/auth-client";
 import { useLocale } from "../locale";
 import { InlineStatus, PageFrame, StatePanel, Surface } from "../ui";
 import { TodayItemCard } from "./today-item";
@@ -98,8 +94,7 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
         message: cardSuccessMessage,
       });
     } catch (submissionError) {
-      const message =
-        submissionError instanceof Error ? submissionError.message : copy.today.feedback.updateErrorTitle;
+      const message = submissionError instanceof Error ? submissionError.message : copy.today.feedback.updateErrorTitle;
 
       setFeedback({
         tone: "danger",
@@ -121,8 +116,7 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
   const hasAllDone = summary.pendingCount === 0 && summary.completedCount > 0;
   const availableItems = summary.pendingItems.filter((item) => item.status === "available");
   const pendingItems = summary.pendingItems.filter((item) => item.status === "pending");
-  const hasVisibleItems =
-    pendingItems.length > 0 || availableItems.length > 0 || summary.completedItems.length > 0;
+  const hasVisibleItems = pendingItems.length > 0 || availableItems.length > 0 || summary.completedItems.length > 0;
   const showNothingDue = !hasVisibleItems;
 
   return (
@@ -190,7 +184,8 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
                       copy.today.actions.complete.successTitle,
                       copy.today.actions.complete.successMessage,
                       copy.today.actions.complete.cardSuccessMessage,
-                      () => completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
+                      () =>
+                        completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
                     )
                   }
                   onSetTotal={(habitId, total) =>
@@ -232,9 +227,7 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
           <section className={styles.group}>
             <div className={styles.groupHeader}>
               <h2>{copy.today.groups.available.title}</h2>
-              <span className={styles.groupCount}>
-                {copy.today.groups.available.count(availableItems.length)}
-              </span>
+              <span className={styles.groupCount}>{copy.today.groups.available.count(availableItems.length)}</span>
             </div>
             <div className={styles.cards}>
               {availableItems.map((item) => (
@@ -250,7 +243,8 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
                       copy.today.actions.complete.successTitle,
                       copy.today.actions.complete.successMessage,
                       copy.today.actions.complete.cardSuccessMessage,
-                      () => completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
+                      () =>
+                        completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
                     )
                   }
                   onSetTotal={(habitId, total) =>
@@ -302,7 +296,8 @@ export function TodayDashboard({ initialSummary, onActionSettled }: TodayDashboa
                       copy.today.actions.complete.successTitle,
                       copy.today.actions.complete.successMessage,
                       copy.today.actions.complete.cardSuccessMessage,
-                      () => completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
+                      () =>
+                        completeTodayHabit({ habitId, source: "web" }).then((result) => ({ summary: result.summary })),
                     )
                   }
                   onSetTotal={(habitId, total) =>

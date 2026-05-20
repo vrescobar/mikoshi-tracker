@@ -128,11 +128,13 @@ describe("today action routes", () => {
 
     expect(completeQuantityResponse.statusCode).toBe(200);
     expect(
-      (completeQuantityResponse.json() as {
-        summary: {
-          completedItems: Array<{ habitId: string; status: string }>;
-        };
-      }).summary.completedItems,
+      (
+        completeQuantityResponse.json() as {
+          summary: {
+            completedItems: Array<{ habitId: string; status: string }>;
+          };
+        }
+      ).summary.completedItems,
     ).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -319,7 +321,6 @@ describe("today action routes", () => {
       },
     });
   });
-
 
   it("rejects undo when the latest today action never succeeded", async () => {
     context = await createTestContext();

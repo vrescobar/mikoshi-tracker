@@ -180,8 +180,20 @@ export type HabitsCopy = {
       last7DaysSubtitle: string;
       last30Days: string;
       last30DaysSubtitle: string;
+      attachments: string;
     };
     chartNotDue: string;
+    attachments: {
+      description: string;
+      empty: string;
+      add: string;
+      uploading: string;
+      limitReached: string;
+      deleteLabel: string;
+      unavailable: string;
+      noEntryHint: string;
+      errorTitle: string;
+    };
   };
   history: {
     status: {
@@ -218,6 +230,15 @@ const weekdayLabels: Record<SupportedLocale, Record<Weekday, string>> = {
     friday: "周五",
     saturday: "周六",
     sunday: "周日",
+  },
+  es: {
+    monday: "Lunes",
+    tuesday: "Martes",
+    wednesday: "Miércoles",
+    thursday: "Jueves",
+    friday: "Viernes",
+    saturday: "Sábado",
+    sunday: "Domingo",
   },
 };
 
@@ -406,8 +427,20 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
         last7DaysSubtitle: "Daily-granularity habit progress",
         last30Days: "Last 30 days",
         last30DaysSubtitle: "Longer habit completion trend",
+        attachments: "Photos",
       },
       chartNotDue: "Not due",
+      attachments: {
+        description: "Photos attached to this habit's check-ins.",
+        empty: "No photos attached yet.",
+        add: "Add photos",
+        uploading: "Uploading…",
+        limitReached: "This entry already has the maximum of 10 photos.",
+        deleteLabel: "Delete photo",
+        unavailable: "Photo unavailable",
+        noEntryHint: "Check in on this habit before attaching photos.",
+        errorTitle: "Could not update photos",
+      },
     },
     history: {
       status: {
@@ -419,9 +452,11 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
     onboarding: {
       eyebrow: "Onboarding",
       title: "Create your first habit",
-      description: "Your account is ready. Add one clear habit now so later logins can route straight into a useful dashboard.",
+      description:
+        "Your account is ready. Add one clear habit now so later logins can route straight into a useful dashboard.",
       noticeTitle: "Start simple",
-      noticeBody: "You can refine categories, targets, and scheduling patterns later. Right now, aim for one habit you genuinely expect to check today.",
+      noticeBody:
+        "You can refine categories, targets, and scheduling patterns later. Right now, aim for one habit you genuinely expect to check today.",
       submitLabel: "Create first habit",
     },
   },
@@ -609,8 +644,20 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
         last7DaysSubtitle: "按天查看这个习惯的近期进展",
         last30Days: "近 30 天",
         last30DaysSubtitle: "更长时间范围内的完成趋势",
+        attachments: "照片",
       },
       chartNotDue: "当天无任务",
+      attachments: {
+        description: "附加到这个习惯打卡记录上的照片。",
+        empty: "还没有附加照片。",
+        add: "添加照片",
+        uploading: "上传中…",
+        limitReached: "该记录已达到 10 张照片的上限。",
+        deleteLabel: "删除照片",
+        unavailable: "照片不可用",
+        noEntryHint: "请先为这个习惯打卡，然后再附加照片。",
+        errorTitle: "无法更新照片",
+      },
     },
     history: {
       status: {
@@ -626,6 +673,225 @@ const habitsCopy: Record<SupportedLocale, HabitsCopy> = {
       noticeTitle: "先从简单开始",
       noticeBody: "分类、目标值和排期模式之后都还能继续细化。现在先选一个你今天真的会去打卡的习惯。",
       submitLabel: "创建第一个习惯",
+    },
+  },
+  es: {
+    page: {
+      header: {
+        eyebrow: "Panel de gestión",
+        title: "Hábitos",
+        description: "Busca, edita, archiva y restaura hábitos sin alterar los registros históricos.",
+      },
+      toolbar: {
+        label: "Conjunto de trabajo",
+        description:
+          "Mantén la lista legible y abre el detalle solo cuando un hábito necesite una inspección más profunda.",
+        newHabit: "Nuevo hábito",
+        statusGroupLabel: "Estado del hábito",
+        active: "Activo",
+        archived: "Archivado",
+        workingSetSummary: (status, count) => {
+          if (count === 0) {
+            return status === "active" ? "No hay hábitos activos en vista" : "No hay hábitos archivados en vista";
+          }
+          const noun = count === 1 ? "hábito" : "hábitos";
+          const adj = status === "active" ? (count === 1 ? "activo" : "activos") : count === 1 ? "archivado" : "archivados";
+          return `${count} ${noun} ${adj} en vista`;
+        },
+      },
+      filters: {
+        search: "Buscar",
+        searchPlaceholder: "Buscar por nombre o categoría",
+        category: "Categoría",
+        categoryPlaceholder: "Filtrar por categoría",
+        kind: "Tipo",
+        kindOptions: {
+          all: "Todos los tipos",
+          boolean: "Registro",
+          quantity: "Cantidad",
+        },
+      },
+      feedback: {
+        updatingErrorTitle: "No se pueden actualizar los hábitos",
+        refreshPendingTitle: "Actualizando hábitos",
+        refreshPendingMessage: "Los filtros y los cambios guardados permanecen en su lugar mientras se actualiza la lista.",
+        archivePendingTitle: "Archivando hábito",
+        archivePendingMessage: "La lista se actualizará en su lugar cuando se complete esta actualización.",
+        archiveSuccessTitle: "Hábito archivado",
+        archiveSuccessMessage: "Los hábitos archivados salen de la lista activa sin perder el historial.",
+        restorePendingTitle: "Restaurando hábito",
+        restorePendingMessage: "La lista archivada se actualizará en su lugar cuando se complete esta actualización.",
+        restoreSuccessTitle: "Hábito restaurado",
+        restoreSuccessMessage: "El hábito ha vuelto al conjunto de trabajo activo y conserva su historial.",
+        saveCreatePendingTitle: "Guardando nuevo hábito",
+        saveEditPendingTitle: "Guardando cambios en el hábito",
+        savePendingMessage: "La lista se actualizará en su lugar una vez que lleguen los últimos cambios del hábito.",
+        createSuccessTitle: "Hábito creado",
+        createSuccessMessage: "El nuevo hábito ya forma parte del conjunto de trabajo actual.",
+        editSuccessTitle: "Hábito actualizado",
+        editSuccessMessage: "El comportamiento futuro ha sido actualizado sin reescribir el historial.",
+      },
+      card: {
+        noDescription: "Aún sin descripción.",
+        primaryAction: "Ver detalles",
+        edit: "Editar",
+        archive: "Archivar",
+        restore: "Restaurar",
+        metaLabels: {
+          frequency: "Frecuencia",
+          target: "Objetivo",
+          startDate: "Fecha de inicio",
+          state: "Estado",
+        },
+        state: {
+          active: "Activo",
+          archived: "Archivado",
+        },
+        booleanKind: "Registro",
+        quantityKind: "Cantidad",
+        unitsFallback: "unidades",
+        uncategorized: "Sin categoría",
+        emptyState: {
+          activeTitle: "Ningún hábito activo coincide con estos filtros",
+          activeDescription: "Ajusta la búsqueda, la categoría o el tipo para volver a ver los hábitos.",
+          archivedTitle: "Ningún hábito archivado coincide con estos filtros",
+          archivedDescription: "Los hábitos archivados permanecen aquí hasta que los restaures a la lista activa.",
+        },
+      },
+      overlay: {
+        createTitle: "Crear hábito",
+        editTitle: (name) => `Editar ${name}`,
+        createDescription: "Añade un hábito al conjunto de trabajo sin salir del panel de gestión.",
+        editDescription: "Refina el comportamiento futuro aquí. Los registros históricos permanecen intactos.",
+        createSubmit: "Crear hábito",
+        editSubmit: "Guardar cambios",
+        closeLabel: "Cerrar",
+      },
+      frequency: {
+        daily: "Diario",
+        weeklyCount: (count) => `${count} veces por semana`,
+        monthlyCount: (count) => `${count} veces al mes`,
+        weekdays: (days) => days.map((day) => weekdayLabels.es[day]).join(", "),
+      },
+    },
+    form: {
+      futureOnly: {
+        title: "Solo edita el futuro",
+        description: "Los cambios actualizan el comportamiento futuro sin reescribir los registros históricos.",
+      },
+      fields: {
+        name: "Nombre del hábito",
+        kind: {
+          label: "Tipo de hábito",
+          description: "Elige si el hábito es de registro o basado en cantidad.",
+          editDescription: "Bloqueado después de la creación.",
+          options: {
+            boolean: "Registro",
+            quantity: "Cantidad",
+          },
+        },
+        startDate: {
+          label: "Fecha de inicio",
+          description: "Déjalo en blanco para empezar hoy.",
+        },
+        frequency: {
+          label: "Frecuencia",
+          options: {
+            daily: "Diario",
+            weeklyCount: "Veces por semana",
+            weekdays: "Días de la semana seleccionados",
+            monthlyCount: "Veces al mes",
+          },
+        },
+        countTarget: {
+          label: "Objetivo de veces",
+          weeklyDescription: "¿Cuántas veces por semana?",
+          monthlyDescription: "¿Cuántas veces al mes?",
+        },
+        weekdaysLegend: "Días de la semana",
+        description: {
+          label: "Descripción",
+          description: "Contexto opcional para ti o el asistente de IA.",
+        },
+        category: {
+          label: "Categoría",
+          description: "Útil para agrupar y buscar más adelante.",
+        },
+        targetValue: "Valor objetivo",
+        unit: {
+          label: "Unidad",
+          description: "Ejemplos: páginas, vasos, kilómetros.",
+        },
+      },
+      weekdays: (Object.keys(weekdayLabels.es) as Weekday[]).map((value) => ({
+        value,
+        label: weekdayLabels.es[value],
+      })),
+      errorTitle: "No se puede guardar el hábito",
+      cancel: "Cancelar",
+      pendingSubmit: "Guardando...",
+    },
+    detail: {
+      noDescription: "Aún sin descripción.",
+      closeLabel: "Cerrar",
+      summaryAriaLabel: "Resumen del hábito",
+      kicker: "Instantánea de salud",
+      status: {
+        active: "Activo",
+        archived: "Archivado",
+      },
+      facts: {
+        frequency: "Frecuencia",
+        category: "Categoría",
+        target: "Objetivo",
+        uncategorized: "Sin categoría",
+        boolean: "Registro",
+        unitsFallback: "unidades",
+      },
+      stats: {
+        currentStreak: "Racha actual",
+        longestStreak: "Racha más larga",
+        totalCompletions: "Completados totales",
+        interruptions: "Interrupciones",
+      },
+      sections: {
+        trends: "Tendencias recientes",
+        history: "Historial reciente",
+        last7Days: "Últimos 7 días",
+        last7DaysSubtitle: "Progreso diario del hábito",
+        last30Days: "Últimos 30 días",
+        last30DaysSubtitle: "Tendencia de compleción a largo plazo",
+        attachments: "Fotos",
+      },
+      chartNotDue: "Sin previsión",
+      attachments: {
+        description: "Fotos adjuntas a los registros de este hábito.",
+        empty: "Aún no hay fotos adjuntas.",
+        add: "Añadir fotos",
+        uploading: "Subiendo…",
+        limitReached: "Este registro ya tiene el máximo de 10 fotos.",
+        deleteLabel: "Eliminar foto",
+        unavailable: "Foto no disponible",
+        noEntryHint: "Haz un registro de este hábito antes de adjuntar fotos.",
+        errorTitle: "No se pudieron actualizar las fotos",
+      },
+    },
+    history: {
+      status: {
+        completed: "completado",
+        missed: "faltado",
+      },
+      periodSeparator: "->",
+    },
+    onboarding: {
+      eyebrow: "Incorporación",
+      title: "Crea tu primer hábito",
+      description:
+        "Tu cuenta está lista. Añade un hábito claro ahora para que los próximos inicios de sesión te lleven directamente a un panel útil.",
+      noticeTitle: "Empieza con algo simple",
+      noticeBody:
+        "Puedes refinar categorías, objetivos y patrones de programación más adelante. Ahora mismo, apunta a un hábito que genuinamente esperes registrar hoy.",
+      submitLabel: "Crear primer hábito",
     },
   },
 };

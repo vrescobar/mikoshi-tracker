@@ -1,5 +1,12 @@
 import type { ApiAccessTokenResponse } from "@haaabit/contracts/api";
-import type { CreateHabitInput, HabitDetail, HabitListFilters, UpdateHabitInput, Weekday } from "@haaabit/contracts/habits";
+import type { AttachmentListResponse } from "@haaabit/contracts/attachments";
+import type {
+  CreateHabitInput,
+  HabitDetail,
+  HabitListFilters,
+  UpdateHabitInput,
+  Weekday,
+} from "@haaabit/contracts/habits";
 import type { OverviewStats } from "@haaabit/contracts/stats";
 import type { TodaySummary } from "@haaabit/contracts/today";
 
@@ -280,4 +287,42 @@ export async function undoTodayHabit(input: TodayActionInput) {
     method: "POST",
     body: JSON.stringify(input),
   });
+}
+
+export async function listHabitAttachments(habitId: string) {
+  return requestJson<AttachmentListResponse>(`/api/attachments?habitId=${encodeURIComponent(habitId)}`, {
+    method: "GET",
+  });
+}
+
+export async function uploadHabitAttachments(habitId: string, files: File[]) {
+  const form = new FormData();
+  form.set("habitId", habitId);
+  for (const file of files) {
+    form.append("files", file);
+  }
+
+  // No explicit content-type header: the browser sets the multipart boundary.
+  const response = await fetch(createApiUrl("/api/attachments"), {
+    method: "POST",
+    credentials: "include",
+    body: form,
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return (await response.json()) as AttachmentListResponse;
+}
+
+export async function deleteAttachment(attachmentId: string) {
+  return requestNoContent(`/api/attachments/${encodeURIComponent(attachmentId)}`, {
+    method: "DELETE",
+  });
+}
+
+/** Absolute URL for an attachment's binary, usable directly as an <img> src. */
+export function attachmentFileUrl(attachmentId: string) {
+  return createApiUrl(`/api/attachments/${encodeURIComponent(attachmentId)}/file`);
 }

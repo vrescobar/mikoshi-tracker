@@ -17,11 +17,12 @@ describe("package README smoke", () => {
       name: string;
       bin?: Record<string, string> | string;
     };
-    const binPath = typeof packageJson.bin === "string"
-      ? packageJson.bin
-      : packageJson.bin
-        ? Object.values(packageJson.bin)[0]
-        : undefined;
+    const binPath =
+      typeof packageJson.bin === "string"
+        ? packageJson.bin
+        : packageJson.bin
+          ? Object.values(packageJson.bin)[0]
+          : undefined;
 
     expect(readme).toContain("# @haaabit/mcp");
     expect(readme).toContain("HAAABIT_API_URL");

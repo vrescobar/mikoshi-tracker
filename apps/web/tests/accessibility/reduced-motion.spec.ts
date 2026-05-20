@@ -39,11 +39,7 @@ test("reduced-motion mode flattens overlay and shell transition timing", async (
   expect(parseDurationSeconds(overlayAnimationDuration)).toBeLessThanOrEqual(0.00001);
 });
 
-test("reduced-motion mode flattens dashboard charts and inline feedback motion", async ({
-  page,
-  request,
-  context,
-}) => {
+test("reduced-motion mode flattens dashboard charts and inline feedback motion", async ({ page, request, context }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const dashboardEmail = `reduced-motion-dashboard-${Date.now()}@example.com`;

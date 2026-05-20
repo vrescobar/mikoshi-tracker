@@ -1,0 +1,8 @@
+**/dist/**
+**/.next/**
+**/node_modules/**
+**/coverage/**
+**/playwright-report/**
+**/test-results/**
+apps/api/src/generated/**
+pnpm-lock.yaml

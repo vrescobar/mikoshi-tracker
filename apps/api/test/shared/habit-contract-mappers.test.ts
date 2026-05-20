@@ -21,9 +21,6 @@ describe("habit contract mappers", () => {
   it("maps persisted weekday rows to the shipped lowercase weekday strings", () => {
     expect(serializeContractWeekday("MONDAY")).toBe("monday");
     expect(serializeContractWeekday("SUNDAY")).toBe("sunday");
-    expect(serializeContractWeekdays([{ day: "WEDNESDAY" }, { day: "FRIDAY" }])).toEqual([
-      "wednesday",
-      "friday",
-    ]);
+    expect(serializeContractWeekdays([{ day: "WEDNESDAY" }, { day: "FRIDAY" }])).toEqual(["wednesday", "friday"]);
   });
 });

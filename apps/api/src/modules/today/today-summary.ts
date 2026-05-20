@@ -85,10 +85,10 @@ function createItem(
     kind: habit.kind,
     frequencyType: habit.frequencyType,
     status: getStatus(habit, dayState, periodCompletions),
-    canUndo: Boolean(dayState?.completed || (dayState?.value ?? 0) > 0),
+    canUndo: dayState?.completed || (dayState?.value ?? 0) > 0,
     date,
     progress: {
-      currentValue: habit.kind === "quantity" ? dayState?.value ?? 0 : null,
+      currentValue: habit.kind === "quantity" ? (dayState?.value ?? 0) : null,
       targetValue: habit.kind === "quantity" ? habit.targetValue : null,
       unit: habit.kind === "quantity" ? habit.unit : null,
       periodCompletions:

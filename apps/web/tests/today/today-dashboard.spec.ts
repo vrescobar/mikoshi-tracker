@@ -31,29 +31,32 @@ test("dashboard shows pending/completed groups and stays in sync through complet
 
   await expect(page).toHaveURL(/\/dashboard$/);
 
-  await page.evaluate(async ({ startDate: seededStartDate }) => {
-    const response = await fetch("http://127.0.0.1:3001/api/habits", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        name: "Read pages",
-        kind: "quantity",
-        targetValue: 10,
-        unit: "pages",
-        startDate: seededStartDate,
-        frequency: {
-          type: "daily",
+  await page.evaluate(
+    async ({ startDate: seededStartDate }) => {
+      const response = await fetch("http://127.0.0.1:3001/api/habits", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          name: "Read pages",
+          kind: "quantity",
+          targetValue: 10,
+          unit: "pages",
+          startDate: seededStartDate,
+          frequency: {
+            type: "daily",
+          },
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-  }, { startDate });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+    },
+    { startDate },
+  );
 
   const habitIds = await listHabitIds(page);
 
@@ -83,12 +86,8 @@ test("dashboard shows pending/completed groups and stays in sync through complet
   await expect(page.getByText(/^1 个待完成$/)).toBeVisible();
   await expect(page.getByText(/^1 个已完成$/)).toBeVisible();
   await expect(walkCard).toContainText("已完成");
-  await expect(walkCard).toContainText(
-    "已标记完成。如有需要，你可以直接在这张卡片里撤销。",
-  );
-  await expect(
-    walkCard.getByRole("button", { name: "撤销" }),
-  ).toBeVisible();
+  await expect(walkCard).toContainText("已标记完成。如有需要，你可以直接在这张卡片里撤销。");
+  await expect(walkCard.getByRole("button", { name: "撤销" })).toBeVisible();
 
   await readCard.getByLabel("今天新增").fill("5");
   await readCard.getByRole("button", { name: "添加数量" }).click();
@@ -137,9 +136,7 @@ test("today action failures stay in context", async ({ page }) => {
 
   await expect(page.getByTestId("today-feedback")).toBeVisible();
   await expect(page.getByTestId("today-feedback")).toContainText("Today needs another try");
-  await expect(page.getByTestId("today-feedback")).toContainText(
-    "Unable to mark habit complete right now",
-  );
+  await expect(page.getByTestId("today-feedback")).toContainText("Unable to mark habit complete right now");
   await expect(walkCard).toContainText("Unable to mark habit complete right now");
   await expect(page).toHaveURL(/\/dashboard$/);
 });
@@ -154,29 +151,32 @@ test("today success feedback auto-dismisses after a short delay", async ({ page 
     startDate,
   });
 
-  await page.evaluate(async ({ seededStartDate }) => {
-    const response = await fetch("http://127.0.0.1:3001/api/habits", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        name: "Read pages",
-        kind: "quantity",
-        targetValue: 10,
-        unit: "pages",
-        startDate: seededStartDate,
-        frequency: {
-          type: "daily",
+  await page.evaluate(
+    async ({ seededStartDate }) => {
+      const response = await fetch("http://127.0.0.1:3001/api/habits", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "content-type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          name: "Read pages",
+          kind: "quantity",
+          targetValue: 10,
+          unit: "pages",
+          startDate: seededStartDate,
+          frequency: {
+            type: "daily",
+          },
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-  }, { seededStartDate: startDate });
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+    },
+    { seededStartDate: startDate },
+  );
 
   const habitIds = await listHabitIds(page);
 
@@ -215,29 +215,32 @@ test.describe("mobile today dashboard", () => {
       startDate,
     });
 
-    await page.evaluate(async ({ seededStartDate }) => {
-      const response = await fetch("http://127.0.0.1:3001/api/habits", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          name: "Read pages",
-          kind: "quantity",
-          targetValue: 10,
-          unit: "pages",
-          startDate: seededStartDate,
-          frequency: {
-            type: "daily",
+    await page.evaluate(
+      async ({ seededStartDate }) => {
+        const response = await fetch("http://127.0.0.1:3001/api/habits", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "content-type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            name: "Read pages",
+            kind: "quantity",
+            targetValue: 10,
+            unit: "pages",
+            startDate: seededStartDate,
+            frequency: {
+              type: "daily",
+            },
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-    }, { seededStartDate: startDate });
+        if (!response.ok) {
+          throw new Error(await response.text());
+        }
+      },
+      { seededStartDate: startDate },
+    );
 
     const habitIds = await listHabitIds(page);
 

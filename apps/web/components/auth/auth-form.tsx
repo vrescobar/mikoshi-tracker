@@ -32,13 +32,7 @@ type AuthFormCopy = LocaleMessages["auth"]["form"];
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const AUTH_DRAFT_STORAGE_KEY = "haaabit-auth-form-draft";
 
-export function AuthForm({
-  copy,
-  registrationEnabled,
-}: {
-  copy: AuthFormCopy;
-  registrationEnabled: boolean;
-}) {
+export function AuthForm({ copy, registrationEnabled }: { copy: AuthFormCopy; registrationEnabled: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -251,12 +245,7 @@ export function AuthForm({
     <form action={handleSubmit} className={styles.form}>
       <div className={styles.fields}>
         {mode === "sign-up" ? (
-          <Field
-            label={copy.fields.name.label}
-            htmlFor="auth-name"
-            error={errors.name}
-            required
-          >
+          <Field label={copy.fields.name.label} htmlFor="auth-name" error={errors.name} required>
             <Input
               ref={nameRef}
               id="auth-name"
@@ -272,12 +261,7 @@ export function AuthForm({
           </Field>
         ) : null}
 
-        <Field
-          label={copy.fields.email.label}
-          htmlFor="auth-email"
-          error={errors.email}
-          required
-        >
+        <Field label={copy.fields.email.label} htmlFor="auth-email" error={errors.email} required>
           <Input
             ref={emailRef}
             id="auth-email"
@@ -292,12 +276,7 @@ export function AuthForm({
           />
         </Field>
 
-        <Field
-          label={copy.fields.password.label}
-          htmlFor="auth-password"
-          error={errors.password}
-          required
-        >
+        <Field label={copy.fields.password.label} htmlFor="auth-password" error={errors.password} required>
           <Input
             ref={passwordRef}
             id="auth-password"

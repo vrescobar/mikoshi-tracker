@@ -1,0 +1,189 @@
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.toolbar {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.toolbarPanel {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.toolbarTop {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.toolbarActions {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: end;
+  align-content: start;
+}
+
+.toolbarIntro {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 30rem;
+  min-width: 0;
+}
+
+.toolbarLabel {
+  color: var(--color-text-soft);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.toolbarValue {
+  color: var(--color-heading);
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.7rem);
+  font-weight: 650;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.toolbarDescription {
+  color: var(--color-text-muted);
+  max-width: 32rem;
+}
+
+.list {
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.4rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--shadow-soft);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.cardTitle {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.heading {
+  font-size: 1.45rem;
+}
+
+.metaGrid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  color: var(--color-text-muted);
+}
+
+.metaLabel {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0.8rem 1.1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--color-accent-ink);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+  box-shadow: 0 12px 32px rgba(28, 64, 81, 0.24);
+  font-weight: 700;
+  font-size: 0.98rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.primaryAction:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.05);
+}
+
+.formBody {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.formActions {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .toolbarTop {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbarActions {
+    justify-items: stretch;
+  }
+
+  .card {
+    padding: 1.1rem;
+  }
+
+  .cardHeader {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .actions {
+    width: 100%;
+    display: grid;
+  }
+
+  .primaryAction {
+    width: 100%;
+    text-align: center;
+  }
+
+  .formActions {
+    flex-direction: column-reverse;
+  }
+}

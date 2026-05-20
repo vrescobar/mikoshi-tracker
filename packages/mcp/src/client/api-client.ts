@@ -68,13 +68,70 @@ export class HaaabitApiClient {
       clearTimeout(timeout);
     }
   }
+
+  /**
+   * Fetch a non-JSON response (e.g. an image) as raw bytes. Errors are still
+   * surfaced as HaaabitApiError so callers can handle them uniformly.
+   */
+  async requestBinary(path: string, init: RequestInit = {}): Promise<{ bytes: Uint8Array; mimeType: string }> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+
+    try {
+      const response = await this.fetchImpl(`${this.apiUrl}${path}`, {
+        ...init,
+        headers: {
+          authorization: `Bearer ${this.apiToken}`,
+          ...(init.headers ?? {}),
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const body = await parseResponseBody(response);
+        throw new HaaabitApiError({
+          status: response.status,
+          code: extractErrorCode(body),
+          message: extractErrorMessage(body, response.statusText),
+          details: body,
+        });
+      }
+
+      const buffer = await response.arrayBuffer();
+
+      return {
+        bytes: new Uint8Array(buffer),
+        mimeType: response.headers.get("content-type") ?? "application/octet-stream",
+      };
+    } catch (error) {
+      if (error instanceof HaaabitApiError) {
+        throw error;
+      }
+
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new HaaabitApiError({
+          status: 504,
+          code: "TIMEOUT",
+          message: `Request timed out after ${this.timeoutMs}ms`,
+        });
+      }
+
+      throw new HaaabitApiError({
+        status: 503,
+        code: "NETWORK_ERROR",
+        message: error instanceof Error ? error.message : "Network request failed",
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 }
 
 async function parseResponseBody(response: Response) {
   const contentType = response.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    return response.json() as Promise<unknown>;
+    return response.json();
   }
 
   const text = await response.text();

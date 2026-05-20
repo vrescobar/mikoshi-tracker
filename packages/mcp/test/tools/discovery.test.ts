@@ -83,5 +83,4 @@ describe("server discovery wiring", () => {
     expect(WORKFLOW_GUIDE_TEXT).toContain("today_get_summary");
     expect(WORKFLOW_GUIDE_TEXT).toContain("read-first");
   });
-
 });

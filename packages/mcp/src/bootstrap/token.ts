@@ -111,12 +111,7 @@ async function signInAndGetSessionCookie(options: {
   return cookie;
 }
 
-async function requestJson<T>(input: {
-  fetchImpl: typeof fetch;
-  url: string;
-  init: RequestInit;
-  secrets: string[];
-}) {
+async function requestJson<T>(input: { fetchImpl: typeof fetch; url: string; init: RequestInit; secrets: string[] }) {
   const response = await input.fetchImpl(input.url, input.init);
 
   if (!response.ok) {
@@ -131,7 +126,7 @@ async function buildErrorMessage(response: Response, secrets: string[]) {
   let message = response.statusText || `HTTP ${response.status}`;
 
   if (contentType.includes("application/json")) {
-    const body = await response.json() as unknown;
+    const body = await response.json();
     if (body && typeof body === "object" && "message" in body && typeof body.message === "string") {
       message = body.message;
     }
@@ -146,9 +141,10 @@ async function buildErrorMessage(response: Response, secrets: string[]) {
 }
 
 function extractSessionCookie(headers: Headers) {
-  const setCookieHeader = typeof (headers as Headers & { getSetCookie?: () => string[] }).getSetCookie === "function"
-    ? (headers as Headers & { getSetCookie: () => string[] }).getSetCookie()
-    : undefined;
+  const setCookieHeader =
+    typeof (headers as Headers & { getSetCookie?: () => string[] }).getSetCookie === "function"
+      ? (headers as Headers & { getSetCookie: () => string[] }).getSetCookie()
+      : undefined;
   const values = setCookieHeader ?? [headers.get("set-cookie")].filter((value): value is string => Boolean(value));
 
   if (values.length === 0) {

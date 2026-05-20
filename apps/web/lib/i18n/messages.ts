@@ -1,4 +1,4 @@
-export type SupportedLocale = "en" | "zh-CN";
+export type SupportedLocale = "en" | "zh-CN" | "es";
 
 export type LocaleMessages = {
   meta: {
@@ -72,6 +72,7 @@ export type LocaleMessages = {
     navigation: {
       dashboard: string;
       habits: string;
+      circles: string;
       apiAccess: string;
     };
     signOut: string;
@@ -203,12 +204,12 @@ export type LocaleMessages = {
         cardSuccessMessage: string;
       };
     };
-      item: {
-        status: {
-          pending: string;
-          available: string;
-          completed: string;
-        };
+    item: {
+      status: {
+        pending: string;
+        available: string;
+        completed: string;
+      };
       totalLabel: string;
       saveTotal: string;
       progress: {
@@ -292,6 +293,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       navigation: {
         dashboard: "Today",
         habits: "Habits",
+        circles: "Circles",
         apiAccess: "API Access",
       },
       signOut: "Log out",
@@ -307,7 +309,8 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         archivedOnly: {
           eyebrow: "Today",
           title: "No active habits right now",
-          description: "Your archived habits are preserved. Restore one or create a new habit to bring today back online.",
+          description:
+            "Your archived habits are preserved. Restore one or create a new habit to bring today back online.",
           reviewArchived: "Review archived habits",
           createHabit: "Create a new habit",
         },
@@ -369,11 +372,13 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       states: {
         nothingDue: {
           title: "Nothing due today",
-          description: "Today's list is clear for now. Future or off-cycle habits will show up here when they become actionable.",
+          description:
+            "Today's list is clear for now. Future or off-cycle habits will show up here when they become actionable.",
         },
         allDone: {
           title: "All done for today",
-          description: "Everything due today is already complete. Finished habits stay visible below in case you need to review or undo.",
+          description:
+            "Everything due today is already complete. Finished habits stay visible below in case you need to review or undo.",
         },
         nothingPending: {
           title: "Nothing pending right now",
@@ -381,7 +386,8 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         },
         nothingCompleted: {
           title: "Nothing completed yet",
-          description: "Finished habits stay visible so you can undo or inspect today's result without leaving context.",
+          description:
+            "Finished habits stay visible so you can undo or inspect today's result without leaving context.",
         },
       },
       groups: {
@@ -509,6 +515,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       navigation: {
         dashboard: "今天",
         habits: "习惯",
+        circles: "圈子",
         apiAccess: "API 访问",
       },
       signOut: "退出登录",
@@ -654,6 +661,230 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           readyToday: "今天待处理",
         },
         disabledHint: "等这个习惯和今天的数据同步完成后，控件就会恢复可用。",
+      },
+    },
+  },
+  es: {
+    meta: {
+      localeSwitchLabel: "Cambiar idioma",
+    },
+    auth: {
+      page: {
+        eyebrow: "Bienvenido de nuevo",
+        title: "Inicia sesión en Haaabit",
+        description: "Inicia sesión para continuar.",
+        values: [],
+      },
+      form: {
+        feedback: {
+          invalidTitle: "Revisa estos campos",
+          invalidMessage: "Corrige los campos marcados e inténtalo de nuevo.",
+          submitTitles: {
+            signIn: "Iniciando sesión",
+            signUp: "Creando tu cuenta",
+          },
+          submitMessage: "El formulario permanece bloqueado hasta que termine la solicitud actual.",
+          submitErrorTitle: "No se puede continuar",
+        },
+        fields: {
+          name: {
+            label: "Nombre",
+            description: "Usa un nombre que puedas reconocer cuando vuelvas a este despliegue.",
+            required: "Añade un nombre para esta cuenta local.",
+          },
+          email: {
+            label: "Correo electrónico",
+            description: "Usa el correo que quieres vincular a esta cuenta autoalojada.",
+            required: "Introduce el correo vinculado a este despliegue.",
+            invalid: "Introduce una dirección de correo válida.",
+          },
+          password: {
+            label: "Contraseña",
+            signInDescription: "Usa la contraseña ya guardada en este despliegue.",
+            signUpDescription: "Usa al menos 8 caracteres.",
+            required: "Introduce tu contraseña para continuar.",
+            short: "Usa al menos 8 caracteres.",
+            invalidCredentials: "Revisa tu correo y contraseña, luego inténtalo de nuevo.",
+          },
+        },
+        mode: {
+          signIn: {
+            eyebrow: "Iniciar sesión",
+            description: "Usa tu cuenta para continuar.",
+            submit: "Iniciar sesión",
+            pending: "Iniciando sesión...",
+            switchLabel: "¿Necesitas una cuenta nueva?",
+            switchAction: "Crear cuenta",
+          },
+          signUp: {
+            eyebrow: "Crear cuenta local",
+            description:
+              "Esta cuenta reside en el despliegue que controlas, así que podrás iniciar sesión más adelante sin salir de tu flujo autoalojado.",
+            submit: "Crear cuenta",
+            pending: "Creando cuenta...",
+            switchLabel: "¿Ya tienes una cuenta?",
+            switchAction: "Volver a iniciar sesión",
+          },
+        },
+        disabledHint: "La acción principal se desbloqueará en cuanto se complete esta solicitud.",
+      },
+    },
+    shell: {
+      brandCopy: "Ejecución diaria tranquila con un sistema de hábitos estable y preparado para IA.",
+      navigation: {
+        dashboard: "Hoy",
+        habits: "Hábitos",
+        circles: "Círculos",
+        apiAccess: "Acceso API",
+      },
+      signOut: "Cerrar sesión",
+    },
+    dashboard: {
+      emptyStates: {
+        noHabits: {
+          eyebrow: "Hoy",
+          title: "Aún no hay hábitos",
+          description: "Crea tu primer hábito para convertir este panel en una vista útil de hoy.",
+          action: "Crear primer hábito",
+        },
+        archivedOnly: {
+          eyebrow: "Hoy",
+          title: "No hay hábitos activos ahora mismo",
+          description:
+            "Tus hábitos archivados están conservados. Restaura uno o crea un hábito nuevo para volver a tener actividad hoy.",
+          reviewArchived: "Revisar hábitos archivados",
+          createHabit: "Crear un nuevo hábito",
+        },
+      },
+      loading: {
+        eyebrow: "Panel",
+        title: "Preparando el panel",
+        errorTitle: "El panel necesita otro intento",
+        descriptionLoading: "Cargando los datos de hoy y las métricas de resumen dentro del entorno protegido.",
+        descriptionIdle: "Los datos del panel aún se están preparando.",
+        retry: "Reintentar panel",
+        routeEyebrow: "Panel",
+        routeTitle: "Preparando el panel",
+        routeDescription: "Los análisis y los datos de hoy se están cargando sin sacarte del entorno protegido.",
+      },
+      overview: {
+        eyebrow: "Resumen de apoyo",
+        title: "Resumen",
+        description: "Tendencias y estabilidad de la cuenta de apoyo, después de revisar el trabajo de hoy.",
+        metrics: {
+          todayCompleted: "Completados hoy",
+          todayCompletedHint: (ratePercent) => `${ratePercent}% de los hábitos previstos`,
+          thisWeek: "Esta semana",
+          thisWeekHint: "Semana natural del calendario",
+          activeHabits: "Hábitos activos",
+          activeHabitsHint: "Conjunto de trabajo actual",
+        },
+        trend: {
+          title: "Tasa de compleción de 7 días",
+          subtitle: "Tendencia diaria de la cuenta para la semana actual",
+        },
+        ranking: {
+          title: "Clasificación de estabilidad",
+          description:
+            "Los hábitos diarios usan la tasa de compleción reciente. Los hábitos por cantidad usan el progreso del período actual.",
+          recentDays: (completedCount, totalCount) => `${completedCount}/${totalCount} días recientes previstos`,
+          currentPeriod: (completedCount, totalCount) => `${completedCount}/${totalCount} en el objetivo actual`,
+          empty: "Aún no hay hábitos activos con historial reciente de previsiones.",
+        },
+        refreshing: "Actualizando resumen...",
+        chart: {
+          notDue: "Sin previsión",
+        },
+      },
+    },
+    today: {
+      hero: {
+        eyebrow: "Enfoque diario",
+        title: "Hoy",
+        summary: (pendingCount, completedCount) => `${pendingCount} pendientes · ${completedCount} completados`,
+        completionRate: "Tasa de compleción",
+      },
+      feedback: {
+        updatingTitle: "Actualizando hoy",
+        updatingMessage: "Tus listas y el resumen se sincronizarán cuando se complete esta actualización.",
+        updatedTitle: "Hoy actualizado",
+        retryTitle: "Hoy necesita otro intento",
+        updateErrorTitle: "No se puede actualizar hoy",
+      },
+      states: {
+        nothingDue: {
+          title: "Nada previsto para hoy",
+          description:
+            "La lista de hoy está vacía por ahora. Los hábitos futuros o fuera de ciclo aparecerán aquí cuando sean accionables.",
+        },
+        allDone: {
+          title: "Todo listo por hoy",
+          description:
+            "Todo lo previsto para hoy ya está completado. Los hábitos terminados permanecen visibles abajo por si necesitas revisar o deshacer.",
+        },
+        nothingPending: {
+          title: "Nada pendiente ahora mismo",
+          description: "Los hábitos nuevos o incompletos permanecerán aquí hasta que los termines.",
+        },
+        nothingCompleted: {
+          title: "Nada completado aún",
+          description:
+            "Los hábitos terminados permanecen visibles para que puedas deshacer o revisar el resultado de hoy sin perder contexto.",
+        },
+      },
+      groups: {
+        pending: {
+          title: "Pendientes",
+          count: (count) => `${count} pendientes`,
+        },
+        available: {
+          title: "Disponibles",
+          count: (count) => `${count} disponibles`,
+        },
+        completed: {
+          title: "Completados",
+          count: (count) => `${count} completados`,
+        },
+      },
+      actions: {
+        complete: {
+          label: "Completar",
+          pendingTitle: "Marcando hábito como completado",
+          successTitle: "Hábito actualizado",
+          successMessage: "La lista de pendientes y los totales de compleción están ahora sincronizados.",
+          cardSuccessMessage: "Marcado como completado. Puedes deshacer desde esta tarjeta si es necesario.",
+        },
+        setTotal: {
+          label: "Añadir cantidad",
+          pendingTitle: "Añadiendo al progreso de hoy",
+          successTitle: "Progreso actualizado",
+          successMessagePending: "La nueva cantidad ahora cuenta hacia el estado de compleción de hoy.",
+          successMessageCompleted: "La lista de completados ahora refleja la cantidad añadida.",
+          cardSuccessMessage: "Añadido al progreso de hoy.",
+        },
+        undo: {
+          label: "Deshacer",
+          pendingTitle: "Revirtiendo la última actualización",
+          successTitle: "Actualización revertida",
+          successMessagePending: "Los totales de hoy ahora reflejan el valor guardado anteriormente.",
+          successMessageCompleted: "Este hábito ha vuelto al estado de hoy apropiado.",
+          cardSuccessMessage: "Revertido al valor guardado anteriormente.",
+        },
+      },
+      item: {
+        status: {
+          pending: "pendiente",
+          available: "disponible",
+          completed: "completado",
+        },
+        totalLabel: "Cantidad de hoy",
+        saveTotal: "Añadir cantidad",
+        progress: {
+          period: (current, target, scope) => `${current} / ${target} ${scope === "week" ? "esta semana" : "este mes"}`,
+          doneToday: "Hecho hoy",
+          readyToday: "Listo para hoy",
+        },
+        disabledHint: "Los controles se desbloquearán cuando este hábito termine de sincronizarse con hoy.",
       },
     },
   },

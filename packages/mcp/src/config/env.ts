@@ -23,10 +23,9 @@ export function parseConfig(input: ConfigInput): RuntimeConfig {
   const args = parseArgs(input.argv);
   const apiUrl = args.apiUrl ?? input.env.HAAABIT_API_URL;
   const apiToken = input.env.HAAABIT_API_TOKEN;
-  const missing = [
-    apiUrl ? null : "HAAABIT_API_URL",
-    apiToken ? null : "HAAABIT_API_TOKEN",
-  ].filter((value): value is string => value !== null);
+  const missing = [apiUrl ? null : "HAAABIT_API_URL", apiToken ? null : "HAAABIT_API_TOKEN"].filter(
+    (value): value is string => value !== null,
+  );
 
   if (missing.length > 0) {
     throw new Error(buildMissingRuntimeMessage(missing, input.env));
@@ -50,21 +49,20 @@ export function parseBootstrapConfig(input: ConfigInput): BootstrapConfig {
   const apiUrl = args.apiUrl ?? input.env.HAAABIT_API_URL;
   const email = args.email ?? input.env.HAAABIT_BOOTSTRAP_EMAIL;
   const password = args.password ?? input.env.HAAABIT_BOOTSTRAP_PASSWORD;
-  const missing = [
-    apiUrl ? null : "HAAABIT_API_URL",
-    email ? null : "--email or HAAABIT_BOOTSTRAP_EMAIL",
-  ].filter((value): value is string => value !== null);
+  const missing = [apiUrl ? null : "HAAABIT_API_URL", email ? null : "--email or HAAABIT_BOOTSTRAP_EMAIL"].filter(
+    (value): value is string => value !== null,
+  );
 
   if (missing.length > 0) {
     throw new Error(
-      `Missing required bootstrap configuration: ${missing.join(", ")}. `
-        + `Use ${BOOTSTRAP_COMMAND} to mint a personal API token from account credentials.`,
+      `Missing required bootstrap configuration: ${missing.join(", ")}. ` +
+        `Use ${BOOTSTRAP_COMMAND} to mint a personal API token from account credentials.`,
     );
   }
 
   return {
-    apiUrl: apiUrl as string,
-    email: email as string,
+    apiUrl: apiUrl!,
+    email: email!,
     password,
     force: args.force,
   };
@@ -99,11 +97,9 @@ export function redactSecrets(
   env: NodeJS.ProcessEnv = process.env,
   extraSecrets: string[] = [],
 ): string {
-  const secrets = [
-    env.HAAABIT_API_TOKEN,
-    env.HAAABIT_BOOTSTRAP_PASSWORD,
-    ...extraSecrets,
-  ].filter((value): value is string => Boolean(value && value.length > 0));
+  const secrets = [env.HAAABIT_API_TOKEN, env.HAAABIT_BOOTSTRAP_PASSWORD, ...extraSecrets].filter(
+    (value): value is string => Boolean(value && value.length > 0),
+  );
 
   let sanitized = message
     .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")

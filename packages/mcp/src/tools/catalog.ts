@@ -1,5 +1,6 @@
 import type { z } from "zod";
 
+import { attachmentsTools } from "./attachments.js";
 import { habitsTools } from "./habits.js";
 import { statsTools } from "./stats.js";
 import { todayTools } from "./today.js";
@@ -12,11 +13,15 @@ export type InventoryTool = {
   path: string;
   description: string;
   inputSchema?: z.ZodTypeAny;
-  responseSchema: z.ZodTypeAny;
-  outputSchema: z.ZodTypeAny;
+  /** Absent for tools that return binary content instead of JSON. */
+  responseSchema?: z.ZodTypeAny;
+  /** Absent for binary tools — they declare no structured output schema. */
+  outputSchema?: z.ZodTypeAny;
   adapter: ToolAdapter;
+  /** When true, the tool returns image content rather than structured JSON. */
+  binary?: boolean;
 };
 
-export const toolInventory: InventoryTool[] = [...habitsTools, ...todayTools, ...statsTools];
+export const toolInventory: InventoryTool[] = [...habitsTools, ...todayTools, ...statsTools, ...attachmentsTools];
 
 export const EXPECTED_TOOL_NAMES = toolInventory.map((tool) => tool.name);

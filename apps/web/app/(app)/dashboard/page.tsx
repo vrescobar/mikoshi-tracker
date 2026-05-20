@@ -31,8 +31,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     }),
   ]);
 
-  const emptyState =
-    activeHabits.length === 0 ? (archivedHabits.length > 0 ? "archived-only" : "no-habits") : null;
+  const emptyState = activeHabits.length === 0 ? (archivedHabits.length > 0 ? "archived-only" : "no-habits") : null;
 
   let initialSummary = null;
   let initialOverview = null;

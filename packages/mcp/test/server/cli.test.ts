@@ -19,11 +19,7 @@ describe("mcp package bootstrap", () => {
   it("publishes a bin entry that matches the built artifact", async () => {
     const contents = await readFile(packageJsonPath, "utf8");
     const pkg = JSON.parse(contents) as { bin?: Record<string, string> | string };
-    const binPath = typeof pkg.bin === "string"
-      ? pkg.bin
-      : pkg.bin
-        ? Object.values(pkg.bin)[0]
-        : undefined;
+    const binPath = typeof pkg.bin === "string" ? pkg.bin : pkg.bin ? Object.values(pkg.bin)[0] : undefined;
 
     expect(binPath).toBe("dist/cli.js");
     await expect(access(path.resolve(packageRoot, binPath!))).resolves.toBeUndefined();
@@ -55,9 +51,7 @@ describe("mcp package bootstrap", () => {
     expect(pkg.bugs).toEqual({
       url: "https://github.com/booooodv/haaabit/issues",
     });
-    expect(pkg.keywords).toEqual(
-      expect.arrayContaining(["mcp", "model-context-protocol", "haaabit", "habits"]),
-    );
+    expect(pkg.keywords).toEqual(expect.arrayContaining(["mcp", "model-context-protocol", "haaabit", "habits"]));
     expect(pkg.engines).toEqual({
       node: ">=20",
     });
@@ -122,7 +116,7 @@ describe("mcp package bootstrap", () => {
 
   it("treats a symlinked npm bin shim path as direct execution", () => {
     const shimPath = "/tmp/.bin/mcp";
-    const resolvePath = vi.fn((target: string) => target === shimPath ? builtCliPath : target);
+    const resolvePath = vi.fn((target: string) => (target === shimPath ? builtCliPath : target));
 
     expect(isDirectExecution(pathToFileURL(builtCliPath).href, ["node", shimPath], resolvePath)).toBe(true);
     expect(resolvePath).toHaveBeenCalledWith(builtCliPath);
@@ -132,7 +126,9 @@ describe("mcp package bootstrap", () => {
   it("does not treat unrelated entrypoints as direct execution", () => {
     const resolvePath = vi.fn((target: string) => target);
 
-    expect(isDirectExecution(pathToFileURL(builtCliPath).href, ["node", "/tmp/other-file.js"], resolvePath)).toBe(false);
+    expect(isDirectExecution(pathToFileURL(builtCliPath).href, ["node", "/tmp/other-file.js"], resolvePath)).toBe(
+      false,
+    );
   });
 
   it("keeps the built CLI alive when launched through a symlinked bin path", async () => {
@@ -165,9 +161,14 @@ describe("mcp package bootstrap", () => {
   it("formats startup and bootstrap errors without leaking token or password values", () => {
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    formatStartupError(new Error("Missing required configuration: HAAABIT_API_TOKEN. Run bootstrap-token before starting the MCP server. token secret-token"), {
-      HAAABIT_API_TOKEN: "secret-token",
-    });
+    formatStartupError(
+      new Error(
+        "Missing required configuration: HAAABIT_API_TOKEN. Run bootstrap-token before starting the MCP server. token secret-token",
+      ),
+      {
+        HAAABIT_API_TOKEN: "secret-token",
+      },
+    );
     formatBootstrapError(new Error("Invalid email or password password123 cookie session=abc123"), {
       env: {
         HAAABIT_BOOTSTRAP_PASSWORD: "password123",

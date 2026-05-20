@@ -9,8 +9,15 @@ services:
         condition: service_healthy
     ports:
       - "${HAAABIT_PUBLIC_PORT:-8080}:80"
+      # For a public HTTPS deployment, also publish 443 and set
+      # HAAABIT_SITE_ADDRESS below so Caddy can provision Let's Encrypt TLS:
+      # - "443:443"
+    # environment:
+    #   HAAABIT_SITE_ADDRESS: ${HAAABIT_SITE_ADDRESS}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
   web:
     build:
@@ -25,12 +32,12 @@ services:
       PORT: 3000
       API_INTERNAL_BASE_URL: ${API_INTERNAL_BASE_URL:-http://api:3001}
     healthcheck:
+      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
+      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "CMD-SHELL",
+          'node -e "fetch(''http://127.0.0.1:3000/health'').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"',
         ]
       interval: 10s
       timeout: 5s
@@ -50,15 +57,17 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
+      # Uploaded attachment files live on the same persistent volume as the DB.
+      ATTACHMENTS_DIR: ${ATTACHMENTS_DIR:-/data/attachments}
     volumes:
       - sqlite_data:/data
     healthcheck:
+      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
+      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3001/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+          "CMD-SHELL",
+          'node -e "fetch(''http://127.0.0.1:3001/health'').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"',
         ]
       interval: 10s
       timeout: 5s
@@ -83,8 +92,10 @@ services:
       [
         "sh",
         "-lc",
-        "if [ \"$${DATABASE_URL#file:}\" != \"$${DATABASE_URL}\" ]; then db_path=\"$${DATABASE_URL#file:}\"; mkdir -p \"$$(dirname \"$${db_path}\")\"; [ -f \"$${db_path}\" ] || : > \"$${db_path}\"; fi; pnpm exec prisma migrate deploy --config prisma.config.ts --schema prisma/schema.prisma",
+        'if [ "$${DATABASE_URL#file:}" != "$${DATABASE_URL}" ]; then db_path="$${DATABASE_URL#file:}"; mkdir -p "$$(dirname "$${db_path}")"; [ -f "$${db_path}" ] || : > "$${db_path}"; fi; pnpm exec prisma migrate deploy --config prisma.config.ts --schema prisma/schema.prisma',
       ]
 
 volumes:
   sqlite_data:
+  caddy_data:
+  caddy_config:

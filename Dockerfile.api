@@ -43,6 +43,13 @@ COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/packages/contracts ./packages/contracts
 
+# Run as the non-root `node` user (uid 1000) for defense in depth. /data is the
+# SQLite volume mount point and must be writable by that user; a named volume
+# inherits this ownership when first created.
+RUN mkdir -p /data && chown -R node:node /app /data
+
+USER node
+
 EXPOSE 3001
 
 CMD ["node", "--import", "tsx", "apps/api/dist/src/server.js"]

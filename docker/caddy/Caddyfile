@@ -1,4 +1,13 @@
-:80 {
+# Site address. Defaults to plain HTTP on :80 (the proxy container's internal
+# port, published to the host as ${HAAABIT_PUBLIC_PORT}).
+#
+# For a public deployment, set HAAABIT_SITE_ADDRESS to your real hostname
+# (e.g. "habits.example.com") and publish ports 80 and 443 from the proxy
+# service. Caddy then provisions and renews a Let's Encrypt TLS certificate
+# automatically and enables HSTS. See docs/PUBLIC-DEPLOYMENT.md.
+{$HAAABIT_SITE_ADDRESS::80} {
+	encode gzip
+
 	handle /api/* {
 		reverse_proxy api:3001
 	}
@@ -7,7 +16,15 @@
 		reverse_proxy api:3001
 	}
 
+	# Web (Next.js). The API already sets its own security headers via helmet;
+	# these cover the web responses that do not pass through the API.
 	handle {
+		header {
+			X-Content-Type-Options nosniff
+			X-Frame-Options DENY
+			Referrer-Policy strict-origin-when-cross-origin
+			-Server
+		}
 		reverse_proxy web:3000
 	}
 }

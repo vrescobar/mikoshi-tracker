@@ -40,11 +40,7 @@ async function loadApiTestHelpers() {
 
 async function issueApiToken(app: unknown, cookie: string) {
   const injectable = app as {
-    inject: (options: {
-      method: string;
-      url: string;
-      headers?: Record<string, string>;
-    }) => Promise<{
+    inject: (options: { method: string; url: string; headers?: Record<string, string> }) => Promise<{
       statusCode?: number;
       json: () => unknown;
     }>;
@@ -135,7 +131,8 @@ describe("native plugin integration", () => {
     const handlers = Object.fromEntries(
       registerTool.mock.calls.map(([tool]) => [
         (tool as OpenClawRegisteredTool).name,
-        (async (input: unknown) => ((await (tool as OpenClawRegisteredTool).execute(input)).details ?? null)) as OpenClawToolHandler,
+        (async (input: unknown) =>
+          (await (tool as OpenClawRegisteredTool).execute(input)).details ?? null) as OpenClawToolHandler,
       ]),
     ) as Record<string, OpenClawToolHandler>;
 

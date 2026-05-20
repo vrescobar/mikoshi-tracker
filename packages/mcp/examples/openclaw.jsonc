@@ -8,10 +8,10 @@
         "apiKey": "<same secret as HAAABIT_API_TOKEN>",
         "env": {
           "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-          "HAAABIT_API_TOKEN": "<openclaw secret ref or literal personal api token>"
-        }
-      }
-    }
+          "HAAABIT_API_TOKEN": "<openclaw secret ref or literal personal api token>",
+        },
+      },
+    },
   },
 
   // Pair OpenClaw with an MCP-capable runner or bridge that actually launches @haaabit/mcp.
@@ -22,14 +22,14 @@
       "args": ["-y", "@haaabit/mcp"],
       "env": {
         "HAAABIT_API_URL": "https://your-haaabit.example.com/api",
-        "HAAABIT_API_TOKEN": "<same personal api token>"
-      }
-    }
+        "HAAABIT_API_TOKEN": "<same personal api token>",
+      },
+    },
   },
 
   // When the paired MCP runner supports prompts/resources, reuse the shipped Haaabit guidance names.
   "guidance": {
     "prompt": "haaabit_assistant_workflow",
-    "resource": "haaabit://guides/workflow"
-  }
+    "resource": "haaabit://guides/workflow",
+  },
 }

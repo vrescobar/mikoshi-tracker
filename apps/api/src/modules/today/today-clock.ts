@@ -1,14 +1,6 @@
 import { normalizeUserTimeZone } from "../../shared/timezone";
 
-const WEEKDAY_NAMES = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-] as const;
+const WEEKDAY_NAMES = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 export type HabitWeekday = Exclude<(typeof WEEKDAY_NAMES)[number], "sunday"> | "sunday";
 
@@ -57,7 +49,9 @@ function getFormatter(timeZone: string) {
 function getLocalDateParts(date: Date, timeZone: string) {
   const formatter = getFormatter(timeZone);
   const parts = formatter.formatToParts(date);
-  const partMap = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  const partMap = Object.fromEntries(
+    parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]),
+  );
 
   return {
     year: partMap.year,

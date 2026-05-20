@@ -23,10 +23,9 @@ type EnvCandidateMap = Record<string, unknown>;
 export function parsePluginEnv(env: NodeJS.ProcessEnv = process.env): NativePluginConfig {
   const apiUrl = readEnvString(env, "HAAABIT_API_URL")?.trim();
   const apiToken = readEnvString(env, "HAAABIT_API_TOKEN")?.trim();
-  const missing = [
-    apiUrl ? null : "HAAABIT_API_URL",
-    apiToken ? null : "HAAABIT_API_TOKEN",
-  ].filter((value): value is string => value !== null);
+  const missing = [apiUrl ? null : "HAAABIT_API_URL", apiToken ? null : "HAAABIT_API_TOKEN"].filter(
+    (value): value is string => value !== null,
+  );
 
   if (missing.length > 0) {
     throw createConfigError(

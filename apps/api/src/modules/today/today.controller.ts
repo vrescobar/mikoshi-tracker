@@ -2,10 +2,7 @@ import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
-import {
-  getRequestTimestamp,
-  sendAuthError,
-} from "../../shared/controller-helpers";
+import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";
 import {
   serializeContractFrequencyType,
   serializeContractHabitKind,
@@ -52,11 +49,7 @@ function serializeHabit(habit: {
   };
 }
 
-function incrementPeriodCounter(
-  counters: Map<string, PeriodCounter>,
-  habitId: string,
-  key: keyof PeriodCounter,
-) {
+function incrementPeriodCounter(counters: Map<string, PeriodCounter>, habitId: string, key: keyof PeriodCounter) {
   const current = counters.get(habitId) ?? {
     week: 0,
     month: 0,
@@ -66,11 +59,7 @@ function incrementPeriodCounter(
   counters.set(habitId, current);
 }
 
-async function buildTodayResponse(
-  request: FastifyRequest,
-  userId: string,
-  timestamp: Date | number | string,
-) {
+async function buildTodayResponse(request: FastifyRequest, userId: string, timestamp: Date | number | string) {
   const user = await request.server.db.user.findUnique({
     where: {
       id: userId,
@@ -228,7 +217,7 @@ function sendRequestError(reply: FastifyReply, error: unknown) {
 export async function getTodayHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
     const user = await requireAuthenticatedUser(request);
-    return buildTodayResponse(request, user.id, getRequestTimestamp(request));
+    return await buildTodayResponse(request, user.id, getRequestTimestamp(request));
   } catch (error) {
     if (error instanceof AuthSessionError) {
       sendAuthError(reply, error);
@@ -256,6 +245,7 @@ export async function completeTodayHabitHandler(request: FastifyRequest, reply: 
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {
@@ -285,6 +275,7 @@ export async function setTodayHabitTotalHandler(request: FastifyRequest, reply: 
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {
@@ -314,6 +305,7 @@ export async function undoTodayHabitHandler(request: FastifyRequest, reply: Fast
 
     return {
       affectedHabit: result.habit,
+      mutationId: result.mutation.id,
       ...(await buildTodayResponse(request, user.id, timestamp)),
     };
   } catch (error) {

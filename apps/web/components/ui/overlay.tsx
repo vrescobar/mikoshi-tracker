@@ -44,7 +44,9 @@ export function OverlayPanel({
           <div className={styles.header}>
             <div className={styles.copy}>
               <Dialog.Title className={styles.title}>{title}</Dialog.Title>
-              {description ? <Dialog.Description className={styles.description}>{description}</Dialog.Description> : null}
+              {description ? (
+                <Dialog.Description className={styles.description}>{description}</Dialog.Description>
+              ) : null}
             </div>
 
             {closeHref ? (

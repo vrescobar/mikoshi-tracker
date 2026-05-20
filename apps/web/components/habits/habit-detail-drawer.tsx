@@ -7,6 +7,7 @@ import { getHabitsCopy } from "../../lib/i18n/habits";
 import { Badge, OverlayPanel } from "../ui";
 import { CompletionRateChart } from "../dashboard/completion-rate-chart";
 import { useLocale } from "../locale";
+import { HabitAttachmentsGallery } from "./habit-attachments-gallery";
 import { HabitHistoryList } from "./habit-history-list";
 import styles from "./habit-detail-drawer.module.css";
 
@@ -66,7 +67,11 @@ export function HabitDetailDrawer({
       testId="habit-detail-overlay"
     >
       <div className={styles.stack}>
-        <section className={styles.summary} data-testid="habit-detail-summary" aria-label={copy.detail.summaryAriaLabel}>
+        <section
+          className={styles.summary}
+          data-testid="habit-detail-summary"
+          aria-label={copy.detail.summaryAriaLabel}
+        >
           <div className={styles.summaryHeader}>
             <div className={styles.headerMeta}>
               <span className={styles.kicker}>{copy.detail.kicker}</span>
@@ -103,10 +108,26 @@ export function HabitDetailDrawer({
           </div>
 
           <div className={styles.stats} data-testid="habit-detail-stats">
-            <StatCard label={copy.detail.stats.currentStreak} value={detail.stats.currentStreak} testId="habit-detail-stat-current-streak" />
-            <StatCard label={copy.detail.stats.longestStreak} value={detail.stats.longestStreak} testId="habit-detail-stat-longest-streak" />
-            <StatCard label={copy.detail.stats.totalCompletions} value={detail.stats.totalCompletions} testId="habit-detail-stat-total-completions" />
-            <StatCard label={copy.detail.stats.interruptions} value={detail.stats.interruptionCount} testId="habit-detail-stat-interruptions" />
+            <StatCard
+              label={copy.detail.stats.currentStreak}
+              value={detail.stats.currentStreak}
+              testId="habit-detail-stat-current-streak"
+            />
+            <StatCard
+              label={copy.detail.stats.longestStreak}
+              value={detail.stats.longestStreak}
+              testId="habit-detail-stat-longest-streak"
+            />
+            <StatCard
+              label={copy.detail.stats.totalCompletions}
+              value={detail.stats.totalCompletions}
+              testId="habit-detail-stat-total-completions"
+            />
+            <StatCard
+              label={copy.detail.stats.interruptions}
+              value={detail.stats.interruptionCount}
+              testId="habit-detail-stat-interruptions"
+            />
           </div>
         </section>
 
@@ -129,6 +150,11 @@ export function HabitDetailDrawer({
         <div className={styles.section}>
           <h3>{copy.detail.sections.history}</h3>
           <HabitHistoryList rows={detail.recentHistory} />
+        </div>
+
+        <div className={styles.section}>
+          <h3>{copy.detail.sections.attachments}</h3>
+          <HabitAttachmentsGallery habitId={detail.habit.id} />
         </div>
       </div>
     </OverlayPanel>

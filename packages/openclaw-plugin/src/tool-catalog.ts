@@ -10,6 +10,9 @@ export function createToolCatalog(): NativeToolDefinition[] {
     name: tool.name,
     description: tool.description,
     inputSchema: toProviderSafeJsonSchema(tool.inputSchema),
-    outputSchema: toProviderSafeJsonSchema(nativeSuccessEnvelopeSchema(tool.outputSchema)),
+    // Binary tools (e.g. attachment_get) declare no structured output schema.
+    outputSchema: tool.outputSchema
+      ? toProviderSafeJsonSchema(nativeSuccessEnvelopeSchema(tool.outputSchema))
+      : undefined,
   }));
 }

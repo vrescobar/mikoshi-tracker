@@ -5,12 +5,7 @@ export class OpenClawPluginError extends Error {
   readonly code: string;
   readonly hint?: string;
 
-  constructor(options: {
-    category: OpenClawPluginErrorCategory;
-    code: string;
-    message: string;
-    hint?: string;
-  }) {
+  constructor(options: { category: OpenClawPluginErrorCategory; code: string; message: string; hint?: string }) {
     super(options.message);
     this.name = "OpenClawPluginError";
     this.category = options.category;
@@ -54,9 +49,7 @@ export function formatStartupError(error: unknown, env: unknown = process.env) {
 
 export function redactSecrets(message: string, env: unknown = process.env) {
   const token = readEnvToken(env);
-  let sanitized = message
-    .replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]")
-    .replace(/token\s+\S+/gi, "token [REDACTED]");
+  let sanitized = message.replace(/Bearer\s+\S+/gi, "Bearer [REDACTED]").replace(/token\s+\S+/gi, "token [REDACTED]");
 
   if (token) {
     sanitized = sanitized.split(token).join("[REDACTED]");

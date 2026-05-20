@@ -27,17 +27,31 @@ export function createNativeHandlers(
       toolName,
       async (input: unknown) => {
         try {
-          const { payload, summary } = await operation(input);
-          const data = adaptToolResult(toolName, payload);
+          const outcome = await operation(input);
+
+          if ("image" in outcome) {
+            return {
+              ok: true as const,
+              toolName,
+              summary: outcome.summary,
+              data: outcome.metadata,
+              image: {
+                data: outcome.image.base64,
+                mimeType: outcome.image.mimeType,
+              },
+            };
+          }
+
+          const data = adaptToolResult(toolName, outcome.payload);
 
           if (!isRecord(data)) {
             throw new Error(`Expected object data for tool ${toolName}`);
           }
 
           return {
-            ok: true,
+            ok: true as const,
             toolName,
-            summary,
+            summary: outcome.summary,
             data,
           };
         } catch (error) {

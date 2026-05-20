@@ -3,7 +3,7 @@ import { z } from "zod";
 const nonEmptyString = z.string().trim().min(1);
 const optionalNonEmptyString = z.string().trim().min(1).nullable().optional();
 
-export const checkinSourceSchema = z.enum(["web", "ai", "system"]);
+export const checkinSourceSchema = z.enum(["web", "ai", "system", "circle"]);
 
 export const completeHabitInputSchema = z.object({
   habitId: nonEmptyString,

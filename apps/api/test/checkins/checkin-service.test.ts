@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { completeHabitForToday, setHabitTotalForToday, undoHabitForToday } from "../../src/modules/checkins/checkin.service";
+import {
+  completeHabitForToday,
+  setHabitTotalForToday,
+  undoHabitForToday,
+} from "../../src/modules/checkins/checkin.service";
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 

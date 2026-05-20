@@ -2,10 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { createFirstHabit, signUpInBrowser } from "../accessibility/helpers";
 
-async function createHabitViaApi(
-  page: import("@playwright/test").Page,
-  payload: Record<string, unknown>,
-) {
+async function createHabitViaApi(page: import("@playwright/test").Page, payload: Record<string, unknown>) {
   return page.evaluate(async (input) => {
     const response = await fetch("http://127.0.0.1:3001/api/habits", {
       method: "POST",
@@ -91,7 +88,9 @@ test("dashboard analytics stays above today and refreshes after today actions", 
   await expect(page.getByTestId("overview-metric-today-completed")).toContainText("50% of due habits");
   await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("Morning walk");
   await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("50%");
-  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("1/2 recent due days");
+  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText(
+    "1/2 recent due days",
+  );
 
   const firstBarStyles = await page
     .getByTestId("overview-trend-chart")
@@ -113,7 +112,9 @@ test("dashboard analytics stays above today and refreshes after today actions", 
 test.describe("mobile dashboard", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("mobile dashboard keeps today above overview while compressing analytics into support content", async ({ page }) => {
+  test("mobile dashboard keeps today above overview while compressing analytics into support content", async ({
+    page,
+  }) => {
     const email = `dashboard-mobile-${Date.now()}@example.com`;
     const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 

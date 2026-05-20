@@ -1,18 +1,16 @@
-import { execFileSync } from "node:child_process";
-import { closeSync, openSync, rmSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { copyFileSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 import type { FastifyInstance } from "fastify";
 
 import { createApp } from "../../src/server";
+import { TEMPLATE_DB_PATH, TEST_DB_DIR } from "./test-db";
 
 const TEST_SECRET = "test-secret-with-at-least-thirty-two-characters";
-const THIS_DIR = dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = join(THIS_DIR, "../../../../");
-const SCHEMA_PATH = "prisma/schema.prisma";
 export type TestContext = {
   app: FastifyInstance;
+  attachmentsDir: string;
   cleanup: () => Promise<void>;
 };
 
@@ -26,18 +24,14 @@ function normalizeCookie(setCookie: string | string[] | undefined): string {
 }
 
 export async function createTestContext(): Promise<TestContext> {
-  const databasePath = join("/tmp", `haaabit-auth-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
+  const databasePath = join(TEST_DB_DIR, `haaabit-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
   const databaseUrl = `file:${databasePath}`;
-  closeSync(openSync(databasePath, "w"));
 
-  execFileSync(
-    "pnpm",
-    ["exec", "prisma", "db", "push", "--config", "prisma.config.ts", "--schema", SCHEMA_PATH, "--url", databaseUrl],
-    {
-      cwd: REPO_ROOT,
-      stdio: "pipe",
-    },
-  );
+  // Copy the pre-built schema template instead of re-running `prisma db push`
+  // (see test/helpers/global-setup.ts). Each test still gets its own isolated DB.
+  copyFileSync(TEMPLATE_DB_PATH, databasePath);
+
+  const attachmentsDir = join(tmpdir(), `haaabit-attachments-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const app = await createApp({
     env: {
@@ -46,14 +40,19 @@ export async function createTestContext(): Promise<TestContext> {
       BETTER_AUTH_SECRET: TEST_SECRET,
       BETTER_AUTH_URL: "http://127.0.0.1:3001",
       CORS_ORIGIN: "http://localhost:3000",
+      ATTACHMENTS_DIR: attachmentsDir,
     },
   });
 
   return {
     app,
+    attachmentsDir,
     cleanup: async () => {
       await app.close();
-      rmSync(databasePath, { force: true });
+      for (const suffix of ["", "-wal", "-shm"]) {
+        rmSync(`${databasePath}${suffix}`, { force: true });
+      }
+      rmSync(attachmentsDir, { force: true, recursive: true });
     },
   };
 }

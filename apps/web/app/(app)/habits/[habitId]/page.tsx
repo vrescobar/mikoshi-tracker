@@ -8,11 +8,7 @@ import {
   listHabitsFromCookieHeader,
 } from "../../../../lib/server-auth";
 
-export default async function HabitDetailPage({
-  params,
-}: {
-  params: Promise<{ habitId: string }>;
-}) {
+export default async function HabitDetailPage({ params }: { params: Promise<{ habitId: string }> }) {
   const { habitId } = await params;
   const cookieHeader = await buildCookieHeader();
   const detail = await getHabitDetailFromCookieHeader(cookieHeader, habitId);

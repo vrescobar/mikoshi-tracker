@@ -30,11 +30,11 @@ describe("OpenClaw native docs", () => {
     expect(readme).toContain("openclaw.extensions");
     expect(readme).toContain("./dist/openclaw.js");
     expect(readme).toContain("@haaabit/openclaw-plugin");
-    expect(readme).toContain("ok\": true");
+    expect(readme).toContain('ok": true');
     expect(readme).toContain("error.category");
-    expect(example).toContain("\"package\": \"@haaabit/openclaw-plugin\"");
-    expect(example).toContain("\"@haaabit/openclaw-plugin\"");
-    expect(example).not.toContain("\"mcpServers\"");
+    expect(example).toContain('"package": "@haaabit/openclaw-plugin"');
+    expect(example).toContain('"@haaabit/openclaw-plugin"');
+    expect(example).not.toContain('"mcpServers"');
   });
 
   it("routes top-level OpenClaw guidance to the native plugin first", async () => {

@@ -11,17 +11,7 @@ import {
 } from "../../lib/auth-client";
 import { createApiUrl } from "../../lib/api";
 import { getApiAccessCopy } from "../../lib/i18n/api-access";
-import {
-  Button,
-  DisabledHint,
-  Field,
-  InlineStatus,
-  Input,
-  PageFrame,
-  PageHeader,
-  StatePanel,
-  Surface,
-} from "../ui";
+import { Button, DisabledHint, Field, InlineStatus, Input, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
 import { useLocale } from "../locale";
 import styles from "./api-access-panel.module.css";
 
@@ -72,14 +62,13 @@ export function ApiAccessPanel({
       : copy.page.tokenDescriptions.empty;
   const formattedLastRotatedAt = formatTokenTimestamp(tokenState.lastRotatedAt);
 
-  const tokenValue =
-    !hasStoredToken
-      ? ""
-      : hasFreshToken
-        ? isTokenRevealed
-          ? tokenState.token ?? ""
-          : "••••••••••••••••••••••••"
-        : copy.page.storedTokenValue;
+  const tokenValue = !hasStoredToken
+    ? ""
+    : hasFreshToken
+      ? isTokenRevealed
+        ? (tokenState.token ?? "")
+        : "••••••••••••••••••••••••"
+      : copy.page.storedTokenValue;
 
   async function refreshToken(generateNew: boolean, trigger?: HTMLButtonElement | null) {
     setFeedback({
@@ -180,11 +169,7 @@ export function ApiAccessPanel({
     <section className={styles.panel} data-testid="api-access-panel">
       <Surface variant="hero">
         <PageFrame>
-          <PageHeader
-            eyebrow={copy.page.eyebrow}
-            title={copy.page.title}
-            description={copy.page.description}
-          />
+          <PageHeader eyebrow={copy.page.eyebrow} title={copy.page.title} description={copy.page.description} />
 
           {feedback ? (
             <InlineStatus tone={feedback.tone} title={feedback.title} testId="api-access-feedback">
@@ -193,11 +178,7 @@ export function ApiAccessPanel({
           ) : null}
 
           <Surface variant="soft" className={styles.tokenSurface} padding="md">
-            <Field
-              label={copy.page.tokenLabel}
-              htmlFor="api-access-token"
-              description={tokenDescription}
-            >
+            <Field label={copy.page.tokenLabel} htmlFor="api-access-token" description={tokenDescription}>
               <Input id="api-access-token" aria-label={copy.page.tokenLabel} readOnly value={tokenValue} />
             </Field>
 
@@ -209,11 +190,7 @@ export function ApiAccessPanel({
                 ))}
               </div>
             ) : hasStoredToken ? (
-              <StatePanel
-                title={copy.page.storedStateTitle}
-                description={copy.page.storedStateDescription}
-                compact
-              >
+              <StatePanel title={copy.page.storedStateTitle} description={copy.page.storedStateDescription} compact>
                 {formattedLastRotatedAt ? (
                   <p className={styles.metaRow}>
                     <span className={styles.metaLabel}>{copy.page.lastRotatedLabel}</span>
@@ -222,19 +199,11 @@ export function ApiAccessPanel({
                 ) : null}
               </StatePanel>
             ) : (
-              <StatePanel
-                title={copy.page.emptyStateTitle}
-                description={copy.page.emptyStateDescription}
-                compact
-              />
+              <StatePanel title={copy.page.emptyStateTitle} description={copy.page.emptyStateDescription} compact />
             )}
 
             <div className={styles.actions}>
-              <Button
-                type="button"
-                onClick={(event) => handleRotateToken(event.currentTarget)}
-                disabled={isPending}
-              >
+              <Button type="button" onClick={(event) => handleRotateToken(event.currentTarget)} disabled={isPending}>
                 {tokenState.hasToken ? copy.page.actions.rotate : copy.page.actions.generate}
               </Button>
               {hasFreshToken ? (
@@ -247,19 +216,12 @@ export function ApiAccessPanel({
                   >
                     {isTokenRevealed ? copy.page.actions.hide : copy.page.actions.reveal}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => void copyToken()}
-                    disabled={isPending}
-                  >
+                  <Button type="button" variant="secondary" onClick={() => void copyToken()} disabled={isPending}>
                     {copy.page.actions.copy}
                   </Button>
                 </>
               ) : null}
-              {isPending ? (
-                <DisabledHint>{copy.page.disabledHint}</DisabledHint>
-              ) : null}
+              {isPending ? <DisabledHint>{copy.page.disabledHint}</DisabledHint> : null}
             </div>
           </Surface>
 

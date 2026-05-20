@@ -2,10 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { createFirstHabit, signUpInBrowser } from "../accessibility/helpers";
 
-async function createHabitViaApi(
-  page: import("@playwright/test").Page,
-  payload: Record<string, unknown>,
-) {
+async function createHabitViaApi(page: import("@playwright/test").Page, payload: Record<string, unknown>) {
   return page.evaluate(async (input) => {
     const response = await fetch("http://127.0.0.1:3001/api/habits", {
       method: "POST",

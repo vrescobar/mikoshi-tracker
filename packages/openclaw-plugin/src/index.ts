@@ -20,10 +20,7 @@ export type PluginActivationOptions = {
   handlers?: Partial<Record<string, OpenClawToolHandler>>;
 };
 
-export function activateHaaabitOpenClawPlugin(
-  api: OpenClawPluginApi,
-  options: PluginActivationOptions = {},
-) {
+export function activateHaaabitOpenClawPlugin(api: OpenClawPluginApi, options: PluginActivationOptions = {}) {
   const env = resolvePluginRuntimeEnv(api, options);
 
   try {

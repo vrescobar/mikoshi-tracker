@@ -18,7 +18,12 @@ type CliDependencies = {
   stdin: NodeJS.ReadStream;
   stdout: NodeJS.WriteStream;
   connectServer: (argv: string[], env: NodeJS.ProcessEnv) => Promise<void>;
-  bootstrapToken: (argv: string[], env: NodeJS.ProcessEnv, stdin: NodeJS.ReadStream, stdout: NodeJS.WriteStream) => Promise<void>;
+  bootstrapToken: (
+    argv: string[],
+    env: NodeJS.ProcessEnv,
+    stdin: NodeJS.ReadStream,
+    stdout: NodeJS.WriteStream,
+  ) => Promise<void>;
 };
 
 const BOOTSTRAP_COMMAND = "bootstrap-token";
@@ -88,7 +93,7 @@ async function runBootstrapTokenCommand(
     env,
     argv,
   });
-  const password = config.password ?? await promptForPassword(stdin, stdout);
+  const password = config.password ?? (await promptForPassword(stdin, stdout));
   const result = await bootstrapPersonalApiToken({
     apiUrl: config.apiUrl,
     email: config.email,

@@ -59,6 +59,18 @@ describe("toolInventory", () => {
           "name": "stats_get_overview",
           "route": "GET /stats/overview",
         },
+        {
+          "name": "attachment_upload",
+          "route": "POST /attachments/base64",
+        },
+        {
+          "name": "attachment_list",
+          "route": "GET /attachments",
+        },
+        {
+          "name": "attachment_get",
+          "route": "GET /attachments/:id/file",
+        },
       ]
     `);
   });
