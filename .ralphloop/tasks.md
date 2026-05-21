@@ -91,7 +91,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `apps/api/test/events/{event-crud,recurring-uniqueness,event-log-multi,
       payload-validation}.test.ts`.
 
-- [ ] **39** Declarative aggregations engine — create
+- [x] **39** Declarative aggregations engine — create
       `apps/api/src/modules/aggregations/` with a generic
       `runAggregation(spec, filter)` that emits SQL using `json_extract` on
       SQLite. Support the six aggregation kinds from `GOAL.md` §G4

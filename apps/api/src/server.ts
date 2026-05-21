@@ -20,6 +20,7 @@ import {
 } from "./auth/registration";
 import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session";
 import { registerAdminRoutes } from "./modules/admin/admin.routes";
+import { registerAggregationRoutes } from "./modules/aggregations/aggregation.routes";
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerEntryRoutes } from "./modules/entries/entry.routes";
@@ -105,6 +106,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await seedBuiltInEntryTypes(app.db);
   await registerEntryRoutes(app);
   await registerEventRoutes(app);
+  await registerAggregationRoutes(app);
   await registerStatsRoutes(app);
   await registerTodayRoutes(app);
   await registerCircleRoutes(app);
