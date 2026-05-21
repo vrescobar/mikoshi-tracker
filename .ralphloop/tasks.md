@@ -35,7 +35,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       Prerequisite for Phase 12 because food events carry photos via the
       same machinery.
 
-- [ ] **33** Generic Prisma schema — add `EntryType`, `Entry`, `EntryWeekday`,
+- [x] **33** Generic Prisma schema — add `EntryType`, `Entry`, `EntryWeekday`,
       `EntryEvent`, `EventMutation`, `CircleEntryShare` to
       `prisma/schema.prisma` exactly as `GOAL.md` §G1. Keep `Habit`,
       `HabitWeekday`, `HabitDayState`, `CheckInMutation`, `CircleHabitShare`

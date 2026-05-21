@@ -25,6 +25,8 @@ model User {
   circlesOwned      Circle[]           @relation("CircleOwner")
   circleMemberships CircleMembership[]
   attachments       Attachment[]
+  entries           Entry[]
+  entryEvents       EntryEvent[]
 }
 
 model AppSettings {
@@ -163,22 +165,25 @@ model CheckInMutation {
 }
 
 model Attachment {
-  id           String          @id @default(cuid())
-  mutationId   String
-  userId       String
-  kind         String          @default("image")
-  storageKey   String          @unique
-  originalName String?
-  mimeType     String
-  size         Int
-  width        Int?
-  height       Int?
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  mutation     CheckInMutation @relation(fields: [mutationId], references: [id], onDelete: Cascade)
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String          @id @default(cuid())
+  mutationId      String
+  eventMutationId String?
+  userId          String
+  kind            String          @default("image")
+  storageKey      String          @unique
+  originalName    String?
+  mimeType        String
+  size            Int
+  width           Int?
+  height          Int?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  mutation        CheckInMutation @relation(fields: [mutationId], references: [id], onDelete: Cascade)
+  eventMutation   EventMutation?  @relation(fields: [eventMutationId], references: [id], onDelete: SetNull)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([mutationId, createdAt])
+  @@index([eventMutationId, createdAt])
   @@index([userId])
 }
 
@@ -192,6 +197,7 @@ model Circle {
   memberships CircleMembership[]
   habitShares CircleHabitShare[]
   tokens      CircleToken[]
+  entryShares CircleEntryShare[]
 }
 
 model CircleMembership {
@@ -231,4 +237,108 @@ model CircleToken {
   circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
 
   @@index([circleId])
+}
+
+model EntryType {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  displayName   String
+  cadence       String
+  payloadSchema String
+  configSchema  String
+  aggregations  String
+  skillSlug     String?
+  isBuiltIn     Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  entries       Entry[]
+
+  @@index([isActive])
+}
+
+model Entry {
+  id           String             @id @default(cuid())
+  userId       String
+  entryTypeId  String
+  name         String
+  description  String?
+  category     String?
+  config       String
+  startDate    String
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryType    EntryType          @relation(fields: [entryTypeId], references: [id], onDelete: Restrict)
+  weekdays     EntryWeekday[]
+  events       EntryEvent[]
+  mutations    EventMutation[]
+  circleShares CircleEntryShare[]
+
+  @@index([userId, isActive])
+  @@index([entryTypeId])
+}
+
+model EntryWeekday {
+  id      String @id @default(cuid())
+  entryId String
+  day     String
+  entry   Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, day])
+  @@index([day])
+}
+
+model EntryEvent {
+  id         String          @id @default(cuid())
+  entryId    String
+  userId     String
+  occurredAt DateTime
+  dateKey    String
+  payload    String
+  value      Decimal?
+  completed  Boolean?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  entry      Entry           @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mutations  EventMutation[]
+
+  @@index([entryId, dateKey])
+  @@index([entryId, occurredAt])
+  @@index([userId, dateKey])
+  @@index([dateKey])
+}
+
+model EventMutation {
+  id              String       @id @default(cuid())
+  entryId         String
+  eventId         String?
+  userId          String
+  dateKey         String
+  type            String
+  source          String
+  note            String?
+  previousPayload String?
+  nextPayload     String?
+  createdAt       DateTime     @default(now())
+  entry           Entry        @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  event           EntryEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  attachments     Attachment[]
+
+  @@index([entryId, dateKey, createdAt])
+  @@index([eventId, createdAt])
+}
+
+model CircleEntryShare {
+  id        String   @id @default(cuid())
+  circleId  String
+  entryId   String
+  createdAt DateTime @default(now())
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([circleId, entryId])
+  @@index([entryId])
 }
