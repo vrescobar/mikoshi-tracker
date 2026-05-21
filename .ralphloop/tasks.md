@@ -51,7 +51,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `apps/api/test/entry-types/seed.test.ts` asserts the three slugs exist
       and their `payloadSchema` parses as valid JSON Schema.
 
-- [ ] **35** JSON Schema → Zod compiler — create
+- [x] **35** JSON Schema → Zod compiler — create
       `apps/api/src/modules/entry-types/json-schema-to-zod.ts` supporting
       the subset listed in `GOAL.md` §G3 (`type`, `enum`, `required`,
       `properties`, `items`, `minimum`, `maximum`, `minLength`, `nullable`,
