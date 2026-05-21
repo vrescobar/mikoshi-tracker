@@ -62,7 +62,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       missing required field fails, wrong type fails, out-of-range fails,
       extra field fails (strict mode), invalidate works.
 
-- [ ] **36** Shared contracts — create `packages/contracts/src/entries.ts`,
+- [x] **36** Shared contracts — create `packages/contracts/src/entries.ts`,
       `events.ts`, `entry-types.ts`, `aggregations.ts` with the Zod shapes
       and TypeScript types for every endpoint in `GOAL.md` §G4. Wire them
       into `packages/contracts/package.json` exports. Static Zod here covers
