@@ -43,7 +43,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       task 43). Run `pnpm prisma migrate dev --name add_generic_entries`.
       Regenerate the Prisma client. `apps/api` must build with zero errors.
 
-- [ ] **34** EntryType seed — create `apps/api/src/modules/entry-types/seed.ts`
+- [x] **34** EntryType seed — create `apps/api/src/modules/entry-types/seed.ts`
       with the three built-in types (`habit_boolean`, `habit_quantity`,
       `food_meal`) defined in `GOAL.md` §G2. Run the seed inside the same
       `add_generic_entries` migration (raw SQL in `migration.sql`) or via
