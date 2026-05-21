@@ -79,7 +79,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `apps/api/test/entries/entry-crud.test.ts` covers CRUD against all
       three built-in types.
 
-- [ ] **38** `events/` module — create `apps/api/src/modules/events/` with
+- [x] **38** `events/` module — create `apps/api/src/modules/events/` with
       the same pattern. Implement `POST /api/entries/:id/events`,
       `GET /api/events`, `GET/PATCH/DELETE /api/events/:eventId`,
       `POST /api/events/:eventId/undo`. Validate `payload` against
