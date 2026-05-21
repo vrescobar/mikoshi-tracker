@@ -1,139 +1,171 @@
-# PLAN — External provisioning for bot-operated circles
+# PLAN — Generic Entries Architecture + food_meal as first non-habit type
 
-> **Status: target, not current state.** This plan adds a small **external
-> provisioning** layer on top of the already-built Habit Circles feature
-> (`GOAL.md` → "Collaboration — Habit Circles", §C1–§C16, shipped). It is the
-> MikoshiTracker-side counterpart of the Mikoshi multi-user-skills work
-> (`~/projects/mikoshi/docs/design/multi-user-skills.md`). The phased checklist
-> that implements it is `.ralphloop/tasks.md` → "Phase 11"; the self-contained
-> spec is `GOAL.md` §C17.
+> **Status: target, not current state.** This plan refactors MikoshiTracker
+> from "habit tracker" to "generic typed-entries tracker" and adds `food_meal`
+> as the first non-habit `EntryType`. Phase 11 (external provisioning for
+> bot-operated circles) is **complete**; its self-contained spec is preserved
+> in `GOAL.md` §C17 and its task history lives in `.ralphloop/progress.md`.
+>
+> The full architecture spec for this plan is `GOAL.md` → "Generic Entries
+> Architecture" (§G1–§G9 added by this refactor). The phased checklist that
+> implements it is `.ralphloop/tasks.md` → tasks **32–58**.
 
 ## Context
 
-Mikoshi (a WhatsApp agent) is rewriting its habit-contest skill so that **each
-participant's check-ins are written with that participant's own personal MikoshiTracker
-token** — never a shared cross-user token. For that to work without a human
-clicking through the MikoshiTracker web UI for every participant, MikoshiTracker must let
-Mikoshi:
+MikoshiTracker today models a single domain: `Habit` + `HabitDayState` +
+`CheckInMutation`. The semantics are nailed to "one unit per day with a
+boolean or numeric target". That covers habits but not rich event logs like
+meals, weights, expenses, sleep or workouts.
 
-1. **Provision** a MikoshiTracker account bound to an opaque external identity (a
-   Mikoshi `identityId`) and get back that user's personal API token.
-2. **Enrol** that user into a circle by external identity.
+This plan **separates the storage + audit engine from the concrete domain**.
+Any new domain (food, weight, money, mood, workout) becomes an `EntryType`
+declared with a slug, a JSON-Schema-validated payload, a cadence
+(`recurring` vs `event_log`), an aggregations descriptor, and optionally a
+pointer to a Mikoshi skill that owns natural-language ingestion. `food_meal`
+is the first non-habit type and the case that proves the abstraction works.
 
-Today neither is possible from the API: users self-register through better-auth
-(`POST /api/auth/sign-up/email`) and the only cross-user surface is the
-circle token (check-in writes, owner-minted). The `User.isAdmin` role only
-toggles registration. This plan adds a narrow **system-key admin surface**.
+Crucially: **all AI/vision/web-search/confidence/confirmation logic lives in
+the skill, not in MikoshiTracker.** MikoshiTracker only validates payloads
+against the registered schema and persists. The skill (in the separate
+`mikoshi` repo at `/home/victor/projects/mikoshi/skills/mikoshi-tracker-food/`)
+runs the tier pipeline and only POSTs to MikoshiTracker once it has complete,
+validated data.
 
-The Circles feature itself does **not** change — models, memberships, shares,
-leaderboard and circle tokens stay. `CircleMembership.externalId` already exists.
-This is purely additive.
+## Non-negotiable invariants
 
-## What gets built (the contract)
+1. **Immutable audit trail.** Editing or deleting an event creates an
+   `EventMutation`; never delete history rows. Undo replays history.
+2. **User timezone** rules every `dateKey` and aggregation grouping.
+3. **Existing auth boundaries** (session, personal token, circle token, admin
+   key) remain intact; the §C14 denial matrix continues to pass.
+4. **`/api/habits/*` and `/api/today/*` keep working** as thin aliases on the
+   new engine for at least one release. `@mikoshi-tracker/mcp` and the
+   OpenClaw plugin must not regress.
+5. **No domain logic in the app.** New types are added by inserting an
+   `EntryType` row + (optionally) shipping a skill. No new tables per type,
+   no per-type business rules in services.
 
-### H1 — Schema (`prisma/schema.prisma`)
+## What gets built
 
-Add `externalId String? @unique` to the `User` model — an opaque integration id
-(a Mikoshi `identityId`), so one external identity maps to exactly one MikoshiTracker
-user. `CircleMembership.externalId` already exists; only its API exposure (H5)
-is missing. Apply with `pnpm prisma migrate dev --name add_user_external_id`,
-regenerate the Prisma client, confirm `apps/api` still builds.
+### G1 — Schema (`prisma/schema.prisma`)
 
-### H2 — System-key auth (`apps/api/src/auth/admin-key.ts`, new)
+Five new tables (`EntryType`, `Entry`, `EntryWeekday`, `EntryEvent`,
+`EventMutation`) plus rename of `CircleHabitShare` → `CircleEntryShare`. See
+`GOAL.md` §G1 for the exact Prisma definitions.
 
-A new auth path, distinct from sessions, personal `ApiToken`s and circle tokens,
-and distinct from the `User.isAdmin` role:
+### G2 — Seed of three built-in `EntryType`s
 
-- Env var `MIKOSHI_TRACKER_ADMIN_API_KEY` (documented in `.env.example`).
-- A Fastify `preHandler` / guard that reads `Authorization: Bearer <key>` and
-  compares it to the env value with a **timing-safe** comparison
-  (`crypto.timingSafeEqual`). Missing or wrong → `401`.
-- If `MIKOSHI_TRACKER_ADMIN_API_KEY` is unset, every `/api/admin/*` provisioning route
-  responds `503` (feature disabled) — never an open endpoint.
-- This is an env-configured shared secret, not a DB token: provisioning is
-  low-frequency and operator-controlled.
+`habit_boolean`, `habit_quantity`, `food_meal`. Inserted by a seed script
+that runs inside the same migration that creates the tables. See `GOAL.md`
+§G2 for the full payload/config schemas and aggregations specs.
 
-### H3 — User provisioning (`POST /api/admin/provision-user`)
+### G3 — Schema cache (`apps/api/src/modules/entry-types/schema-cache.ts`)
 
-System-key auth (H2). Body (Zod, in `packages/contracts`): `{ externalId:
-string; name?: string; timezone?: string }`.
+A minimal JSON-Schema → Zod compiler with an in-memory cache keyed by
+`entryTypeId`. Supports `type`, `enum`, `required`, `properties`, `minimum`,
+`maximum`, `minLength`, `nullable`, and strict mode (extra fields rejected).
+No external library; the surface stays controlled. See `GOAL.md` §G3.
 
-- If a `User` with that `externalId` exists → `200 { userId, alreadyExists:
-  true }`. The personal token is minted **once** at creation and is not
-  re-issued here.
-- Otherwise → create the `User` **directly via Prisma**, bypassing the
-  better-auth sign-up flow:
-  - synthetic unique `email` (e.g. `mikoshi+<externalId>@bot.local`),
-  - `emailVerified: true`,
-  - **no `Account` row** — this is an API-only user that cannot password-login,
-  - `name` (fallback to a placeholder), `timezone` (fallback to the app
-    default).
-  - Mint a personal token with the existing `generatePersonalApiToken` /
-    `ApiToken` machinery (`apps/api/src/auth/api-token.ts`).
-  - **Bypass** the `AppSettings.registrationEnabled` gate — this is an admin
-    action, not public sign-up.
-  - → `201 { userId, personalToken, alreadyExists: false }`.
-- Companion: `POST /api/admin/provision-user/reset-token` `{ externalId }` →
-  rotates and returns a fresh personal token (for when Mikoshi loses its copy).
+### G4 — Generic API surface
 
-### H4 — Member enrolment by `externalId` (`POST /api/admin/circles/:circleId/members`)
+- `GET /api/entry-types`, `GET /api/entry-types/:slug` — read-only catalog.
+- `GET/POST /api/entries`, `GET/PATCH /api/entries/:id`,
+  `POST /api/entries/:id/archive|restore` — entry CRUD; `config` validated
+  against `EntryType.configSchema`.
+- `POST /api/entries/:id/events`, `GET /api/events`,
+  `GET/PATCH/DELETE /api/events/:eventId`, `POST /api/events/:eventId/undo`
+  — event CRUD; `payload` validated against `EntryType.payloadSchema`. Every
+  write creates an `EventMutation`.
+- `GET /api/aggregations` — declarative aggregation engine parameterised by
+  the EntryType's `aggregations` spec (sum/avg/count/completion_rate/streak/
+  missing_days over day/week/month windows). See `GOAL.md` §G4.
 
-System-key auth (H2). Body `{ externalId: string }`. Resolves the `User` by
-`externalId` (`404` if not provisioned), creates a `CircleMembership` with
-`role: "member"` and the same `externalId` set. Idempotent: an existing
-membership is returned, not duplicated. → `{ membershipId, userId, externalId }`.
+### G5 — `food_meal` end-to-end
 
-Rationale: adding members is owner-only today (§C9). A bot-operated contest must
-enrol participants without a human in the web UI. This admin route is the bot's
-enrolment path. The **circle token cannot add members** — and must not, per §C2.
+The payload (`name`, `kcal`, `protein_g`, `carbs_g`, `fat_g`, `fiber_g?`,
+`sugar_g?`, `portion_g?`, `mealSlot?`, `source`, `confidence`,
+`similarToEventId?`, `sources?`, `notes?`) and the canonical aggregations
+(daily/weekly sums, count, missing days) are defined in `GOAL.md` §G5. The
+**app does not interpret `confidence` or `source`** — they are persisted
+metadata only.
 
-### H5 — Expose `externalId` in circle reads
+### G6 — Skill `mikoshi-tracker-food` (in repo `mikoshi`)
 
-`GET /api/circles/:circleId/members` already returns `externalId` (§C9). Ensure
-`GET /api/circles/:circleId/leaderboard` also includes `externalId` per member,
-so Mikoshi can map standings back to WhatsApp identities. Update the Zod
-schemas in `packages/contracts/src/circles.ts` accordingly.
+Lives entirely outside this repo. Implements the four-tier pipeline (label
+OCR → similar-to-recent-event → web lookup via Brave → vision-only) plus the
+WhatsApp confirmation flow when `confidence < 0.85`. The skill is the **only
+caller** that decides what payload to POST; MikoshiTracker just validates.
+See `GOAL.md` §G6.
 
-### H6 — Tests + OpenAPI
+### G7 — Web
 
-- Vitest in `apps/api`: provisioning creates an account-less, password-less user
-  with a usable personal token; a second call with the same `externalId` is
-  idempotent; reset-token rotates; member enrolment by `externalId` is
-  idempotent and `404`s an unknown `externalId`; the system-key guard rejects a
-  missing/wrong key (`401`) and `503`s when the env var is unset.
-- Add the `/api/admin/*` routes to the OpenAPI definitions
-  (`apps/api/src/plugins/openapi.ts`) with the system-key security scheme.
-- No regression of the single-user flow, the circle-token denial matrix
-  (§C14) or `@mikoshi-tracker/mcp`.
+`apps/web/app/(app)/food/` (timeline, event detail with editable payload and
+audit trail, insights page with range picker + heatmap + missing days +
+repeated meals). `apps/web/app/(app)/habits/` becomes a redirect to
+`/entries?entryTypeSlug=habit_*` with a renderer-by-slug dispatch in a new
+`EventCard`. Dashboard adds a "Hoy en comida" panel. Full EN/ZH/ES i18n. See
+`GOAL.md` §G7.
+
+### G8 — MCP and OpenClaw
+
+New tools `entries_*`, `events_*`, `aggregations_*`, `entry_types_*` in
+`packages/mcp/src/tools/` and auto-registered in OpenClaw via the existing
+catalogue. Legacy `habits_*` / `today_*` tools stay as aliases over the new
+engine. See `GOAL.md` §G8.
+
+### G9 — Migration of legacy `Habit` data
+
+A two-step migration: first add the new tables and backfill from `Habit`,
+`HabitWeekday`, `HabitDayState`, `CheckInMutation`, `CircleHabitShare` into
+their generic counterparts (legacy tables renamed `_legacy_*`, not dropped),
+then in a follow-up migration drop the legacy tables once stability is
+confirmed. See `GOAL.md` §G9.
 
 ## What does NOT change
 
-- The circle-token check-in endpoints (`/members/:userId/habits/...`) — Mikoshi's
-  new design writes check-ins with each user's **personal** token against the
-  existing `/api/today/*` endpoints, not the circle token. The circle token is
-  used **read-only** for the leaderboard. The endpoints stay as-is.
-- Habit sharing (`POST /api/circles/:id/shares`) stays self-service per member
-  (personal token) — the member consents which habit competes.
-- Circle models, circle tokens, the web GUI.
+- Phase 11 work (external provisioning via `/api/admin/*`): unchanged.
+- Circles auth + denial matrix §C14: unchanged in behaviour (only renamed
+  from `habitId` to `entryId` internally, with a body-shape alias).
+- Personal-token flow and session auth: unchanged.
+- `@mikoshi-tracker/mcp` package: unchanged behaviour; new tools added but
+  legacy tool surface preserved exactly.
 
 ## Files
 
-`prisma/schema.prisma`, `apps/api/src/auth/admin-key.ts` (new), a new
-`apps/api/src/modules/admin/` module (or extend the existing
-`/api/admin/registration` handler), `apps/api/src/server.ts` (route
-registration), `apps/api/src/modules/circles/circle.routes.ts` +
-`circle.service.ts` (H5), `packages/contracts/src/circles.ts`, `.env.example`,
-`apps/api/src/plugins/openapi.ts`.
+`prisma/schema.prisma`, `prisma/migrations/<ts>_add_generic_entries/`,
+`apps/api/src/modules/entry-types/` (new), `apps/api/src/modules/entries/`
+(new, replaces `habits/` once aliases settle),
+`apps/api/src/modules/events/` (new),
+`apps/api/src/modules/aggregations/` (new),
+`apps/api/src/modules/admin/` (unchanged),
+`apps/api/src/modules/circles/` (rename habitId→entryId in service/repo),
+`packages/contracts/src/{entries,events,entry-types,aggregations}.ts`,
+`packages/mcp/src/tools/{entries,events,aggregations,entry-types}.ts`,
+`apps/web/app/(app)/{entries,food}/`, `apps/web/components/{events,food}/`,
+`apps/web/messages/{en,zh,es}.json`.
+
+External: `/home/victor/projects/mikoshi/skills/mikoshi-tracker-food/`
+(SKILL.md + run.ts + lib/).
 
 ## Verification
 
-- `pnpm prisma migrate dev` clean; `pnpm -r build` + workspace typecheck green
-  after Prisma regen; `pnpm -r lint` green.
-- `pnpm --filter @mikoshi-tracker/api test` green, including the new provisioning tests
-  and the unchanged §C14 circle-token denial matrix.
-- End to end: `provision-user` for a new `externalId` returns a personal token;
-  that token works against `/api/today/*`; `provision-user` again is idempotent;
-  `admin/circles/:id/members` enrols the user and the leaderboard shows their
-  `externalId`.
-- `pnpm test:e2e` and `pnpm verify:openclaw` green — no single-user / MCP
-  regressions.
+- `pnpm prisma migrate dev` clean; `pnpm -r build` + workspace typecheck +
+  `pnpm -r lint` green after Prisma regen.
+- `pnpm --filter @mikoshi-tracker/api test` green, including the new
+  entries/events/aggregations suites AND the unchanged §C14 circle-token
+  denial matrix AND the new legacy-alias tests.
+- `pnpm test:e2e` green, including `tests/food-flow.spec.ts` (upload photo
+  → create event → edit → insights → delete → audit trail) and
+  `tests/regressions/habit-flow.spec.ts`.
+- `pnpm verify:openclaw` green — plugin behaviour unchanged.
+- End-to-end manual on Mikoshi: photo of a nutrition label registers without
+  confirmation (tier `label`); photo of a repeated meal detects
+  `similar_to_event`; photo of a novel dish triggers tier `web_lookup` with
+  confirmation; pure text triggers `web_lookup` or `vision_only` with
+  confirmation. Edit and delete from the web preserve audit trail.
+
+## Stop marker
+
+The whole tracker roadmap halts on `TRACKER_COMPLETE` (configured in
+`.ralphloop/config.yaml`), written **only** by the final task (task 58) once
+the verification matrix above is fully green. No per-phase early stops.

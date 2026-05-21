@@ -8,9 +8,10 @@
 # maxIterations: 50
 
 # Halt-sentinel the agent writes to progress.md (default: TASK_COMPLETE).
-# Phase 11 uses a per-phase marker so the historical TASK_COMPLETE (Phase 10)
-# stays inert.
-stopMarker: PHASE_11_COMPLETE
+# Use a single tracker-wide marker so the loop only halts when EVERY task in
+# the whole roadmap is done — no per-phase early stops. The marker is written
+# only by the final task of the final phase listed in tasks.md.
+stopMarker: TRACKER_COMPLETE
 
 # Commit-message prefixes (defaults: task / review)
 # commit:

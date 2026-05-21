@@ -567,3 +567,332 @@ each user's **personal** token against `/api/today/*`; it uses the circle token
 - Respect per-user timezones in all date math.
 - Match the existing design language defined in `CLAUDE.md`.
 - A change is not done until the relevant quality gates above pass.
+
+## Generic Entries Architecture
+
+> **Status.** §G1–§G9 describe the **target** architecture being implemented
+> by `.ralphloop/tasks.md` tasks 32–58 (full implementation plan in
+> `PLAN.md`). They generalise the Habit subsystem (§"Domain model" and §"Core
+> habit logic" above) into a typed, schema-driven engine where habits become
+> one of several `EntryType`s. Until task 41 (legacy aliases) ships,
+> `/api/habits/*` and `/api/today/*` continue to behave exactly as documented
+> above; from task 41 onward those endpoints are thin adapters over the
+> generic engine but their external contract is preserved.
+
+### G0 — Concept
+
+MikoshiTracker evolves from "habit tracker" to "generic typed-entries
+tracker". Habits are no longer the only domain; any data the user wants to
+record over time is modelled as an `EntryType` with a declarative payload
+schema, a cadence (`recurring` or `event_log`), an aggregations descriptor,
+and an optional reference to a skill that owns natural-language ingestion.
+`food_meal` is the first non-habit type and the case that validates the
+abstraction.
+
+The engine's responsibility is strictly: validate payloads against the
+registered schema and persist them with an immutable mutation trail. **All
+domain intelligence (AI vision, OCR, web search, confidence scoring,
+human-in-the-loop confirmation) lives in the skill, never in MikoshiTracker.**
+
+### G1 — Data model (`prisma/schema.prisma`)
+
+```prisma
+model EntryType {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  displayName     String                            // i18n key
+  cadence         String                            // "recurring" | "event_log"
+  payloadSchema   String                            // JSON Schema (string)
+  configSchema    String                            // JSON Schema (string)
+  aggregations    String                            // JSON aggregation spec
+  skillSlug       String?                           // pointer to a Mikoshi skill
+  isBuiltIn       Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  entries         Entry[]
+
+  @@index([isActive])
+}
+
+model Entry {
+  id            String         @id @default(cuid())
+  userId        String
+  entryTypeId   String
+  name          String
+  description   String?
+  category      String?
+  config        String                              // JSON, validated against configSchema
+  startDate     String
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entryType     EntryType      @relation(fields: [entryTypeId], references: [id], onDelete: Restrict)
+  weekdays      EntryWeekday[]
+  events        EntryEvent[]
+  mutations     EventMutation[]
+  circleShares  CircleEntryShare[]
+
+  @@index([userId, isActive])
+  @@index([entryTypeId])
+}
+
+model EntryWeekday {
+  id       String @id @default(cuid())
+  entryId  String
+  day      String
+  entry    Entry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, day])
+  @@index([day])
+}
+
+model EntryEvent {
+  id          String         @id @default(cuid())
+  entryId     String
+  userId      String
+  occurredAt  DateTime
+  dateKey     String                                // YYYY-MM-DD in user TZ
+  payload     String                                // JSON, validated against payloadSchema
+  value       Decimal?                              // numeric projection (recurring quantity)
+  completed   Boolean?                              // boolean projection (recurring boolean)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  entry       Entry          @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mutations   EventMutation[]
+
+  @@index([entryId, dateKey])
+  @@index([entryId, occurredAt])
+  @@index([userId, dateKey])
+  @@index([dateKey])
+}
+
+model EventMutation {
+  id              String       @id @default(cuid())
+  entryId         String
+  eventId         String?
+  userId          String
+  dateKey         String
+  type            String                             // "CREATE" | "UPDATE" | "DELETE" | "UNDO"
+  source          String                             // "WEB" | "AI" | "SYSTEM" | "CIRCLE"
+  note            String?
+  previousPayload String?
+  nextPayload     String?
+  createdAt       DateTime     @default(now())
+  entry           Entry        @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  event           EntryEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  attachments     Attachment[]
+
+  @@index([entryId, dateKey, createdAt])
+  @@index([eventId, createdAt])
+}
+```
+
+`CircleHabitShare` is renamed to `CircleEntryShare` (column `habitId` becomes
+`entryId`). For `cadence = "recurring"` a unique constraint
+`(entryId, dateKey)` is enforced (a boolean habit can have at most one event
+per day). For `cadence = "event_log"` no uniqueness — several meals per day
+are normal. `Attachment.mutationId` keeps its current shape; attachments
+continue to hang from `EventMutation`.
+
+### G2 — Built-in `EntryType` seeds
+
+Three seed rows inserted by the migration that creates the tables:
+
+1. **`habit_boolean`** — `cadence: "recurring"`, payload `{ completed: boolean }`,
+   config `{ frequencyType, frequencyCount? }`, aggregations
+   `completion_rate(7d, 30d) + streak`.
+2. **`habit_quantity`** — `cadence: "recurring"`, payload
+   `{ value: number, completed: boolean }`, config
+   `{ frequencyType, frequencyCount?, targetValue, unit }`, aggregations
+   `completion_rate + sum(day|week|month) + streak`.
+3. **`food_meal`** — `cadence: "event_log"`, full payload in §G5, no per-entry
+   config, aggregations `sum(kcal|protein_g|carbs_g|fat_g) + count +
+   missing_days`. `skillSlug: "mikoshi-tracker-food"`.
+
+`isBuiltIn` rows cannot be deleted; their `payloadSchema` is **append-only**
+(adding optional fields is allowed; removing or retyping requires an explicit
+versioned migration that rewrites payloads).
+
+### G3 — Schema cache (`apps/api/src/modules/entry-types/schema-cache.ts`)
+
+In-memory cache mapping `entryTypeId → { payload: ZodType, config: ZodType,
+aggregations: AggregationSpec, cadence, skillSlug }`. A minimal JSON Schema
+→ Zod compiler supports: `type` (`string|number|integer|boolean|object|
+array`), `enum`, `required`, `properties`, `items`, `minimum`, `maximum`,
+`minLength`, `nullable`, **strict mode** (extra fields rejected). No
+external library is used; the supported subset is deliberately small so the
+schemas the app accepts are predictable and auditable. Cache is invalidated
+when an `EntryType` is updated.
+
+### G4 — REST surface
+
+| Method | Route | Description |
+|---|---|---|
+| `GET` | `/api/entry-types` | active types with embedded schemas |
+| `GET` | `/api/entry-types/:slug` | detail |
+| `GET` | `/api/entries` | filterable by `entryTypeSlug`, `isActive`, `query` |
+| `POST` | `/api/entries` | body `config` validated against `EntryType.configSchema` |
+| `GET` | `/api/entries/:id` | detail |
+| `PATCH` | `/api/entries/:id` | update name/description/category/config |
+| `POST` | `/api/entries/:id/archive\|restore` | isActive toggle |
+| `POST` | `/api/entries/:id/events` | body `payload` validated; recurring upserts on `(entryId, dateKey)` |
+| `GET` | `/api/events` | filters: `entryId`, `entryTypeSlug`, `from`, `to`, `limit`, `cursor` |
+| `GET` | `/api/events/:eventId` | detail with mutations + attachments |
+| `PATCH` | `/api/events/:eventId` | partial payload edit; creates `UPDATE` mutation |
+| `DELETE` | `/api/events/:eventId` | creates `DELETE` mutation; row stays for audit, hidden in reads |
+| `POST` | `/api/events/:eventId/undo` | reverts last non-`UNDO` mutation |
+| `GET` | `/api/aggregations` | declarative; see below |
+
+Aggregations response:
+
+```
+GET /api/aggregations
+  ?entryTypeSlug=food_meal
+  &entryId=<opt>
+  &from=YYYY-MM-DD
+  &to=YYYY-MM-DD
+  &groupBy=day|week|month|none
+  &fields=kcal,protein_g
+  &include=missing_days,count
+```
+
+Returns buckets with `{ key, sum: {...}, count, missing }`, total over the
+range, and a `weeklyAverage` summary. Missing buckets are emitted as
+`{ count: 0, missing: true }` so the UI can render days without records.
+
+The engine runs SQL parametrised by the `EntryType.aggregations` spec
+(`json_extract(payload, '$.kcal')` etc on SQLite). Adding a new EntryType
+does **not** require writing new stats endpoints.
+
+### G5 — `food_meal` payload
+
+```json
+{
+  "name": "string (required)",
+  "kcal": "number ≥ 0 (required)",
+  "protein_g": "number ≥ 0 (required)",
+  "carbs_g": "number ≥ 0 (required)",
+  "fat_g": "number ≥ 0 (required)",
+  "fiber_g": "number ≥ 0 | null",
+  "sugar_g": "number ≥ 0 | null",
+  "portion_g": "number ≥ 0 | null",
+  "mealSlot": "breakfast | lunch | snack | dinner | other | null",
+  "source": "label | similar_to_event | web_lookup | vision_only | manual (required)",
+  "confidence": "number in [0,1] (required)",
+  "similarToEventId": "string | null",
+  "sources": "string[] | null",
+  "notes": "string | null"
+}
+```
+
+The app **persists** `source`, `confidence`, `similarToEventId` and `sources`
+but does **not** branch on them. They are metadata for the UI and for audit;
+all decision logic lives in the skill (§G6).
+
+### G6 — Skill `mikoshi-tracker-food` (in repo `mikoshi`)
+
+Lives at `/home/victor/projects/mikoshi/skills/mikoshi-tracker-food/` and is
+the **only** caller responsible for deciding what `payload` to POST. Pipeline
+(executed by the skill, hidden from MikoshiTracker):
+
+1. **Tier 0 — classify.** One Claude call classifies the input as
+   `label | dish | package | text_only`.
+2. **Tier 1 — `label`.** If a nutrition label is detected, OCR + porción
+   declarada → deterministic multiplication. `confidence ≤ 0.95`.
+3. **Tier 2 — `similar_to_event`.** Query `GET /api/events?entryTypeSlug=
+   food_meal&from=now-30d` with the user's `mikoshi_tracker_personal_token`;
+   ask Claude whether the new input matches any recent event; if yes, reuse
+   its payload and set `similarToEventId`. `confidence ≤ 0.90`.
+4. **Tier 3 — `web_lookup`.** Use the `brave-search` skill to find
+   nutritional data from known sources; Claude reconciles. `confidence ≤
+   0.70`. Persist consulted URLs in `payload.sources`.
+5. **Tier 4 — `vision_only`.** Last resort; estimate from photo alone.
+   `confidence ≤ 0.55`. Always requires confirmation.
+6. **Manual.** User types values → parsed directly. `confidence = 1.0`.
+
+If `confidence ≥ 0.85` and `source ∈ {label, similar_to_event, manual}` the
+skill POSTs immediately. Otherwise it sends a WhatsApp message proposing the
+payload and waits for user confirmation/edit before POSTing.
+
+Final call is always to the generic endpoint:
+
+```
+POST /api/entries/:entryId/events
+{
+  "occurredAt": "...",
+  "payload": { ... validated client-side against the cached payloadSchema ... },
+  "attachmentIds": ["att_..."],
+  "source": "AI",
+  "note": "tier=label confidence=0.93"
+}
+```
+
+Skill secrets: `mikoshi_tracker_personal_token`, `anthropic_api_key`,
+optional `brave_search_api_key`. Network: `restricted-egress`, allowed hosts
+`localhost:7080`, `api.anthropic.com`, `api.search.brave.com`.
+
+### G7 — Web
+
+- `apps/web/app/(app)/entries/` — generic list/detail with a per-`EntryType`
+  renderer dispatch (`EventCard` chooses the right component by slug).
+- `apps/web/app/(app)/food/` — `page.tsx` (chronological timeline of today),
+  `[eventId]/page.tsx` (rich detail with inline-editable payload + audit
+  trail), `insights/page.tsx` (range picker, calendar heatmap, repeated
+  meals, missing days).
+- `apps/web/app/(app)/habits/` — kept as a redirect to
+  `/entries?entryTypeSlug=habit_boolean,habit_quantity` so existing URLs and
+  the §C12 explanatory copy stay valid.
+- Dashboard adds a "Hoy en comida" panel alongside the existing habits
+  summary.
+- Full EN/ZH/ES i18n (the existing trilingual contract from §C13 extends to
+  all new strings).
+- V1 web-side AI assistance is **manual only** (user types payload). The
+  skill-driven flow remains WhatsApp-first; a future `/api/skills/run`
+  surface can unify both.
+
+### G8 — MCP and OpenClaw
+
+`packages/mcp/src/tools/{entries,events,aggregations,entry-types}.ts` add
+generic tools registered in `catalog.ts`. `packages/openclaw-plugin/src/
+register-tools.ts` picks them up via the existing pattern. The legacy
+`habits_*` / `today_*` tools are preserved exactly as aliases over the new
+engine so older agents (including the existing Mikoshi `mikoshi-tracker`
+skill) keep working.
+
+### G9 — Migration of legacy `Habit` data
+
+Two-step migration:
+
+1. **`add_generic_entries`** — creates the new tables, seeds the three
+   built-in `EntryType`s, backfills `Entry`/`EntryWeekday`/`EntryEvent`/
+   `EventMutation`/`CircleEntryShare` from `Habit`/`HabitWeekday`/
+   `HabitDayState`/`CheckInMutation`/`CircleHabitShare`. Legacy tables are
+   renamed `_legacy_Habit_<ts>` etc — **not** dropped — so a rollback is
+   possible during the first release.
+2. **`drop_legacy_habit_tables`** — runs in a later release once stability
+   is confirmed in production; drops the `_legacy_*` tables and removes the
+   models from `schema.prisma`.
+
+A verification migration step asserts row counts match between source and
+destination tables before declaring the backfill complete.
+
+### G9.1 — Invariants for future evolution
+
+- **No domain logic in the API.** A new type is added by inserting an
+  `EntryType` row + (if desired) shipping a skill. Never by adding a new
+  table, a new service, or a new endpoint per type.
+- **`payloadSchema` is append-only on built-in types.** Optional new fields
+  may be added; removing or retyping requires a versioned migration that
+  rewrites existing payloads.
+- **Skills are not loaded or executed by MikoshiTracker.** The app's only
+  coupling to skills is the `EntryType.skillSlug` string and the convention
+  that the skill POSTs payloads matching `payloadSchema`.
+- **Stats always derive from `EntryEvent.payload`** via the declarative
+  aggregation engine. Caches are added as materialised views, never as
+  manually-synchronised denormalised columns.
+- **The single write path is `events.service.persistEvent(...)`.** Every
+  controller routes through it so the `EventMutation` audit trail can never
+  be bypassed.
