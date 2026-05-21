@@ -57,6 +57,10 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
+      # Admin provisioning API key. When unset the admin routes return 503
+      # ("Admin provisioning API is disabled"). Mikoshi's
+      # MikoshiTrackerProvisionService needs this set to auto-enrol users.
+      MIKOSHI_TRACKER_ADMIN_API_KEY: ${MIKOSHI_TRACKER_ADMIN_API_KEY:-}
       # Uploaded attachment files live on the same persistent volume as the DB.
       ATTACHMENTS_DIR: ${ATTACHMENTS_DIR:-/data/attachments}
     volumes:
