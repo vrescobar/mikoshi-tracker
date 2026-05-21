@@ -3,6 +3,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { API_DOCS_PATH, API_SPEC_PATH } from "../auth/api-token";
 import { adminApiRouteDefinitions } from "../modules/admin/admin.routes";
+import { attachmentApiRouteDefinitions } from "../modules/attachments/attachment.routes";
 import { circleApiRouteDefinitions } from "../modules/circles/circle.routes";
 import { habitApiRouteDefinitions } from "../modules/habits/habit.routes";
 import { statsApiRouteDefinitions } from "../modules/stats/stats.routes";
@@ -45,6 +46,7 @@ const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
   ...statsApiRouteDefinitions,
   ...circleApiRouteDefinitions,
   ...adminApiRouteDefinitions,
+  ...attachmentApiRouteDefinitions,
 ];
 
 const localeCookieName = "mikoshi-tracker-locale";
