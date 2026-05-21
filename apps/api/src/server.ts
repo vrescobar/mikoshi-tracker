@@ -22,6 +22,9 @@ import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session
 import { registerAdminRoutes } from "./modules/admin/admin.routes";
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
+import { registerEntryRoutes } from "./modules/entries/entry.routes";
+import { invalidateSchemaCache } from "./modules/entry-types/schema-cache";
+import { seedBuiltInEntryTypes } from "./modules/entry-types/seed";
 import { registerHabitRoutes } from "./modules/habits/habit.routes";
 import { registerStatsRoutes } from "./modules/stats/stats.routes";
 import { registerTodayRoutes } from "./modules/today/today.routes";
@@ -97,6 +100,9 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerAuth(app);
   await registerAdminRoutes(app);
   await registerHabitRoutes(app);
+  invalidateSchemaCache();
+  await seedBuiltInEntryTypes(app.db);
+  await registerEntryRoutes(app);
   await registerStatsRoutes(app);
   await registerTodayRoutes(app);
   await registerCircleRoutes(app);

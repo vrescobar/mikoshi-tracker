@@ -69,7 +69,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       the envelope shape only; per-type payload validation is dynamic (done
       in the API via the schema cache from task 35).
 
-- [ ] **37** `entries/` module — create `apps/api/src/modules/entries/`
+- [x] **37** `entries/` module — create `apps/api/src/modules/entries/`
       following the existing CRSA pattern (`entry.schema.ts`,
       `entry.repository.ts`, `entry.service.ts`, `entry.controller.ts`,
       `entry.routes.ts`). Implement `GET/POST /api/entries`,
