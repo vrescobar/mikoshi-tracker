@@ -1,15 +1,19 @@
 import type { FastifyRequest } from "fastify";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CircleAuthError, requireCircleContext } from "../../src/auth/circle-session";
+// The suite runs with `pool: forks` + `isolate: false` (see vitest.config.ts) for
+// speed on the ARM host, which reuses each worker process across the files it runs.
+// Once any earlier file in the same worker loads the *real* circle-token module, the
+// cached copy would defeat a top-level hoisted `vi.mock` (module mocking needs an
+// un-cached registry). So we reset the module registry before each test and import the
+// subject under test dynamically, guaranteeing it re-binds to the mocked dependency
+// regardless of file scheduling. This is the only file in the api suite that mocks.
+const { mockFindCircleByToken } = vi.hoisted(() => ({ mockFindCircleByToken: vi.fn() }));
+vi.mock("../../src/auth/circle-token", () => ({ findCircleByToken: mockFindCircleByToken }));
 
-vi.mock("../../src/auth/circle-token", () => ({
-  findCircleByToken: vi.fn(),
-}));
-
-import { findCircleByToken } from "../../src/auth/circle-token";
-
-const mockFindCircleByToken = vi.mocked(findCircleByToken);
+type CircleSessionModule = typeof import("../../src/auth/circle-session");
+let requireCircleContext: CircleSessionModule["requireCircleContext"];
+let CircleAuthError: CircleSessionModule["CircleAuthError"];
 
 function makeRequest(authorization?: string): FastifyRequest {
   return {
@@ -24,6 +28,12 @@ const TOKEN_ID = "token-xyz";
 const CIRCLE = { id: CIRCLE_ID, name: "Test Circle", ownerId: "owner-1" };
 
 describe("requireCircleContext", () => {
+  beforeEach(async () => {
+    vi.resetModules();
+    mockFindCircleByToken.mockReset();
+    ({ requireCircleContext, CircleAuthError } = await import("../../src/auth/circle-session"));
+  });
+
   it("throws 401 when Authorization header is missing", async () => {
     const request = makeRequest(undefined);
     await expect(requireCircleContext(request, CIRCLE_ID)).rejects.toMatchObject({
@@ -50,7 +60,7 @@ describe("requireCircleContext", () => {
   });
 
   it("throws 403 when token belongs to a different circle", async () => {
-    mockFindCircleByToken.mockResolvedValueOnce({
+    mockFindCircleByToken.mockResolvedValue({
       circle: { ...CIRCLE, id: "circle-other" },
       tokenId: TOKEN_ID,
     });

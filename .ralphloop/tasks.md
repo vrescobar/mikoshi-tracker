@@ -103,7 +103,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       of varied food events and verifies daily sums, weekly count, weekly
       average, and missing_days for empty days.
 
-- [ ] **40** Backfill migration — second Prisma migration
+- [x] **40** Backfill migration — second Prisma migration
       `backfill_habit_to_entry` that copies legacy data into the new
       tables (mapping per `GOAL.md` §G9 step 1). Rename `Habit` →
       `_legacy_Habit_<ts>`, `HabitWeekday` → `_legacy_HabitWeekday_<ts>`,
