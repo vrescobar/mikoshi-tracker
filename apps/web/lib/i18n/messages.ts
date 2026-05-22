@@ -73,6 +73,7 @@ export type LocaleMessages = {
       dashboard: string;
       habits: string;
       circles: string;
+      food: string;
       apiAccess: string;
     };
     signOut: string;
@@ -294,6 +295,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         dashboard: "Today",
         habits: "Habits",
         circles: "Circles",
+        food: "Food",
         apiAccess: "API Access",
       },
       signOut: "Log out",
@@ -516,6 +518,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         dashboard: "今天",
         habits: "习惯",
         circles: "圈子",
+        food: "饮食",
         apiAccess: "API 访问",
       },
       signOut: "退出登录",
@@ -735,6 +738,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         dashboard: "Hoy",
         habits: "Hábitos",
         circles: "Círculos",
+        food: "Comida",
         apiAccess: "Acceso API",
       },
       signOut: "Cerrar sesión",

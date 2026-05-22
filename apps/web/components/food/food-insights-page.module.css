@@ -1,0 +1,177 @@
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.backRow {
+  margin-bottom: 0.5rem;
+}
+
+.backLink {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms ease;
+}
+
+.backLink:hover {
+  border-bottom-color: var(--color-accent-strong);
+}
+
+.rangePanel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.rangeRow {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.rangeRow > * {
+  flex: 1 1 10rem;
+  min-width: 10rem;
+}
+
+.applyCol {
+  flex: 0 0 auto;
+  padding-bottom: 0.05rem;
+}
+
+.sections {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.section {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.emptyState {
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+/* Summary */
+.summaryFacts {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.summaryFact {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.summaryValue {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.summaryLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+/* Repeated meals */
+.repeatedList {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.repeatedRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: rgba(248, 249, 250, 0.9);
+  border: 1px solid var(--color-border);
+}
+
+.repeatedName {
+  flex: 1 1 auto;
+  font-weight: 600;
+  color: var(--color-heading);
+  font-size: 0.95rem;
+}
+
+.repeatedCount {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+  white-space: nowrap;
+}
+
+.repeatedDate {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Missing days */
+.missingList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.missingDay {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.missingDay:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 720px) {
+  .rangeRow {
+    flex-direction: column;
+  }
+
+  .applyCol {
+    width: 100%;
+  }
+}

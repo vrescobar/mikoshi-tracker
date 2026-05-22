@@ -1,6 +1,8 @@
+import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 import type { CircleDetailResponse, CircleRecord } from "@mikoshi-tracker/contracts/circles";
 import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
+import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 import type { HabitDetail, HabitListFilters, Weekday } from "@mikoshi-tracker/contracts/habits";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
@@ -285,4 +287,78 @@ export async function getHabitDetailFromCookieHeader(
 
   const body = (await response.json()) as HabitDetailPayload;
   return body.item;
+}
+
+export async function listFoodEventsFromCookieHeader(
+  cookieHeader: string,
+  from: string,
+  to: string,
+): Promise<EntryEventRecord[]> {
+  const params = new URLSearchParams({ entryTypeSlug: "food_meal", from, to, limit: "100" });
+  const response = await fetch(createServerApiUrl(`/api/events?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load food events");
+  }
+
+  const body = (await response.json()) as { items: EntryEventRecord[] };
+  return body.items;
+}
+
+export async function getFoodEventDetailFromCookieHeader(
+  cookieHeader: string,
+  eventId: string,
+): Promise<EntryEventDetail | null> {
+  const response = await fetch(createServerApiUrl(`/api/events/${encodeURIComponent(eventId)}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 404 || response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load food event");
+  }
+
+  const body = (await response.json()) as { item: EntryEventDetail };
+  return body.item;
+}
+
+export async function getFoodAggregationsFromCookieHeader(
+  cookieHeader: string,
+  from: string,
+  to: string,
+  groupBy: "day" | "week" | "month" = "day",
+): Promise<AggregationResponse | null> {
+  const params = new URLSearchParams({
+    entryTypeSlug: "food_meal",
+    from,
+    to,
+    groupBy,
+    fields: "kcal,protein_g,carbs_g,fat_g,fiber_g",
+    include: "missing_days,count",
+  });
+  const response = await fetch(createServerApiUrl(`/api/aggregations?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load food aggregations");
+  }
+
+  return (await response.json()) as AggregationResponse;
 }

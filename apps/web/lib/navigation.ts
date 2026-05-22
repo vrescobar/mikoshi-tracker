@@ -5,6 +5,9 @@ export const routes = {
   entries: "/entries",
   habitEntries: "/entries?entryTypeSlug=habit_boolean,habit_quantity",
   circles: "/circles",
+  food: "/food",
+  foodInsights: "/food/insights",
+  foodDetail: (eventId: string) => `/food/${eventId}`,
   apiAccess: "/api-access",
   newHabit: "/habits/new",
   habitDetail: (habitId: string) => `/habits/${habitId}`,
@@ -12,7 +15,7 @@ export const routes = {
   circleDetail: (circleId: string) => `/circles/${circleId}`,
 } as const;
 
-export function getPrimaryAppNavigation(labels: { dashboard: string; habits: string; circles: string }) {
+export function getPrimaryAppNavigation(labels: { dashboard: string; habits: string; circles: string; food: string }) {
   return [
     {
       href: routes.dashboard,
@@ -25,6 +28,10 @@ export function getPrimaryAppNavigation(labels: { dashboard: string; habits: str
     {
       href: routes.circles,
       label: labels.circles,
+    },
+    {
+      href: routes.food,
+      label: labels.food,
     },
   ] as const;
 }

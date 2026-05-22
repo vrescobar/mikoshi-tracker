@@ -170,7 +170,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `apps/web/components/entry-types/EntryTypeBadge.tsx`. Component tests
       cover dispatch + redirect.
 
-- [ ] **47** Web — `(app)/food/` section — create `apps/web/app/(app)/food/
+- [x] **47** Web — `(app)/food/` section — create `apps/web/app/(app)/food/
       page.tsx` (chronological timeline of today),
       `apps/web/app/(app)/food/[eventId]/page.tsx` (rich detail: photo,
       inline-editable payload validated client-side against payloadSchema,

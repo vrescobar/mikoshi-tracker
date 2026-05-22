@@ -1,0 +1,274 @@
+.stack {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.heroInner {
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.backLink {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  width: fit-content;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid transparent;
+  transition: border-color 120ms ease;
+}
+
+.backLink:hover {
+  border-bottom-color: var(--color-accent-strong);
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+  margin: 0;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.2rem);
+  font-weight: 700;
+  color: var(--color-heading);
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.content {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.section {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 1.2rem;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Photo */
+.photoGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.photoLink {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.photo {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+}
+
+/* Payload facts */
+.payloadView {
+  display: grid;
+  gap: 1rem;
+}
+
+.factsGrid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  align-items: start;
+}
+
+.factBig {
+  display: grid;
+  gap: 0.2rem;
+  grid-column: span 2;
+}
+
+.factBigValue {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.factBigLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.fact {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.factLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.factValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.notes {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Edit form */
+.editForm {
+  display: grid;
+  gap: 1rem;
+}
+
+.macroGrid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.select {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  appearance: auto;
+  transition: border-color 160ms ease;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 160ms ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.editActions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* Delete confirm */
+.deleteConfirm {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* Audit trail */
+.mutationList {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.mutationRow {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: rgba(248, 249, 250, 0.9);
+  border: 1px solid var(--color-border);
+}
+
+.mutationRow[data-type="DELETE"] {
+  background: color-mix(in srgb, var(--color-danger, #e53e3e) 6%, white);
+  border-color: color-mix(in srgb, var(--color-danger, #e53e3e) 18%, white);
+}
+
+.mutationMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mutationSource {
+  font-size: 0.8rem;
+  color: var(--color-text-soft);
+}
+
+.mutationNote {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.mutationTime {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 720px) {
+  .factsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .macroGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
