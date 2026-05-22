@@ -1,5 +1,6 @@
 import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 import type { CircleDetailResponse, CircleRecord } from "@mikoshi-tracker/contracts/circles";
+import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import type { HabitDetail, HabitListFilters, Weekday } from "@mikoshi-tracker/contracts/habits";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
@@ -234,6 +235,34 @@ export async function listCirclesFromCookieHeader(cookieHeader: string): Promise
   }
 
   const body = (await response.json()) as { items: CircleRecord[] };
+  return body.items;
+}
+
+export async function listEntriesFromCookieHeader(
+  cookieHeader: string,
+  filters?: { entryTypeSlug?: string; isActive?: boolean; query?: string },
+): Promise<EntryRecord[]> {
+  const params = new URLSearchParams();
+  if (filters?.entryTypeSlug) params.set("entryTypeSlug", filters.entryTypeSlug);
+  if (filters?.isActive !== undefined) params.set("isActive", String(filters.isActive));
+  if (filters?.query) params.set("query", filters.query);
+  const qs = params.toString();
+  const path = qs ? `/api/entries?${qs}` : "/api/entries";
+
+  const response = await fetch(createServerApiUrl(path), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error("Unable to load entries");
+  }
+
+  const body = (await response.json()) as { items: EntryRecord[] };
   return body.items;
 }
 

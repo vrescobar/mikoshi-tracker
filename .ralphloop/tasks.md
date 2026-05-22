@@ -161,7 +161,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       tools via the existing catalogue. Run `pnpm verify:openclaw` —
       must pass with no code changes to the plugin.
 
-- [ ] **46** Web — refactor habits to entries — rename
+- [x] **46** Web — refactor habits to entries — rename
       `apps/web/app/(app)/habits/` page logic into
       `apps/web/app/(app)/entries/` with a per-`EntryType` renderer
       dispatch in a new `apps/web/components/events/EventCard.tsx` (chooses
