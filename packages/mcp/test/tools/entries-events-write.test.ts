@@ -130,3 +130,197 @@ describe("events_update tool", () => {
     });
   });
 });
+
+describe("entries_create tool", () => {
+  it("calls POST /entries with the create body and returns the created entry", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEntry }),
+    );
+    const tool = getRegisteredTool("entries_create", fetchImpl);
+
+    const result = await tool.handler({
+      entryTypeSlug: "habit",
+      name: "Morning Run",
+      config: {},
+    });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/entries");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      headers: { "content-type": "application/json" },
+    });
+    const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({ entryTypeSlug: "habit", name: "Morning Run", config: {} });
+    expect(result).toMatchObject({
+      structuredContent: { item: { id: "entry_1", name: "Morning Run" } },
+    });
+  });
+});
+
+describe("entries_archive tool", () => {
+  it("calls POST /entries/:id/archive with no body and returns the archived entry", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: { ...baseEntry, isActive: false } }),
+    );
+    const tool = getRegisteredTool("entries_archive", fetchImpl);
+
+    const result = await tool.handler({ id: "entry_1" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/entries/entry_1/archive");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
+    expect(fetchImpl.mock.calls[0]?.[1]?.body).toBeUndefined();
+    expect(result).toMatchObject({
+      structuredContent: { item: { id: "entry_1", isActive: false } },
+    });
+  });
+
+  it("URL-encodes the entry id", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEntry }),
+    );
+    const tool = getRegisteredTool("entries_archive", fetchImpl);
+
+    await tool.handler({ id: "entry/special" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://tracker.example.com/api/entries/entry%2Fspecial/archive",
+    );
+  });
+});
+
+describe("entries_restore tool", () => {
+  it("calls POST /entries/:id/restore with no body and returns the restored entry", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEntry }),
+    );
+    const tool = getRegisteredTool("entries_restore", fetchImpl);
+
+    const result = await tool.handler({ id: "entry_1" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/entries/entry_1/restore");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
+    expect(fetchImpl.mock.calls[0]?.[1]?.body).toBeUndefined();
+    expect(result).toMatchObject({
+      structuredContent: { item: { id: "entry_1", isActive: true } },
+    });
+  });
+
+  it("URL-encodes the entry id", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEntry }),
+    );
+    const tool = getRegisteredTool("entries_restore", fetchImpl);
+
+    await tool.handler({ id: "entry/special" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://tracker.example.com/api/entries/entry%2Fspecial/restore",
+    );
+  });
+});
+
+describe("entries_add_event tool", () => {
+  it("strips id from the request body and posts to /entries/:id/events", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({}),
+    );
+    const tool = getRegisteredTool("entries_add_event", fetchImpl);
+
+    const result = await tool.handler({
+      id: "entry_1",
+      occurredAt: "2026-05-22T08:00:00.000Z",
+      payload: { value: 5 },
+    });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/entries/entry_1/events");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({
+      method: "POST",
+      headers: { "content-type": "application/json" },
+    });
+    const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
+    expect(body).not.toHaveProperty("id");
+    expect(body).toMatchObject({ occurredAt: "2026-05-22T08:00:00.000Z", payload: { value: 5 } });
+    expect(result).toMatchObject({
+      structuredContent: { entryId: "entry_1" },
+    });
+  });
+
+  it("URL-encodes the entry id in the path", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({}),
+    );
+    const tool = getRegisteredTool("entries_add_event", fetchImpl);
+
+    await tool.handler({
+      id: "entry/special",
+      occurredAt: "2026-05-22T08:00:00.000Z",
+      payload: {},
+    });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://tracker.example.com/api/entries/entry%2Fspecial/events",
+    );
+  });
+});
+
+describe("events_delete tool", () => {
+  it("calls DELETE /events/:eventId and returns the delete record with mutationId", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ eventId: "event_1", mutationId: "mutation_1" }),
+    );
+    const tool = getRegisteredTool("events_delete", fetchImpl);
+
+    const result = await tool.handler({ eventId: "event_1" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/events/event_1");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ method: "DELETE" });
+    expect(fetchImpl.mock.calls[0]?.[1]?.body).toBeUndefined();
+    expect(result).toMatchObject({
+      structuredContent: { eventId: "event_1", mutationId: "mutation_1" },
+    });
+  });
+
+  it("URL-encodes the eventId", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ eventId: "event/special", mutationId: "mutation_1" }),
+    );
+    const tool = getRegisteredTool("events_delete", fetchImpl);
+
+    await tool.handler({ eventId: "event/special" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://tracker.example.com/api/events/event%2Fspecial",
+    );
+  });
+});
+
+describe("events_undo tool", () => {
+  it("calls POST /events/:eventId/undo with no body and returns the undone event", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEvent }),
+    );
+    const tool = getRegisteredTool("events_undo", fetchImpl);
+
+    const result = await tool.handler({ eventId: "event_1" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://tracker.example.com/api/events/event_1/undo");
+    expect(fetchImpl.mock.calls[0]?.[1]).toMatchObject({ method: "POST" });
+    expect(fetchImpl.mock.calls[0]?.[1]?.body).toBeUndefined();
+    expect(result).toMatchObject({
+      structuredContent: { item: { id: "event_1" } },
+    });
+  });
+
+  it("URL-encodes the eventId", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({ item: baseEvent }),
+    );
+    const tool = getRegisteredTool("events_undo", fetchImpl);
+
+    await tool.handler({ eventId: "event/special" });
+
+    expect(fetchImpl.mock.calls[0]?.[0]).toBe(
+      "https://tracker.example.com/api/events/event%2Fspecial/undo",
+    );
+  });
+});
