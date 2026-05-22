@@ -21,7 +21,6 @@ model User {
   sessions          Session[]
   accounts          Account[]
   apiToken          ApiToken?
-  habits            Habit[]
   circlesOwned      Circle[]           @relation("CircleOwner")
   circleMemberships CircleMembership[]
   attachments       Attachment[]
@@ -91,100 +90,22 @@ model Verification {
   @@unique([identifier, value])
 }
 
-model Habit {
-  id             String        @id @default(cuid())
-  userId         String
-  kind           String
-  name           String
-  description    String?
-  category       String?
-  frequencyType  String
-  frequencyCount Int?
-  targetValue    Int?
-  unit           String?
-  startDate      String
-  isActive       Boolean       @default(true)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  weekdays       HabitWeekday[]
-  dayStates      HabitDayState[]
-  mutations      CheckInMutation[]
-  circleShares   CircleHabitShare[]
-
-  @@index([userId, isActive])
-  @@index([frequencyType])
-}
-
-model HabitWeekday {
-  id      String @id @default(cuid())
-  habitId String
-  day     String
-  habit   Habit  @relation(fields: [habitId], references: [id], onDelete: Cascade)
-
-  @@unique([habitId, day])
-  @@index([day])
-}
-
-model HabitDayState {
-  id         String            @id @default(cuid())
-  habitId     String
-  dateKey     String
-  value       Int?
-  completed   Boolean           @default(false)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  habit       Habit             @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  mutations   CheckInMutation[]
-
-  @@unique([habitId, dateKey])
-  @@index([dateKey])
-  @@index([habitId, completed, dateKey])
-}
-
-model CheckInMutation {
-  id                String        @id @default(cuid())
-  habitId            String
-  dayStateId         String
-  dateKey            String
-  type               String
-  source             String
-  note               String?
-  previousValue      Int?
-  nextValue          Int?
-  previousCompleted  Boolean
-  nextCompleted      Boolean
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  habit              Habit         @relation(fields: [habitId], references: [id], onDelete: Cascade)
-  dayState           HabitDayState @relation(fields: [dayStateId], references: [id], onDelete: Cascade)
-  attachments        Attachment[]
-
-  @@index([habitId, dateKey, createdAt])
-  @@index([dayStateId, createdAt])
-}
-
 model Attachment {
-  id              String           @id @default(cuid())
-  // Legacy link to CheckInMutation — nullable in Phase 12; attachments now anchor on
-  // eventMutationId. This column is dropped together with the legacy tables.
-  mutationId      String?
+  id              String         @id @default(cuid())
   eventMutationId String?
   userId          String
-  kind            String           @default("image")
-  storageKey      String           @unique
+  kind            String         @default("image")
+  storageKey      String         @unique
   originalName    String?
   mimeType        String
   size            Int
   width           Int?
   height          Int?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  mutation        CheckInMutation? @relation(fields: [mutationId], references: [id], onDelete: Cascade)
-  eventMutation   EventMutation?   @relation(fields: [eventMutationId], references: [id], onDelete: Cascade)
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  eventMutation   EventMutation? @relation(fields: [eventMutationId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([mutationId, createdAt])
   @@index([eventMutationId, createdAt])
   @@index([userId])
 }
@@ -197,7 +118,6 @@ model Circle {
   updatedAt   DateTime           @updatedAt
   owner       User               @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   memberships CircleMembership[]
-  habitShares CircleHabitShare[]
   tokens      CircleToken[]
   entryShares CircleEntryShare[]
 }
@@ -215,18 +135,6 @@ model CircleMembership {
   @@unique([circleId, userId])
   @@unique([circleId, externalId])
   @@index([externalId])
-}
-
-model CircleHabitShare {
-  id        String   @id @default(cuid())
-  circleId  String
-  habitId   String
-  createdAt DateTime @default(now())
-  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
-  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-
-  @@unique([circleId, habitId])
-  @@index([habitId])
 }
 
 model CircleToken {
