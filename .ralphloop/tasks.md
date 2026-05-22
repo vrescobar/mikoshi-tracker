@@ -238,7 +238,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `mikoshi_tracker_personal_token`, `anthropic_api_key`,
       `brave_search_api_key` (optional).
 
-- [ ] **55** Skill tests — in repo `mikoshi`, add
+- [x] **55** Skill tests — in repo `mikoshi`, add
       `skills/mikoshi-tracker-food/test/{tiers,payload-validation,
       confirm-flow}.test.ts` with mocks for Claude vision, Brave Search,
       and the MikoshiTracker API. Cover all six paths (tiers 0–4 +
