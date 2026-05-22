@@ -209,7 +209,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `EntryType` rows). Group operations into "Entries", "Events",
       "Aggregations", "EntryTypes" sections in `/api/docs`.
 
-- [ ] **52** E2E food flow — Playwright `tests/food-flow.spec.ts`:
+- [x] **52** E2E food flow — Playwright `tests/food-flow.spec.ts`:
       (1) sign up, (2) upload a base64 image via `/api/attachments/base64`,
       (3) POST a complete `food_meal` event referencing the attachment,
       (4) visit `/food` and see the timeline card, (5) edit kcal in
