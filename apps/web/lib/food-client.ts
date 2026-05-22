@@ -1,5 +1,6 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { AttachmentMetadata } from "@mikoshi-tracker/contracts/attachments";
+import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import type { EntryEventDetail, EntryEventRecord, EventMutationRecord } from "@mikoshi-tracker/contracts/events";
 
 import { createApiUrl } from "./api";
@@ -102,6 +103,44 @@ export async function undoFoodEvent(eventId: string) {
   const body = await requestJson<{ item: FoodEventDetail }>(`/api/events/${encodeURIComponent(eventId)}/undo`, {
     method: "POST",
   });
+  return body.item;
+}
+
+/**
+ * Returns the first active food_meal Entry for the current user, creating one
+ * if none exists yet. The created entry acts as the persistent "food log" that
+ * events are appended to.
+ */
+export async function ensureFoodEntry(): Promise<EntryRecord> {
+  const existing = await requestJson<{ items: EntryRecord[] }>("/api/entries?entryTypeSlug=food_meal&isActive=true");
+  if (existing.items.length > 0) {
+    return existing.items[0];
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const created = await requestJson<{ item: EntryRecord }>("/api/entries", {
+    method: "POST",
+    body: JSON.stringify({
+      entryTypeSlug: "food_meal",
+      name: "Food",
+      config: {},
+      startDate: today,
+    }),
+  });
+  return created.item;
+}
+
+export async function createFoodEvent(entryId: string, payload: FoodPayload, occurredAt?: string): Promise<EntryEventDetail> {
+  const body = await requestJson<{ item: EntryEventDetail }>(
+    `/api/entries/${encodeURIComponent(entryId)}/events`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        occurredAt: occurredAt ?? new Date().toISOString(),
+        payload,
+        source: "WEB",
+      }),
+    },
+  );
   return body.item;
 }
 

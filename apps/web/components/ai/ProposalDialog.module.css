@@ -1,0 +1,32 @@
+.form {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.macroGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.optionalRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .macroGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .optionalRow {
+    grid-template-columns: 1fr;
+  }
+}

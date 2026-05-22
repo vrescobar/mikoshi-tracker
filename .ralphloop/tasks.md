@@ -188,7 +188,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       Place alongside the existing habits summary. Empty state when no food
       events today.
 
-- [ ] **49** Web — `ProposalDialog` manual entry — create
+- [x] **49** Web — `ProposalDialog` manual entry — create
       `apps/web/components/ai/ProposalDialog.tsx` for the web's
       "+ Añadir comida" flow. V1 is **manual only**: user fills payload
       (name, kcal, macros), optionally uploads a photo via

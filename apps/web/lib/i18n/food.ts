@@ -105,6 +105,14 @@ export type FoodCopy = {
       };
     };
   };
+  dialog: {
+    title: string;
+    description: string;
+    submitLabel: string;
+    submittingLabel: string;
+    cancelLabel: string;
+    errorTitle: string;
+  };
   insights: {
     header: {
       eyebrow: string;
@@ -255,6 +263,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         },
       },
     },
+    dialog: {
+      title: "Add food",
+      description: "Record a meal manually. This adds it to your food log and updates today's nutrition totals.",
+      submitLabel: "Add",
+      submittingLabel: "Adding…",
+      cancelLabel: "Cancel",
+      errorTitle: "Could not add food",
+    },
     insights: {
       header: {
         eyebrow: "Nutrition insights",
@@ -401,6 +417,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
           CIRCLE: "圈子",
         },
       },
+    },
+    dialog: {
+      title: "添加食物",
+      description: "手动记录一餐。记录后将添加到你的饮食日志，并更新今日营养汇总。",
+      submitLabel: "添加",
+      submittingLabel: "添加中…",
+      cancelLabel: "取消",
+      errorTitle: "无法添加食物",
     },
     insights: {
       header: {
@@ -549,6 +573,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
           CIRCLE: "Círculo",
         },
       },
+    },
+    dialog: {
+      title: "Añadir comida",
+      description: "Registra una comida manualmente. Se añadirá a tu registro de comida y actualizará los totales nutricionales de hoy.",
+      submitLabel: "Añadir",
+      submittingLabel: "Añadiendo…",
+      cancelLabel: "Cancelar",
+      errorTitle: "No se pudo añadir la comida",
     },
     insights: {
       header: {

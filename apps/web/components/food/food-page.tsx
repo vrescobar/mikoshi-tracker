@@ -1,12 +1,13 @@
 "use client";
 
-import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
+import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { listFoodEvents } from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
+import { ProposalDialog } from "../ai/ProposalDialog";
 import { useLocale } from "../locale";
 import { Button, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
 import { DayTotalsStrip } from "./DayTotalsStrip";
@@ -28,6 +29,7 @@ export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
   const copy = getFoodCopy(locale);
   const [events, setEvents] = useState(initialEvents);
   const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const clientToday = todayDateKey();
@@ -62,7 +64,11 @@ export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
                   <Link href={routes.foodInsights} className={styles.insightsLink}>
                     Insights →
                   </Link>
-                  <Button type="button" size="lg" disabled title={copy.page.toolbar.addFoodComingSoon}>
+                  <Button
+                    type="button"
+                    size="lg"
+                    onClick={() => setDialogOpen(true)}
+                  >
                     {copy.page.toolbar.addFood}
                   </Button>
                 </div>
@@ -85,6 +91,14 @@ export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
       ) : (
         <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
       )}
+
+      <ProposalDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCreated={(event: EntryEventDetail) => {
+          setEvents((prev) => [...prev, event]);
+        }}
+      />
     </div>
   );
 }
