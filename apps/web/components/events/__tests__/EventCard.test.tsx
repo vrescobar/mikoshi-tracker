@@ -8,6 +8,8 @@ vi.mock("../../../lib/entries-client", () => ({
   restoreEntry: vi.fn(),
 }));
 
+vi.mock("../../locale", () => ({ useLocale: () => ({ locale: "en" }) }));
+
 function makeEntry(overrides: Partial<{ id: string; entryTypeSlug: string; isActive: boolean }> = {}) {
   return {
     id: overrides.id ?? "entry-1",

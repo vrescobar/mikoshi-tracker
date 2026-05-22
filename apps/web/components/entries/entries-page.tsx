@@ -4,7 +4,9 @@ import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import { useState } from "react";
 
 import { listEntries } from "../../lib/entries-client";
+import { getEntriesCopy } from "../../lib/i18n/entries";
 import { EventCard } from "../events/EventCard";
+import { useLocale } from "../locale";
 import { PageFrame, PageHeader, StatePanel, Surface } from "../ui";
 import styles from "./entries-page.module.css";
 
@@ -13,14 +15,9 @@ type EntriesPageProps = {
   entryTypeSlug?: string;
 };
 
-function resolveTitle(entryTypeSlug: string | undefined): string {
-  if (!entryTypeSlug) return "Entries";
-  if (entryTypeSlug.includes("habit")) return "Habits";
-  if (entryTypeSlug.includes("food")) return "Food";
-  return "Entries";
-}
-
 export function EntriesPage({ initialItems, entryTypeSlug }: EntriesPageProps) {
+  const { locale } = useLocale();
+  const copy = getEntriesCopy(locale);
   const [items, setItems] = useState(initialItems);
 
   async function handleRefresh() {
@@ -28,13 +25,22 @@ export function EntriesPage({ initialItems, entryTypeSlug }: EntriesPageProps) {
     setItems(nextItems);
   }
 
-  const title = resolveTitle(entryTypeSlug);
+  function resolveTitle(): string {
+    if (!entryTypeSlug) return copy.page.titles.entries;
+    if (entryTypeSlug.includes("habit")) return copy.page.titles.habits;
+    if (entryTypeSlug.includes("food")) return copy.page.titles.food;
+    return copy.page.titles.entries;
+  }
 
   return (
     <div className={styles.stack} data-testid="entries-page">
       <Surface variant="hero">
         <PageFrame>
-          <PageHeader eyebrow="Entries" title={title} description="Review and manage your entries." />
+          <PageHeader
+            eyebrow={copy.page.header.eyebrow}
+            title={resolveTitle()}
+            description={copy.page.header.description}
+          />
         </PageFrame>
       </Surface>
 
@@ -42,7 +48,7 @@ export function EntriesPage({ initialItems, entryTypeSlug }: EntriesPageProps) {
         {items.length > 0 ? (
           items.map((entry) => <EventCard key={entry.id} entry={entry} onRefresh={() => void handleRefresh()} />)
         ) : (
-          <StatePanel title="No entries" description="No entries match the current filters." />
+          <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
         )}
       </div>
     </div>

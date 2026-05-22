@@ -196,7 +196,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `/api/entries/:id/events` with `source: "manual"`. AI assistance from
       the web remains out of scope for V1; WhatsApp is the AI-driven path.
 
-- [ ] **50** i18n — add EN/ZH/ES translations for every new string
+- [x] **50** i18n — add EN/ZH/ES translations for every new string
       introduced by tasks 36–49 to `apps/web/messages/{en,zh,es}.json`.
       Verify locale switching covers all new screens. The trilingual
       contract from §C13 extends here unchanged: no untranslated strings
