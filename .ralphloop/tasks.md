@@ -217,7 +217,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       heatmap, (7) delete the event, (8) confirm the audit trail shows
       `CREATE → UPDATE → DELETE`.
 
-- [ ] **53** E2E habit regression — Playwright
+- [x] **53** E2E habit regression — Playwright
       `tests/regressions/habit-flow.spec.ts` covering the historical flow
       (sign up, create habit, today check-in, undo, view stats overview).
       Must pass against the post-refactor engine via the legacy aliases
