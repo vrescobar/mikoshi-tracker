@@ -260,7 +260,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `docs/architecture/performance.md`. If queries are already fast
       enough, document that finding and skip the column.
 
-- [ ] **58** Tracker acceptance + halt — run the full verification matrix:
+- [x] **58** Tracker acceptance + halt — run the full verification matrix:
       `pnpm prisma migrate deploy && pnpm -r build && pnpm -r lint &&
       pnpm --filter @mikoshi-tracker/api test && pnpm --filter
       @mikoshi-tracker/contracts test && pnpm --filter @mikoshi-tracker/mcp

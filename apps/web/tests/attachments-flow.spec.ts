@@ -35,6 +35,10 @@ test("upload a base64 attachment and see it in the habit detail gallery", async 
 
   await signUpThroughApi(request, context, email, "Attachment Test User");
 
+  // Land on an app-origin page before any in-page fetch — about:blank cannot
+  // issue the credentialed cross-origin request to the API.
+  await page.goto("/dashboard");
+
   // Create a habit via the API (session cookie is now in the browser context).
   const habitId = await page.evaluate(async () => {
     const res = await fetch("http://127.0.0.1:3001/api/habits", {
@@ -92,9 +96,26 @@ test("upload a base64 attachment and see it in the habit detail gallery", async 
 
   expect(attachmentId).toBeTruthy();
 
-  // Open the habit detail page and verify the gallery renders the attachment.
-  await page.goto(`/habits/${habitId}`);
-  await expect(page.getByTestId("habit-detail-overlay")).toBeVisible();
-  await expect(page.getByTestId("habit-attachments-gallery")).toBeVisible();
-  await expect(page.getByTestId("habit-attachment-tile")).toBeVisible();
+  // Phase 12 removed the standalone habit-detail attachment gallery (the habit
+  // detail page now redirects to the entries list, and rich attachment galleries
+  // live on the food-event detail surface). Verify the attachment machinery
+  // end-to-end through its still-supported API contract instead: the attachment
+  // is listed against its mutation, and its binary is served.
+  const listed = await page.evaluate(async (mId: string) => {
+    const res = await fetch(`http://127.0.0.1:3001/api/attachments?mutationId=${mId}`, {
+      credentials: "include",
+    });
+    if (!res.ok) throw new Error(`List attachments failed: ${await res.text()}`);
+    return (await res.json()) as { attachments: Array<{ id: string; url: string }> };
+  }, mutationId as string);
+
+  expect(listed.attachments.map((a) => a.id)).toContain(attachmentId);
+  const fileUrl = listed.attachments.find((a) => a.id === attachmentId)?.url;
+  expect(fileUrl).toBeTruthy();
+
+  const fileStatus = await page.evaluate(async (url: string) => {
+    const res = await fetch(`http://127.0.0.1:3001${url}`, { credentials: "include" });
+    return res.status;
+  }, fileUrl as string);
+  expect(fileStatus).toBe(200);
 });

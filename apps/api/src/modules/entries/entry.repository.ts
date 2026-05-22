@@ -42,7 +42,13 @@ function buildEntryWhere(params: {
   }
 
   if (params.filters?.entryTypeSlug) {
-    where.entryType = { slug: params.filters.entryTypeSlug };
+    // Accept a comma-separated list of slugs (e.g. the habits surface requests
+    // `habit_boolean,habit_quantity`) as well as a single slug.
+    const slugs = params.filters.entryTypeSlug
+      .split(",")
+      .map((slug) => slug.trim())
+      .filter((slug) => slug.length > 0);
+    where.entryType = slugs.length > 1 ? { slug: { in: slugs } } : { slug: slugs[0] ?? params.filters.entryTypeSlug };
   }
 
   if (params.filters?.isActive !== undefined) {

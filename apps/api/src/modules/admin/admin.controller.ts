@@ -116,11 +116,10 @@ export async function resetProvisionedTokenHandler(request: FastifyRequest, repl
     });
 
     if (!user) {
-      reply.status(404).send({
+      return await reply.status(404).send({
         code: "NOT_FOUND",
         message: "No provisioned user found with that externalId",
       });
-      return reply;
     }
 
     const { token } = await resetPersonalApiToken(request.server.db, user.id);
@@ -145,17 +144,15 @@ export async function enrollMemberByExternalIdHandler(
       select: { id: true },
     });
     if (!circle) {
-      reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
-      return reply;
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
 
     const user = await findUserByExternalId(request.server.db, input.externalId);
     if (!user) {
-      reply.status(404).send({
+      return await reply.status(404).send({
         code: "NOT_FOUND",
         message: "No provisioned user found with that externalId",
       });
-      return reply;
     }
 
     const existing = await findCircleMembershipByUserId(request.server.db, {

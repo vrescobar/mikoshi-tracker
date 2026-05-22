@@ -35,7 +35,7 @@ export function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[]
   const counts = new Map<string, { count: number; lastDate: string; display: string }>();
   for (const ev of events) {
     if (!isFoodPayload(ev.payload)) continue;
-    const p = ev.payload as FoodPayload;
+    const p = ev.payload;
     const key = normalizeName(p.name);
     const existing = counts.get(key);
     const date = ev.dateKey;
@@ -101,7 +101,7 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
   const repeatedMeals = computeRepeatedMeals(events);
   const missingDays = aggregations ? getMissingDays(aggregations.buckets) : [];
 
-  const totalKcal = aggregations?.total.sum["kcal"] ?? 0;
+  const totalKcal = aggregations?.total.sum.kcal ?? 0;
   const totalCount = aggregations?.total.count ?? 0;
   const daysLogged = aggregations ? aggregations.buckets.filter((b) => !b.missing && b.count > 0).length : 0;
   const avgKcal = daysLogged > 0 ? totalKcal / daysLogged : 0;

@@ -22,7 +22,10 @@ export function getPrimaryAppNavigation(labels: { dashboard: string; habits: str
       label: labels.dashboard,
     },
     {
-      href: routes.habits,
+      // Point straight at the entries destination rather than /habits (which
+      // server-redirects here). A direct client navigation keeps focus and
+      // active-state stable on the primary nav.
+      href: routes.habitEntries,
       label: labels.habits,
     },
     {

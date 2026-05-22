@@ -33,26 +33,29 @@ test.describe("locale switching", () => {
     const email = `locale-shell-${Date.now()}@example.com`;
     await signUpThroughApi(request, context, email, "Locale Shell User");
 
-    await page.goto("/habits");
-    await expect(page).toHaveURL(/\/habits$/);
+    // Phase 12 turned every /habits* route into a server redirect to /entries,
+    // so it is no longer a stable route to assert against. Use the dashboard —
+    // the canonical protected route with an always-active primary nav link.
+    await page.goto("/dashboard");
+    await expect(page).toHaveURL(/\/dashboard$/);
 
     const switchButton = page.getByTestId("locale-switch-button");
     await expect(switchButton).toBeVisible();
     await switchButton.focus();
     await switchButton.press("Enter");
 
-    await expect(page).toHaveURL(/\/habits$/);
+    await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
     await expect(switchButton).toBeFocused();
-    await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "习惯" })).toHaveAttribute(
+    await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "今天" })).toHaveAttribute(
       "aria-current",
       "page",
     );
     await expect(page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" })).toBeVisible();
 
     await page.reload();
-    await expect(page).toHaveURL(/\/habits$/);
-    await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "习惯" })).toHaveAttribute(
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "今天" })).toHaveAttribute(
       "aria-current",
       "page",
     );

@@ -20,7 +20,7 @@ test("protected shell shows utility access and active desktop navigation", async
   const habitsLink = primaryNav.getByRole("link", { name: "Habits" });
   await habitsLink.focus();
   await habitsLink.press("Enter");
-  await expect(page).toHaveURL(/\/habits$/);
+  await expect(page).toHaveURL(/\/entries/);
   await expect(primaryNav.getByRole("link", { name: "Habits" })).toBeFocused();
   await expect(primaryNav.getByRole("link", { name: "Habits" })).toHaveAttribute("aria-current", "page");
 
@@ -53,7 +53,7 @@ test.describe("mobile shell", () => {
     const mobileHabitsLink = mobileNav.getByRole("link", { name: "习惯" });
     await mobileHabitsLink.focus();
     await mobileHabitsLink.press("Enter");
-    await expect(page).toHaveURL(/\/habits$/);
+    await expect(page).toHaveURL(/\/entries/);
     await expect(mobileHabitsLink.locator("span").last()).toBeVisible();
     await expect(mobileHabitsLink.locator("span").last()).toHaveText("习惯");
     await expect(mobileNav.getByRole("link", { name: "习惯" })).toBeFocused();

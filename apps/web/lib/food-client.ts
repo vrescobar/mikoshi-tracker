@@ -63,7 +63,7 @@ export type FoodEventDetail = EntryEventDetail & {
 export function isFoodPayload(value: unknown): value is FoodPayload {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
-  return typeof v["name"] === "string" && typeof v["kcal"] === "number";
+  return typeof v.name === "string" && typeof v.kcal === "number";
 }
 
 export async function listFoodEvents(from: string, to: string) {

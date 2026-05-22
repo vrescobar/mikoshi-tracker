@@ -41,11 +41,10 @@ test("dashboard keeps no-habits guidance in place instead of redirecting away", 
 
   await signUpInBrowser(page, email, "No Habits User");
 
-  await expect(page).toHaveURL(/\/habits\/new$/);
-
-  await page.goto("/dashboard");
-
+  // Phase 12 removed the dedicated onboarding form; a brand-new user now lands
+  // on the dashboard, which keeps its own no-habits guidance.
   await expect(page).toHaveURL(/\/dashboard$/);
+
   await expect(page.getByText("No habits yet")).toBeVisible();
   await expect(page.getByRole("button", { name: "Create first habit" })).toBeVisible();
 });

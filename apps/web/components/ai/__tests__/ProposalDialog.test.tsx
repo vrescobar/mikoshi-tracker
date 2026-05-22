@@ -1,3 +1,5 @@
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -49,19 +51,20 @@ vi.mock("../../../lib/food-client", () => ({
   ensureFoodEntry: vi.fn(),
 }));
 vi.mock("../../ui", () => ({
-  Button: ({ children, ...rest }: any) => <button {...rest}>{children}</button>,
-  Field: ({ children }: any) => <div>{children}</div>,
-  Input: (props: any) => <input {...props} />,
-  Notice: ({ children, title }: any) => (
+  Button: ({ children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{children}</button>,
+  Field: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Input: (props: InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
+  Notice: ({ children, title }: { children?: ReactNode; title?: string }) => (
     <div role="alert">
       <strong>{title}</strong>
       {children}
     </div>
   ),
-  OverlayPanel: ({ open, children }: any) => (open ? <div>{children}</div> : null),
-  Select: ({ children, ...rest }: any) => <select {...rest}>{children}</select>,
+  OverlayPanel: ({ open, children }: { open?: boolean; children?: ReactNode }) => (open ? <div>{children}</div> : null),
+  Select: ({ children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) => <select {...rest}>{children}</select>,
 }));
 
+import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import type { EntryEventDetail } from "@mikoshi-tracker/contracts/events";
 import { createFoodEvent, ensureFoodEntry } from "../../../lib/food-client";
 import { ProposalDialog } from "../ProposalDialog";
@@ -127,7 +130,7 @@ describe("ProposalDialog — error handling", () => {
 
 describe("ProposalDialog — valid submit", () => {
   it("calls ensureFoodEntry then createFoodEvent with source=manual confidence=1.0, empty mealSlot/fiber_g as null, then calls onCreated and closes", async () => {
-    vi.mocked(ensureFoodEntry).mockResolvedValue(mockEntry as any);
+    vi.mocked(ensureFoodEntry).mockResolvedValue(mockEntry as unknown as EntryRecord);
     vi.mocked(createFoodEvent).mockResolvedValue(mockEvent);
 
     const { onOpenChange, onCreated } = renderDialog();

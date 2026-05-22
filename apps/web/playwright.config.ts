@@ -4,9 +4,15 @@ export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
   workers: 1,
-  timeout: 30_000,
+  timeout: 60_000,
   use: {
     baseURL: "http://127.0.0.1:3000",
+    launchOptions: {
+      // Jetson/ARM host: the Chromium zygote cannot fork renderer processes in
+      // this environment, so `newPage()` hangs indefinitely and every test dies
+      // in browser setup. Spawning renderers directly (no zygote) fixes it.
+      args: ["--no-zygote"],
+    },
   },
   webServer: [
     {
@@ -25,13 +31,18 @@ export default defineConfig({
       },
     },
     {
-      command: "pnpm --filter @mikoshi-tracker/web exec next dev --hostname 127.0.0.1 --port 3000",
+      command:
+        "pnpm --filter @mikoshi-tracker/web build && cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static && node apps/web/.next/standalone/apps/web/server.js",
       cwd: "../..",
       port: 3000,
+      timeout: 300_000,
       reuseExistingServer: false,
       env: {
         NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3001",
         API_BASE_URL: "http://127.0.0.1:3001",
+        API_INTERNAL_BASE_URL: "http://127.0.0.1:3001",
+        HOSTNAME: "127.0.0.1",
+        PORT: "3000",
       },
     },
   ],

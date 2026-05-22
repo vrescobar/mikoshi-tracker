@@ -25,7 +25,7 @@ function computeTotals(events: EntryEventRecord[]): Totals {
   const totals: Totals = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0, fiber_g: 0, count: 0 };
   for (const ev of events) {
     if (!isFoodPayload(ev.payload)) continue;
-    const p = ev.payload as FoodPayload;
+    const p = ev.payload;
     totals.kcal += p.kcal;
     totals.protein_g += p.protein_g;
     totals.carbs_g += p.carbs_g;

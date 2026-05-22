@@ -83,5 +83,5 @@ export async function queryAggregationRows(
   const args: unknown[] = [userId, entryTypeSlug, from, to];
   if (entryId) args.push(entryId);
 
-  return db.$queryRawUnsafe(sql, ...args) as Promise<RawAggregationRow[]>;
+  return db.$queryRawUnsafe<RawAggregationRow[]>(sql, ...args);
 }

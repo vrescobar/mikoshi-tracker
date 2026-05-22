@@ -128,37 +128,37 @@ For a broader explanation of workspace skills vs MCP transport and host-specific
 
 All tools use the authenticated MikoshiTracker API behind the scenes and return structured data that matches the existing contracts.
 
-| Tool                 | Route                           | Description                                                                                                                              |
-| -------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `habits_list`        | `GET /habits`                   | List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status.        |
-| `habits_add`         | `POST /habits`                  | Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category.                       |
-| `habits_get_detail`  | `GET /habits/:habitId`          | Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit. |
-| `habits_edit`        | `PATCH /habits/:habitId`        | Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it.               |
-| `habits_archive`     | `POST /habits/:habitId/archive` | Archive a habit only when the user explicitly wants to shelve it without losing history.                                                 |
-| `habits_restore`     | `POST /habits/:habitId/restore` | Restore an archived habit only when the user explicitly wants it active again.                                                           |
-| `today_get_summary`  | `GET /today`                    | Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete.               |
-| `today_complete`     | `POST /today/complete`          | Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item.                              |
-| `today_set_total`    | `POST /today/set-total`         | Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today.              |
-| `today_undo`         | `POST /today/undo`              | Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action.                       |
-| `stats_get_overview` | `GET /stats/overview`           | Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot.                        |
-| `attachment_upload`  | `POST /attachments/base64`      | Attach an image to a check-in entry when the user shares a photo for a habit (a meal photo, proof a chore is done, etc.). Pass the mutationId returned by a today_* action and the image as base64.                       |
-| `attachment_list`    | `GET /attachments`              | List the image attachments of a check-in entry (mutationId) or of an entire habit (habitId), returning each attachment id and its metadata.              |
-| `attachment_get`     | `GET /attachments/:id/file`     | Fetch a stored attachment image by id and return it as an image so you can see and reason about the photo (e.g. estimate calories from a meal photo).    |
-| `entry_types_list`   | `GET /entry-types`              | List all active entry types (habit_boolean, habit_quantity, food_meal, and any custom types) with their schemas and cadence. |
-| `entry_types_get`    | `GET /entry-types/:slug`        | Read one entry type's full schema, configuration descriptor, and aggregation spec by its slug. |
-| `entries_list`       | `GET /entries`                  | List the user's entries filtered by entry type, active status, or name query. |
-| `entries_create`     | `POST /entries`                 | Create a new entry for a given entry type, with config validated against the type's configSchema. |
-| `entries_get`        | `GET /entries/:id`              | Read one entry's full configuration and metadata by its id. |
-| `entries_update`     | `PATCH /entries/:id`            | Update an entry's name, description, category, or config. |
-| `entries_archive`    | `POST /entries/:id/archive`     | Archive an entry, making it read-only and hiding it from active lists. |
-| `entries_restore`    | `POST /entries/:id/restore`     | Restore an archived entry, making it active again. |
-| `entries_add_event`  | `POST /entries/:id/events`      | Record a new event for an entry, with payload validated against the entry type's payloadSchema. |
-| `events_list`        | `GET /events`                   | List events for a user's entries, with optional filters for entry, type, date range, and pagination. |
-| `events_get`         | `GET /events/:eventId`          | Read one event's full payload, mutations, and attachments by its id. |
-| `events_update`      | `PATCH /events/:eventId`        | Partially update an event's payload or note, creating an UPDATE mutation in the audit trail. |
-| `events_delete`      | `DELETE /events/:eventId`       | Soft-delete an event by recording a DELETE mutation; the event remains in the audit trail. |
-| `events_undo`        | `POST /events/:eventId/undo`    | Revert the last non-UNDO mutation on an event by replaying the audit trail. |
-| `aggregations_query` | `GET /aggregations`             | Run a declarative aggregation over entry events, supporting sum, count, completion-rate, streak, and missing-days broken down by day, week, month, or total. |
+| Tool | Route | Description |
+| --- | --- | --- |
+| `habits_list` | `GET /habits` | List the user's habits so you can identify a target before editing, archiving, or summarizing by name, category, kind, or status. |
+| `habits_add` | `POST /habits` | Create a new habit definition when the user explicitly wants to add a habit, recurrence rule, target, or category. |
+| `habits_get_detail` | `GET /habits/:habitId` | Read one habit's full configuration, stats, and history before non-trivial edits or when the user asks for deep detail about that habit. |
+| `habits_edit` | `PATCH /habits/:habitId` | Change an existing habit's settings after you have identified the correct habit and confirmed the user wants to modify it. |
+| `habits_archive` | `POST /habits/:habitId/archive` | Archive a habit only when the user explicitly wants to shelve it without losing history. |
+| `habits_restore` | `POST /habits/:habitId/restore` | Restore an archived habit only when the user explicitly wants it active again. |
+| `today_get_summary` | `GET /today` | Read today's canonical checklist first when the user asks what is due, what remains, or whether today is already complete. |
+| `today_complete` | `POST /today/complete` | Mark a boolean habit complete for today only when the user clearly asks to check off a specific today item. |
+| `today_set_total` | `POST /today/set-total` | Set today's numeric progress for a quantified habit when the user gives a concrete amount, total, or measurement for today. |
+| `today_undo` | `POST /today/undo` | Undo today's latest mutation only when the user explicitly asks to revert or correct the most recent today action. |
+| `stats_get_overview` | `GET /stats/overview` | Read high-level analytics when the user wants a progress review, trend summary, or overall habit health snapshot. |
+| `attachment_upload` | `POST /attachments/base64` | Attach an image to a check-in entry when the user shares a photo for a habit (a meal photo, proof a chore is done, etc.). Pass the mutationId returned by a today_* action and the image as base64. |
+| `attachment_list` | `GET /attachments` | List the image attachments of a check-in entry (mutationId) or of an entire habit (habitId), returning each attachment id and its metadata. |
+| `attachment_get` | `GET /attachments/:id/file` | Fetch a stored attachment image by id and return it as an image so you can see and reason about the photo (e.g. estimate calories from a meal photo). |
+| `entry_types_list` | `GET /entry-types` | List all active entry types (habit_boolean, habit_quantity, food_meal, and any custom types) with their schemas and cadence. |
+| `entry_types_get` | `GET /entry-types/:slug` | Read one entry type's full schema, configuration descriptor, and aggregation spec by its slug. |
+| `entries_list` | `GET /entries` | List the user's entries filtered by entry type, active status, or name query. |
+| `entries_create` | `POST /entries` | Create a new entry for a given entry type, with config validated against the type's configSchema. |
+| `entries_get` | `GET /entries/:id` | Read one entry's full configuration and metadata by its id. |
+| `entries_update` | `PATCH /entries/:id` | Update an entry's name, description, category, or config. |
+| `entries_archive` | `POST /entries/:id/archive` | Archive an entry, making it read-only and hiding it from active lists. |
+| `entries_restore` | `POST /entries/:id/restore` | Restore an archived entry, making it active again. |
+| `entries_add_event` | `POST /entries/:id/events` | Record a new event for an entry, with payload validated against the entry type's payloadSchema. |
+| `events_list` | `GET /events` | List events for a user's entries, with optional filters for entry, type, date range, and pagination. |
+| `events_get` | `GET /events/:eventId` | Read one event's full payload, mutations, and attachments by its id. |
+| `events_update` | `PATCH /events/:eventId` | Partially update an event's payload or note, creating an UPDATE mutation in the audit trail. |
+| `events_delete` | `DELETE /events/:eventId` | Soft-delete an event by recording a DELETE mutation; the event remains in the audit trail. |
+| `events_undo` | `POST /events/:eventId/undo` | Revert the last non-UNDO mutation on an event by replaying the audit trail. |
+| `aggregations_query` | `GET /aggregations` | Run a declarative aggregation over entry events, supporting sum, count, completion-rate, streak, and missing-days broken down by day, week, month, or total. |
 
 ## AI Guidance
 

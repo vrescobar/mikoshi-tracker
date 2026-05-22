@@ -46,6 +46,10 @@ test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
   // (1) Sign up.
   await signUpThroughApi(request, context, email, "Food Flow Test User");
 
+  // Land on an app-origin page before any in-page fetch — about:blank cannot
+  // issue the credentialed cross-origin request to the API.
+  await page.goto("/dashboard");
+
   // The base64 upload endpoint requires a CheckInMutation id (legacy habits system).
   // Create a habit and complete it to obtain one.
   const mutationId = await page.evaluate(async () => {

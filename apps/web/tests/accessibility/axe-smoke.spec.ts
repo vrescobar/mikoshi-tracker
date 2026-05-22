@@ -34,8 +34,9 @@ test("protected shell surfaces stay free of serious or critical accessibility vi
   await expect(page.getByTestId("app-shell")).toBeVisible();
   await expectNoSeriousOrCriticalViolations(page);
 
+  // /habits redirects to the generic entries list post-Phase-12.
   await page.goto("/habits");
-  await expect(page.getByTestId("habits-page")).toBeVisible();
+  await expect(page.getByTestId("entries-page")).toBeVisible();
   await expectNoSeriousOrCriticalViolations(page);
 
   const apiEmail = `axe-token-${Date.now()}@example.com`;

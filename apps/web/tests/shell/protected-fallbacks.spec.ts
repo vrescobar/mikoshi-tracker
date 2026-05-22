@@ -9,5 +9,6 @@ test("dashboard route loading stays inside the protected shell", async ({ page }
 
   await expect(page.getByTestId("app-shell")).toBeVisible();
   await expect(page.getByTestId("app-shell-primary-nav")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
+  // `exact` avoids matching the Phase-12 "Food today" panel heading.
+  await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
 });

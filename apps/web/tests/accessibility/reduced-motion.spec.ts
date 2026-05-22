@@ -16,7 +16,9 @@ function parseDurationSeconds(raw: string) {
   return Number.NaN;
 }
 
-test("reduced-motion mode flattens overlay and shell transition timing", async ({ page }) => {
+test("reduced-motion mode flattens shell transition timing", async ({ page }) => {
+  // Phase 12 removed the habit edit overlay, so this spec no longer asserts the
+  // overlay animation; the shell/nav transition flattening is still validated.
   const email = `reduced-motion-${Date.now()}@example.com`;
 
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -27,16 +29,6 @@ test("reduced-motion mode flattens overlay and shell transition timing", async (
   const habitsLink = page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "习惯" });
   const navTransitionDuration = await habitsLink.evaluate((node) => getComputedStyle(node).transitionDuration);
   expect(parseDurationSeconds(navTransitionDuration)).toBeLessThanOrEqual(0.00001);
-
-  await habitsLink.click();
-  const editButton = page.locator("article").filter({ hasText: "Morning walk" }).getByRole("button", { name: "编辑" });
-  await editButton.click();
-
-  const overlay = page.getByTestId("habit-form-overlay");
-  await expect(overlay).toBeVisible();
-
-  const overlayAnimationDuration = await overlay.evaluate((node) => getComputedStyle(node).animationDuration);
-  expect(parseDurationSeconds(overlayAnimationDuration)).toBeLessThanOrEqual(0.00001);
 });
 
 test("reduced-motion mode flattens dashboard charts and inline feedback motion", async ({ page, request, context }) => {

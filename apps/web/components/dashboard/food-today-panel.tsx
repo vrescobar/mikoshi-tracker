@@ -32,19 +32,19 @@ export function FoodTodayPanel({ aggregations }: { aggregations: AggregationResp
         <div className={styles.metrics}>
           <div className={styles.metricCard} data-highlight="true">
             <span className={styles.metricLabel}>{c.metrics.kcal}</span>
-            <strong className={styles.metricValue}>{Math.round(total.sum["kcal"] ?? 0)}</strong>
+            <strong className={styles.metricValue}>{Math.round(total.sum.kcal ?? 0)}</strong>
           </div>
           <div className={styles.metricCard}>
             <span className={styles.metricLabel}>{c.metrics.protein}</span>
-            <strong className={styles.metricValue}>{((total.sum["protein_g"] ?? 0) as number).toFixed(1)}g</strong>
+            <strong className={styles.metricValue}>{(total.sum.protein_g ?? 0).toFixed(1)}g</strong>
           </div>
           <div className={styles.metricCard}>
             <span className={styles.metricLabel}>{c.metrics.carbs}</span>
-            <strong className={styles.metricValue}>{((total.sum["carbs_g"] ?? 0) as number).toFixed(1)}g</strong>
+            <strong className={styles.metricValue}>{(total.sum.carbs_g ?? 0).toFixed(1)}g</strong>
           </div>
           <div className={styles.metricCard}>
             <span className={styles.metricLabel}>{c.metrics.fat}</span>
-            <strong className={styles.metricValue}>{((total.sum["fat_g"] ?? 0) as number).toFixed(1)}g</strong>
+            <strong className={styles.metricValue}>{(total.sum.fat_g ?? 0).toFixed(1)}g</strong>
           </div>
           <div className={styles.metricCard}>
             <span className={styles.metricLabel}>{c.metrics.meals}</span>

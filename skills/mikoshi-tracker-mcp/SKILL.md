@@ -1,6 +1,7 @@
 ---
 name: mikoshi-tracker-mcp
 description: MikoshiTracker MCP skill for choosing the correct tool and payload with minimal ambiguity.
+primaryEnv: MIKOSHI_TRACKER_API_TOKEN
 ---
 
 # MikoshiTracker MCP

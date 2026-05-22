@@ -23,7 +23,7 @@ export function jsonSchemaToZod(schema: unknown): z.ZodType {
   if (typeof schema !== "object" || schema === null || Array.isArray(schema)) {
     throw new Error("JSON Schema root must be a plain object");
   }
-  return compileNode(schema as JsonSchemaNode);
+  return compileNode(schema);
 }
 
 function compileNode(node: JsonSchemaNode): z.ZodType {

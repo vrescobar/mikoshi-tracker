@@ -43,6 +43,11 @@ test("habit regression: sign up, create habit, complete, undo, view stats overvi
   // (1) Sign up.
   await signUpThroughApi(request, context, email, "Habit Regression User");
 
+  // Land on an app-origin page before any in-page fetch — `page.evaluate`'s
+  // fetch is subject to the document origin, and about:blank cannot issue the
+  // credentialed cross-origin request to the API.
+  await page.goto("/dashboard");
+
   // (2) Create a boolean habit via the legacy /api/habits endpoint.
   //     startDate is yesterday so the habit is already due today.
   const habitId = await page.evaluate(

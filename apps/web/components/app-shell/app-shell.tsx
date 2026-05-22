@@ -115,9 +115,13 @@ export function AppShell({ userEmail, children }: AppShellProps) {
 }
 
 function isRouteActive(pathname: string, href: string) {
-  if (href === routes.dashboard) {
+  // Nav hrefs may carry a query (e.g. the habits link targets
+  // `/entries?entryTypeSlug=...`); match on the path portion only.
+  const target = href.split("?")[0];
+
+  if (target === routes.dashboard) {
     return pathname === routes.dashboard;
   }
 
-  return pathname === href || pathname.startsWith(`${href}/`);
+  return pathname === target || pathname.startsWith(`${target}/`);
 }

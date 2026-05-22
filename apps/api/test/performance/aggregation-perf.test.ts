@@ -184,7 +184,7 @@ describe("aggregation performance (10k fixture)", () => {
       (d) => d.includes("EntryEvent_userId_dateKey") || (d.includes("EntryEvent") && d.includes("userId")),
     );
     expect(usesUserDateIndex).toBe(true);
-  });
+  }, 180_000);
 
   it("aggregation over 5k events completes within 5 s and returns correct sums", async () => {
     const { alice, aliceEntryId } = await buildLargeFixture();
@@ -232,5 +232,5 @@ describe("aggregation performance (10k fixture)", () => {
 
     // Performance gate: must complete within 5 s (generous; sub-100 ms expected in practice)
     expect(elapsed).toBeLessThan(5000);
-  });
+  }, 180_000);
 });

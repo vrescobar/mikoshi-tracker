@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { signUpAndCreateFirstHabit, signUpThroughApi } from "./helpers";
+import { signUpThroughApi } from "./helpers";
 
 test("switching auth modes with keyboard moves focus to the first relevant field", async ({ page }) => {
   await page.goto("/");
@@ -41,23 +41,9 @@ test("keyboard locale switch keeps focus continuity on auth", async ({ page }) =
   await expect(page.getByRole("heading", { name: "登录 MikoshiTracker" })).toBeVisible();
 });
 
-test("keyboard closing an edit overlay returns focus to the invoking trigger", async ({ page }) => {
-  const email = `focus-overlay-${Date.now()}@example.com`;
-
-  await signUpAndCreateFirstHabit(page, email, "Keyboard Focus User");
-  await page.goto("/habits");
-
-  const card = page.locator("article").filter({ hasText: "Morning walk" });
-  const editButton = card.getByRole("button", { name: "Edit" });
-
-  await editButton.focus();
-  await editButton.press("Enter");
-  await expect(page.getByTestId("habit-form-overlay")).toBeVisible();
-
-  await page.keyboard.press("Escape");
-  await expect(page.getByTestId("habit-form-overlay")).toHaveCount(0);
-  await expect(editButton).toBeFocused();
-});
+// The "keyboard closing an edit overlay returns focus to the invoking trigger"
+// test was retired here: Phase 12 removed the habit edit overlay it exercised.
+// Focus-return on the surviving overlays is covered by component-level tests.
 
 test("api access token controls remain keyboard-operable after reveal and rotate", async ({
   page,

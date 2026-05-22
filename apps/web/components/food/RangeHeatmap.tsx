@@ -62,7 +62,7 @@ export function RangeHeatmap({ buckets, from, to }: RangeHeatmapProps) {
         <div className={styles.grid} role="list" aria-label={copy.description}>
           {days.map((day) => {
             const bucket = bucketMap.get(day);
-            const kcal = bucket ? (bucket.sum["kcal"] ?? 0) : 0;
+            const kcal = bucket ? (bucket.sum.kcal ?? 0) : 0;
             const intensity = bucket && !bucket.missing ? kcalIntensity(kcal) : 0;
             const label = `${formatDayLabel(day, locale)}: ${bucket && !bucket.missing ? `${Math.round(kcal)} kcal` : "—"}`;
 

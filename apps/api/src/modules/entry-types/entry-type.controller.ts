@@ -55,9 +55,8 @@ export async function getEntryTypeHandler(request: FastifyRequest, reply: Fastif
     await requireAuthenticatedUser(request);
     const { slug } = request.params as { slug: string };
     const entryType = await request.server.db.entryType.findUnique({ where: { slug } });
-    if (!entryType || !entryType.isActive) {
-      reply.status(404).send({ code: "NOT_FOUND", message: "Entry type not found" });
-      return reply;
+    if (!entryType?.isActive) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Entry type not found" });
     }
     return { item: serializeEntryType(entryType) };
   } catch (error) {

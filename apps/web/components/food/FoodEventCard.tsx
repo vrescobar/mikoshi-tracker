@@ -35,7 +35,7 @@ export function FoodEventCard({ event }: FoodEventCardProps) {
   if (!payload) {
     return (
       <article className={styles.card} data-testid="food-event-card">
-        <span className={styles.name}>{String((event.payload as Record<string, unknown>)?.["name"] ?? "—")}</span>
+        <span className={styles.name}>{String((event.payload as Record<string, unknown>)?.name ?? "—")}</span>
       </article>
     );
   }

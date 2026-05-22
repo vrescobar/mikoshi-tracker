@@ -277,4 +277,34 @@ describe("entries CRUD", () => {
     const walkItems = (queryWalk.json() as { items: Array<{ id: string }> }).items;
     expect(walkItems.map((item) => item.id)).toEqual([firstId]);
   });
+
+  it("filters entries by a comma-separated list of entry type slugs", async () => {
+    const { cookie } = await signUp(context!.app);
+
+    const create = async (entryTypeSlug: string, name: string, config: Record<string, unknown>) => {
+      const response = await context!.app.inject({
+        method: "POST",
+        url: "/api/entries",
+        headers: { cookie },
+        payload: { entryTypeSlug, name, config },
+      });
+      expect(response.statusCode).toBe(201);
+    };
+
+    await create("habit_boolean", "Walk", { frequencyType: "DAILY" });
+    await create("habit_quantity", "Read", { frequencyType: "DAILY", targetValue: 10, unit: "pages" });
+    await create("food_meal", "Lunch", {});
+
+    // The habits surface requests both habit slugs at once.
+    const habitsOnly = await context!.app.inject({
+      method: "GET",
+      url: "/api/entries?entryTypeSlug=habit_boolean,habit_quantity",
+      headers: { cookie },
+    });
+    expect(habitsOnly.statusCode).toBe(200);
+    const habitNames = (habitsOnly.json() as { items: Array<{ name: string }> }).items
+      .map((item) => item.name)
+      .sort();
+    expect(habitNames).toEqual(["Read", "Walk"]);
+  });
 });

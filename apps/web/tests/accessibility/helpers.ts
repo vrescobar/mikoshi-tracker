@@ -32,7 +32,7 @@ export async function signUpInBrowser(page: Page, email: string, name = "Accessi
   );
 
   expect(result.user.id).toBeTruthy();
-  await page.goto("/habits/new");
+  await page.goto("/dashboard");
 }
 
 export async function createFirstHabit(
@@ -42,14 +42,33 @@ export async function createFirstHabit(
     startDate?: string;
   } = {},
 ) {
-  await page.goto("/habits/new");
-  await page.getByLabel("Habit name").fill(input.name ?? "Morning walk");
+  // Phase 12 removed the standalone `/habits/new` creation form (it now
+  // redirects to `/entries`). Create the habit through the still-supported
+  // legacy `/api/habits` endpoint, then land on the dashboard exactly as the
+  // old onboarding flow did.
+  const name = input.name ?? "Morning walk";
+  const startDate = input.startDate ?? new Date().toISOString().slice(0, 10);
 
-  if (input.startDate) {
-    await page.getByLabel("Start date").fill(input.startDate);
-  }
+  await page.evaluate(
+    async ({ habitName, habitStartDate }) => {
+      const response = await fetch("http://127.0.0.1:3001/api/habits", {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: habitName,
+          frequency: { type: "daily" },
+          startDate: habitStartDate,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Create habit failed: ${await response.text()}`);
+      }
+    },
+    { habitName: name, habitStartDate: startDate },
+  );
 
-  await page.getByRole("button", { name: "Create first habit" }).click();
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
 }
 
