@@ -224,7 +224,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       from task 41 — proves the rewrite did not regress the original
       product.
 
-- [ ] **54** Skill `mikoshi-tracker-food` in Mikoshi — this task edits the
+- [x] **54** Skill `mikoshi-tracker-food` in Mikoshi — this task edits the
       repo `/home/victor/projects/mikoshi`, **not** this one. Create
       `skills/mikoshi-tracker-food/` with `SKILL.md` (frontmatter per
       `GOAL.md` §G6, listing tools `food_log_from_input`,
