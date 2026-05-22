@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import {
   eventDeleteResponseSchema,
   eventIdParamsSchema,
@@ -10,6 +12,18 @@ import {
 import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { InventoryTool } from "./catalog.js";
 import type { ToolOperation } from "./operation-types.js";
+
+const nonEmptyString = z.string().trim().min(1);
+
+export const updateEventToolInputSchema = z
+  .object({
+    eventId: nonEmptyString,
+    payload: z.unknown().optional(),
+    note: z.string().trim().min(1).nullable().optional(),
+  })
+  .refine((v) => v.payload !== undefined || v.note !== undefined, {
+    message: "At least one of payload or note must be provided",
+  });
 
 export const eventsTools: InventoryTool[] = [
   {
@@ -40,7 +54,7 @@ export const eventsTools: InventoryTool[] = [
     path: "/events/:eventId",
     description:
       "Partially update an event's payload or note, creating an UPDATE mutation in the audit trail.",
-    inputSchema: updateEventInputSchema,
+    inputSchema: updateEventToolInputSchema,
     responseSchema: eventItemResponseSchema,
     outputSchema: eventItemResponseSchema,
     adapter: "passthrough",
@@ -113,7 +127,8 @@ export function createEventsWriteOperations(client: MikoshiTrackerApiClient): Re
     events_update: async (input: unknown) => {
       const raw = input as Record<string, unknown>;
       const eventId = String(raw.eventId ?? "");
-      const parsed = updateEventInputSchema.parse(raw);
+      const { eventId: _rawEventId, ...rest } = raw;
+      const parsed = updateEventInputSchema.parse(rest);
       const payload = eventItemResponseSchema.parse(
         await client.request(`/events/${encodeURIComponent(eventId)}`, {
           method: "PATCH",

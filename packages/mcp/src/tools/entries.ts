@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import {
   createEntryEventInputSchema,
   createEntryInputSchema,
@@ -11,6 +13,24 @@ import {
 import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 import type { InventoryTool } from "./catalog.js";
 import type { ToolOperation } from "./operation-types.js";
+
+const nonEmptyString = z.string().trim().min(1);
+
+export const updateEntryToolInputSchema = z
+  .object({
+    id: nonEmptyString,
+    name: nonEmptyString.optional(),
+    description: nonEmptyString.nullable().optional(),
+    category: nonEmptyString.nullable().optional(),
+    config: z.unknown().optional(),
+  })
+  .refine(
+    (v) => {
+      const { id: _id, ...fields } = v;
+      return Object.values(fields).some((val) => val !== undefined);
+    },
+    { message: "At least one editable entry field must be provided" },
+  );
 
 export const entriesTools: InventoryTool[] = [
   {
@@ -52,7 +72,7 @@ export const entriesTools: InventoryTool[] = [
     path: "/entries/:id",
     description:
       "Update an entry's name, description, category, or config.",
-    inputSchema: updateEntryInputSchema,
+    inputSchema: updateEntryToolInputSchema,
     responseSchema: entryItemResponseSchema,
     outputSchema: entryItemResponseSchema,
     adapter: "passthrough",
@@ -146,7 +166,8 @@ export function createEntriesWriteOperations(client: MikoshiTrackerApiClient): R
     entries_update: async (input: unknown) => {
       const raw = input as Record<string, unknown>;
       const id = String(raw.id ?? "");
-      const parsed = updateEntryInputSchema.parse(raw);
+      const { id: _rawId, ...rest } = raw;
+      const parsed = updateEntryInputSchema.parse(rest);
       const payload = entryItemResponseSchema.parse(
         await client.request(`/entries/${encodeURIComponent(id)}`, {
           method: "PATCH",
