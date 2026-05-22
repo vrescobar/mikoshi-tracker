@@ -244,7 +244,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       and the MikoshiTracker API. Cover all six paths (tiers 0–4 +
       manual) and the confirmation gate.
 
-- [ ] **56** Documentation — update `README.md` to mention "generic
+- [x] **56** Documentation — update `README.md` to mention "generic
       typed-entries tracker with food_meal as first non-habit type".
       Create `docs/architecture/generic-entries.md` with diagrams of the
       engine, the schema cache, and the aggregation pipeline. Cross-link

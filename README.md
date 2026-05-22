@@ -1,25 +1,29 @@
 # MikoshiTracker
 
-Self-hosted habit tracker that makes "what should I do today?" legible to both humans and AI.
+Self-hosted **generic typed-entries tracker** — habits, meals, and any recurring or event-log data — that makes "what should I do today?" legible to both humans and AI. Habits are one of several `EntryType`s; `food_meal` is the first non-habit type.
 
-自托管习惯追踪工具，让人和 AI 都能清楚地知道"今天该做什么"。
+自托管**通用条目追踪工具** — 习惯、餐食及任何周期性或事件日志数据 — 让人和 AI 都能清楚地知道"今天该做什么"。
 
 > **Origin:** MikoshiTracker is a fork of [`haaabit`](https://github.com/vrescobar/haaabit) (originally MIT-licensed,
 > Copyright © 2026 Finn). See [`LICENSE`](LICENSE) for the full attribution.
 
 ## Features / 功能
 
-- **Today-first dashboard** — see pending and completed habits at a glance, with completion rates and trends
+- **Today-first dashboard** — see pending and completed habits at a glance, with completion rates, trends, and today's food summary
+- **Generic typed-entries engine** — any data modelled as an `EntryType` with a JSON-Schema-validated payload, a cadence (`recurring` or `event_log`), and a declarative aggregations spec; no new tables or services required per type
+- **Built-in types:** `habit_boolean`, `habit_quantity`, and `food_meal` (first non-habit type — daily nutrition log with kcal/macro tracking)
 - **Boolean and quantified habits** — simple yes/no or numeric targets (e.g. "Read 10 pages")
 - **Flexible recurrence** — daily, specific weekdays, weekly count, or monthly count
+- **Food log** — per-meal kcal/macro events, calendar heatmap, insights, and a WhatsApp-driven AI ingestion skill (`mikoshi-tracker-food` in the Mikoshi repo)
 - **Reversible check-ins** — every action creates an immutable mutation record; undo anytime
-- **Streaks and analytics** — current/longest streaks, 7-day and 30-day trends, stability ranking
-- **REST API with OpenAPI docs** — bearer-authenticated endpoints for habits, today, stats, and check-ins
-- **MCP package for AI hosts** — publishable `@mikoshi-tracker/mcp` package that exposes the same personal-token-compatible habits, today, and stats surface over local `stdio`
-- **AI-ready** — structured API and provenance-tracked mutations let AI agents check in on your behalf
-- **Bilingual UI** — English and Chinese with browser-language detection and manual switching
+- **Streaks and analytics** — current/longest streaks, 7-day and 30-day trends, stability ranking, and a declarative aggregation API (`/api/aggregations`)
+- **Habit Circles** — social layer where several users share a leaderboard; circle tokens let an external bot (WhatsApp / Mikoshi) record check-ins on shared habits only
+- **REST API with OpenAPI docs** — bearer-authenticated endpoints for habits, today, stats, entries, events, aggregations, and circles
+- **MCP package for AI hosts** — publishable `@mikoshi-tracker/mcp` package that exposes habits, today, stats, entries, events, and aggregations over local `stdio`
+- **AI-ready** — structured API and provenance-tracked mutations let AI agents check in on your behalf; skill pointer on each `EntryType` links to the responsible ingestion skill
+- **Trilingual UI** — English, Chinese, and Spanish with browser-language detection and manual switching
 - **Archive and restore** — shelve habits without losing history
-- **Admin controls** — first user becomes admin; toggle new-user registration on or off
+- **Admin controls** — first user becomes admin; toggle new-user registration on or off; system-key provisioning for bot-operated circles
 - **Single-binary deployment** — SQLite database, Docker Compose, no external services required
 
 ## Tech Stack / 技术栈
@@ -90,9 +94,26 @@ pnpm test
 pnpm test:e2e
 ```
 
+## Generic Entries Architecture / 通用条目架构
+
+MikoshiTracker is built around a schema-driven engine where every domain (habits, meals, …) is an `EntryType` row with a JSON-Schema-validated payload. Adding a new type requires only inserting an `EntryType` row (and, optionally, shipping a Mikoshi skill) — no new tables, services, or endpoints. See [`docs/architecture/generic-entries.md`](./docs/architecture/generic-entries.md) for diagrams and a full walkthrough.
+
+Key components:
+
+| Component | Location | Purpose |
+|---|---|---|
+| `EntryType` | `prisma/schema.prisma` | Declares slug, cadence, payload/config JSON Schemas, aggregations spec, optional `skillSlug` |
+| Schema cache | `apps/api/src/modules/entry-types/schema-cache.ts` | In-memory JSON Schema → Zod compiler; invalidated on type update |
+| Entries | `apps/api/src/modules/entries/` | CRUD for entries; `config` validated at write time |
+| Events | `apps/api/src/modules/events/` | Payload-validated event append; `EventMutation` immutable audit trail |
+| Aggregations | `apps/api/src/modules/aggregations/` | Declarative SQL engine; sums/streaks/missing-days over any window |
+| Legacy aliases | `apps/api/src/modules/habits/`, `today/` | Thin adapters over the new engine; `/api/habits/*` and `/api/today/*` continue to work |
+
 ## API Overview / API 概览
 
 All endpoints require Bearer token authentication. Generate a personal API token from the web UI under API Access.
+
+**Legacy habit endpoints (thin aliases over the generic engine):**
 
 | Method  | Endpoint               | Description                         |
 | ------- | ---------------------- | ----------------------------------- |
@@ -105,8 +126,27 @@ All endpoints require Bearer token authentication. Generate a personal API token
 | `GET`   | `/api/habits/:id`      | Habit detail with stats and history |
 | `PATCH` | `/api/habits/:id`      | Update a habit                      |
 | `GET`   | `/api/stats/overview`  | Dashboard analytics                 |
-| `GET`   | `/api/openapi.json`    | OpenAPI 3.1 spec                    |
-| `GET`   | `/api/docs`            | Interactive API documentation       |
+
+**Generic entries API:**
+
+| Method   | Endpoint                           | Description                                 |
+| -------- | ---------------------------------- | ------------------------------------------- |
+| `GET`    | `/api/entry-types`                 | List active entry types with schemas        |
+| `GET`    | `/api/entry-types/:slug`           | Entry type detail                           |
+| `GET`    | `/api/entries`                     | List entries (filterable by type, active)   |
+| `POST`   | `/api/entries`                     | Create an entry (config validated)          |
+| `GET`    | `/api/entries/:id`                 | Entry detail                                |
+| `PATCH`  | `/api/entries/:id`                 | Update an entry                             |
+| `POST`   | `/api/entries/:id/archive\|restore`| Toggle active state                         |
+| `POST`   | `/api/entries/:id/events`          | Append an event (payload validated)         |
+| `GET`    | `/api/events`                      | List events with cursor pagination          |
+| `GET`    | `/api/events/:eventId`             | Event detail with mutations and attachments |
+| `PATCH`  | `/api/events/:eventId`             | Partial payload edit (creates UPDATE mutation) |
+| `DELETE` | `/api/events/:eventId`             | Soft-delete (creates DELETE mutation)       |
+| `POST`   | `/api/events/:eventId/undo`        | Revert last non-UNDO mutation               |
+| `GET`    | `/api/aggregations`                | Declarative aggregations (sum/streak/etc.)  |
+| `GET`    | `/api/openapi.json`                | OpenAPI 3.1 spec                            |
+| `GET`    | `/api/docs`                        | Interactive API documentation               |
 
 Full request/response examples are available at `/api/docs`.
 
@@ -148,14 +188,37 @@ See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md)
 ```
 apps/
   api/          Fastify API server
+    src/modules/
+      entry-types/   EntryType catalog + JSON Schema → Zod compiler + schema cache
+      entries/       Generic entry CRUD (config validated at write time)
+      events/        Generic event CRUD (payload validated; EventMutation audit trail)
+      aggregations/  Declarative aggregation engine (sum/streak/missing_days)
+      habits/        Legacy alias over entries/ (preserves /api/habits/* contract)
+      today/         Legacy alias over events/ (preserves /api/today/* contract)
+      circles/       Habit Circles — social leaderboard + circle-token auth
+      admin/         System-key provisioning for bot-operated circles
   web/          Next.js web app
+    app/(app)/
+      entries/       Generic entry list with EntryType dispatch
+      food/          Food log — timeline, event detail, insights heatmap
+      habits/        Redirect to /entries?entryTypeSlug=habit_*
+      circles/       Circles management UI
 packages/
   contracts/    Shared Zod schemas and TypeScript types
+    src/
+      entries.ts     Entry + create-event contracts
+      events.ts      EntryEvent + EventMutation contracts
+      entry-types.ts EntryType catalog contracts
+      aggregations.ts Aggregation query + response contracts
+      circles.ts     Circle + membership + token contracts
   openclaw-plugin/ Native OpenClaw plugin package
   mcp/          MCP server package for generic AI hosts
 prisma/         Database schema and migrations
 docker/         Caddy config
-docs/           Self-hosting guides
+docs/
+  architecture/ Architecture docs (generic-entries, performance)
+  self-hosting.md, self-hosting-upgrades.md, PUBLIC-DEPLOYMENT.md
+  ai-agent-integration.md, openclaw-*.md
 ```
 
 ## License / 许可证
