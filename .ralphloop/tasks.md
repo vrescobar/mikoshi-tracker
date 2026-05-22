@@ -103,7 +103,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       of varied food events and verifies daily sums, weekly count, weekly
       average, and missing_days for empty days.
 
-- [ ] **40** Backfill migration — second Prisma migration
+- [!] **40** Backfill migration — second Prisma migration
       `backfill_habit_to_entry` that copies legacy data into the new
       tables (mapping per `GOAL.md` §G9 step 1). Rename `Habit` →
       `_legacy_Habit_<ts>`, `HabitWeekday` → `_legacy_HabitWeekday_<ts>`,
@@ -116,7 +116,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       with fixtures, runs the migration, asserts row counts and a sample of
       preserved IDs.
 
-- [ ] **41** Legacy aliases — rewrite `apps/api/src/modules/habits/` and
+- [!] **41** Legacy aliases — rewrite `apps/api/src/modules/habits/` and
       `apps/api/src/modules/today/` as thin adapters over the new
       `entries/` + `events/` services. `GET /api/habits` →
       `GET /api/entries?entryTypeSlug=habit_boolean,habit_quantity`.
@@ -132,7 +132,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       and `@mikoshi-tracker/openclaw-plugin` tests must pass with zero changes
       to their code.
 
-- [ ] **42** Circles habitId → entryId — rename `CircleHabitShare` references
+- [!] **42** Circles habitId → entryId — rename `CircleHabitShare` references
       in `apps/api/src/modules/circles/circle.service.ts`,
       `circle.repository.ts`, `circle.controller.ts`, and
       `circle.routes.ts` to use `entryId` internally. Accept `{ habitId }`
@@ -141,7 +141,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       (`apps/api/test/circles/circle-denial-matrix.test.ts`) — all 9 cases
       must pass unchanged in semantics.
 
-- [ ] **43** Drop legacy tables — third Prisma migration
+- [x] **43** Drop legacy tables — third Prisma migration
       `drop_legacy_habit_tables` that removes `_legacy_Habit_*`,
       `_legacy_HabitWeekday_*`, `_legacy_HabitDayState_*`,
       `_legacy_CheckInMutation_*`, `_legacy_CircleHabitShare_*`. Also remove
