@@ -71,6 +71,66 @@ describe("toolInventory", () => {
           "name": "attachment_get",
           "route": "GET /attachments/:id/file",
         },
+        {
+          "name": "entry_types_list",
+          "route": "GET /entry-types",
+        },
+        {
+          "name": "entry_types_get",
+          "route": "GET /entry-types/:slug",
+        },
+        {
+          "name": "entries_list",
+          "route": "GET /entries",
+        },
+        {
+          "name": "entries_create",
+          "route": "POST /entries",
+        },
+        {
+          "name": "entries_get",
+          "route": "GET /entries/:id",
+        },
+        {
+          "name": "entries_update",
+          "route": "PATCH /entries/:id",
+        },
+        {
+          "name": "entries_archive",
+          "route": "POST /entries/:id/archive",
+        },
+        {
+          "name": "entries_restore",
+          "route": "POST /entries/:id/restore",
+        },
+        {
+          "name": "entries_add_event",
+          "route": "POST /entries/:id/events",
+        },
+        {
+          "name": "events_list",
+          "route": "GET /events",
+        },
+        {
+          "name": "events_get",
+          "route": "GET /events/:eventId",
+        },
+        {
+          "name": "events_update",
+          "route": "PATCH /events/:eventId",
+        },
+        {
+          "name": "events_delete",
+          "route": "DELETE /events/:eventId",
+        },
+        {
+          "name": "events_undo",
+          "route": "POST /events/:eventId/undo",
+        },
+        {
+          "name": "aggregations_query",
+          "route": "GET /aggregations",
+        },
       ]
     `);
   });

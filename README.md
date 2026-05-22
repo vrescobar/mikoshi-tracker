@@ -135,6 +135,7 @@ MikoshiTracker also ships a standalone MCP package for generic MCP clients:
 - Package: [`@mikoshi-tracker/mcp`](./packages/mcp/README.md)
 - Transport: local `stdio`
 - Canonical generic-host setup: [`packages/mcp/README.md`](./packages/mcp/README.md)
+- OpenClaw example: [`packages/mcp/examples/openclaw.jsonc`](./packages/mcp/examples/openclaw.jsonc)
 - Built-in guidance: `mikoshi_tracker_assistant_workflow` prompt and `mikoshi-tracker://guides/workflow` resource
 - Best fit: generic MCP clients, Claude Code MCP, Inspector, one-shot `bootstrap-token`
 

@@ -73,7 +73,7 @@ This remains the correct path for generic MCP clients, Claude Code MCP, and Insp
 
 Use the MikoshiTracker Skill only as guidance.
 
-- Workspace skill for OpenClaw-style discovery: [`../skills/mikoshi-tracker-mcp/SKILL.md`](../skills/mikoshi-tracker-mcp/SKILL.md)
+- OpenClaw workspace skill discovery: [`../skills/mikoshi-tracker-mcp/SKILL.md`](../skills/mikoshi-tracker-mcp/SKILL.md)
 - Repo-local skill for Codex/Claude-style agents: [`../.agents/skills/mikoshi-tracker-mcp/SKILL.md`](../.agents/skills/mikoshi-tracker-mcp/SKILL.md)
 
 The Skill helps the agent:
@@ -99,18 +99,20 @@ Use the native plugin:
 
 Use [`@mikoshi-tracker/mcp`](../packages/mcp/README.md):
 
-- connect the MCP server
+- MCP server configuration: use `command: "npx"` with `args: ["-y", "@mikoshi-tracker/mcp"]`
+- Env/secret injection: provide `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN` in the env block
+- Example: [`packages/mcp/examples/openclaw.jsonc`](../packages/mcp/examples/openclaw.jsonc)
 - optionally load `mikoshi_tracker_assistant_workflow` or `mikoshi-tracker://guides/workflow`
 - do not expect `SKILL.md` discovery unless the host explicitly supports it
 
-### 3. Repo-local skill-aware agent
+### 3. Repo-local Skill-aware agent with MCP
 
 Inside this repository, agents can combine:
 
 - MCP transport via [`@mikoshi-tracker/mcp`](../packages/mcp/README.md)
 - workflow guidance via `$mikoshi-tracker-mcp`
 
-This remains useful for Codex/Claude-style repo agents even though OpenClaw itself now has a native plugin path.
+This is a Repo-local Skill-aware agent with MCP pattern. It remains useful for Codex/Claude-style repo agents even though OpenClaw itself now has a native plugin path.
 
 ## Typical Trigger Phrases
 
@@ -122,6 +124,8 @@ The `mikoshi-tracker-mcp` Skill is intentionally bilingual. Common requests incl
 - `Set water to 1800 ml today.` / `把喝水记录到 1800 ml。`
 - `Undo the last check-in.` / `撤销刚才的打卡。`
 - `How am I doing this week?` / `我这周做得怎么样？`
+
+For symptom-driven fixes such as `skill visible, tools missing` or startup errors, see [OpenClaw Troubleshooting](./openclaw-troubleshooting.md).
 
 ## Common Mistakes
 

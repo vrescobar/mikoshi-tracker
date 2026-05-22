@@ -149,7 +149,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       without them. Test verifies `pnpm prisma migrate deploy` + API boot
       succeed and no code references the removed models.
 
-- [ ] **44** Generic MCP tools — create
+- [x] **44** Generic MCP tools — create
       `packages/mcp/src/tools/{entries,events,aggregations,entry-types}.ts`
       following the inventory pattern in `tools/catalog.ts`. Register them
       in `catalog.ts`. Keep `tools/habits.ts` and `tools/today.ts` as

@@ -24,7 +24,7 @@ export type MikoshiTrackerMcpServer = {
   config: CreateServerOptions;
   listRegisteredTools: () => Array<{
     name: string;
-    method: "GET" | "POST" | "PATCH";
+    method: "GET" | "POST" | "PATCH" | "DELETE";
     path: string;
     description: string;
     inputSchema?: AnySchema | ZodRawShapeCompat;

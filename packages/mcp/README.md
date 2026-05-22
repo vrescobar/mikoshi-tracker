@@ -94,6 +94,7 @@ OpenClaw should now prefer the native plugin path:
 
 - Native package: [`../openclaw-plugin/README.md`](../openclaw-plugin/README.md)
 - Canonical native asset: [`../openclaw-plugin/examples/openclaw-plugin.jsonc`](../openclaw-plugin/examples/openclaw-plugin.jsonc)
+- Generic MCP OpenClaw example: [`examples/openclaw.jsonc`](examples/openclaw.jsonc)
 
 Keep `@mikoshi-tracker/mcp` for these cases:
 
@@ -143,6 +144,21 @@ All tools use the authenticated MikoshiTracker API behind the scenes and return 
 | `attachment_upload`  | `POST /attachments/base64`      | Attach an image to a check-in entry when the user shares a photo for a habit (a meal photo, proof a chore is done, etc.). Pass the mutationId returned by a today_* action and the image as base64.                       |
 | `attachment_list`    | `GET /attachments`              | List the image attachments of a check-in entry (mutationId) or of an entire habit (habitId), returning each attachment id and its metadata.              |
 | `attachment_get`     | `GET /attachments/:id/file`     | Fetch a stored attachment image by id and return it as an image so you can see and reason about the photo (e.g. estimate calories from a meal photo).    |
+| `entry_types_list`   | `GET /entry-types`              | List all active entry types (habit_boolean, habit_quantity, food_meal, and any custom types) with their schemas and cadence. |
+| `entry_types_get`    | `GET /entry-types/:slug`        | Read one entry type's full schema, configuration descriptor, and aggregation spec by its slug. |
+| `entries_list`       | `GET /entries`                  | List the user's entries filtered by entry type, active status, or name query. |
+| `entries_create`     | `POST /entries`                 | Create a new entry for a given entry type, with config validated against the type's configSchema. |
+| `entries_get`        | `GET /entries/:id`              | Read one entry's full configuration and metadata by its id. |
+| `entries_update`     | `PATCH /entries/:id`            | Update an entry's name, description, category, or config. |
+| `entries_archive`    | `POST /entries/:id/archive`     | Archive an entry, making it read-only and hiding it from active lists. |
+| `entries_restore`    | `POST /entries/:id/restore`     | Restore an archived entry, making it active again. |
+| `entries_add_event`  | `POST /entries/:id/events`      | Record a new event for an entry, with payload validated against the entry type's payloadSchema. |
+| `events_list`        | `GET /events`                   | List events for a user's entries, with optional filters for entry, type, date range, and pagination. |
+| `events_get`         | `GET /events/:eventId`          | Read one event's full payload, mutations, and attachments by its id. |
+| `events_update`      | `PATCH /events/:eventId`        | Partially update an event's payload or note, creating an UPDATE mutation in the audit trail. |
+| `events_delete`      | `DELETE /events/:eventId`       | Soft-delete an event by recording a DELETE mutation; the event remains in the audit trail. |
+| `events_undo`        | `POST /events/:eventId/undo`    | Revert the last non-UNDO mutation on an event by replaying the audit trail. |
+| `aggregations_query` | `GET /aggregations`             | Run a declarative aggregation over entry events, supporting sum, count, completion-rate, streak, and missing-days broken down by day, week, month, or total. |
 
 ## AI Guidance
 

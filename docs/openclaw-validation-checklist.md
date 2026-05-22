@@ -12,10 +12,14 @@ Generic MCP baseline:
 
 ## Starting State
 
+### token-ready setup
+
 Steady-state runtime contract:
 
 - `MIKOSHI_TRACKER_API_URL`
 - `MIKOSHI_TRACKER_API_TOKEN`
+
+### bootstrap-needed setup
 
 If you only have account credentials, run `npx -y @mikoshi-tracker/mcp bootstrap-token ...` once, then continue with the same env names above.
 

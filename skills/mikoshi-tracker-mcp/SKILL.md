@@ -7,7 +7,7 @@ description: MikoshiTracker MCP skill for choosing the correct tool and payload 
 
 Route MikoshiTracker requests by intent. Pick the narrowest correct tool. Do not infer write payloads from read responses.
 
-This skill does not provide tools by itself. Connect the MikoshiTracker MCP server first, or use a runner that launches `@mikoshi-tracker/mcp` with the same `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`. If you only have account credentials, run `bootstrap-token` first.
+This skill does not provide tools by itself. connect the MikoshiTracker MCP server first, or use a runner that launches `@mikoshi-tracker/mcp` with the same `MIKOSHI_TRACKER_API_URL` and `MIKOSHI_TRACKER_API_TOKEN`. If you only have account credentials, run `bootstrap-token` first.
 
 ## Connection Order
 
@@ -176,7 +176,7 @@ Map natural language directly:
 ## Operating Rules
 
 - Prefer exact tool selection over generic "today-first" narration.
-- Read before write unless the mutation is exact, unique, and complete.
+- read before write unless the mutation is exact, unique, and complete.
 - Use `habits_list` to resolve names before edit/archive/restore.
 - Use `habits_get_detail` before complex edits.
 - For mixed requests like "今天还剩什么，顺便看看这周表现", call `today_get_summary` and `stats_get_overview`. If ordered calls are needed, call `today_get_summary` first, then `stats_get_overview`.
