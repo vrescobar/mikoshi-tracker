@@ -24,6 +24,7 @@ import { registerAggregationRoutes } from "./modules/aggregations/aggregation.ro
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerEntryRoutes } from "./modules/entries/entry.routes";
+import { registerEntryTypeRoutes } from "./modules/entry-types/entry-type.routes";
 import { registerEventRoutes } from "./modules/events/event.routes";
 import { invalidateSchemaCache } from "./modules/entry-types/schema-cache";
 import { seedBuiltInEntryTypes } from "./modules/entry-types/seed";
@@ -104,6 +105,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerHabitRoutes(app);
   invalidateSchemaCache();
   await seedBuiltInEntryTypes(app.db);
+  await registerEntryTypeRoutes(app);
   await registerEntryRoutes(app);
   await registerEventRoutes(app);
   await registerAggregationRoutes(app);

@@ -3,8 +3,12 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { API_DOCS_PATH, API_SPEC_PATH } from "../auth/api-token";
 import { adminApiRouteDefinitions } from "../modules/admin/admin.routes";
+import { aggregationApiRouteDefinitions } from "../modules/aggregations/aggregation.routes";
 import { attachmentApiRouteDefinitions } from "../modules/attachments/attachment.routes";
 import { circleApiRouteDefinitions } from "../modules/circles/circle.routes";
+import { entryTypeApiRouteDefinitions } from "../modules/entry-types/entry-type.routes";
+import { entryApiRouteDefinitions } from "../modules/entries/entry.routes";
+import { eventApiRouteDefinitions } from "../modules/events/event.routes";
 import { habitApiRouteDefinitions } from "../modules/habits/habit.routes";
 import { statsApiRouteDefinitions } from "../modules/stats/stats.routes";
 import { todayApiRouteDefinitions } from "../modules/today/today.routes";
@@ -41,6 +45,10 @@ export type PublicApiRouteDefinition = {
 };
 
 const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
+  ...entryTypeApiRouteDefinitions,
+  ...entryApiRouteDefinitions,
+  ...eventApiRouteDefinitions,
+  ...aggregationApiRouteDefinitions,
   ...habitApiRouteDefinitions,
   ...todayApiRouteDefinitions,
   ...statsApiRouteDefinitions,
@@ -69,7 +77,7 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     eyebrow: "OpenAPI + Interactive Reference",
     localeHint: "This page follows your current app language. API contract items stay in English.",
     intro:
-      "This reference is generated from the same route metadata that powers the bearer-authenticated habits, today, stats, and circles runtime.",
+      "This reference is generated from the same route metadata that powers the bearer-authenticated entry types, entries, events, aggregations, habits, today, stats, circles, and admin runtime.",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "Request Example",
     responseExampleLabel: (statusCode) => `${statusCode} Example`,
@@ -80,7 +88,7 @@ const apiDocsCopy: Record<SupportedLocale, ApiDocsCopy> = {
     eyebrow: "OpenAPI + 交互式参考",
     localeHint: "当前页面会跟随你在应用中的语言。API 合同项保持英文。",
     intro:
-      "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 habits、today、stats 和 circles 运行时。",
+      "这份参考页由同一套路由元数据生成，而这些元数据也驱动着 bearer-authenticated 的 entry-types、entries、events、aggregations、habits、today、stats、circles 和 admin 运行时。",
     operationIdLabel: "Operation ID",
     requestExampleLabel: "请求示例",
     responseExampleLabel: (statusCode) => `${statusCode} 示例`,

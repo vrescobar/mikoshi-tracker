@@ -202,7 +202,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       contract from §C13 extends here unchanged: no untranslated strings
       in any of the three locales.
 
-- [ ] **51** OpenAPI — update `apps/api/src/plugins/openapi.ts` to document
+- [x] **51** OpenAPI — update `apps/api/src/plugins/openapi.ts` to document
       `/api/entry-types`, `/api/entries`, `/api/events`, `/api/aggregations`.
       For `POST /api/entries/:id/events`, document the body as a `oneOf` of
       the registered `payloadSchema`s (resolved at startup from the seeded
