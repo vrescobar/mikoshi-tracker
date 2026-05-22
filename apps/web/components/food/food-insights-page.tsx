@@ -31,7 +31,7 @@ type RepeatedMeal = {
   lastDate: string;
 };
 
-function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[] {
+export function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[] {
   const counts = new Map<string, { count: number; lastDate: string; display: string }>();
   for (const ev of events) {
     if (!isFoodPayload(ev.payload)) continue;
@@ -52,7 +52,7 @@ function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[] {
     .map((v) => ({ name: v.display, count: v.count, lastDate: v.lastDate }));
 }
 
-function getMissingDays(buckets: AggregationBucket[]): string[] {
+export function getMissingDays(buckets: AggregationBucket[]): string[] {
   return buckets.filter((b) => b.missing).map((b) => b.key);
 }
 

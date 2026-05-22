@@ -12,11 +12,23 @@ type RangeHeatmapProps = {
   to: string;
 };
 
-function kcalIntensity(kcal: number): 0 | 1 | 2 | 3 {
+export function kcalIntensity(kcal: number): 0 | 1 | 2 | 3 {
   if (kcal <= 0) return 0;
   if (kcal < 1000) return 1;
   if (kcal <= 2000) return 2;
   return 3;
+}
+
+export function buildDateRange(from: string, to: string): string[] {
+  const days: string[] = [];
+  const cursor = new Date(`${from}T12:00:00`);
+  const end = new Date(`${to}T12:00:00`);
+  while (cursor <= end) {
+    const key = cursor.toISOString().slice(0, 10);
+    days.push(key);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
 }
 
 function formatDayLabel(dateKey: string, localeStr: string) {
@@ -36,14 +48,7 @@ export function RangeHeatmap({ buckets, from, to }: RangeHeatmapProps) {
     bucketMap.set(b.key, b);
   }
 
-  const days: string[] = [];
-  const cursor = new Date(`${from}T12:00:00`);
-  const end = new Date(`${to}T12:00:00`);
-  while (cursor <= end) {
-    const key = cursor.toISOString().slice(0, 10);
-    days.push(key);
-    cursor.setDate(cursor.getDate() + 1);
-  }
+  const days = buildDateRange(from, to);
 
   const hasData = buckets.some((b) => !b.missing && b.count > 0);
 

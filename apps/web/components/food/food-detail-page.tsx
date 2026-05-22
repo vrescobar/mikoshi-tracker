@@ -28,7 +28,7 @@ function formatDateTime(iso: string, localeStr: string) {
   });
 }
 
-type EditState = {
+export type EditState = {
   name: string;
   kcal: string;
   protein_g: string;
@@ -56,7 +56,7 @@ function payloadToEditState(p: FoodPayload): EditState {
   };
 }
 
-function editStateToPayload(state: EditState, original: FoodPayload): FoodPayload {
+export function editStateToPayload(state: EditState, original: FoodPayload): FoodPayload {
   return {
     ...original,
     name: state.name.trim(),
@@ -72,7 +72,7 @@ function editStateToPayload(state: EditState, original: FoodPayload): FoodPayloa
   };
 }
 
-function validateEditState(state: EditState, copy: ReturnType<typeof getFoodCopy>["detail"]["edit"]): string | null {
+export function validateEditState(state: EditState, copy: ReturnType<typeof getFoodCopy>["detail"]["edit"]): string | null {
   if (!state.name.trim()) return copy.validationName;
   const kcal = parseFloat(state.kcal);
   if (isNaN(kcal) || kcal < 0) return copy.validationKcal;
@@ -81,7 +81,7 @@ function validateEditState(state: EditState, copy: ReturnType<typeof getFoodCopy
   return null;
 }
 
-function isDeleted(event: EntryEventDetail): boolean {
+export function isDeleted(event: EntryEventDetail): boolean {
   if (!event.mutations || event.mutations.length === 0) return false;
   const sorted = [...event.mutations].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   return sorted[0]?.type === "DELETE";
