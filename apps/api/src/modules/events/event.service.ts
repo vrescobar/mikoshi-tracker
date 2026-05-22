@@ -102,7 +102,7 @@ function resolveDateKey(timezone: string | null | undefined, occurredAt: Date): 
 function serializeAttachment(a: EventMutationWithAttachments["attachments"][number]) {
   return {
     id: a.id,
-    mutationId: a.eventMutationId ?? a.mutationId,
+    mutationId: a.eventMutationId ?? a.mutationId ?? "",
     kind: a.kind as "image",
     mimeType: a.mimeType,
     size: a.size,

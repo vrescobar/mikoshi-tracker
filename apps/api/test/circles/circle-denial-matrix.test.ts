@@ -148,7 +148,7 @@ describe("circle-token denial matrix (§C14)", () => {
     context = await createTestContext();
     const { alice, circle, token, aliceHabit } = await buildFixture(context);
 
-    await context.app.db.habit.update({
+    await context.app.db.entry.update({
       where: { id: aliceHabit.id },
       data: { isActive: false },
     });
@@ -184,12 +184,12 @@ describe("circle-token denial matrix (§C14)", () => {
     });
     expect(completeRes.statusCode).toBe(200);
 
-    const mutation = await context.app.db.checkInMutation.findFirst({
-      where: { habitId: aliceHabit.id },
+    const mutation = await context.app.db.eventMutation.findFirst({
+      where: { entryId: aliceHabit.id },
       orderBy: { createdAt: "desc" },
     });
     expect(mutation?.source).toBe("CIRCLE");
-    expect(mutation?.type).toBe("COMPLETE");
+    expect(mutation?.type).toBe("CREATE");
 
     const afterRes = await context.app.inject({
       method: "GET",
@@ -236,8 +236,8 @@ describe("circle-token denial matrix (§C14)", () => {
       { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW },
     );
 
-    const mutationBefore = await context.app.db.checkInMutation.findFirst({
-      where: { habitId: aliceHabit.id },
+    const mutationBefore = await context.app.db.eventMutation.findFirst({
+      where: { entryId: aliceHabit.id },
       orderBy: { createdAt: "desc" },
     });
 
@@ -250,8 +250,8 @@ describe("circle-token denial matrix (§C14)", () => {
     expect(response.statusCode).toBe(409);
     expect(response.json()).toMatchObject({ code: "UNDO_NOT_CIRCLE_SOURCED" });
 
-    const mutationAfter = await context.app.db.checkInMutation.findFirst({
-      where: { habitId: aliceHabit.id },
+    const mutationAfter = await context.app.db.eventMutation.findFirst({
+      where: { entryId: aliceHabit.id },
       orderBy: { createdAt: "desc" },
     });
     expect(mutationAfter?.id).toBe(mutationBefore?.id);

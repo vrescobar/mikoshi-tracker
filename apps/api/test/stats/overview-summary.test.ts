@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { getOverviewStats } from "../../src/modules/stats/stats.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -60,7 +61,7 @@ describe("overview stats summary", () => {
       startDate: "2026-03-01",
     });
 
-    await context.app.db.habit.update({
+    await context.app.db.entry.update({
       where: {
         id: archivedHabit.id,
       },
@@ -69,8 +70,7 @@ describe("overview stats summary", () => {
       },
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: dailyHabit.id, dateKey: "2026-03-08", completed: true },
         { habitId: dailyHabit.id, dateKey: "2026-03-09", completed: true },
         { habitId: dailyHabit.id, dateKey: "2026-03-10", completed: true },
@@ -78,8 +78,7 @@ describe("overview stats summary", () => {
         { habitId: archivedHabit.id, dateKey: "2026-03-09", completed: true },
         { habitId: archivedHabit.id, dateKey: "2026-03-10", completed: true },
         { habitId: archivedHabit.id, dateKey: "2026-03-11", completed: true },
-      ],
-    });
+      ]);
 
     const overview = await getOverviewStats(
       {
@@ -115,12 +114,10 @@ describe("overview stats summary", () => {
       startDate: "2026-02-01",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: weeklyHabit.id, dateKey: "2026-02-16", completed: true },
         { habitId: weeklyHabit.id, dateKey: "2026-02-23", completed: true },
-      ],
-    });
+      ]);
 
     const overview = await getOverviewStats(
       {
@@ -155,13 +152,11 @@ describe("overview stats summary", () => {
       startDate: "2026-03-01",
     });
 
-    await context.app.db.habitDayState.create({
-      data: {
+    await seedHabitDayStates(context.app.db, [{
         habitId: weeklyHabit.id,
         dateKey: "2026-03-11",
         completed: true,
-      },
-    });
+      }]);
 
     const overview = await getOverviewStats(
       {

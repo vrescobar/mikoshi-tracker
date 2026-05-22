@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { createHabit, updateHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -45,12 +46,10 @@ describe("habit history integrity", () => {
       startDate: "2026-03-01",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-03-01", value: 8, completed: true },
         { habitId: habit.id, dateKey: "2026-03-02", value: 6, completed: false },
-      ],
-    });
+      ]);
 
     await updateHabit(
       {
@@ -82,16 +81,22 @@ describe("habit history integrity", () => {
 
     expect(archiveResponse.statusCode).toBe(200);
 
-    const historicalRows = await context.app.db.habitDayState.findMany({
+    const historicalRows = await context.app.db.entryEvent.findMany({
       where: {
-        habitId: habit.id,
+        entryId: habit.id,
       },
       orderBy: {
         dateKey: "asc",
       },
     });
 
-    expect(historicalRows).toMatchObject([
+    expect(
+      historicalRows.map((row) => ({
+        dateKey: row.dateKey,
+        value: row.value === null ? null : Number(row.value),
+        completed: row.completed,
+      })),
+    ).toEqual([
       { dateKey: "2026-03-01", value: 8, completed: true },
       { dateKey: "2026-03-02", value: 6, completed: false },
     ]);

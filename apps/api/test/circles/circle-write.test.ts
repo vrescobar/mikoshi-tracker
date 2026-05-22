@@ -67,12 +67,12 @@ describe("circle write endpoints", () => {
       currentValue: null,
     });
 
-    const mutation = await context.app.db.checkInMutation.findFirst({
-      where: { habitId: booleanHabit.id },
+    const mutation = await context.app.db.eventMutation.findFirst({
+      where: { entryId: booleanHabit.id },
       orderBy: { createdAt: "desc" },
     });
     expect(mutation?.source).toBe("CIRCLE");
-    expect(mutation?.type).toBe("COMPLETE");
+    expect(mutation?.type).toBe("CREATE");
   });
 
   it("set-total on a quantity habit returns 200 with updated value", async () => {
@@ -94,12 +94,12 @@ describe("circle write endpoints", () => {
       currentValue: 15,
     });
 
-    const mutation = await context.app.db.checkInMutation.findFirst({
-      where: { habitId: quantityHabit.id },
+    const mutation = await context.app.db.eventMutation.findFirst({
+      where: { entryId: quantityHabit.id },
       orderBy: { createdAt: "desc" },
     });
     expect(mutation?.source).toBe("CIRCLE");
-    expect(mutation?.type).toBe("SET_TOTAL");
+    expect(mutation?.type).toBe("CREATE");
   });
 
   it("complete on a quantity habit returns 400 (kind mismatch)", async () => {
@@ -174,7 +174,7 @@ describe("circle write endpoints", () => {
     context = await createTestContext();
     const { userId, circle, token, booleanHabit } = await setupCircleFixture(context);
 
-    await context.app.db.habit.update({
+    await context.app.db.entry.update({
       where: { id: booleanHabit.id },
       data: { isActive: false },
     });

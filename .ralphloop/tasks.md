@@ -116,7 +116,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       with fixtures, runs the migration, asserts row counts and a sample of
       preserved IDs.
 
-- [ ] **41** Legacy aliases — rewrite `apps/api/src/modules/habits/` and
+- [x] **41** Legacy aliases — rewrite `apps/api/src/modules/habits/` and
       `apps/api/src/modules/today/` as thin adapters over the new
       `entries/` + `events/` services. `GET /api/habits` →
       `GET /api/entries?entryTypeSlug=habit_boolean,habit_quantity`.
@@ -132,7 +132,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       and `@mikoshi-tracker/openclaw-plugin` tests must pass with zero changes
       to their code.
 
-- [ ] **42** Circles habitId → entryId — rename `CircleHabitShare` references
+- [x] **42** Circles habitId → entryId — rename `CircleHabitShare` references
       in `apps/api/src/modules/circles/circle.service.ts`,
       `circle.repository.ts`, `circle.controller.ts`, and
       `circle.routes.ts` to use `entryId` internally. Accept `{ habitId }`

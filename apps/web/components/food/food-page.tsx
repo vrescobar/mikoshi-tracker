@@ -17,14 +17,22 @@ import styles from "./food-page.module.css";
 type FoodPageProps = {
   initialEvents: EntryEventRecord[];
   dateKey: string;
+  timeZone?: string;
 };
 
-function todayDateKey() {
-  const now = new Date();
-  return now.toISOString().slice(0, 10);
+// Resolve "today" in the user's timezone (matching how the API buckets dateKey).
+// A naive UTC date would disagree with the server's dateKey near midnight and trigger
+// a spurious refetch for the wrong day, hiding events that exist for the real today.
+function todayDateKey(timeZone?: string) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: timeZone && timeZone.length > 0 ? timeZone : undefined,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
-export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
+export function FoodPage({ initialEvents, dateKey, timeZone }: FoodPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale);
   const [events, setEvents] = useState(initialEvents);
@@ -32,7 +40,7 @@ export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    const clientToday = todayDateKey();
+    const clientToday = todayDateKey(timeZone);
     if (clientToday !== dateKey) {
       setLoading(true);
       void listFoodEvents(clientToday, clientToday).then((result) => {
@@ -40,7 +48,7 @@ export function FoodPage({ initialEvents, dateKey }: FoodPageProps) {
         setLoading(false);
       });
     }
-  }, [dateKey]);
+  }, [dateKey, timeZone]);
 
   const sorted = [...events].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
 

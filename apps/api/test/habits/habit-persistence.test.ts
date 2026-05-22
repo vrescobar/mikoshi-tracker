@@ -44,13 +44,14 @@ describe("createHabit persistence", () => {
       isActive: true,
     });
 
-    const stored = await context.app.db.habit.findUniqueOrThrow({
+    const stored = await context.app.db.entry.findUniqueOrThrow({
       where: { id: habit.id },
-      include: { weekdays: true },
+      include: { entryType: { select: { slug: true } }, weekdays: { orderBy: { day: "asc" } } },
     });
 
     expect(stored.name).toBe("Walk the dog");
-    expect(stored.frequencyType).toBe("DAILY");
+    expect(stored.entryType.slug).toBe("habit_boolean");
+    expect(JSON.parse(stored.config).frequencyType).toBe("DAILY");
     expect(stored.weekdays).toEqual([]);
   });
 
@@ -96,9 +97,10 @@ describe("createHabit persistence", () => {
       startDate: "2026-03-10",
     });
 
-    const stored = await context.app.db.habit.findUniqueOrThrow({
+    const stored = await context.app.db.entry.findUniqueOrThrow({
       where: { id: habit.id },
       include: {
+        entryType: { select: { slug: true } },
         weekdays: {
           orderBy: {
             day: "asc",
@@ -107,8 +109,8 @@ describe("createHabit persistence", () => {
       },
     });
 
-    expect(stored.kind).toBe("QUANTITY");
-    expect(stored.weekdays.map((entry) => entry.day)).toEqual(["FRIDAY", "MONDAY", "WEDNESDAY"]);
+    expect(stored.entryType.slug).toBe("habit_quantity");
+    expect(stored.weekdays.map((entry) => entry.day)).toEqual(["friday", "monday", "wednesday"]);
   });
 
   it("defaults the startDate from the user's timezone-aware current habit day", async () => {

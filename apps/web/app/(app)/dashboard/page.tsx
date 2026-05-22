@@ -3,8 +3,10 @@ import {
   buildCookieHeader,
   getFoodAggregationsFromCookieHeader,
   getOverviewStatsFromCookieHeader,
+  getSessionFromCookieHeader,
   getTodaySummaryFromCookieHeader,
   listHabitsFromCookieHeader,
+  todayKeyInTimeZone,
 } from "../../../lib/server-auth";
 
 type DashboardPageProps = {
@@ -23,7 +25,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const cookieHeader = await buildCookieHeader();
-  const today = new Date().toISOString().slice(0, 10);
+  const session = await getSessionFromCookieHeader(cookieHeader);
+  const today = todayKeyInTimeZone(session?.timezone);
 
   const [[activeHabits, archivedHabits], foodAggregationsResult] = await Promise.all([
     Promise.all([

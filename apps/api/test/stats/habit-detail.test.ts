@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import * as habitService from "../../src/modules/habits/habit.service";
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 type HabitDetailGetter = (
   dependencies: { db: TestContext["app"]["db"] },
@@ -90,15 +91,13 @@ describe("habit detail read model", () => {
       },
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-03-01", value: 8, completed: true },
         { habitId: habit.id, dateKey: "2026-03-02", value: 6, completed: false },
         { habitId: habit.id, dateKey: "2026-03-03", value: 10, completed: true },
         { habitId: habit.id, dateKey: "2026-03-05", value: 9, completed: true },
         { habitId: habit.id, dateKey: "2026-03-06", value: 8, completed: true },
-      ],
-    });
+      ]);
 
     const detail = await getHabitDetail!(
       {
@@ -206,8 +205,7 @@ describe("habit detail read model", () => {
       startDate: "2026-01-26",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-01-27", completed: true },
         { habitId: habit.id, dateKey: "2026-01-28", completed: true },
         { habitId: habit.id, dateKey: "2026-01-29", completed: true },
@@ -216,8 +214,7 @@ describe("habit detail read model", () => {
         { habitId: habit.id, dateKey: "2026-02-10", completed: true },
         { habitId: habit.id, dateKey: "2026-02-17", completed: true },
         { habitId: habit.id, dateKey: "2026-02-20", completed: true },
-      ],
-    });
+      ]);
 
     const detail = await getHabitDetail!(
       {
@@ -304,8 +301,7 @@ describe("habit detail read model", () => {
       startDate: "2026-01-01",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-01-03", completed: true },
         { habitId: habit.id, dateKey: "2026-01-10", completed: true },
         { habitId: habit.id, dateKey: "2026-01-21", completed: true },
@@ -317,8 +313,7 @@ describe("habit detail read model", () => {
         { habitId: habit.id, dateKey: "2026-04-05", completed: true },
         { habitId: habit.id, dateKey: "2026-04-12", completed: true },
         { habitId: habit.id, dateKey: "2026-04-26", completed: true },
-      ],
-    });
+      ]);
 
     const detail = await getHabitDetail!(
       {

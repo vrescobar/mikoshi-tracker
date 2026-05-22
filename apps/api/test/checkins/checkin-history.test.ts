@@ -89,9 +89,11 @@ describe("checkin history", () => {
       },
     );
 
-    const mutations = await context.app.db.checkInMutation.findMany({
+    // Provenance now lives in EventMutation. Recurring habit writes map to
+    // CREATE → UPDATE → UNDO with previous/next state captured in the payloads.
+    const mutations = await context.app.db.eventMutation.findMany({
       where: {
-        habitId: habit.id,
+        entryId: habit.id,
       },
       orderBy: {
         createdAt: "asc",
@@ -105,49 +107,37 @@ describe("checkin history", () => {
         dateKey: mutation.dateKey,
         source: mutation.source,
         note: mutation.note,
-        previousValue: mutation.previousValue,
-        nextValue: mutation.nextValue,
-        previousCompleted: mutation.previousCompleted,
-        nextCompleted: mutation.nextCompleted,
+        previousPayload: mutation.previousPayload ? JSON.parse(mutation.previousPayload) : null,
+        nextPayload: mutation.nextPayload ? JSON.parse(mutation.nextPayload) : null,
         createdAt: mutation.createdAt instanceof Date,
-        updatedAt: mutation.updatedAt instanceof Date,
       })),
     ).toEqual([
       {
-        type: "SET_TOTAL",
+        type: "CREATE",
         dateKey: "2026-03-11",
         source: "WEB",
         note: "morning session",
-        previousValue: null,
-        nextValue: 15,
-        previousCompleted: false,
-        nextCompleted: false,
+        previousPayload: null,
+        nextPayload: { value: 15, completed: false },
         createdAt: true,
-        updatedAt: true,
       },
       {
-        type: "SET_TOTAL",
+        type: "UPDATE",
         dateKey: "2026-03-11",
         source: "AI",
         note: null,
-        previousValue: 15,
-        nextValue: 30,
-        previousCompleted: false,
-        nextCompleted: true,
+        previousPayload: { value: 15, completed: false },
+        nextPayload: { value: 30, completed: true },
         createdAt: true,
-        updatedAt: true,
       },
       {
         type: "UNDO",
         dateKey: "2026-03-11",
         source: "WEB",
         note: "undo the later change",
-        previousValue: 30,
-        nextValue: 15,
-        previousCompleted: true,
-        nextCompleted: false,
+        previousPayload: { value: 30, completed: true },
+        nextPayload: { value: 15, completed: false },
         createdAt: true,
-        updatedAt: true,
       },
     ]);
   });
@@ -175,21 +165,19 @@ describe("checkin history", () => {
       },
     );
 
-    const mutation = await context.app.db.checkInMutation.findFirstOrThrow({
+    const mutation = await context.app.db.eventMutation.findFirstOrThrow({
       where: {
-        habitId: habit.id,
+        entryId: habit.id,
       },
     });
 
     expect(mutation).toMatchObject({
-      type: "COMPLETE",
+      type: "CREATE",
       source: "WEB",
       note: "completed after lunch",
       dateKey: "2026-03-11",
-      previousValue: null,
-      nextValue: null,
-      previousCompleted: false,
-      nextCompleted: true,
     });
+    expect(mutation.previousPayload).toBeNull();
+    expect(JSON.parse(mutation.nextPayload ?? "null")).toEqual({ completed: true });
   });
 });

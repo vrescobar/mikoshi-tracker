@@ -41,7 +41,8 @@ function buildAttachmentUrl(id: string): string {
 export function serializeAttachment(attachment: PersistedAttachment): AttachmentMetadata {
   return {
     id: attachment.id,
-    mutationId: attachment.mutationId,
+    // External field is still named `mutationId`; it now carries the EventMutation id.
+    mutationId: attachment.eventMutationId ?? "",
     kind: "image",
     mimeType: attachment.mimeType,
     size: attachment.size,

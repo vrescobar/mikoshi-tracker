@@ -151,6 +151,8 @@ async function persistMutation(
 ) {
   const persisted = await persistCheckinMutation(dependencies.db, {
     habitId: params.habit.id,
+    userId: params.habit.userId,
+    storedKind: params.habit.kind,
     dateKey: params.nextState.dateKey,
     type: mutationTypeMap[params.type],
     source: sourceMap[params.source],

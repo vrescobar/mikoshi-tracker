@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { archiveHabit, createHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -44,13 +45,11 @@ describe("habit detail routes", () => {
       },
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-03-01", value: 8, completed: true },
         { habitId: habit.id, dateKey: "2026-03-02", value: 6, completed: false },
         { habitId: habit.id, dateKey: "2026-03-03", value: 10, completed: true },
-      ],
-    });
+      ]);
 
     const response = await context.app.inject({
       method: "GET",

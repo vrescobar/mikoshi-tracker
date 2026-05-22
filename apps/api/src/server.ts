@@ -171,6 +171,11 @@ export async function createApp(options: CreateAppOptions = {}) {
     try {
       const session = await requireSession(request);
 
+      const dbUser = await app.db.user.findUnique({
+        where: { id: session.user.id },
+        select: { timezone: true },
+      });
+
       return {
         user: {
           id: session.user.id,
@@ -178,6 +183,9 @@ export async function createApp(options: CreateAppOptions = {}) {
           name: session.user.name,
           isAdmin: await isUserAdmin(app.db, session.user.id),
         },
+        // Timezone-aware "today" for client pages (food timeline, insights, dashboard)
+        // so they match the timezone the API uses to bucket EntryEvent.dateKey.
+        timezone: dbUser?.timezone ?? "UTC",
       };
     } catch (error) {
       if (error instanceof AuthSessionError) {

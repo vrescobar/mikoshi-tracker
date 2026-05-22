@@ -332,12 +332,10 @@ describe("habit routes", () => {
       },
     });
 
-    const history = await context.app.db.habitDayState.findUnique({
+    const history = await context.app.db.entryEvent.findFirst({
       where: {
-        habitId_dateKey: {
-          habitId: firstHabit.id,
-          dateKey: "2026-03-11",
-        },
+        entryId: firstHabit.id,
+        dateKey: "2026-03-11",
       },
     });
 

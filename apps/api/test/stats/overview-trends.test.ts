@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { getOverviewStats } from "../../src/modules/stats/stats.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -43,14 +44,12 @@ describe("overview trend windows", () => {
       startDate: "2026-02-10",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-03-05", completed: true },
         { habitId: habit.id, dateKey: "2026-03-06", completed: false },
         { habitId: habit.id, dateKey: "2026-03-07", completed: true },
         { habitId: habit.id, dateKey: "2026-03-09", completed: true },
-      ],
-    });
+      ]);
 
     const overview = await getOverviewStats(
       {

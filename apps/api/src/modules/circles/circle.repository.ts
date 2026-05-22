@@ -1,5 +1,27 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 
+import { HABIT_ENTRY_TYPE_SLUGS, mapEntryToHabit } from "../habits/habit-entry-adapter";
+
+// Habit sharing now lives on CircleEntryShare/Entry/EntryEvent. These functions keep
+// their legacy names and `.habit` sub-shape (so circle.service is unchanged), but the
+// `habitId` they receive is the Entry id — the {habitId} backward-compat alias is a
+// pure pass-through because Entry.id == the old Habit.id.
+
+const habitEntryInclude = {
+  entryType: { select: { slug: true } },
+  weekdays: true,
+} as const;
+
+type EntryEventRow = { dateKey: string; value: unknown; completed: boolean | null };
+
+function mapEventsToDayStates(events: EntryEventRow[]) {
+  return events.map((event) => ({
+    dateKey: event.dateKey,
+    value: event.value === null ? null : Number(event.value),
+    completed: event.completed ?? false,
+  }));
+}
+
 export async function createCircleRecord(db: PrismaClient, params: { ownerId: string; name: string }) {
   return db.circle.create({
     data: {
@@ -123,8 +145,8 @@ export async function createCircleHabitShareRecord(
   db: PrismaClient,
   params: { circleId: string; habitId: string },
 ) {
-  return db.circleHabitShare.create({
-    data: { circleId: params.circleId, habitId: params.habitId },
+  return db.circleEntryShare.create({
+    data: { circleId: params.circleId, entryId: params.habitId },
   });
 }
 
@@ -132,9 +154,9 @@ export async function removeCircleHabitShareRecord(
   db: PrismaClient,
   params: { circleId: string; habitId: string },
 ) {
-  return db.circleHabitShare.delete({
+  return db.circleEntryShare.delete({
     where: {
-      circleId_habitId: { circleId: params.circleId, habitId: params.habitId },
+      circleId_entryId: { circleId: params.circleId, entryId: params.habitId },
     },
   });
 }
@@ -143,53 +165,34 @@ export async function listCircleHabitSharesByUser(
   db: PrismaClient,
   params: { circleId: string; userId: string },
 ) {
-  return db.circleHabitShare.findMany({
+  const shares = await db.circleEntryShare.findMany({
     where: {
       circleId: params.circleId,
-      habit: { userId: params.userId },
+      entry: { userId: params.userId, entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } },
     },
     include: {
-      habit: { select: { id: true, name: true } },
+      entry: { select: { id: true, name: true } },
     },
     orderBy: { createdAt: "asc" },
   });
-}
 
-export async function listSharedHabitsForMember(
-  db: PrismaClient,
-  params: { circleId: string; userId: string },
-) {
-  return db.circleHabitShare.findMany({
-    where: {
-      circleId: params.circleId,
-      habit: { userId: params.userId, isActive: true },
-    },
-    include: {
-      habit: {
-        include: {
-          user: { select: { timezone: true } },
-          weekdays: { orderBy: { day: "asc" } },
-        },
-      },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  return shares.map((share) => ({ habit: { id: share.entry.id, name: share.entry.name } }));
 }
 
 export async function findCircleHabitShare(
   db: PrismaClient,
   params: { circleId: string; habitId: string },
 ) {
-  return db.circleHabitShare.findUnique({
+  return db.circleEntryShare.findUnique({
     where: {
-      circleId_habitId: { circleId: params.circleId, habitId: params.habitId },
+      circleId_entryId: { circleId: params.circleId, entryId: params.habitId },
     },
   });
 }
 
 export async function findHabitForCircle(db: PrismaClient, habitId: string) {
-  return db.habit.findUnique({
-    where: { id: habitId },
+  return db.entry.findFirst({
+    where: { id: habitId, entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } },
     select: { id: true, userId: true, isActive: true },
   });
 }
@@ -206,21 +209,30 @@ export async function getCircleLeaderboardData(
 
   const memberIds = memberships.map((m) => m.userId);
 
-  const shares = await db.circleHabitShare.findMany({
+  const shareRows = await db.circleEntryShare.findMany({
     where: {
       circleId: params.circleId,
-      habit: { userId: { in: memberIds }, isActive: true },
+      entry: {
+        userId: { in: memberIds },
+        isActive: true,
+        entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } },
+      },
     },
     include: {
-      habit: {
-        include: {
-          dayStates: {
+      entry: {
+        select: {
+          userId: true,
+          events: {
             where: { dateKey: { gte: params.rangeStart, lte: params.todayKey } },
           },
         },
       },
     },
   });
+
+  const shares = shareRows.map((share) => ({
+    habit: { userId: share.entry.userId, dayStates: mapEventsToDayStates(share.entry.events) },
+  }));
 
   return { memberships, shares };
 }
@@ -239,21 +251,23 @@ export async function listSharedHabitsWithTodayState(
   db: PrismaClient,
   params: { circleId: string; userId: string; todayKey: string },
 ) {
-  return db.circleHabitShare.findMany({
+  const shares = await db.circleEntryShare.findMany({
     where: {
       circleId: params.circleId,
-      habit: { userId: params.userId, isActive: true },
+      entry: { userId: params.userId, isActive: true, entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } },
     },
     include: {
-      habit: {
+      entry: {
         include: {
-          weekdays: { orderBy: { day: "asc" } },
-          dayStates: {
-            where: { dateKey: params.todayKey },
-          },
+          ...habitEntryInclude,
+          events: { where: { dateKey: params.todayKey } },
         },
       },
     },
     orderBy: { createdAt: "asc" },
   });
+
+  return shares.map((share) => ({
+    habit: { ...mapEntryToHabit(share.entry), dayStates: mapEventsToDayStates(share.entry.events) },
+  }));
 }

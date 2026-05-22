@@ -378,7 +378,7 @@ describe("attachment routes", () => {
 
     // Deleting the habit cascades to mutations and attachment rows. Files on
     // disk are intentionally left (documented gap), so we only assert the rows.
-    await context.app.db.habit.delete({ where: { id: habit.id } });
+    await context.app.db.entry.delete({ where: { id: habit.id } });
     const remaining = await context.app.db.attachment.count();
     expect(remaining).toBe(0);
     const dirEntries = await readdir(context.attachmentsDir).catch(() => []);

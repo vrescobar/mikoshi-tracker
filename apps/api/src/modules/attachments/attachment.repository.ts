@@ -4,7 +4,7 @@ type DbClient = PrismaClient | Prisma.TransactionClient;
 
 export type PersistedAttachment = {
   id: string;
-  mutationId: string;
+  eventMutationId: string | null;
   userId: string;
   kind: string;
   storageKey: string;
@@ -19,71 +19,42 @@ export type PersistedAttachment = {
 
 export type OwnedMutation = {
   id: string;
-  habitId: string;
   userId: string;
 };
 
-/** Resolve a mutation the caller owns (via the habit's owner), or null. */
+/** Resolve an EventMutation the caller owns, or null. */
 export async function findOwnedMutation(
   db: DbClient,
   params: { userId: string; mutationId: string },
 ): Promise<OwnedMutation | null> {
-  const mutation = await db.checkInMutation.findFirst({
-    where: {
-      id: params.mutationId,
-      habit: { userId: params.userId },
-    },
-    select: {
-      id: true,
-      habitId: true,
-      habit: { select: { userId: true } },
-    },
+  const mutation = await db.eventMutation.findFirst({
+    where: { id: params.mutationId, userId: params.userId },
+    select: { id: true, userId: true },
   });
 
-  if (!mutation) {
-    return null;
-  }
-
-  return {
-    id: mutation.id,
-    habitId: mutation.habitId,
-    userId: mutation.habit.userId,
-  };
+  return mutation ?? null;
 }
 
 /**
- * Resolve the most recent real check-in entry (ignoring undo records) of a
- * habit the caller owns. Lets the web attach a photo to "today's entry"
- * without surfacing individual mutation ids in the UI.
+ * Resolve the most recent real check-in mutation (ignoring undo records) of an
+ * entry the caller owns. Lets the web attach a photo to "today's entry" without
+ * surfacing individual mutation ids in the UI. `habitId` is the Entry id.
  */
 export async function findLatestOwnedMutationForHabit(
   db: DbClient,
   params: { userId: string; habitId: string },
 ): Promise<OwnedMutation | null> {
-  const habit = await db.habit.findFirst({
-    where: { id: params.habitId, userId: params.userId },
+  const mutation = await db.eventMutation.findFirst({
+    where: { entryId: params.habitId, userId: params.userId, type: { not: "UNDO" } },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: { id: true, userId: true },
   });
 
-  if (!habit) {
-    return null;
-  }
-
-  const mutation = await db.checkInMutation.findFirst({
-    where: { habitId: habit.id, type: { not: "UNDO" } },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: { id: true, habitId: true },
-  });
-
-  if (!mutation) {
-    return null;
-  }
-
-  return { id: mutation.id, habitId: mutation.habitId, userId: habit.userId };
+  return mutation ?? null;
 }
 
 export async function countAttachmentsForMutation(db: DbClient, mutationId: string): Promise<number> {
-  return db.attachment.count({ where: { mutationId } });
+  return db.attachment.count({ where: { eventMutationId: mutationId } });
 }
 
 export async function createAttachment(
@@ -100,7 +71,8 @@ export async function createAttachment(
     height: number | null;
   },
 ): Promise<PersistedAttachment> {
-  return db.attachment.create({ data });
+  const { mutationId, ...rest } = data;
+  return db.attachment.create({ data: { ...rest, eventMutationId: mutationId } });
 }
 
 export async function listAttachmentsByMutation(
@@ -108,7 +80,7 @@ export async function listAttachmentsByMutation(
   params: { userId: string; mutationId: string },
 ): Promise<PersistedAttachment[]> {
   return db.attachment.findMany({
-    where: { userId: params.userId, mutationId: params.mutationId },
+    where: { userId: params.userId, eventMutationId: params.mutationId },
     orderBy: { createdAt: "asc" },
   });
 }
@@ -118,7 +90,7 @@ export async function listAttachmentsByHabit(
   params: { userId: string; habitId: string },
 ): Promise<PersistedAttachment[]> {
   return db.attachment.findMany({
-    where: { userId: params.userId, mutation: { habitId: params.habitId } },
+    where: { userId: params.userId, eventMutation: { entryId: params.habitId } },
     orderBy: { createdAt: "asc" },
   });
 }

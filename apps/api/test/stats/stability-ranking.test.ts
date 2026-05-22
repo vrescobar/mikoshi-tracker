@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { getOverviewStats } from "../../src/modules/stats/stats.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -67,7 +68,7 @@ describe("stability ranking", () => {
       startDate: "2026-03-05",
     });
 
-    await context.app.db.habit.update({
+    await context.app.db.entry.update({
       where: {
         id: archivedHabit.id,
       },
@@ -76,8 +77,7 @@ describe("stability ranking", () => {
       },
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: topHabit.id, dateKey: "2026-03-05", completed: true },
         { habitId: topHabit.id, dateKey: "2026-03-06", completed: true },
         { habitId: topHabit.id, dateKey: "2026-03-07", completed: true },
@@ -92,8 +92,7 @@ describe("stability ranking", () => {
         { habitId: archivedHabit.id, dateKey: "2026-03-07", completed: true },
         { habitId: archivedHabit.id, dateKey: "2026-03-08", completed: true },
         { habitId: archivedHabit.id, dateKey: "2026-03-09", completed: true },
-      ],
-    });
+      ]);
 
     const overview = await getOverviewStats(
       {

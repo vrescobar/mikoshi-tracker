@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { createHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function issueApiToken(context: TestContext, cookie: string) {
   const response = await context.app.inject({
@@ -59,12 +60,10 @@ describe("stats api contracts", () => {
       startDate: "2026-03-01",
     });
 
-    await context.app.db.habitDayState.createMany({
-      data: [
+    await seedHabitDayStates(context.app.db, [
         { habitId: habit.id, dateKey: "2026-03-09", completed: true },
         { habitId: habit.id, dateKey: "2026-03-10", completed: true },
-      ],
-    });
+      ]);
 
     const response = await context.app.inject({
       method: "GET",

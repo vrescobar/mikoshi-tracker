@@ -8,6 +8,7 @@ import {
   updateHabit,
 } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
+import { seedHabitDayStates } from "../helpers/habits";
 
 async function createOwnedHabit(
   context: TestContext,
@@ -137,14 +138,12 @@ describe("habit management service", () => {
       },
     });
 
-    await context.app.db.habitDayState.create({
-      data: {
+    await seedHabitDayStates(context.app.db, [{
         habitId: habit.id,
         dateKey: "2026-03-02",
         value: 6,
         completed: false,
-      },
-    });
+      }]);
 
     const updated = await updateHabit(
       {
@@ -181,21 +180,19 @@ describe("habit management service", () => {
       weekdays: ["monday", "tuesday", "wednesday"],
     });
 
-    const historyState = await context.app.db.habitDayState.findUniqueOrThrow({
+    const historyState = await context.app.db.entryEvent.findFirstOrThrow({
       where: {
-        habitId_dateKey: {
-          habitId: habit.id,
-          dateKey: "2026-03-02",
-        },
+        entryId: habit.id,
+        dateKey: "2026-03-02",
       },
     });
 
     expect(historyState).toMatchObject({
-      habitId: habit.id,
+      entryId: habit.id,
       dateKey: "2026-03-02",
-      value: 6,
       completed: false,
     });
+    expect(Number(historyState.value)).toBe(6);
 
     await expect(
       updateHabit(

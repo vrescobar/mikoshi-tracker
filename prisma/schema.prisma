@@ -165,21 +165,23 @@ model CheckInMutation {
 }
 
 model Attachment {
-  id              String          @id @default(cuid())
-  mutationId      String
+  id              String           @id @default(cuid())
+  // Legacy link to CheckInMutation — nullable in Phase 12; attachments now anchor on
+  // eventMutationId. This column is dropped together with the legacy tables.
+  mutationId      String?
   eventMutationId String?
   userId          String
-  kind            String          @default("image")
-  storageKey      String          @unique
+  kind            String           @default("image")
+  storageKey      String           @unique
   originalName    String?
   mimeType        String
   size            Int
   width           Int?
   height          Int?
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  mutation        CheckInMutation @relation(fields: [mutationId], references: [id], onDelete: Cascade)
-  eventMutation   EventMutation?  @relation(fields: [eventMutationId], references: [id], onDelete: SetNull)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  mutation        CheckInMutation? @relation(fields: [mutationId], references: [id], onDelete: Cascade)
+  eventMutation   EventMutation?   @relation(fields: [eventMutationId], references: [id], onDelete: Cascade)
   user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([mutationId, createdAt])

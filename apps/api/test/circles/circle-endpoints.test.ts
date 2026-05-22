@@ -143,13 +143,13 @@ describe("circle read endpoints", () => {
 
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: sharedActive.id });
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: sharedInactive.id });
-      await context.app.db.habit.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
+      await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
 
       // Complete unshared and inactive habits — should not count
       await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: unshared.id, source: "web", timestamp: NOW });
-      await context.app.db.habit.update({ where: { id: sharedInactive.id }, data: { isActive: true } });
+      await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: true } });
       await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: sharedInactive.id, source: "web", timestamp: NOW });
-      await context.app.db.habit.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
+      await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
 
       const response = await context.app.inject({
         method: "GET",

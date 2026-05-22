@@ -17,6 +17,8 @@ import {
 } from "../checkins/checkin.service";
 import { HabitInactiveError } from "../habits/habit.service";
 
+import { HABIT_ENTRY_TYPE_SLUGS, mapEntryToHabit } from "../habits/habit-entry-adapter";
+
 import { buildTodaySummary } from "./today-summary";
 import { resolveHabitDay } from "./today-clock";
 
@@ -80,36 +82,34 @@ async function buildTodayResponse(request: FastifyRequest, userId: string, times
   const rangeStart = day.weekStartKey < day.monthStartKey ? day.weekStartKey : day.monthStartKey;
   const rangeEnd = day.weekEndKey > day.monthEndKey ? day.weekEndKey : day.monthEndKey;
 
-  const [habits, dayStates, completedStates] = await Promise.all([
-    request.server.db.habit.findMany({
+  // Habits are Entry rows of the two habit types; check-ins are their EntryEvents.
+  const habitSlugFilter = { entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } };
+  const [habitEntries, dayStates, completedStates] = await Promise.all([
+    request.server.db.entry.findMany({
       where: {
         userId,
         isActive: true,
+        ...habitSlugFilter,
       },
       include: {
-        weekdays: {
-          orderBy: {
-            day: "asc",
-          },
-        },
+        entryType: { select: { slug: true } },
+        weekdays: true,
       },
       orderBy: {
         createdAt: "asc",
       },
     }),
-    request.server.db.habitDayState.findMany({
+    request.server.db.entryEvent.findMany({
       where: {
-        habit: {
-          userId,
-        },
+        userId,
+        entry: habitSlugFilter,
         dateKey: day.todayKey,
       },
     }),
-    request.server.db.habitDayState.findMany({
+    request.server.db.entryEvent.findMany({
       where: {
-        habit: {
-          userId,
-        },
+        userId,
+        entry: habitSlugFilter,
         completed: true,
         dateKey: {
           gte: rangeStart,
@@ -123,22 +123,22 @@ async function buildTodayResponse(request: FastifyRequest, userId: string, times
 
   for (const state of completedStates) {
     if (state.dateKey >= day.weekStartKey && state.dateKey <= day.weekEndKey) {
-      incrementPeriodCounter(periodCounters, state.habitId, "week");
+      incrementPeriodCounter(periodCounters, state.entryId, "week");
     }
 
     if (state.dateKey >= day.monthStartKey && state.dateKey <= day.monthEndKey) {
-      incrementPeriodCounter(periodCounters, state.habitId, "month");
+      incrementPeriodCounter(periodCounters, state.entryId, "month");
     }
   }
 
   const summary = buildTodaySummary({
     day,
-    habits: habits.map((habit) => serializeHabit(habit)),
+    habits: habitEntries.map((entry) => serializeHabit(mapEntryToHabit(entry))),
     dayStates: dayStates.map((state) => ({
-      habitId: state.habitId,
+      habitId: state.entryId,
       dateKey: state.dateKey,
-      value: state.value,
-      completed: state.completed,
+      value: state.value === null ? null : Number(state.value),
+      completed: state.completed ?? false,
     })),
     periodProgress: Array.from(periodCounters.entries()).flatMap(([habitId, counts]) => [
       {
