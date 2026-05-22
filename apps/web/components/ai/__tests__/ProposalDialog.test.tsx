@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../locale", () => ({ useLocale: () => ({ locale: "en" }) }));
 vi.mock("../../../lib/i18n/food", () => ({
@@ -66,6 +66,10 @@ import type { EntryEventDetail } from "@mikoshi-tracker/contracts/events";
 import { createFoodEvent, ensureFoodEntry } from "../../../lib/food-client";
 import { ProposalDialog } from "../ProposalDialog";
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 const mockEntry = { id: "entry-1" };
 const mockEvent = { id: "event-1" } as unknown as EntryEventDetail;
 
@@ -88,16 +92,36 @@ describe("ProposalDialog — validation", () => {
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
-  it("shows a Notice and does not call createFoodEvent when kcal is negative", () => {
+  it("shows a Notice and does not call createFoodEvent when kcal is empty", () => {
     renderDialog();
 
+    // Name is filled but kcal is left empty → parseFloat("") = NaN → validationKcal
     fireEvent.change(screen.getAllByRole("textbox")[0], { target: { value: "Apple" } });
-    fireEvent.change(screen.getAllByRole("spinbutton")[0], { target: { value: "-1" } });
     fireEvent.click(screen.getByRole("button", { name: "Add" }));
 
     expect(screen.getByRole("alert")).toBeInTheDocument();
     expect(screen.getByText("Calories must be 0 or higher.")).toBeInTheDocument();
     expect(createFoodEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe("ProposalDialog — error handling", () => {
+  it("shows a Notice with the error message and keeps dialog open when ensureFoodEntry rejects", async () => {
+    vi.mocked(ensureFoodEntry).mockRejectedValue(new Error("Server unavailable"));
+
+    const { onOpenChange } = renderDialog();
+
+    fireEvent.change(screen.getAllByRole("textbox")[0], { target: { value: "Apple" } });
+    fireEvent.change(screen.getAllByRole("spinbutton")[0], { target: { value: "100" } });
+    fireEvent.change(screen.getAllByRole("spinbutton")[1], { target: { value: "0" } });
+    fireEvent.change(screen.getAllByRole("spinbutton")[2], { target: { value: "25" } });
+    fireEvent.change(screen.getAllByRole("spinbutton")[3], { target: { value: "0" } });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add" }));
+
+    await waitFor(() => expect(screen.getByRole("alert")).toBeInTheDocument());
+    expect(screen.getByText("Server unavailable")).toBeInTheDocument();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });
 
