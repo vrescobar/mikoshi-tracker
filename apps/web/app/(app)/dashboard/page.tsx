@@ -1,6 +1,7 @@
 import { DashboardShell } from "../../../components/dashboard/dashboard-shell";
 import {
   buildCookieHeader,
+  getFoodAggregationsFromCookieHeader,
   getOverviewStatsFromCookieHeader,
   getTodaySummaryFromCookieHeader,
   listHabitsFromCookieHeader,
@@ -22,13 +23,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   }
 
   const cookieHeader = await buildCookieHeader();
-  const [activeHabits, archivedHabits] = await Promise.all([
-    listHabitsFromCookieHeader(cookieHeader, {
-      status: "active",
-    }),
-    listHabitsFromCookieHeader(cookieHeader, {
-      status: "archived",
-    }),
+  const today = new Date().toISOString().slice(0, 10);
+
+  const [[activeHabits, archivedHabits], foodAggregationsResult] = await Promise.all([
+    Promise.all([
+      listHabitsFromCookieHeader(cookieHeader, { status: "active" }),
+      listHabitsFromCookieHeader(cookieHeader, { status: "archived" }),
+    ]),
+    getFoodAggregationsFromCookieHeader(cookieHeader, today, today).catch(() => null),
   ]);
 
   const emptyState = activeHabits.length === 0 ? (archivedHabits.length > 0 ? "archived-only" : "no-habits") : null;
@@ -57,6 +59,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       initialLoadError={initialLoadError}
       initialOverview={initialOverview}
       initialSummary={initialSummary}
+      initialFoodTodayAggregations={foodAggregationsResult}
     />
   );
 }

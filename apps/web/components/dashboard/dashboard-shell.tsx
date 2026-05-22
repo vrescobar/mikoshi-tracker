@@ -1,5 +1,6 @@
 "use client";
 
+import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 import { useRouter } from "next/navigation";
@@ -10,6 +11,7 @@ import { useLocale } from "../locale";
 import { Button, SkeletonBlock, StatePanel } from "../ui";
 import { routes } from "../../lib/navigation";
 import { TodayDashboard } from "../today/today-dashboard";
+import { FoodTodayPanel } from "./food-today-panel";
 import { OverviewSection } from "./overview-section";
 import styles from "./dashboard-shell.module.css";
 
@@ -18,11 +20,13 @@ export function DashboardShell({
   initialLoadError = null,
   initialOverview,
   initialSummary,
+  initialFoodTodayAggregations = null,
 }: {
   emptyState?: "no-habits" | "archived-only" | null;
   initialLoadError?: string | null;
   initialOverview: OverviewStats | null;
   initialSummary: TodaySummary | null;
+  initialFoodTodayAggregations?: AggregationResponse | null;
 }) {
   const router = useRouter();
   const { copy } = useLocale();
@@ -178,6 +182,7 @@ export function DashboardShell({
   return (
     <div className={styles.stack}>
       <TodayDashboard initialSummary={summary} onActionSettled={refreshOverview} />
+      <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
       <OverviewSection overview={overview} isRefreshing={isRefreshingOverview} />
     </div>
   );

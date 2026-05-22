@@ -133,6 +133,23 @@ export type LocaleMessages = {
         notDue: string;
       };
     };
+    foodToday: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      metrics: {
+        kcal: string;
+        protein: string;
+        carbs: string;
+        fat: string;
+        meals: string;
+      };
+      emptyState: {
+        title: string;
+        description: string;
+      };
+      viewFood: string;
+    };
   };
   today: {
     hero: {
@@ -356,6 +373,23 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           notDue: "Not due",
         },
       },
+      foodToday: {
+        eyebrow: "Nutrition",
+        title: "Food today",
+        description: "Calories and macros logged so far today.",
+        metrics: {
+          kcal: "kcal",
+          protein: "Protein",
+          carbs: "Carbs",
+          fat: "Fat",
+          meals: "Meals",
+        },
+        emptyState: {
+          title: "Nothing logged yet",
+          description: "Log meals via WhatsApp to see them here.",
+        },
+        viewFood: "View food log →",
+      },
     },
     today: {
       hero: {
@@ -578,6 +612,23 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           notDue: "当天无任务",
         },
       },
+      foodToday: {
+        eyebrow: "营养",
+        title: "今日饮食",
+        description: "今天已记录的热量和营养素。",
+        metrics: {
+          kcal: "千卡",
+          protein: "蛋白质",
+          carbs: "碳水",
+          fat: "脂肪",
+          meals: "餐数",
+        },
+        emptyState: {
+          title: "今天还没有记录",
+          description: "通过 WhatsApp 记录饮食，它们会显示在这里。",
+        },
+        viewFood: "查看饮食记录 →",
+      },
     },
     today: {
       hero: {
@@ -799,6 +850,23 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         chart: {
           notDue: "Sin previsión",
         },
+      },
+      foodToday: {
+        eyebrow: "Nutrición",
+        title: "Hoy en comida",
+        description: "Calorías y macros registrados hasta ahora hoy.",
+        metrics: {
+          kcal: "kcal",
+          protein: "Proteína",
+          carbs: "Carbohidratos",
+          fat: "Grasa",
+          meals: "Comidas",
+        },
+        emptyState: {
+          title: "Nada registrado aún",
+          description: "Registra comidas vía WhatsApp para verlas aquí.",
+        },
+        viewFood: "Ver registro de comida →",
       },
     },
     today: {

@@ -181,7 +181,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       `RangeHeatmap`. CSS Modules following the design system in
       `CLAUDE.md`.
 
-- [ ] **48** Web — dashboard "Hoy en comida" panel — add a panel to
+- [x] **48** Web — dashboard "Hoy en comida" panel — add a panel to
       `apps/web/app/(app)/dashboard/page.tsx` consuming
       `GET /api/aggregations?entryTypeSlug=food_meal&from=<today>&to=<today>
       &groupBy=day&fields=kcal,protein_g,carbs_g,fat_g&include=count`.
