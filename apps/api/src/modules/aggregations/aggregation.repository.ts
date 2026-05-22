@@ -34,14 +34,23 @@ export async function queryAggregationRows(
     to: string;
     groupBy: "day" | "week" | "month" | "none";
     sumFields: string[];
+    cachedColumns?: Record<string, string>;
   },
 ): Promise<RawAggregationRow[]> {
-  const { userId, entryTypeSlug, entryId, from, to, groupBy, sumFields } = params;
+  const { userId, entryTypeSlug, entryId, from, to, groupBy, sumFields, cachedColumns } = params;
 
   const bucket = bucketExpression(groupBy);
 
   const sumColumns = sumFields.map((f) => {
     const safe = sanitizeFieldName(f);
+    const cached = cachedColumns?.[safe];
+    if (cached) {
+      // Use the pre-computed column with a json_extract fallback. In production
+      // the column is a STORED generated column (never NULL); in test databases
+      // it is a plain nullable column so the COALESCE path handles both.
+      const cachedSafe = sanitizeFieldName(cached);
+      return `SUM(COALESCE(ee.${cachedSafe}, CAST(json_extract(ee.payload, '$.${safe}') AS REAL))) as sum_${safe}`;
+    }
     return `SUM(CAST(json_extract(ee.payload, '$.${safe}') AS REAL)) as sum_${safe}`;
   });
 

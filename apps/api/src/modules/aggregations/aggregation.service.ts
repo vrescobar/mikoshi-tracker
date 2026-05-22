@@ -155,6 +155,7 @@ export async function computeAggregations(
     to,
     groupBy,
     sumFields: activeSumFields,
+    cachedColumns: spec.cachedColumns,
   });
 
   const rowByBucket = new Map<string, RawAggregationRow>();

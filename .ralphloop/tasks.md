@@ -250,7 +250,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       engine, the schema cache, and the aggregation pipeline. Cross-link
       `GOAL.md` §G and `PLAN.md`.
 
-- [ ] **57** Performance hardening — generate a fixture of ~10k
+- [x] **57** Performance hardening — generate a fixture of ~10k
       `EntryEvent` rows across two users and 200 days; run
       `EXPLAIN QUERY PLAN` on the hot aggregation queries; if
       `json_extract(payload, '$.kcal')` is on the hot path, add a SQLite

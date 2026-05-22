@@ -8,6 +8,11 @@ export interface AggregationSpec {
   windows?: string[];
   sumFields?: string[];
   groupBy?: string[];
+  // Maps payload field name → pre-computed DB column name (e.g. kcal → kcal_cached).
+  // When present the aggregation engine uses the cached column with a COALESCE fallback
+  // to json_extract so the query works in both production (STORED generated column) and
+  // test databases (plain nullable column, NULL → fallback).
+  cachedColumns?: Record<string, string>;
 }
 
 export interface CompiledSchema {

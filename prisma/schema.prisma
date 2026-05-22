@@ -291,24 +291,29 @@ model EntryWeekday {
 }
 
 model EntryEvent {
-  id         String          @id @default(cuid())
-  entryId    String
-  userId     String
-  occurredAt DateTime
-  dateKey    String
-  payload    String
-  value      Decimal?
-  completed  Boolean?
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-  entry      Entry           @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  mutations  EventMutation[]
+  id          String          @id @default(cuid())
+  entryId     String
+  userId      String
+  occurredAt  DateTime
+  dateKey     String
+  payload     String
+  value       Decimal?
+  completed   Boolean?
+  // Production: STORED generated column (see migration add_kcal_cached_column).
+  // Test databases (via db push): plain nullable column; aggregation engine falls back
+  // to json_extract via COALESCE when this is NULL.
+  kcalCached  Float?          @map("kcal_cached")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  entry       Entry           @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mutations   EventMutation[]
 
   @@index([entryId, dateKey])
   @@index([entryId, occurredAt])
   @@index([userId, dateKey])
   @@index([dateKey])
+  @@index([userId, dateKey, kcalCached])
 }
 
 model EventMutation {

@@ -96,6 +96,7 @@ const FOOD_MEAL_CONFIG_SCHEMA = JSON.stringify({
 const FOOD_MEAL_AGGREGATIONS = JSON.stringify({
   metrics: ["sum", "count", "missing_days"],
   sumFields: ["kcal", "protein_g", "carbs_g", "fat_g"],
+  cachedColumns: { kcal: "kcal_cached" },
 });
 
 const BUILT_IN_ENTRY_TYPES: Array<{
@@ -145,7 +146,9 @@ export async function seedBuiltInEntryTypes(db: PrismaClient): Promise<void> {
     await db.entryType.upsert({
       where: { slug: type.slug },
       create: type,
-      update: {},
+      // Keep the aggregations spec in sync so cachedColumns additions are picked up
+      // on existing deployments without requiring a separate data migration.
+      update: { aggregations: type.aggregations },
     });
   }
 }
