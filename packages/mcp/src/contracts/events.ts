@@ -53,9 +53,7 @@ export const eventListFiltersSchema = z
     entryTypeSlug: optionalNonEmptyString,
     from: isoDateSchema.optional(),
     to: isoDateSchema.optional(),
-    limit: z
-      .union([z.number().int().positive(), z.string().regex(/^\d+$/).transform(Number)])
-      .optional(),
+    limit: z.number().int().positive().optional(),
     cursor: optionalNonEmptyString,
   })
   .default({});

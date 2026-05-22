@@ -31,10 +31,7 @@ export const entryIdParamsSchema = z.object({
 export const entryListFiltersSchema = z
   .object({
     entryTypeSlug: optionalNonEmptyString,
-    isActive: z
-      .union([z.literal("true"), z.literal("false"), z.boolean()])
-      .transform((v) => (typeof v === "string" ? v === "true" : v))
-      .optional(),
+    isActive: z.boolean().optional(),
     query: optionalNonEmptyString,
   })
   .default({});

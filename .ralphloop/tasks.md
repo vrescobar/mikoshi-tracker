@@ -156,7 +156,7 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       aliases delegating to the new engine endpoints. `@mikoshi-tracker/mcp`
       test suite must pass.
 
-- [ ] **45** OpenClaw plugin verification — confirm
+- [x] **45** OpenClaw plugin verification — confirm
       `packages/openclaw-plugin/src/register-tools.ts` picks up the new
       tools via the existing catalogue. Run `pnpm verify:openclaw` —
       must pass with no code changes to the plugin.
