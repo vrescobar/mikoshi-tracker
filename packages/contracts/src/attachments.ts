@@ -43,6 +43,26 @@ export const attachmentUploadBase64InputSchema = z.object({
   originalName: nonEmptyString.nullable().optional(),
 });
 
+/**
+ * POST /api/attachments/event — pin an image directly to an EntryEvent. The
+ * server resolves the event's latest CREATE/UPDATE mutation and stores the
+ * file against that mutation. Used by the food quick-add flow.
+ */
+export const attachmentEventUploadInputSchema = z.object({
+  eventId: nonEmptyString,
+  data: nonEmptyString,
+  originalName: nonEmptyString.nullable().optional(),
+});
+
+/**
+ * Where an attachment may be pinned. Habit check-ins still use mutationId;
+ * food (and any future event-based EntryType) uses eventId.
+ */
+export const attachmentTargetSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("habit-checkin"), mutationId: nonEmptyString }),
+  z.object({ kind: z.literal("event"), eventId: nonEmptyString }),
+]);
+
 export const attachmentListFiltersSchema = z
   .object({
     mutationId: nonEmptyString.optional(),
@@ -57,4 +77,6 @@ export type AttachmentMetadata = z.infer<typeof attachmentMetadataSchema>;
 export type AttachmentListResponse = z.infer<typeof attachmentListResponseSchema>;
 export type AttachmentUploadResponse = z.infer<typeof attachmentUploadResponseSchema>;
 export type AttachmentUploadBase64Input = z.infer<typeof attachmentUploadBase64InputSchema>;
+export type AttachmentEventUploadInput = z.infer<typeof attachmentEventUploadInputSchema>;
+export type AttachmentTarget = z.infer<typeof attachmentTargetSchema>;
 export type AttachmentListFilters = z.infer<typeof attachmentListFiltersSchema>;

@@ -144,6 +144,24 @@ export async function createFoodEvent(entryId: string, payload: FoodPayload, occ
   return body.item;
 }
 
+export async function attachImageToFoodEvent(
+  eventId: string,
+  base64: string,
+  originalName?: string | null,
+): Promise<{ id: string; url: string }> {
+  const body = await requestJson<{
+    attachment: { id: string; url: string };
+  }>(`/api/attachments/event`, {
+    method: "POST",
+    body: JSON.stringify({
+      eventId,
+      data: base64,
+      originalName: originalName ?? null,
+    }),
+  });
+  return body.attachment;
+}
+
 export async function getFoodAggregations(from: string, to: string, groupBy: "day" | "week" | "month" = "day") {
   const params = new URLSearchParams({
     entryTypeSlug: "food_meal",

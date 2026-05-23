@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 
 import {
+  attachmentEventUploadInputSchema,
   attachmentListFiltersSchema,
   attachmentListResponseSchema,
   attachmentUploadBase64InputSchema,
@@ -15,6 +16,7 @@ import {
   downloadAttachmentHandler,
   listAttachmentsHandler,
   uploadAttachmentBase64Handler,
+  uploadAttachmentToEventHandler,
   uploadAttachmentsHandler,
 } from "./attachment.controller";
 
@@ -82,6 +84,58 @@ export const attachmentApiRouteDefinitions: PublicApiRouteDefinition[] = [
       },
       409: {
         description: "The mutation already has the maximum number of attachments.",
+        schema: attachmentErrorSchema,
+      },
+      413: {
+        description: "The image data exceeds the maximum allowed size.",
+        schema: attachmentErrorSchema,
+      },
+      415: {
+        description: "The uploaded file is not a supported image type.",
+        schema: attachmentErrorSchema,
+      },
+      ...commonAuthErrorResponses,
+    },
+  },
+  {
+    method: "POST",
+    path: "/api/attachments/event",
+    operationId: "uploadAttachmentToEvent",
+    summary: "Upload attachment pinned to an EntryEvent",
+    description:
+      "Upload a single image as base64, anchored to an EntryEvent (used by the food " +
+      "quick-add flow). The server resolves the event's latest CREATE/UPDATE mutation " +
+      "and stores the file against it. The event must belong to the authenticated user.",
+    tags: ["Attachments"],
+    security: [{ BearerAuth: [] }],
+    request: {
+      body: attachmentEventUploadInputSchema,
+      bodyExamples: {
+        png: {
+          summary: "PNG pinned to a food event",
+          value: {
+            eventId: "evt_abc123",
+            data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            originalName: "meal.png",
+          },
+        },
+      },
+    },
+    responses: {
+      201: {
+        description: "Attachment processed and persisted.",
+        schema: attachmentUploadResponseSchema,
+      },
+      400: {
+        description: "Missing or invalid request body.",
+        schema: attachmentErrorSchema,
+      },
+      404: {
+        description: "The referenced `eventId` does not exist or does not belong to the authenticated user.",
+        schema: attachmentErrorSchema,
+      },
+      409: {
+        description: "The event's latest mutation already has the maximum number of attachments.",
         schema: attachmentErrorSchema,
       },
       413: {
@@ -194,6 +248,7 @@ export const attachmentApiRouteDefinitions: PublicApiRouteDefinition[] = [
 export async function registerAttachmentRoutes(app: FastifyInstance) {
   app.post("/api/attachments", uploadAttachmentsHandler);
   app.post("/api/attachments/base64", { bodyLimit: BASE64_BODY_LIMIT }, uploadAttachmentBase64Handler);
+  app.post("/api/attachments/event", { bodyLimit: BASE64_BODY_LIMIT }, uploadAttachmentToEventHandler);
   app.get("/api/attachments", listAttachmentsHandler);
   app.get("/api/attachments/:id/file", downloadAttachmentHandler);
   app.delete("/api/attachments/:id", deleteAttachmentHandler);

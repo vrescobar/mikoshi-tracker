@@ -1,7 +1,11 @@
 import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import { ATTACHMENT_MAX_DIMENSION, attachmentUploadBase64InputSchema } from "@mikoshi-tracker/contracts/attachments";
+import {
+  ATTACHMENT_MAX_DIMENSION,
+  attachmentEventUploadInputSchema,
+  attachmentUploadBase64InputSchema,
+} from "@mikoshi-tracker/contracts/attachments";
 
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { sendAuthError } from "../../shared/controller-helpers";
@@ -157,6 +161,32 @@ export async function uploadAttachmentBase64Handler(request: FastifyRequest, rep
       originalName: input.originalName ?? null,
     });
 
+    return { attachment };
+  } catch (error) {
+    if (error instanceof AuthSessionError) {
+      sendAuthError(reply, error);
+      return reply;
+    }
+    return sendAttachmentError(reply, error);
+  }
+}
+
+/** POST /api/attachments/event — JSON upload pinned to an EntryEvent (food). */
+export async function uploadAttachmentToEventHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const user = await requireAuthenticatedUser(request);
+    const input = attachmentEventUploadInputSchema.parse(request.body);
+    const base64 = input.data.includes(",") ? input.data.slice(input.data.indexOf(",") + 1) : input.data;
+    const buffer = Buffer.from(base64, "base64");
+
+    const attachment = await uploadAttachment(dependencies(request), {
+      userId: user.id,
+      target: { eventId: input.eventId },
+      buffer,
+      originalName: input.originalName ?? null,
+    });
+
+    reply.status(201);
     return { attachment };
   } catch (error) {
     if (error instanceof AuthSessionError) {

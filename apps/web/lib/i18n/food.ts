@@ -112,6 +112,9 @@ export type FoodCopy = {
     submittingLabel: string;
     cancelLabel: string;
     errorTitle: string;
+    photoLabel: string;
+    photoHint: string;
+    photoUploadFailed: string;
   };
   insights: {
     header: {
@@ -270,6 +273,9 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       submittingLabel: "Adding…",
       cancelLabel: "Cancel",
       errorTitle: "Could not add food",
+      photoLabel: "Photo (optional)",
+      photoHint: "Attach an image of the meal — uploaded after the meal is saved.",
+      photoUploadFailed: "Meal saved, but the photo upload failed.",
     },
     insights: {
       header: {
@@ -424,6 +430,9 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       submitLabel: "添加",
       submittingLabel: "添加中…",
       cancelLabel: "取消",
+      photoLabel: "照片（可选）",
+      photoHint: "附上一张餐食照片 —— 餐食保存后再上传。",
+      photoUploadFailed: "餐食已保存，但照片上传失败。",
       errorTitle: "无法添加食物",
     },
     insights: {
@@ -581,6 +590,9 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       submittingLabel: "Añadiendo…",
       cancelLabel: "Cancelar",
       errorTitle: "No se pudo añadir la comida",
+      photoLabel: "Foto (opcional)",
+      photoHint: "Adjunta una imagen de la comida — se sube después de guardar.",
+      photoUploadFailed: "La comida se guardó, pero falló la subida de la foto.",
     },
     insights: {
       header: {

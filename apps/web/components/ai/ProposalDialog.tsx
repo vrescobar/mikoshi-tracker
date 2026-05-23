@@ -4,7 +4,11 @@ import type { EntryEventDetail } from "@mikoshi-tracker/contracts/events";
 import { useRef, useState, useTransition } from "react";
 
 import type { FoodPayload, MealSlot } from "../../lib/food-client";
-import { createFoodEvent, ensureFoodEntry } from "../../lib/food-client";
+import {
+  attachImageToFoodEvent,
+  createFoodEvent,
+  ensureFoodEntry,
+} from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { useLocale } from "../locale";
 import { Button, Field, Input, Notice, OverlayPanel, Select } from "../ui";
@@ -54,12 +58,36 @@ export function ProposalDialog({ open, onOpenChange, onCreated }: Props) {
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
   const nameRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function reset() {
     setForm(emptyForm);
     setError(null);
+    setWarning(null);
+    setPhotoFile(null);
+    if (fileRef.current) fileRef.current.value = "";
+  }
+
+  async function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(reader.error ?? new Error("read-error"));
+      reader.onload = () => {
+        const result = reader.result;
+        if (typeof result !== "string") {
+          reject(new Error("read-error"));
+          return;
+        }
+        // result is a data URL like `data:image/png;base64,XXX`
+        const comma = result.indexOf(",");
+        resolve(comma >= 0 ? result.slice(comma + 1) : result);
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function handleOpenChange(next: boolean) {
@@ -90,6 +118,7 @@ export function ProposalDialog({ open, onOpenChange, onCreated }: Props) {
 
     startTransition(async () => {
       setError(null);
+      setWarning(null);
       try {
         const entry = await ensureFoodEntry();
         const payload: FoodPayload = {
@@ -109,6 +138,18 @@ export function ProposalDialog({ open, onOpenChange, onCreated }: Props) {
           notes: form.notes.trim() || null,
         };
         const event = await createFoodEvent(entry.id, payload);
+
+        // Attach the photo after the event lands. A failed upload must not
+        // discard the saved meal, so we surface a warning and still close.
+        if (photoFile) {
+          try {
+            const base64 = await readFileAsBase64(photoFile);
+            await attachImageToFoodEvent(event.id, base64, photoFile.name);
+          } catch {
+            setWarning(dialogCopy.photoUploadFailed);
+          }
+        }
+
         reset();
         onOpenChange(false);
         onCreated(event);
@@ -131,6 +172,12 @@ export function ProposalDialog({ open, onOpenChange, onCreated }: Props) {
         {error ? (
           <Notice tone="danger" title={dialogCopy.errorTitle}>
             {error}
+          </Notice>
+        ) : null}
+
+        {warning ? (
+          <Notice tone="warning" title={dialogCopy.errorTitle}>
+            {warning}
           </Notice>
         ) : null}
 
@@ -217,6 +264,20 @@ export function ProposalDialog({ open, onOpenChange, onCreated }: Props) {
 
         <Field label={fieldCopy.notes}>
           <Input value={form.notes} onChange={(e) => set("notes", e.target.value)} disabled={isPending} />
+        </Field>
+
+        <Field label={dialogCopy.photoLabel} description={dialogCopy.photoHint}>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            disabled={isPending}
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              setPhotoFile(file);
+            }}
+            data-testid="proposal-dialog-photo"
+          />
         </Field>
 
         <div className={styles.actions}>

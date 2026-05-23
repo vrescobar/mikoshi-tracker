@@ -19,6 +19,7 @@ import {
   countAttachmentsForMutation,
   createAttachment,
   deleteAttachment,
+  findLatestOwnedMutationForEvent,
   findLatestOwnedMutationForHabit,
   findOwnedAttachment,
   findOwnedMutation,
@@ -58,17 +59,30 @@ export function serializeAttachment(attachment: PersistedAttachment): Attachment
  * Where to hang the attachment: a precise check-in entry (used by AI agents),
  * or a habit whose latest entry is resolved server-side (used by the web UI).
  */
-export type AttachmentTarget = { mutationId: string } | { habitId: string };
+export type AttachmentTarget =
+  | { mutationId: string }
+  | { habitId: string }
+  | { eventId: string };
 
 async function resolveTarget(
   dependencies: AttachmentDependencies,
   userId: string,
   target: AttachmentTarget,
 ): Promise<OwnedMutation> {
-  const mutation =
-    "mutationId" in target
-      ? await findOwnedMutation(dependencies.db, { userId, mutationId: target.mutationId })
-      : await findLatestOwnedMutationForHabit(dependencies.db, { userId, habitId: target.habitId });
+  let mutation: OwnedMutation | null = null;
+  if ("mutationId" in target) {
+    mutation = await findOwnedMutation(dependencies.db, { userId, mutationId: target.mutationId });
+  } else if ("habitId" in target) {
+    mutation = await findLatestOwnedMutationForHabit(dependencies.db, {
+      userId,
+      habitId: target.habitId,
+    });
+  } else {
+    mutation = await findLatestOwnedMutationForEvent(dependencies.db, {
+      userId,
+      eventId: target.eventId,
+    });
+  }
 
   if (!mutation) {
     throw new MutationNotFoundError();

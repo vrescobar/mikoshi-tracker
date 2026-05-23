@@ -53,6 +53,24 @@ export async function findLatestOwnedMutationForHabit(
   return mutation ?? null;
 }
 
+/**
+ * Resolve the most recent real mutation for a specific EntryEvent the caller
+ * owns. The food quick-add flow uses this to anchor a photo to a freshly
+ * created event without exposing mutation ids in the UI.
+ */
+export async function findLatestOwnedMutationForEvent(
+  db: DbClient,
+  params: { userId: string; eventId: string },
+): Promise<OwnedMutation | null> {
+  const mutation = await db.eventMutation.findFirst({
+    where: { eventId: params.eventId, userId: params.userId, type: { not: "UNDO" } },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { id: true, userId: true },
+  });
+
+  return mutation ?? null;
+}
+
 export async function countAttachmentsForMutation(db: DbClient, mutationId: string): Promise<number> {
   return db.attachment.count({ where: { eventMutationId: mutationId } });
 }

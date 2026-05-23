@@ -315,7 +315,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       (EN/ZH/ES). Update `food-today-panel.test.tsx`. Reference:
       §G-DASH-2.
 
-- [ ] **61** Photo attachments on food events — make `Attachment.mutationId`
+- [x] **61** Photo attachments on food events — make `Attachment.mutationId`
       nullable in `prisma/schema.prisma` (migration
       `make_attachment_mutation_id_optional`) since `eventMutationId`
       already exists. Add `POST /api/attachments/event` accepting
