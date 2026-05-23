@@ -375,6 +375,40 @@ export async function getFoodEventDetailFromCookieHeader(
   return body.item;
 }
 
+/**
+ * Phase 13 (G-FOOD-3): repeated-meal aggregation grouped by `payload.name`,
+ * used by the "Repeats" panel on `/food`.
+ */
+export async function getRepeatedFoodMealsFromCookieHeader(
+  cookieHeader: string,
+  from: string,
+  to: string,
+  limit = 5,
+): Promise<AggregationResponse | null> {
+  const params = new URLSearchParams({
+    entryTypeSlug: "food_meal",
+    from,
+    to,
+    groupBy: "none",
+    groupByPayload: "name",
+    fields: "kcal",
+    include: "count",
+    limit: String(limit),
+  });
+  const response = await fetch(createServerApiUrl(`/api/aggregations?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) return null;
+
+  if (!response.ok) {
+    throw new Error("Unable to load repeated meals");
+  }
+
+  return (await response.json()) as AggregationResponse;
+}
+
 export async function getFoodAggregationsFromCookieHeader(
   cookieHeader: string,
   from: string,

@@ -404,7 +404,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       Empty state: one-line localised hint. Component tests for both. No
       new dependencies. Reference: §G-FOOD-5.
 
-- [ ] **68** Repeated meals "Log again" on food page — add a "Repeats"
+- [x] **68** Repeated meals "Log again" on food page — add a "Repeats"
       panel to `apps/web/components/food/food-page.tsx` under the
       `DayTotalsStrip`. Sourced from `GET /api/aggregations?
       entryTypeSlug=food_meal&groupByPayload=name&fields=kcal&

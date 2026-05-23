@@ -1,5 +1,6 @@
 "use client";
 
+import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,12 +13,14 @@ import { useLocale } from "../locale";
 import { Button, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
 import { DayTotalsStrip } from "./DayTotalsStrip";
 import { FoodEventCard } from "./FoodEventCard";
+import { RepeatsPanel } from "./RepeatsPanel";
 import styles from "./food-page.module.css";
 
 type FoodPageProps = {
   initialEvents: EntryEventRecord[];
   dateKey: string;
   timeZone?: string;
+  initialRepeats?: AggregationResponse | null;
 };
 
 // Resolve "today" in the user's timezone (matching how the API buckets dateKey).
@@ -32,7 +35,12 @@ function todayDateKey(timeZone?: string) {
   }).format(new Date());
 }
 
-export function FoodPage({ initialEvents, dateKey, timeZone }: FoodPageProps) {
+export function FoodPage({
+  initialEvents,
+  dateKey,
+  timeZone,
+  initialRepeats = null,
+}: FoodPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale);
   const [events, setEvents] = useState(initialEvents);
@@ -90,6 +98,22 @@ export function FoodPage({ initialEvents, dateKey, timeZone }: FoodPageProps) {
         <div className={styles.body}>
           <DayTotalsStrip events={events} />
 
+          <RepeatsPanel
+            aggregations={initialRepeats}
+            copy={{
+              title: copy.page.repeats.title,
+              description: copy.page.repeats.description,
+              empty: copy.page.repeats.empty,
+              logAgain: copy.page.repeats.logAgain,
+              logging: copy.page.repeats.logging,
+              errorTitle: copy.page.repeats.errorTitle,
+              countLabel: (count) => `${count}×`,
+            }}
+            onLogged={(event) => {
+              setEvents((prev) => [...prev, event]);
+            }}
+          />
+
           <div className={styles.list} aria-busy={loading}>
             {sorted.map((ev) => (
               <FoodEventCard key={ev.id} event={ev} />
@@ -97,7 +121,24 @@ export function FoodPage({ initialEvents, dateKey, timeZone }: FoodPageProps) {
           </div>
         </div>
       ) : (
-        <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
+        <div className={styles.body}>
+          <RepeatsPanel
+            aggregations={initialRepeats}
+            copy={{
+              title: copy.page.repeats.title,
+              description: copy.page.repeats.description,
+              empty: copy.page.repeats.empty,
+              logAgain: copy.page.repeats.logAgain,
+              logging: copy.page.repeats.logging,
+              errorTitle: copy.page.repeats.errorTitle,
+              countLabel: (count) => `${count}×`,
+            }}
+            onLogged={(event) => {
+              setEvents((prev) => [...prev, event]);
+            }}
+          />
+          <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
+        </div>
       )}
 
       <ProposalDialog

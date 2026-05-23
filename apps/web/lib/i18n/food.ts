@@ -28,6 +28,14 @@ export type FoodCopy = {
       viewDetail: string;
       deletedBadge: string;
     };
+    repeats: {
+      title: string;
+      description: string;
+      empty: string;
+      logAgain: string;
+      logging: string;
+      errorTitle: string;
+    };
   };
   detail: {
     backToFood: string;
@@ -224,6 +232,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         viewDetail: "View details",
         deletedBadge: "Deleted",
       },
+      repeats: {
+        title: "Repeats",
+        description: "Meals you have logged in the last 30 days. Tap “Log again” to add today.",
+        empty: "Nothing recurrent yet — log a few meals to see suggestions here.",
+        logAgain: "Log again",
+        logging: "Logging…",
+        errorTitle: "Could not log meal",
+      },
     },
     detail: {
       backToFood: "← Back to food",
@@ -419,6 +435,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         viewDetail: "查看详情",
         deletedBadge: "已删除",
       },
+      repeats: {
+        title: "常吃",
+        description: "近 30 天记录的餐食。点击「再记一次」即可加到今天。",
+        empty: "暂无常吃 —— 多记几餐就会出现建议。",
+        logAgain: "再记一次",
+        logging: "记录中…",
+        errorTitle: "无法记录餐食",
+      },
     },
     detail: {
       backToFood: "← 返回饮食",
@@ -612,6 +636,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       card: {
         viewDetail: "Ver detalles",
         deletedBadge: "Eliminado",
+      },
+      repeats: {
+        title: "Comidas repetidas",
+        description: "Comidas que registraste en los últimos 30 días. Pulsa «Registrar de nuevo» para añadir hoy.",
+        empty: "Aún no hay comidas repetidas — registra algunas para ver sugerencias.",
+        logAgain: "Registrar de nuevo",
+        logging: "Registrando…",
+        errorTitle: "No se pudo registrar la comida",
       },
     },
     detail: {
