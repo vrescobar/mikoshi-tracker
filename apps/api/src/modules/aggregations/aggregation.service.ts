@@ -8,7 +8,11 @@ import type {
 
 import type { PrismaClient } from "../../generated/prisma/client";
 import { getCompiledSchema } from "../entry-types/schema-cache";
-import { type RawAggregationRow, queryAggregationRows } from "./aggregation.repository";
+import {
+  type RawAggregationRow,
+  queryAggregationRows,
+  queryAggregationRowsByPayload,
+} from "./aggregation.repository";
 
 // ─── Error classes ─────────────────────────────────────────────────────────────
 
@@ -121,9 +125,22 @@ export async function computeAggregations(
     groupBy: AggregationGroupBy;
     fields?: string;
     include?: string;
+    groupByPayload?: string;
+    limit?: number;
   },
 ): Promise<AggregationResponse> {
-  const { userId, entryTypeSlug, entryId, from, to, groupBy, fields, include } = params;
+  const {
+    userId,
+    entryTypeSlug,
+    entryId,
+    from,
+    to,
+    groupBy,
+    fields,
+    include,
+    groupByPayload,
+    limit,
+  } = params;
 
   const entryType = await deps.db.entryType.findUnique({ where: { slug: entryTypeSlug } });
   if (!entryType) throw new EntryTypeForAggregationNotFoundError(entryTypeSlug);
@@ -147,6 +164,59 @@ export async function computeAggregations(
       .map((s) => s.trim())
       .includes("missing_days") ?? false;
 
+  // ── Payload-grouped path ───────────────────────────────────────────────────
+  if (groupByPayload) {
+    const rows = await queryAggregationRowsByPayload(deps.db, {
+      userId,
+      entryTypeSlug,
+      entryId,
+      from,
+      to,
+      payloadField: groupByPayload,
+      sumFields: activeSumFields,
+      cachedColumns: spec.cachedColumns,
+      limit: limit ?? 25,
+    });
+
+    const buckets: AggregationBucket[] = [];
+    let totalCount = 0;
+    const totalSum = emptySum(activeSumFields);
+
+    for (const row of rows) {
+      const count = toNumber(row.event_count);
+      const sum = buildSumFromRow(row, activeSumFields);
+      let sample: unknown = undefined;
+      if (row.sample_payload) {
+        try {
+          sample = JSON.parse(row.sample_payload);
+        } catch {
+          sample = undefined;
+        }
+      }
+      buckets.push({
+        key: {
+          kind: "payload",
+          field: groupByPayload,
+          value: String(row.bucket),
+          ...(sample !== undefined ? { sample } : {}),
+        },
+        sum,
+        count,
+        missing: false,
+      });
+      totalCount += count;
+      addToSum(totalSum, sum);
+    }
+
+    return {
+      buckets,
+      total: { sum: totalSum, count: totalCount },
+      // Weekly average has no meaning when grouping by a non-temporal axis.
+      weeklyAverage: null,
+    };
+  }
+
+  // ── Date-grouped path (existing behaviour) ─────────────────────────────────
   const rawRows = await queryAggregationRows(deps.db, {
     userId,
     entryTypeSlug,
@@ -174,11 +244,16 @@ export async function computeAggregations(
     if (row) {
       const count = toNumber(row.event_count);
       const sum = buildSumFromRow(row, activeSumFields);
-      buckets.push({ key: bucketKey, sum, count, missing: false });
+      buckets.push({ key: { kind: "date", value: bucketKey }, sum, count, missing: false });
       totalCount += count;
       addToSum(totalSum, sum);
     } else if (includeMissingDays) {
-      buckets.push({ key: bucketKey, sum: emptySum(activeSumFields), count: 0, missing: true });
+      buckets.push({
+        key: { kind: "date", value: bucketKey },
+        sum: emptySum(activeSumFields),
+        count: 0,
+        missing: true,
+      });
     }
   }
 

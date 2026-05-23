@@ -39,7 +39,12 @@ function makeEvent(name: string, dateKey: string): EntryEventRecord {
 }
 
 function makeBucket(key: string, missing: boolean): AggregationBucket {
-  return { key, sum: { kcal: missing ? 0 : 500 }, count: missing ? 0 : 1, missing };
+  return {
+    key: { kind: "date", value: key },
+    sum: { kcal: missing ? 0 : 500 },
+    count: missing ? 0 : 1,
+    missing,
+  };
 }
 
 describe("computeRepeatedMeals", () => {

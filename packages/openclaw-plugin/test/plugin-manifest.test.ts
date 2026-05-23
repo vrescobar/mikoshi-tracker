@@ -45,8 +45,13 @@ describe("openclaw plugin manifest", () => {
   });
 
   it("builds a standalone dist entry that loads without a local zod install", async () => {
-    execFileSync("pnpm", ["build"], {
-      cwd: packageRootPath,
+    // Call the local tsup binary directly. `pnpm build` triggers a workspace
+    // install which fails on this ARM Jetson host because of `sharp`'s native
+    // build (pnpm 11.x runs install on `exec`).
+    const packageDir = new URL(packageRoot).pathname;
+    const tsupBin = path.join(packageDir, "node_modules", ".bin", "tsup");
+    execFileSync(tsupBin, [], {
+      cwd: packageDir,
       stdio: "pipe",
     });
 

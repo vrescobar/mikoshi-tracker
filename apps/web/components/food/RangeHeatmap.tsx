@@ -45,7 +45,9 @@ export function RangeHeatmap({ buckets, from, to }: RangeHeatmapProps) {
 
   const bucketMap = new Map<string, AggregationBucket>();
   for (const b of buckets) {
-    bucketMap.set(b.key, b);
+    if (b.key.kind === "date") {
+      bucketMap.set(b.key.value, b);
+    }
   }
 
   const days = buildDateRange(from, to);

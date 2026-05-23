@@ -120,7 +120,7 @@ describe("food aggregations", () => {
     expect(res.statusCode).toBe(200);
     const body = res.json() as {
       buckets: Array<{
-        key: string;
+        key: { kind: "date"; value: string } | { kind: "payload"; field: string; value: string };
         sum: Record<string, number>;
         count: number;
         missing: boolean;
@@ -132,22 +132,28 @@ describe("food aggregations", () => {
     // 14 buckets total (10 with data + 4 missing)
     expect(body.buckets).toHaveLength(14);
 
+    // Sanity-check the discriminated union: every bucket should be a date bucket here.
+    expect(body.buckets.every((b) => b.key.kind === "date")).toBe(true);
+
+    const valueOf = (b: (typeof body.buckets)[number]) =>
+      b.key.kind === "date" ? b.key.value : "";
+
     // Verify missing days are marked correctly
     for (const day of MISSING_DAYS) {
-      const bucket = body.buckets.find((b) => b.key === day);
+      const bucket = body.buckets.find((b) => valueOf(b) === day);
       expect(bucket, `${day} should be present as missing`).toBeDefined();
       expect(bucket?.missing).toBe(true);
       expect(bucket?.count).toBe(0);
     }
 
     // Verify a few specific daily sums
-    const jan5 = body.buckets.find((b) => b.key === "2026-01-05");
+    const jan5 = body.buckets.find((b) => valueOf(b) === "2026-01-05");
     expect(jan5?.missing).toBe(false);
     expect(jan5?.count).toBe(1);
     expect(jan5?.sum.kcal).toBe(500);
     expect(jan5?.sum.protein_g).toBe(30);
 
-    const jan16 = body.buckets.find((b) => b.key === "2026-01-16");
+    const jan16 = body.buckets.find((b) => valueOf(b) === "2026-01-16");
     expect(jan16?.missing).toBe(false);
     expect(jan16?.sum.kcal).toBe(750);
 
@@ -182,7 +188,12 @@ describe("food aggregations", () => {
 
     expect(res.statusCode).toBe(200);
     const body = res.json() as {
-      buckets: Array<{ key: string; sum: Record<string, number>; count: number; missing: boolean }>;
+      buckets: Array<{
+        key: { kind: "date"; value: string } | { kind: "payload"; field: string; value: string };
+        sum: Record<string, number>;
+        count: number;
+        missing: boolean;
+      }>;
       total: { sum: Record<string, number>; count: number };
       weeklyAverage: { sum: Record<string, number>; count: number } | null;
     };
@@ -190,8 +201,10 @@ describe("food aggregations", () => {
     // 2 week buckets
     expect(body.buckets).toHaveLength(2);
 
-    const w01 = body.buckets.find((b) => b.key === "2026-W01");
-    const w02 = body.buckets.find((b) => b.key === "2026-W02");
+    const valueOf = (b: (typeof body.buckets)[number]) =>
+      b.key.kind === "date" ? b.key.value : "";
+    const w01 = body.buckets.find((b) => valueOf(b) === "2026-W01");
+    const w02 = body.buckets.find((b) => valueOf(b) === "2026-W02");
 
     expect(w01).toBeDefined();
     expect(w01?.count).toBe(5);
@@ -269,13 +282,18 @@ describe("food aggregations", () => {
     });
     expect(withMissing.statusCode).toBe(200);
     const missingBody = withMissing.json() as {
-      buckets: Array<{ key: string; missing: boolean }>;
+      buckets: Array<{
+        key: { kind: "date"; value: string } | { kind: "payload"; field: string; value: string };
+        missing: boolean;
+      }>;
     };
     expect(missingBody.buckets).toHaveLength(14);
 
     const missingBuckets = missingBody.buckets.filter((b) => b.missing);
     expect(missingBuckets).toHaveLength(4);
-    expect(missingBuckets.map((b) => b.key).sort()).toEqual(MISSING_DAYS.sort());
+    expect(
+      missingBuckets.map((b) => (b.key.kind === "date" ? b.key.value : "")).sort(),
+    ).toEqual(MISSING_DAYS.sort());
   });
 
   it("returns null weeklyAverage for groupBy=none", async () => {
@@ -295,14 +313,17 @@ describe("food aggregations", () => {
 
     expect(res.statusCode).toBe(200);
     const body = res.json() as {
-      buckets: Array<{ key: string; count: number }>;
+      buckets: Array<{
+        key: { kind: "date"; value: string } | { kind: "payload"; field: string; value: string };
+        count: number;
+      }>;
       total: { count: number; sum: Record<string, number> };
       weeklyAverage: null;
     };
 
     // Single "total" bucket
     expect(body.buckets).toHaveLength(1);
-    expect(body.buckets[0]?.key).toBe("total");
+    expect(body.buckets[0]?.key).toEqual({ kind: "date", value: "total" });
     expect(body.buckets[0]?.count).toBe(10);
 
     expect(body.total.count).toBe(10);

@@ -45,6 +45,8 @@ export async function getAggregationsHandler(request: FastifyRequest, reply: Fas
         groupBy: filters.groupBy,
         fields: filters.fields,
         include: filters.include,
+        groupByPayload: filters.groupByPayload,
+        limit: filters.limit,
       },
     );
     return result;

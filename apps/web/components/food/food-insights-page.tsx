@@ -53,7 +53,10 @@ export function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[]
 }
 
 export function getMissingDays(buckets: AggregationBucket[]): string[] {
-  return buckets.filter((b) => b.missing).map((b) => b.key);
+  return buckets
+    .filter((b) => b.missing && b.key.kind === "date")
+    .map((b) => (b.key.kind === "date" ? b.key.value : ""))
+    .filter((v) => v.length > 0);
 }
 
 function formatDate(dateKey: string, localeStr: string) {

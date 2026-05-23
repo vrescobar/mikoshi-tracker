@@ -47,11 +47,13 @@ export async function setup(): Promise<void> {
   process.env.MIKOSHI_TRACKER_TEST_TEMPLATE_DB = templatePath;
   removeTemplate(templatePath);
 
+  // Invoke the project-local prisma CLI directly. Using `pnpm exec prisma`
+  // triggers a full workspace install in pnpm 11.x, which fails on this ARM
+  // Jetson host because of `sharp`'s native build.
+  const prismaBin = join(REPO_ROOT, "node_modules", ".bin", "prisma");
   execFileSync(
-    "pnpm",
+    prismaBin,
     [
-      "exec",
-      "prisma",
       "db",
       "push",
       "--config",

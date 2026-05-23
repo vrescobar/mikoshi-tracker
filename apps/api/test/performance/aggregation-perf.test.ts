@@ -211,7 +211,11 @@ describe("aggregation performance (10k fixture)", () => {
 
     expect(res.statusCode).toBe(200);
     const body = res.json() as {
-      buckets: Array<{ key: string; sum: Record<string, number>; count: number }>;
+      buckets: Array<{
+        key: { kind: "date"; value: string } | { kind: "payload"; field: string; value: string };
+        sum: Record<string, number>;
+        count: number;
+      }>;
       total: { count: number; sum: Record<string, number> };
     };
 
@@ -220,7 +224,9 @@ describe("aggregation performance (10k fixture)", () => {
     expect(body.total.count).toBe(DAYS * MEALS_PER_DAY);
 
     // Each day has MEALS_PER_DAY events; verify kcal sum for day 0
-    const day0 = body.buckets.find((b) => b.key === START_DATE);
+    const day0 = body.buckets.find(
+      (b) => b.key.kind === "date" && b.key.value === START_DATE,
+    );
     expect(day0).toBeDefined();
     expect(day0!.count).toBe(MEALS_PER_DAY);
     // kcal for day 0: meals 0..24 → kcal = 100 + (0..24) % 1000 = 100..124

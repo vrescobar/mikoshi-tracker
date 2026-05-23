@@ -369,7 +369,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       under `food.dialog.tabs.*`. Update `ProposalDialog.test.tsx`.
       Reference: §G-FOOD-2.
 
-- [ ] **65** `groupByPayload` aggregation primitive — extend
+- [x] **65** `groupByPayload` aggregation primitive — extend
       `packages/contracts/src/aggregations.ts` `AggregationFilters` with
       optional `groupByPayload?: string` (validated by
       `/^[a-zA-Z][a-zA-Z0-9_]*$/`). Update

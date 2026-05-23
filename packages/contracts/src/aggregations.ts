@@ -8,6 +8,10 @@ export const aggregationGroupBySchema = z.enum(["day", "week", "month", "none"])
 
 // ─── Input schemas ────────────────────────────────────────────────────────────
 
+const payloadFieldSchema = z
+  .string()
+  .regex(/^[a-zA-Z][a-zA-Z0-9_]*$/, "payload field must match [a-zA-Z][a-zA-Z0-9_]*");
+
 export const aggregationFiltersSchema = z.object({
   entryTypeSlug: nonEmptyString,
   entryId: optionalNonEmptyString,
@@ -18,6 +22,11 @@ export const aggregationFiltersSchema = z.object({
   fields: optionalNonEmptyString,
   /** Comma-separated extras: "missing_days", "count". */
   include: optionalNonEmptyString,
+  /** When set, GROUP BY json_extract(payload, '$.<field>'). Mutually
+   *  exclusive with date-bucket groupBy in the response shape. */
+  groupByPayload: payloadFieldSchema.optional(),
+  /** Hard cap on returned buckets when groupByPayload is in play. */
+  limit: z.coerce.number().int().positive().max(1000).optional(),
 });
 
 // ─── Domain shapes ────────────────────────────────────────────────────────────
@@ -28,9 +37,28 @@ export const aggregationFiltersSchema = z.object({
  */
 export const aggregationSumSchema = z.record(z.string(), z.number());
 
-export const aggregationBucketSchema = z.object({
+export const aggregationDateBucketKeySchema = z.object({
+  kind: z.literal("date"),
   /** YYYY-MM-DD for day, YYYY-Www for week, YYYY-MM for month, "total" for none. */
-  key: nonEmptyString,
+  value: nonEmptyString,
+});
+
+export const aggregationPayloadBucketKeySchema = z.object({
+  kind: z.literal("payload"),
+  field: nonEmptyString,
+  value: z.string(),
+  /** Optional sample payload from the last event in this bucket. Useful for
+   *  "log again" affordances. */
+  sample: z.unknown().optional(),
+});
+
+export const aggregationBucketKeySchema = z.discriminatedUnion("kind", [
+  aggregationDateBucketKeySchema,
+  aggregationPayloadBucketKeySchema,
+]);
+
+export const aggregationBucketSchema = z.object({
+  key: aggregationBucketKeySchema,
   sum: aggregationSumSchema,
   count: z.number().int().nonnegative(),
   missing: z.boolean(),
@@ -55,6 +83,9 @@ export const aggregationResponseSchema = z.object({
 export type AggregationGroupBy = z.infer<typeof aggregationGroupBySchema>;
 export type AggregationFilters = z.infer<typeof aggregationFiltersSchema>;
 export type AggregationSum = z.infer<typeof aggregationSumSchema>;
+export type AggregationBucketKey = z.infer<typeof aggregationBucketKeySchema>;
+export type AggregationDateBucketKey = z.infer<typeof aggregationDateBucketKeySchema>;
+export type AggregationPayloadBucketKey = z.infer<typeof aggregationPayloadBucketKeySchema>;
 export type AggregationBucket = z.infer<typeof aggregationBucketSchema>;
 export type AggregationSummary = z.infer<typeof aggregationSummarySchema>;
 export type AggregationResponse = z.infer<typeof aggregationResponseSchema>;
