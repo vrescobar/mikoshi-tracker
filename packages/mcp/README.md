@@ -159,6 +159,8 @@ All tools use the authenticated MikoshiTracker API behind the scenes and return 
 | `events_delete` | `DELETE /events/:eventId` | Soft-delete an event by recording a DELETE mutation; the event remains in the audit trail. |
 | `events_undo` | `POST /events/:eventId/undo` | Revert the last non-UNDO mutation on an event by replaying the audit trail. |
 | `aggregations_query` | `GET /aggregations` | Run a declarative aggregation over entry events, supporting sum, count, completion-rate, streak, and missing-days broken down by day, week, month, or total. |
+| `food_log_text` | `POST /skills/run` | Log a meal from a free-text description (e.g. 'tuna salad with two slices of bread') via the Mikoshi food skill. Returns the skill's stdout: 'auto_posted' carries the saved event, 'pending_confirmation' carries an editable proposal, 'needs_enrolment' means the skill is not configured yet. |
+| `food_log_image` | `POST /skills/run` | Log a meal from a base64-encoded photo via the Mikoshi food skill. Same response shape as food_log_text. |
 
 ## AI Guidance
 

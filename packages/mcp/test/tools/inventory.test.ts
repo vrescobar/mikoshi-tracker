@@ -131,6 +131,14 @@ describe("toolInventory", () => {
           "name": "aggregations_query",
           "route": "GET /aggregations",
         },
+        {
+          "name": "food_log_text",
+          "route": "POST /skills/run",
+        },
+        {
+          "name": "food_log_image",
+          "route": "POST /skills/run",
+        },
       ]
     `);
   });

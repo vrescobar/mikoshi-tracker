@@ -92,6 +92,8 @@ describe("stdio integration", () => {
       "events_delete",
       "events_undo",
       "aggregations_query",
+      "food_log_text",
+      "food_log_image",
     ]);
     expect(stderrChunks.join("")).not.toContain("secret-token");
   });

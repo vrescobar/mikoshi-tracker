@@ -440,7 +440,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       of `/api-access`). EN/ZH/ES strings. Tests: skill health endpoint
       contract test + page render test. Reference: §G-SKILL-1.
 
-- [ ] **71** MCP convenience tools for food via skill bridge — add
+- [x] **71** MCP convenience tools for food via skill bridge — add
       `packages/mcp/src/tools/food.ts` with `food_log_text({ text })` and
       `food_log_image({ imageBase64 })` that POST to `/api/skills/run`
       with `skillSlug: "mikoshi-tracker-food"`. Register both in

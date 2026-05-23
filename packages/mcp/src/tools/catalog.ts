@@ -5,6 +5,7 @@ import { attachmentsTools } from "./attachments.js";
 import { entriesTools } from "./entries.js";
 import { entryTypesTools } from "./entry-types.js";
 import { eventsTools } from "./events.js";
+import { foodTools } from "./food.js";
 import { habitsTools } from "./habits.js";
 import { statsTools } from "./stats.js";
 import { todayTools } from "./today.js";
@@ -35,6 +36,7 @@ export const toolInventory: InventoryTool[] = [
   ...entriesTools,
   ...eventsTools,
   ...aggregationsTools,
+  ...foodTools,
 ];
 
 export const EXPECTED_TOOL_NAMES = toolInventory.map((tool) => tool.name);
