@@ -8,6 +8,7 @@ export const routes = {
   food: "/food",
   foodInsights: "/food/insights",
   foodDetail: (eventId: string) => `/food/${eventId}`,
+  weight: "/weight",
   apiAccess: "/api-access",
   settings: "/settings",
   settingsSkills: "/settings/skills",

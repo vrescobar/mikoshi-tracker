@@ -486,3 +486,71 @@ export async function getFoodAggregationsFromCookieHeader(
 
   return (await response.json()) as AggregationResponse;
 }
+
+export async function listWeightEventsFromCookieHeader(
+  cookieHeader: string,
+  from: string,
+  to: string,
+): Promise<EntryEventRecord[]> {
+  const params = new URLSearchParams({ entryTypeSlug: "weight_log", from, to, limit: "100" });
+  const response = await fetch(createServerApiUrl(`/api/events?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) return [];
+
+  if (!response.ok) {
+    throw new Error("Unable to load weight events");
+  }
+
+  const body = (await response.json()) as { items: EntryEventRecord[] };
+  return body.items;
+}
+
+export async function getWeightAggregationsFromCookieHeader(
+  cookieHeader: string,
+  from: string,
+  to: string,
+  groupBy: "day" | "week" | "month" = "day",
+): Promise<AggregationResponse | null> {
+  const params = new URLSearchParams({
+    entryTypeSlug: "weight_log",
+    from,
+    to,
+    groupBy,
+    fields: "weight_kg",
+    include: "missing_days",
+  });
+  const response = await fetch(createServerApiUrl(`/api/aggregations?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) return null;
+
+  if (!response.ok) {
+    throw new Error("Unable to load weight aggregations");
+  }
+
+  return (await response.json()) as AggregationResponse;
+}
+
+export async function getWeightEntryFromCookieHeader(
+  cookieHeader: string,
+): Promise<EntryRecord | null> {
+  const params = new URLSearchParams({ entryTypeSlug: "weight_log", isActive: "true" });
+  const response = await fetch(createServerApiUrl(`/api/entries?${params.toString()}`), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) return null;
+
+  if (!response.ok) {
+    throw new Error("Unable to load weight entry");
+  }
+
+  const body = (await response.json()) as { items: EntryRecord[] };
+  return body.items[0] ?? null;
+}
