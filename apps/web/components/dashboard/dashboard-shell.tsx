@@ -11,7 +11,7 @@ import { useLocale } from "../locale";
 import { Button, SkeletonBlock, StatePanel } from "../ui";
 import { routes } from "../../lib/navigation";
 import { TodayDashboard } from "../today/today-dashboard";
-import { FoodTodayPanel } from "./food-today-panel";
+import { DashboardFoodSection } from "./dashboard-food-section";
 import { OverviewSection } from "./overview-section";
 import styles from "./dashboard-shell.module.css";
 
@@ -123,7 +123,7 @@ export function DashboardShell({
             </div>
           }
         />
-        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
       </div>
     );
   }
@@ -142,7 +142,7 @@ export function DashboardShell({
             </Button>
           }
         />
-        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
       </div>
     );
   }
@@ -166,7 +166,7 @@ export function DashboardShell({
             </div>
           }
         />
-        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
       </div>
     );
   }
@@ -208,7 +208,7 @@ export function DashboardShell({
   return (
     <div className={styles.stack}>
       <TodayDashboard initialSummary={summary} onActionSettled={refreshOverview} />
-      <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
+      <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
       <OverviewSection overview={overview} isRefreshing={isRefreshingOverview} />
     </div>
   );

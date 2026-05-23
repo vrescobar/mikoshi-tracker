@@ -8,7 +8,13 @@ import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
 import styles from "./food-today-panel.module.css";
 
-export function FoodTodayPanel({ aggregations }: { aggregations: AggregationResponse | null }) {
+export function FoodTodayPanel({
+  aggregations,
+  onQuickAdd,
+}: {
+  aggregations: AggregationResponse | null;
+  onQuickAdd?: () => void;
+}) {
   const { copy } = useLocale();
   const c = copy.dashboard.foodToday;
 
@@ -19,7 +25,20 @@ export function FoodTodayPanel({ aggregations }: { aggregations: AggregationResp
     <section data-testid="dashboard-food-today" className={styles.section}>
       <div className={styles.header}>
         <p className={styles.eyebrow}>{c.eyebrow}</p>
-        <h2 className={styles.title}>{c.title}</h2>
+        <div className={styles.titleRow}>
+          <h2 className={styles.title}>{c.title}</h2>
+          {onQuickAdd ? (
+            <button
+              type="button"
+              className={styles.quickAddButton}
+              onClick={onQuickAdd}
+              aria-label={c.quickAdd}
+              data-testid="food-today-quick-add"
+            >
+              +
+            </button>
+          ) : null}
+        </div>
         <p className={styles.description}>{c.description}</p>
       </div>
 

@@ -145,6 +145,7 @@ export type LocaleMessages = {
       eyebrow: string;
       title: string;
       description: string;
+      quickAdd: string;
       metrics: {
         kcal: string;
         protein: string;
@@ -395,6 +396,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         eyebrow: "Nutrition",
         title: "Food today",
         description: "Calories and macros logged so far today.",
+        quickAdd: "Log a meal",
         metrics: {
           kcal: "kcal",
           protein: "Protein",
@@ -642,6 +644,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         eyebrow: "营养",
         title: "今日饮食",
         description: "今天已记录的热量和营养素。",
+        quickAdd: "记录一餐",
         metrics: {
           kcal: "千卡",
           protein: "蛋白质",
@@ -891,6 +894,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         eyebrow: "Nutrición",
         title: "Hoy en comida",
         description: "Calorías y macros registrados hasta ahora hoy.",
+        quickAdd: "Registrar comida",
         metrics: {
           kcal: "kcal",
           protein: "Proteína",

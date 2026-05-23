@@ -304,7 +304,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       states. Reference: `docs/architecture/food-tracking-gaps.md`
       §G-DASH-1.
 
-- [ ] **60** Dashboard quick-add for food — extend `FoodTodayPanel`
+- [x] **60** Dashboard quick-add for food — extend `FoodTodayPanel`
       (`apps/web/components/dashboard/food-today-panel.tsx`) to accept an
       `onQuickAdd?: () => void` prop; when set, render an inline `+` button
       next to the title. Create `apps/web/components/dashboard/

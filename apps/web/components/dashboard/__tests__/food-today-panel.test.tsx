@@ -1,6 +1,6 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { LocaleProvider } from "../../locale";
 import { FoodTodayPanel } from "../food-today-panel";
@@ -27,10 +27,10 @@ function makeAggregations(overrides: {
   };
 }
 
-function renderPanel(aggregations: AggregationResponse | null) {
+function renderPanel(aggregations: AggregationResponse | null, onQuickAdd?: () => void) {
   return render(
     <LocaleProvider initialLocale="en">
-      <FoodTodayPanel aggregations={aggregations} />
+      <FoodTodayPanel aggregations={aggregations} onQuickAdd={onQuickAdd} />
     </LocaleProvider>,
   );
 }
@@ -78,5 +78,27 @@ describe("FoodTodayPanel — metric cards", () => {
   it("does not render the empty state when data is present", () => {
     renderPanel(makeAggregations({ kcal: 500, count: 1 }));
     expect(screen.queryByText(/no food logged/i)).not.toBeInTheDocument();
+  });
+});
+
+describe("FoodTodayPanel — quick add", () => {
+  it("does not render the quick-add button when onQuickAdd is omitted", () => {
+    renderPanel(null);
+    expect(screen.queryByTestId("food-today-quick-add")).not.toBeInTheDocument();
+  });
+
+  it("renders the quick-add button when onQuickAdd is provided", () => {
+    const onQuickAdd = vi.fn();
+    renderPanel(null, onQuickAdd);
+    const button = screen.getByTestId("food-today-quick-add");
+    expect(button).toBeInTheDocument();
+    expect(button).toHaveAttribute("aria-label", "Log a meal");
+  });
+
+  it("invokes onQuickAdd when the button is clicked", () => {
+    const onQuickAdd = vi.fn();
+    renderPanel(null, onQuickAdd);
+    fireEvent.click(screen.getByTestId("food-today-quick-add"));
+    expect(onQuickAdd).toHaveBeenCalledTimes(1);
   });
 });
