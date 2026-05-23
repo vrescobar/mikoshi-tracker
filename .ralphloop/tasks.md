@@ -558,7 +558,7 @@ per-type logic in the engine.
       `Dockerfile.web` or `Dockerfile.api` — they are kept for users who
       self-host via Docker/Podman.
 
-- [ ] **83** Bun migration — implement `docs/architecture/bun-migration.md`.
+- [x] **83** Bun migration — implement `docs/architecture/bun-migration.md`.
       Delete `pnpm-lock.yaml` and `pnpm-workspace.yaml`. Update root `package.json`:
       `packageManager` → `bun@1.x`, add `workspaces` array, rewrite all scripts
       replacing `pnpm --filter X` with `bun --filter X run`. Run `bun install`

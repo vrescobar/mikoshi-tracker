@@ -6,7 +6,8 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "vitest": "vitest"
+    "vitest": "vitest",
+    "prisma:generate": "prisma generate --config ../../prisma.config.ts --schema ../../prisma/schema.prisma"
   },
   "dependencies": {
     "@fastify/cors": "^11.2.0",

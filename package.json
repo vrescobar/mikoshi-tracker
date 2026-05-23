@@ -2,21 +2,23 @@
   "name": "mikoshi-tracker",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.2.2",
+  "packageManager": "bun@1.3.8",
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "pnpm --parallel --filter @mikoshi-tracker/api dev --filter @mikoshi-tracker/web dev",
-    "postinstall": "pnpm --filter @mikoshi-tracker/api exec prisma generate --config ../../prisma.config.ts --schema ../../prisma/schema.prisma",
-    "prisma:generate": "pnpm --filter @mikoshi-tracker/api exec prisma generate --config ../../prisma.config.ts --schema ../../prisma/schema.prisma",
-    "typecheck": "pnpm -r exec tsc --noEmit",
-    "test": "pnpm --filter @mikoshi-tracker/api vitest run && pnpm --filter @mikoshi-tracker/web test:unit",
-    "test:e2e": "pnpm --filter @mikoshi-tracker/web playwright test",
+    "dev": "bun run --filter @mikoshi-tracker/api dev & bun run --filter @mikoshi-tracker/web dev",
+    "postinstall": "node node_modules/.bin/prisma generate --config prisma.config.ts --schema prisma/schema.prisma",
+    "prisma:generate": "bun run --filter @mikoshi-tracker/api prisma:generate",
+    "prisma:migrate": "prisma migrate deploy --config prisma.config.ts --schema prisma/schema.prisma",
+    "typecheck": "bun run -r tsc --noEmit",
+    "test": "bun run --filter @mikoshi-tracker/api test && bun run --filter @mikoshi-tracker/web test:unit",
+    "test:e2e": "bun run --filter @mikoshi-tracker/web test:e2e",
     "prisma:validate": "prisma validate",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify:openclaw": "pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/errors.test.ts test/tools/mutation-errors.test.ts",
-    "verify:openclaw:full": "pnpm typecheck && pnpm --filter @mikoshi-tracker/openclaw-plugin build && pnpm --filter @mikoshi-tracker/openclaw-plugin exec vitest run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && pnpm --filter @mikoshi-tracker/mcp exec vitest run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts && pnpm --filter @mikoshi-tracker/api exec vitest run test/auth/api-token-auth.test.ts"
+    "verify:openclaw": "bun run typecheck && bun run --filter @mikoshi-tracker/openclaw-plugin vitest -- run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && bun run --filter @mikoshi-tracker/mcp vitest -- run test/client/errors.test.ts test/tools/mutation-errors.test.ts",
+    "verify:openclaw:full": "bun run typecheck && bun run --filter @mikoshi-tracker/openclaw-plugin build && bun run --filter @mikoshi-tracker/openclaw-plugin vitest -- run test/plugin-manifest.test.ts test/plugin-bootstrap.test.ts test/plugin-startup-errors.test.ts test/config/env.test.ts test/tool-registration.test.ts test/result-envelope.test.ts test/error-semantics.test.ts test/read-tools.test.ts test/mutation-tools.test.ts test/native-integration.test.ts test/docs-native-openclaw.test.ts test/verification-smoke.test.ts && bun run --filter @mikoshi-tracker/mcp vitest -- run test/client/api-client.test.ts test/client/errors.test.ts test/tools/habits-read.test.ts test/tools/habits-write.test.ts test/tools/today-stats-read.test.ts test/tools/today-write.test.ts test/tools/mutation-errors.test.ts && bun run --filter @mikoshi-tracker/api vitest -- run test/auth/api-token-auth.test.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
@@ -33,10 +35,8 @@
     "typescript-eslint": "^8.20.0",
     "vitest": "^3.2.4"
   },
-  "pnpm": {
-    "overrides": {
-      "@hono/node-server@<1.19.13": ">=1.19.13",
-      "postcss@<8.5.10": ">=8.5.10"
-    }
+  "overrides": {
+    "@hono/node-server": ">=1.19.13",
+    "postcss": ">=8.5.10"
   }
 }

@@ -5,6 +5,7 @@ backups/
 需求说明.md
 .DS_Store
 .pnpm-store/
+pnpm-lock.yaml
 node_modules/
 apps/*/node_modules/
 apps/api/src/generated/
