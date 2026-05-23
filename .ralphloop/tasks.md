@@ -540,3 +540,43 @@ per-type logic in the engine.
       bottom of `.ralphloop/progress.md` (or append one if absent) with
       a fresh `TRACKER_COMPLETE` on a line by itself. Do not write the
       marker for any other reason.
+
+## Phase 15 — Native deployment + Bun migration
+
+- [ ] **82** Native web service — implement `docs/architecture/deployment-native.md`.
+      Create `scripts/self-host/mikoshi-tracker-api.service` and
+      `scripts/self-host/mikoshi-tracker-web.service` (systemd unit templates).
+      Create `scripts/deploy.sh` (build + migrate + restart in one command).
+      Create `scripts/install-services.sh` (symlink units, daemon-reload, enable,
+      start). Update `docker/caddy/Caddyfile`: `api:3001` → `127.0.0.1:3001`,
+      `web:3000` → `127.0.0.1:3000`. Remove `web` and `api` services from
+      `docker-compose.yml` (keep `proxy` + `migrate` as optional helpers for
+      third-party deployments; the compose file stays valid). Update
+      `scripts/self-host/check.sh` to verify the systemd units instead of
+      container health. Do the first live cutover: build, migrate, enable units,
+      stop old containers, verify the site responds on :8080. Do NOT remove
+      `Dockerfile.web` or `Dockerfile.api` — they are kept for users who
+      self-host via Docker/Podman.
+
+- [ ] **83** Bun migration — implement `docs/architecture/bun-migration.md`.
+      Delete `pnpm-lock.yaml` and `pnpm-workspace.yaml`. Update root `package.json`:
+      `packageManager` → `bun@1.x`, add `workspaces` array, rewrite all scripts
+      replacing `pnpm --filter X` with `bun --filter X run`. Run `bun install`
+      and verify `bun.lockb` is generated. Add `pnpm-lock.yaml` to `.gitignore`.
+      Smoke: `bun run typecheck`, `bun --filter @mikoshi-tracker/api run test`,
+      `bun --filter @mikoshi-tracker/web run test:unit`, `bun run lint`. Update
+      `Dockerfile.web` and `Dockerfile.api` to use `oven/bun:1` as build base
+      (runner stage stays `node:22-bookworm-slim`). Update `scripts/self-host/`
+      shell scripts. Run the full E2E matrix before marking done.
+
+- [ ] **84** Phase 15 acceptance + halt — run the full test matrix (`bun run
+      prisma:generate && bun --filter @mikoshi-tracker/api run build &&
+      bun --filter @mikoshi-tracker/web run build && bun run lint &&
+      bun run typecheck && bun --filter @mikoshi-tracker/api run test &&
+      bun --filter @mikoshi-tracker/contracts run test &&
+      bun --filter @mikoshi-tracker/mcp run test &&
+      bun --filter @mikoshi-tracker/openclaw-plugin run test &&
+      bun run test:e2e && bun run verify:openclaw`). Smoke: `curl
+      localhost:8080/health` → 200; `curl localhost:8080/api/openapi.json` → 200;
+      log in, log a weight entry, verify dashboard. Update `.ralphloop/progress.md`
+      with a final `TRACKER_COMPLETE`.

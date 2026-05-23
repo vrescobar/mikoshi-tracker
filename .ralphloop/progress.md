@@ -99,4 +99,6 @@ the loop halts.
 - **80** Docs: `adding-an-entry-type.md` appended reference note pointing to task(73)..task(81) commits. `README.md`: built-in types list updated (3→4, weight_log described). `GOAL.md` §G2: "Three seed rows" → "Four seed rows", `weight_log` entry added.
 - **81** Phase 14 acceptance: Full matrix — 45/45 E2E, 327 API + 90 MCP + 50 Openclaw + 152 Web = 619 unit tests, `tsc --noEmit` clean, `next build` shows /weight in route list. Smoke: /weight empty → log → row → /entries entry chip → /dashboard WeightTodayPanel. Phase 14 closed.
 
+- **Phase 15 design (2026-05-23)**: Architecture documents written for the three planned migrations. `docs/architecture/deployment-native.md` — full step-by-step plan for running web + API as systemd user services (tasks 82–84). `docs/architecture/bun-migration.md` — pnpm → Bun migration guide with risk table and script diffs. `docs/architecture/database-tests.md` — full audit of 65 API test files: 57 are HTTP-only (zero ORM coupling), 8 use Prisma directly (seedHabitDayStates factory + 2 habits test files); `global-setup.ts` is the single critical file to update for a future Drizzle migration. Phase 15 tasks (82–84) added to `.ralphloop/tasks.md`.
+
 TRACKER_COMPLETE
