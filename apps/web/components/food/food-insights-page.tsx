@@ -11,6 +11,8 @@ import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
 import { Button, Field, InlineStatus, Input, PageFrame, PageHeader, Surface } from "../ui";
+import { KcalTrend } from "./KcalTrend";
+import { MacroPie } from "./MacroPie";
 import { RangeHeatmap } from "./RangeHeatmap";
 import styles from "./food-insights-page.module.css";
 
@@ -183,6 +185,35 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
                 <span className={styles.summaryLabel}>{copy.summary.meals}</span>
               </div>
             </div>
+          </div>
+        ) : null}
+
+        {/* Macro distribution */}
+        {aggregations ? (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.macroPie.title}</h2>
+            <p className={styles.muted}>{copy.macroPie.description}</p>
+            <MacroPie
+              proteinG={aggregations.total.sum.protein_g ?? 0}
+              carbsG={aggregations.total.sum.carbs_g ?? 0}
+              fatG={aggregations.total.sum.fat_g ?? 0}
+              label={copy.macroPie.title}
+              emptyLabel={copy.macroPie.empty}
+              legend={copy.macroPie.legend}
+            />
+          </div>
+        ) : null}
+
+        {/* Kcal trend */}
+        {aggregations ? (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.kcalTrend.title}</h2>
+            <p className={styles.muted}>{copy.kcalTrend.description}</p>
+            <KcalTrend
+              buckets={aggregations.buckets}
+              label={copy.kcalTrend.label}
+              emptyLabel={copy.kcalTrend.empty}
+            />
           </div>
         ) : null}
 

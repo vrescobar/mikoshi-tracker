@@ -1,0 +1,10 @@
+.wrap {
+  width: 100%;
+  display: block;
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}

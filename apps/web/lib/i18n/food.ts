@@ -169,6 +169,18 @@ export type FoodCopy = {
       avgKcal: string;
       meals: string;
     };
+    macroPie: {
+      title: string;
+      description: string;
+      empty: string;
+      legend: { protein: string; carbs: string; fat: string };
+    };
+    kcalTrend: {
+      title: string;
+      description: string;
+      empty: string;
+      label: string;
+    };
     repeatedMeals: {
       title: string;
       description: string;
@@ -354,6 +366,18 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         avgKcal: "Avg kcal / day",
         meals: "Total meals",
       },
+      macroPie: {
+        title: "Macro distribution",
+        description: "Protein / carbs / fat as a share of total kcal across the selected range.",
+        empty: "Log a meal to see your macro distribution.",
+        legend: { protein: "Protein", carbs: "Carbs", fat: "Fat" },
+      },
+      kcalTrend: {
+        title: "Kcal trend",
+        description: "Calories per day across the selected range.",
+        empty: "No data yet — log a meal to start a trend.",
+        label: "Daily kcal trend",
+      },
       repeatedMeals: {
         title: "Frequent meals",
         description: "Meals you have logged more than once, grouped by name.",
@@ -535,6 +559,18 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         totalDays: "已记录天数",
         avgKcal: "平均热量/天",
         meals: "总餐数",
+      },
+      macroPie: {
+        title: "营养素分布",
+        description: "选定范围内蛋白质、碳水、脂肪占总热量的比例。",
+        empty: "记录一餐以查看营养素分布。",
+        legend: { protein: "蛋白质", carbs: "碳水", fat: "脂肪" },
+      },
+      kcalTrend: {
+        title: "热量趋势",
+        description: "选定范围内每日热量摄入。",
+        empty: "暂无数据 —— 记录一餐以开始趋势。",
+        label: "每日热量趋势",
       },
       repeatedMeals: {
         title: "常吃食物",
@@ -718,6 +754,18 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         totalDays: "Días registrados",
         avgKcal: "Promedio kcal / día",
         meals: "Total de comidas",
+      },
+      macroPie: {
+        title: "Distribución de macros",
+        description: "Proteína / carbohidratos / grasa como porcentaje de las kcal del rango seleccionado.",
+        empty: "Registra una comida para ver tu distribución de macros.",
+        legend: { protein: "Proteína", carbs: "Carbos", fat: "Grasa" },
+      },
+      kcalTrend: {
+        title: "Tendencia de kcal",
+        description: "Calorías por día en el rango seleccionado.",
+        empty: "Sin datos todavía — registra una comida para empezar.",
+        label: "Tendencia diaria de kcal",
       },
       repeatedMeals: {
         title: "Comidas frecuentes",

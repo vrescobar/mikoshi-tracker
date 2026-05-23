@@ -395,7 +395,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       tests in `apps/web/lib/__tests__/payload-diff.test.ts`. Reference:
       §G-FOOD-4.
 
-- [ ] **67** Insights macros + trend — add two new components to
+- [x] **67** Insights macros + trend — add two new components to
       `apps/web/components/food/`: `MacroPie.tsx` (SVG donut showing
       protein/carb/fat as % of total kcal across the selected range) and
       `KcalTrend.tsx` (inline SVG line chart, one point per day). Both

@@ -1,0 +1,43 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  margin-right: 0.4rem;
+  vertical-align: middle;
+}
+
+.swatch[data-macro="protein"] {
+  background: var(--macro-protein, #6366f1);
+}
+
+.swatch[data-macro="carbs"] {
+  background: var(--macro-carbs, #14b8a6);
+}
+
+.swatch[data-macro="fat"] {
+  background: var(--macro-fat, #f59e0b);
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
