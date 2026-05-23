@@ -104,6 +104,30 @@ const FOOD_MEAL_AGGREGATIONS = JSON.stringify({
   cachedColumns: { kcal: "kcal_cached" },
 });
 
+const WEIGHT_LOG_PAYLOAD_SCHEMA = JSON.stringify({
+  type: "object",
+  required: ["weight_kg"],
+  properties: {
+    weight_kg: { type: "number", minimum: 0 },
+    notes: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const WEIGHT_LOG_CONFIG_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {
+    targetWeightKg: { type: "number", minimum: 1, nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const WEIGHT_LOG_AGGREGATIONS = JSON.stringify({
+  metrics: ["avg", "missing_days"],
+  sumFields: ["weight_kg"],
+  cachedColumns: {},
+});
+
 const BUILT_IN_ENTRY_TYPES: Array<{
   slug: string;
   displayName: string;
@@ -142,6 +166,16 @@ const BUILT_IN_ENTRY_TYPES: Array<{
     configSchema: FOOD_MEAL_CONFIG_SCHEMA,
     aggregations: FOOD_MEAL_AGGREGATIONS,
     skillSlug: "mikoshi-tracker-food",
+    isBuiltIn: true,
+  },
+  {
+    slug: "weight_log",
+    displayName: "entry_type.weight_log",
+    cadence: "event_log",
+    payloadSchema: WEIGHT_LOG_PAYLOAD_SCHEMA,
+    configSchema: WEIGHT_LOG_CONFIG_SCHEMA,
+    aggregations: WEIGHT_LOG_AGGREGATIONS,
+    skillSlug: null,
     isBuiltIn: true,
   },
 ];

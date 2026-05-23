@@ -17,7 +17,7 @@ describe("seedBuiltInEntryTypes", () => {
     }
   });
 
-  it("inserts the three built-in entry type slugs", async () => {
+  it("inserts the four built-in entry type slugs", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
 
     const types = await context!.app.db.entryType.findMany({
@@ -29,6 +29,7 @@ describe("seedBuiltInEntryTypes", () => {
     expect(slugs).toContain("food_meal");
     expect(slugs).toContain("habit_boolean");
     expect(slugs).toContain("habit_quantity");
+    expect(slugs).toContain("weight_log");
   });
 
   it("stores payloadSchemas that parse as valid JSON Schema objects", async () => {
@@ -38,7 +39,7 @@ describe("seedBuiltInEntryTypes", () => {
       orderBy: { slug: "asc" },
     });
 
-    expect(types).toHaveLength(3);
+    expect(types).toHaveLength(4);
 
     for (const type of types) {
       const schema = JSON.parse(type.payloadSchema) as unknown;
@@ -46,7 +47,7 @@ describe("seedBuiltInEntryTypes", () => {
     }
   });
 
-  it("marks all three as isBuiltIn and isActive", async () => {
+  it("marks all four as isBuiltIn and isActive", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
 
     const notBuiltIn = await context!.app.db.entryType.findMany({
@@ -60,12 +61,12 @@ describe("seedBuiltInEntryTypes", () => {
     expect(inactive).toHaveLength(0);
   });
 
-  it("is idempotent — calling twice leaves exactly 3 rows", async () => {
+  it("is idempotent — calling twice leaves exactly 4 rows", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
     await seedBuiltInEntryTypes(context!.app.db);
 
     const count = await context!.app.db.entryType.count();
-    expect(count).toBe(3);
+    expect(count).toBe(4);
   });
 
   it("seeds food_meal with skillSlug mikoshi-tracker-food and cadence event_log", async () => {
@@ -91,5 +92,23 @@ describe("seedBuiltInEntryTypes", () => {
     expect(quantity.cadence).toBe("recurring");
     expect(boolean_.skillSlug).toBeNull();
     expect(quantity.skillSlug).toBeNull();
+  });
+
+  it("seeds weight_log with event_log cadence, no skill, and correct payload schema", async () => {
+    await seedBuiltInEntryTypes(context!.app.db);
+
+    const weightLog = await context!.app.db.entryType.findUniqueOrThrow({
+      where: { slug: "weight_log" },
+    });
+
+    expect(weightLog.cadence).toBe("event_log");
+    expect(weightLog.skillSlug).toBeNull();
+
+    const payload = JSON.parse(weightLog.payloadSchema) as {
+      required: string[];
+      properties: Record<string, { type: string; minimum?: number }>;
+    };
+    expect(payload.required).toContain("weight_kg");
+    expect(payload.properties.weight_kg).toMatchObject({ type: "number", minimum: 0 });
   });
 });
