@@ -1,6 +1,6 @@
 # MikoshiTracker
 
-Self-hosted **generic typed-entries tracker** — habits, meals, and any recurring or event-log data — that makes "what should I do today?" legible to both humans and AI. Habits are one of several `EntryType`s; `food_meal` is the first non-habit type.
+Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any recurring or event-log data — that makes "what should I do today?" legible to both humans and AI. Habits are one of several `EntryType`s; `food_meal` and `weight_log` are non-habit types.
 
 自托管**通用条目追踪工具** — 习惯、餐食及任何周期性或事件日志数据 — 让人和 AI 都能清楚地知道"今天该做什么"。
 
@@ -11,7 +11,7 @@ Self-hosted **generic typed-entries tracker** — habits, meals, and any recurri
 
 - **Today-first dashboard** — see pending and completed habits at a glance, with completion rates, trends, and today's food summary
 - **Generic typed-entries engine** — any data modelled as an `EntryType` with a JSON-Schema-validated payload, a cadence (`recurring` or `event_log`), and a declarative aggregations spec; no new tables or services required per type
-- **Built-in types:** `habit_boolean`, `habit_quantity`, and `food_meal` (first non-habit type — daily nutrition log with kcal/macro tracking)
+- **Built-in types:** `habit_boolean`, `habit_quantity`, `food_meal` (daily nutrition log with kcal/macro tracking), and `weight_log` (bodyweight tracker with trend aggregations)
 - **Boolean and quantified habits** — simple yes/no or numeric targets (e.g. "Read 10 pages")
 - **Flexible recurrence** — daily, specific weekdays, weekly count, or monthly count
 - **Food log** — per-meal kcal/macro events, calendar heatmap, insights, and a WhatsApp-driven AI ingestion skill (`mikoshi-tracker-food` in the Mikoshi repo)

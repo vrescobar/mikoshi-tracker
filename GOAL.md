@@ -699,7 +699,7 @@ continue to hang from `EventMutation`.
 
 ### G2 — Built-in `EntryType` seeds
 
-Three seed rows inserted by the migration that creates the tables:
+Four seed rows inserted by the migration that creates the tables:
 
 1. **`habit_boolean`** — `cadence: "recurring"`, payload `{ completed: boolean }`,
    config `{ frequencyType, frequencyCount? }`, aggregations
@@ -711,6 +711,10 @@ Three seed rows inserted by the migration that creates the tables:
 3. **`food_meal`** — `cadence: "event_log"`, full payload in §G5, no per-entry
    config, aggregations `sum(kcal|protein_g|carbs_g|fat_g) + count +
    missing_days`. `skillSlug: "mikoshi-tracker-food"`.
+4. **`weight_log`** — `cadence: "event_log"`, payload
+   `{ weight_kg: number, notes: string? }`, config
+   `{ targetWeightKg: number? }`, aggregations `avg + missing_days` on
+   `weight_kg`. No skill; logged via web form or API. Shipped in Phase 14.
 
 `isBuiltIn` rows cannot be deleted; their `payloadSchema` is **append-only**
 (adding optional fields is allowed; removing or retyping requires an explicit

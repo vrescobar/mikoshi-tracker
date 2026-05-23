@@ -165,3 +165,9 @@ yourself adding a per-type code path, that's a smell — revisit the design.
 When all of the above lands, the §G9.1 invariants still hold and the
 tracker's "add a new type" loop closes in roughly the time it takes to
 write the schema files.
+
+---
+
+**Reference implementation:** `weight_log` was shipped in Phase 14 — see
+commits `task(73)` through `task(81)` in the main branch. That commit
+train is the canonical example of the full loop from seed to E2E test.

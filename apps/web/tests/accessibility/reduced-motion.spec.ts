@@ -26,7 +26,7 @@ test("reduced-motion mode flattens shell transition timing", async ({ page }) =>
 
   await page.getByTestId("locale-switch-button").click();
 
-  const habitsLink = page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "习惯" });
+  const habitsLink = page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "条目" });
   const navTransitionDuration = await habitsLink.evaluate((node) => getComputedStyle(node).transitionDuration);
   expect(parseDurationSeconds(navTransitionDuration)).toBeLessThanOrEqual(0.00001);
 });
