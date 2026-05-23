@@ -5,6 +5,7 @@ import { API_DOCS_PATH, API_SPEC_PATH } from "../auth/api-token";
 import { adminApiRouteDefinitions } from "../modules/admin/admin.routes";
 import { aggregationApiRouteDefinitions } from "../modules/aggregations/aggregation.routes";
 import { attachmentApiRouteDefinitions } from "../modules/attachments/attachment.routes";
+import { skillApiRouteDefinitions } from "../modules/skills/skill.routes";
 import { circleApiRouteDefinitions } from "../modules/circles/circle.routes";
 import { entryTypeApiRouteDefinitions } from "../modules/entry-types/entry-type.routes";
 import { entryApiRouteDefinitions } from "../modules/entries/entry.routes";
@@ -55,6 +56,7 @@ const publicApiRouteDefinitions: PublicApiRouteDefinition[] = [
   ...circleApiRouteDefinitions,
   ...adminApiRouteDefinitions,
   ...attachmentApiRouteDefinitions,
+  ...skillApiRouteDefinitions,
 ];
 
 const localeCookieName = "mikoshi-tracker-locale";

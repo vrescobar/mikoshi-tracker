@@ -22,6 +22,7 @@ import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session
 import { registerAdminRoutes } from "./modules/admin/admin.routes";
 import { registerAggregationRoutes } from "./modules/aggregations/aggregation.routes";
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
+import { registerSkillRoutes } from "./modules/skills/skill.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerEntryRoutes } from "./modules/entries/entry.routes";
 import { registerEntryTypeRoutes } from "./modules/entry-types/entry-type.routes";
@@ -113,6 +114,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerTodayRoutes(app);
   await registerCircleRoutes(app);
   await registerAttachmentRoutes(app);
+  await registerSkillRoutes(app);
   await registerOpenApi(app);
 
   app.get("/health", async () => ({ ok: true }));

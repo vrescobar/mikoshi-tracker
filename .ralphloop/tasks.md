@@ -340,7 +340,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       `EventCard.test.tsx` and add filter-component tests. Reference:
       §G-NAV-1.
 
-- [ ] **63** `POST /api/skills/run` bridge endpoint — add
+- [x] **63** `POST /api/skills/run` bridge endpoint — add
       `apps/api/src/modules/skills/{skill.routes.ts,skill.controller.ts,
       skill.service.ts}` exposing `POST /api/skills/run { skillSlug, input }`.
       Spawns the Mikoshi skill via the existing skill-runner IPC

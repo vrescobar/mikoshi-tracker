@@ -27,6 +27,20 @@ apps/api/data/
 .trae/
 skills/
 skills-lock.json
+
+# Re-include first-party `skills/` directories that the broad rule above
+# would otherwise swallow. The broad rule exists to ignore Mikoshi's
+# external skill workspaces; first-party module/test directories under
+# apps/* and packages/* are part of the source tree.
+!apps/api/src/modules/skills/
+!apps/api/src/modules/skills/**
+!apps/api/test/skills/
+!apps/api/test/skills/**
+!apps/web/app/**/settings/skills/
+!apps/web/app/**/settings/skills/**
+!packages/mcp/src/tools/skills/
+!packages/mcp/src/tools/skills/**
+
 *.tsbuildinfo
 
 # Ralphloop runtime state
