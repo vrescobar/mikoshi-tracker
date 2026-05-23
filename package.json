@@ -2,7 +2,7 @@
   "name": "mikoshi-tracker",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@10.6.2",
+  "packageManager": "pnpm@11.2.2",
   "scripts": {
     "dev": "pnpm --parallel --filter @mikoshi-tracker/api dev --filter @mikoshi-tracker/web dev",
     "postinstall": "pnpm --filter @mikoshi-tracker/api exec prisma generate --config ../../prisma.config.ts --schema ../../prisma/schema.prisma",
