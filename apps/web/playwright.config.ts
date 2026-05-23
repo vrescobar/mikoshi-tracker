@@ -17,7 +17,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "node -e \"require('fs').closeSync(require('fs').openSync('/tmp/mikoshi-tracker-playwright.db','w'))\" && pnpm exec prisma db push --config prisma.config.ts --schema prisma/schema.prisma --url file:/tmp/mikoshi-tracker-playwright.db --accept-data-loss && pnpm --filter @mikoshi-tracker/api dev",
+        "node -e \"require('fs').closeSync(require('fs').openSync('/tmp/mikoshi-tracker-playwright.db','w'))\" && node node_modules/.bin/prisma db push --config prisma.config.ts --schema prisma/schema.prisma --url file:/tmp/mikoshi-tracker-playwright.db --accept-data-loss && bun run --filter @mikoshi-tracker/api dev",
       cwd: "../..",
       port: 3001,
       reuseExistingServer: false,
@@ -32,7 +32,7 @@ export default defineConfig({
     },
     {
       command:
-        "pnpm --filter @mikoshi-tracker/web build && cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static && node apps/web/.next/standalone/apps/web/server.js",
+        "bun run --filter @mikoshi-tracker/web build && cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static && node apps/web/.next/standalone/apps/web/server.js",
       cwd: "../..",
       port: 3000,
       timeout: 300_000,

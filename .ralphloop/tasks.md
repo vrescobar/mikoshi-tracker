@@ -569,7 +569,7 @@ per-type logic in the engine.
       (runner stage stays `node:22-bookworm-slim`). Update `scripts/self-host/`
       shell scripts. Run the full E2E matrix before marking done.
 
-- [ ] **84** Phase 15 acceptance + halt — run the full test matrix (`bun run
+- [x] **84** Phase 15 acceptance + halt — run the full test matrix (`bun run
       prisma:generate && bun --filter @mikoshi-tracker/api run build &&
       bun --filter @mikoshi-tracker/web run build && bun run lint &&
       bun run typecheck && bun --filter @mikoshi-tracker/api run test &&
