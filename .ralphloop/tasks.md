@@ -448,6 +448,77 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       `verify:openclaw` and `@mikoshi-tracker/mcp` test suites must pass
       with zero plugin changes. Reference: §G-MCP-1.
 
+## Phase 14 — weight_log: second non-habit EntryType (recurring numeric)
+
+`weight_log` validates that the generic engine works for a second non-habit
+type without touching any engine code. Full recipe documented in
+`docs/architecture/adding-an-entry-type.md`. The §G9.1 invariants hold: no
+new tables, no new endpoints (beyond the standard generic surface), no
+per-type logic in the engine.
+
+- [x] **73** Seed `weight_log` EntryType in
+      `apps/api/src/modules/entry-types/seed.ts`. Payload: `weight_kg:
+      number ≥ 0` (required) + `notes: string?`. Config: `targetWeightKg:
+      number ≥ 1?`. Aggregations: `{ metrics: ["avg","missing_days"],
+      sumFields: ["weight_kg"], cachedColumns: {} }`. Cadence:
+      `"event_log"`. `isBuiltIn: true`, `skillSlug: null`. Tests in
+      `apps/api/test/entry-types/seed.test.ts`: assert slug present,
+      payloadSchema validates weight_kg, idempotency. Reference: §G2.
+
+- [x] **74** Contracts + i18n — `apps/web/lib/i18n/messages.ts`:
+      add `entryType.weight_log` label (EN "Weight log" / ZH "体重记录" /
+      ES "Registro de peso"). Add `apps/web/lib/i18n/weight.ts` with full
+      EN/ZH/ES copy for the `/weight` surface (page title, empty state,
+      entry fields, action labels, insights labels). No changes to
+      `packages/contracts/` — payload schemas are dynamic.
+
+- [x] **75** Aggregation test for weight_log — new
+      `apps/api/test/aggregations/weight-aggregations.test.ts`. Fixture:
+      one user, one weight_log entry, 30-day events (pesos 77–82 kg, some
+      days missing). Verify: (1) `GET /api/aggregations?
+      entryTypeSlug=weight_log&from&to&fields=weight_kg&include=avg`
+      returns correct daily average; (2) `missing_days` counts gaps;
+      (3) `groupBy=week` groups 4 weeks with their average.
+
+- [x] **76** Web page `/weight` — server page
+      `apps/web/app/(app)/weight/page.tsx` fetches weight entries + last-30d
+      aggregations. Client component
+      `apps/web/components/weight/weight-page.tsx`: table of recent weights
+      + inline "Log weight" form (creates entry lazily on first submit then
+      POSTs event). `apps/web/components/weight/weight-trend.tsx`: SVG line
+      chart reusing the `KcalTrend` pattern. CSS Modules following the
+      design system.
+
+- [x] **77** Navigation + dashboard — `apps/web/lib/navigation.ts`: add
+      `weight: "/weight"`. Do NOT add to primary nav (user reaches via
+      `/entries` chip or dashboard panel). Add minimal `WeightTodayPanel`
+      component to `dashboard-shell.tsx` (latest weight + "Log weight" →
+      `/weight` link), visible only when the user has weight_log events.
+      Update `dashboard-states.spec.ts` so the three existing branches
+      still pass.
+
+- [x] **78** Web unit tests — `apps/web/components/weight/__tests__/
+      weight-page.test.tsx` (render, form submit, error paths),
+      `weight-trend.test.tsx` (30 datapoints, empty state).
+
+- [x] **79** E2E Playwright — `apps/web/tests/weight-flow.spec.ts`: sign
+      up, visit `/weight` → empty state, POST weight event via UI, refresh →
+      row + trend, visit `/entries` with chip "Weight log" → entry listed,
+      edit event → audit trail shows UPDATE, delete event → audit trail
+      shows DELETE.
+
+- [x] **80** Documentation — `docs/architecture/adding-an-entry-type.md`:
+      append note "Reference implementation: weight_log shipped in Phase 14
+      — see commits task(73)..task(80)". `README.md`: add weight_log to
+      built-in EntryTypes list. `GOAL.md` §G2: mention fourth type.
+
+- [x] **81** Phase 14 acceptance + halt — same matrix as task 72.
+      Smoke: `/weight` empty → log weight → row appears; `/entries?
+      entryTypeSlug=weight_log` → entry listed; `/dashboard` →
+      WeightTodayPanel with latest weight; edit + delete + audit trail.
+      Replace `TRACKER_COMPLETE` in `.ralphloop/progress.md` with a fresh
+      one. Reference: §G2, §G9.1.
+
 - [x] **72** Phase 13 acceptance + halt — `pnpm prisma migrate deploy &&
       pnpm -r build && pnpm -r lint && pnpm typecheck && pnpm --filter
       @mikoshi-tracker/api test && pnpm --filter @mikoshi-tracker/contracts
