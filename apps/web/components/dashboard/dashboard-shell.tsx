@@ -13,6 +13,7 @@ import { routes } from "../../lib/navigation";
 import { TodayDashboard } from "../today/today-dashboard";
 import { DashboardFoodSection } from "./dashboard-food-section";
 import { OverviewSection } from "./overview-section";
+import { TodayUnifiedStrip } from "./today-unified-strip";
 import styles from "./dashboard-shell.module.css";
 
 export function DashboardShell({
@@ -21,12 +22,16 @@ export function DashboardShell({
   initialOverview,
   initialSummary,
   initialFoodTodayAggregations = null,
+  foodEntryId = null,
+  dailyKcalTarget = null,
 }: {
   emptyState?: "no-entries" | "habits-empty" | "archived-only" | null;
   initialLoadError?: string | null;
   initialOverview: OverviewStats | null;
   initialSummary: TodaySummary | null;
   initialFoodTodayAggregations?: AggregationResponse | null;
+  foodEntryId?: string | null;
+  dailyKcalTarget?: number | null;
 }) {
   const router = useRouter();
   const { copy } = useLocale();
@@ -123,7 +128,11 @@ export function DashboardShell({
             </div>
           }
         />
-        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection
+          aggregations={initialFoodTodayAggregations}
+          foodEntryId={foodEntryId}
+          dailyKcalTarget={dailyKcalTarget}
+        />
       </div>
     );
   }
@@ -142,7 +151,11 @@ export function DashboardShell({
             </Button>
           }
         />
-        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection
+          aggregations={initialFoodTodayAggregations}
+          foodEntryId={foodEntryId}
+          dailyKcalTarget={dailyKcalTarget}
+        />
       </div>
     );
   }
@@ -166,7 +179,11 @@ export function DashboardShell({
             </div>
           }
         />
-        <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
+        <DashboardFoodSection
+          aggregations={initialFoodTodayAggregations}
+          foodEntryId={foodEntryId}
+          dailyKcalTarget={dailyKcalTarget}
+        />
       </div>
     );
   }
@@ -207,8 +224,17 @@ export function DashboardShell({
 
   return (
     <div className={styles.stack}>
+      <TodayUnifiedStrip
+        summary={summary}
+        foodAggregations={initialFoodTodayAggregations}
+        dailyKcalTarget={dailyKcalTarget}
+      />
       <TodayDashboard initialSummary={summary} onActionSettled={refreshOverview} />
-      <DashboardFoodSection aggregations={initialFoodTodayAggregations} />
+      <DashboardFoodSection
+          aggregations={initialFoodTodayAggregations}
+          foodEntryId={foodEntryId}
+          dailyKcalTarget={dailyKcalTarget}
+        />
       <OverviewSection overview={overview} isRefreshing={isRefreshingOverview} />
     </div>
   );

@@ -416,7 +416,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       `apps/web/components/food/__tests__/food-page-repeats.test.tsx`.
       Reference: §G-FOOD-3.
 
-- [ ] **69** Today unified strip + daily kcal target — extend the
+- [x] **69** Today unified strip + daily kcal target — extend the
       `food_meal` `EntryType.configSchema` to include optional
       `dailyKcalTarget: number?` (additive, no migration of existing
       `Entry.config`). Add `apps/web/components/dashboard/

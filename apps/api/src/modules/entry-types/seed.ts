@@ -89,7 +89,12 @@ const FOOD_MEAL_PAYLOAD_SCHEMA = JSON.stringify({
 
 const FOOD_MEAL_CONFIG_SCHEMA = JSON.stringify({
   type: "object",
-  properties: {},
+  properties: {
+    // Phase 13 G-DASH-3: optional daily kcal target used by the Today
+    // unified strip on the dashboard. Additive; existing Entry.config rows
+    // remain valid because the field is optional.
+    dailyKcalTarget: { type: "number", minimum: 1, nullable: true },
+  },
   additionalProperties: false,
 });
 
@@ -146,9 +151,10 @@ export async function seedBuiltInEntryTypes(db: PrismaClient): Promise<void> {
     await db.entryType.upsert({
       where: { slug: type.slug },
       create: type,
-      // Keep the aggregations spec in sync so cachedColumns additions are picked up
-      // on existing deployments without requiring a separate data migration.
-      update: { aggregations: type.aggregations },
+      // Keep the aggregations spec + configSchema in sync so additive schema
+      // changes (e.g. food_meal.dailyKcalTarget) are picked up on existing
+      // deployments without requiring a separate data migration.
+      update: { aggregations: type.aggregations, configSchema: type.configSchema },
     });
   }
 }

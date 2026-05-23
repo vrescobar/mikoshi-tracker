@@ -141,11 +141,29 @@ export type LocaleMessages = {
         notDue: string;
       };
     };
+    todayUnified: {
+      habitsLabel: string;
+      habitsPending: (count: number) => string;
+      habitsAllDone: string;
+      kcalLabel: string;
+      kcalProgress: (current: number, target: number) => string;
+      kcalNoTarget: (current: number) => string;
+    };
     foodToday: {
       eyebrow: string;
       title: string;
       description: string;
       quickAdd: string;
+      target: {
+        editLabel: string;
+        currentLabel: (kcal: number) => string;
+        emptyLabel: string;
+        save: string;
+        saving: string;
+        cancel: string;
+        placeholder: string;
+        errorTitle: string;
+      };
       metrics: {
         kcal: string;
         protein: string;
@@ -392,11 +410,29 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           notDue: "Not due",
         },
       },
+      todayUnified: {
+        habitsLabel: "Habits",
+        habitsPending: (count) => `${count} pending`,
+        habitsAllDone: "All done",
+        kcalLabel: "Kcal",
+        kcalProgress: (current, target) => `${current} / ${target}`,
+        kcalNoTarget: (current) => `${current}`,
+      },
       foodToday: {
         eyebrow: "Nutrition",
         title: "Food today",
         description: "Calories and macros logged so far today.",
         quickAdd: "Log a meal",
+        target: {
+          editLabel: "Edit target",
+          currentLabel: (kcal) => `Daily target: ${kcal} kcal`,
+          emptyLabel: "No daily target set.",
+          save: "Save",
+          saving: "Saving…",
+          cancel: "Cancel",
+          placeholder: "Daily kcal target",
+          errorTitle: "Could not save target",
+        },
         metrics: {
           kcal: "kcal",
           protein: "Protein",
@@ -640,11 +676,29 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           notDue: "当天无任务",
         },
       },
+      todayUnified: {
+        habitsLabel: "习惯",
+        habitsPending: (count) => `${count} 个待完成`,
+        habitsAllDone: "已全部完成",
+        kcalLabel: "热量",
+        kcalProgress: (current, target) => `${current} / ${target}`,
+        kcalNoTarget: (current) => `${current}`,
+      },
       foodToday: {
         eyebrow: "营养",
         title: "今日饮食",
         description: "今天已记录的热量和营养素。",
         quickAdd: "记录一餐",
+        target: {
+          editLabel: "编辑目标",
+          currentLabel: (kcal) => `每日目标：${kcal} 千卡`,
+          emptyLabel: "未设置每日目标。",
+          save: "保存",
+          saving: "保存中…",
+          cancel: "取消",
+          placeholder: "每日千卡目标",
+          errorTitle: "无法保存目标",
+        },
         metrics: {
           kcal: "千卡",
           protein: "蛋白质",
@@ -890,11 +944,29 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           notDue: "Sin previsión",
         },
       },
+      todayUnified: {
+        habitsLabel: "Hábitos",
+        habitsPending: (count) => `${count} pendiente${count === 1 ? "" : "s"}`,
+        habitsAllDone: "Todo hecho",
+        kcalLabel: "Kcal",
+        kcalProgress: (current, target) => `${current} / ${target}`,
+        kcalNoTarget: (current) => `${current}`,
+      },
       foodToday: {
         eyebrow: "Nutrición",
         title: "Hoy en comida",
         description: "Calorías y macros registrados hasta ahora hoy.",
         quickAdd: "Registrar comida",
+        target: {
+          editLabel: "Editar objetivo",
+          currentLabel: (kcal) => `Objetivo diario: ${kcal} kcal`,
+          emptyLabel: "Sin objetivo diario.",
+          save: "Guardar",
+          saving: "Guardando…",
+          cancel: "Cancelar",
+          placeholder: "Objetivo de kcal diario",
+          errorTitle: "No se pudo guardar el objetivo",
+        },
         metrics: {
           kcal: "kcal",
           protein: "Proteína",

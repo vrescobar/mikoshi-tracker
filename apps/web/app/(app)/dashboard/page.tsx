@@ -43,6 +43,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const foodEventsToday = foodAggregationsResult?.total.count ?? 0;
   const hasAnyFood = foodEntries.length > 0 || foodEventsToday > 0;
 
+  // Resolve the user's optional daily kcal target from the food_meal Entry
+  // config. Multiple food_meal entries would each carry their own target;
+  // V1 honors the first active entry only.
+  const foodEntryWithTarget = foodEntries.find((entry) => {
+    const config = entry.config as { dailyKcalTarget?: number | null } | null;
+    return typeof config?.dailyKcalTarget === "number" && config.dailyKcalTarget > 0;
+  });
+  const foodEntryId = foodEntries[0]?.id ?? null;
+  const dailyKcalTarget =
+    foodEntryWithTarget && typeof (foodEntryWithTarget.config as { dailyKcalTarget?: number | null } | null)?.dailyKcalTarget === "number"
+      ? ((foodEntryWithTarget.config as { dailyKcalTarget: number }).dailyKcalTarget)
+      : null;
+
   const emptyState: "no-entries" | "habits-empty" | "archived-only" | null =
     activeHabits.length === 0
       ? hasAnyFood
@@ -77,6 +90,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       initialOverview={initialOverview}
       initialSummary={initialSummary}
       initialFoodTodayAggregations={foodAggregationsResult}
+      foodEntryId={foodEntryId}
+      dailyKcalTarget={dailyKcalTarget}
     />
   );
 }

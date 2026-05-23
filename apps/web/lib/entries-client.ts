@@ -52,3 +52,21 @@ export async function restoreEntry(id: string) {
   });
   return body.item;
 }
+
+/**
+ * Patch a subset of the Entry's mutable fields. Used by the dashboard's
+ * inline kcal-target editor (Phase 13 G-DASH-3).
+ */
+export async function updateEntry(
+  id: string,
+  patch: { name?: string; description?: string | null; config?: Record<string, unknown> },
+) {
+  const body = await requestJson<{ item: EntryRecord }>(
+    `/api/entries/${encodeURIComponent(id)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    },
+  );
+  return body.item;
+}

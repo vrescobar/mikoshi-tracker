@@ -55,6 +55,59 @@
   border-color: var(--color-accent, #111827);
 }
 
+.targetRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  padding-top: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.targetLabel {
+  color: var(--color-text-soft);
+}
+
+.targetEdit,
+.targetSave,
+.targetCancel {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  color: var(--color-accent, #111827);
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+}
+
+.targetEdit:hover,
+.targetSave:hover,
+.targetCancel:hover {
+  text-decoration: underline;
+}
+
+.targetForm {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.targetInput {
+  width: 6.5rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm, 4px);
+  font: inherit;
+}
+
+.targetError {
+  color: var(--color-danger, #e53e3e);
+  font-size: 0.78rem;
+}
+
 .description {
   margin: 0;
   color: var(--color-text-muted);
