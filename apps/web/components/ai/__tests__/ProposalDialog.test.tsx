@@ -13,6 +13,23 @@ vi.mock("../../../lib/i18n/food", () => ({
       submittingLabel: "Adding…",
       cancelLabel: "Cancel",
       errorTitle: "Could not add food",
+      photoLabel: "Photo",
+      photoHint: "Attach an image.",
+      photoUploadFailed: "Photo upload failed.",
+      tabs: { manual: "Manual", photo: "Photo", text: "Text" },
+      skill: {
+        photoSubmitLabel: "Identify from photo",
+        textSubmitLabel: "Parse text",
+        textPlaceholder: "Describe a meal",
+        runningLabel: "Asking the skill…",
+        proposalTitle: "Confirm this meal",
+        proposalDescription: "Review and accept.",
+        acceptLabel: "Accept and save",
+        acceptingLabel: "Saving…",
+        discardLabel: "Discard",
+        needsEnrolment: "Skill not enrolled.",
+        genericError: "Skill error.",
+      },
     },
     detail: {
       fields: {
@@ -49,6 +66,8 @@ vi.mock("../../../lib/i18n/food", () => ({
 vi.mock("../../../lib/food-client", () => ({
   createFoodEvent: vi.fn(),
   ensureFoodEntry: vi.fn(),
+  attachImageToFoodEvent: vi.fn(),
+  runFoodSkill: vi.fn(),
 }));
 vi.mock("../../ui", () => ({
   Button: ({ children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement>) => <button {...rest}>{children}</button>,

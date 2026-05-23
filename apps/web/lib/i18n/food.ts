@@ -115,6 +115,24 @@ export type FoodCopy = {
     photoLabel: string;
     photoHint: string;
     photoUploadFailed: string;
+    tabs: {
+      manual: string;
+      photo: string;
+      text: string;
+    };
+    skill: {
+      photoSubmitLabel: string;
+      textSubmitLabel: string;
+      textPlaceholder: string;
+      runningLabel: string;
+      proposalTitle: string;
+      proposalDescription: string;
+      acceptLabel: string;
+      acceptingLabel: string;
+      discardLabel: string;
+      needsEnrolment: string;
+      genericError: string;
+    };
   };
   insights: {
     header: {
@@ -276,6 +294,24 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photoLabel: "Photo (optional)",
       photoHint: "Attach an image of the meal — uploaded after the meal is saved.",
       photoUploadFailed: "Meal saved, but the photo upload failed.",
+      tabs: {
+        manual: "Manual",
+        photo: "Photo",
+        text: "Text",
+      },
+      skill: {
+        photoSubmitLabel: "Identify from photo",
+        textSubmitLabel: "Parse text",
+        textPlaceholder: "e.g. Tuna salad with two slices of bread",
+        runningLabel: "Asking the food skill…",
+        proposalTitle: "Confirm this meal",
+        proposalDescription: "The food skill suggests these values. Edit anything that looks off, then accept.",
+        acceptLabel: "Accept and save",
+        acceptingLabel: "Saving…",
+        discardLabel: "Discard",
+        needsEnrolment: "The food skill is not enrolled yet. Open Settings → Skills to connect it.",
+        genericError: "The food skill could not process this input.",
+      },
     },
     insights: {
       header: {
@@ -434,6 +470,24 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photoHint: "附上一张餐食照片 —— 餐食保存后再上传。",
       photoUploadFailed: "餐食已保存，但照片上传失败。",
       errorTitle: "无法添加食物",
+      tabs: {
+        manual: "手动",
+        photo: "照片",
+        text: "文字",
+      },
+      skill: {
+        photoSubmitLabel: "从照片识别",
+        textSubmitLabel: "解析文字",
+        textPlaceholder: "例如：金枪鱼沙拉配两片面包",
+        runningLabel: "正在咨询食物技能…",
+        proposalTitle: "确认这餐",
+        proposalDescription: "食物技能给出以下数值建议。如有不准之处请先修改，然后确认。",
+        acceptLabel: "接受并保存",
+        acceptingLabel: "保存中…",
+        discardLabel: "放弃",
+        needsEnrolment: "食物技能尚未启用。请前往「设置 → 技能」连接。",
+        genericError: "食物技能无法处理此输入。",
+      },
     },
     insights: {
       header: {
@@ -593,6 +647,24 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photoLabel: "Foto (opcional)",
       photoHint: "Adjunta una imagen de la comida — se sube después de guardar.",
       photoUploadFailed: "La comida se guardó, pero falló la subida de la foto.",
+      tabs: {
+        manual: "Manual",
+        photo: "Foto",
+        text: "Texto",
+      },
+      skill: {
+        photoSubmitLabel: "Identificar desde foto",
+        textSubmitLabel: "Analizar texto",
+        textPlaceholder: "p. ej. Ensalada de atún con dos tostadas",
+        runningLabel: "Consultando la skill de comida…",
+        proposalTitle: "Confirma esta comida",
+        proposalDescription: "La skill propone estos valores. Ajusta lo que necesites y acepta.",
+        acceptLabel: "Aceptar y guardar",
+        acceptingLabel: "Guardando…",
+        discardLabel: "Descartar",
+        needsEnrolment: "La skill de comida aún no está conectada. Ve a Ajustes → Skills para activarla.",
+        genericError: "La skill de comida no pudo procesar la entrada.",
+      },
     },
     insights: {
       header: {

@@ -355,7 +355,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       (mocked runner), unknown slug (404), runner unreachable (503),
       timeout (504). Reference: §G-FOOD-2.
 
-- [ ] **64** Multi-tab `ProposalDialog` — extend
+- [x] **64** Multi-tab `ProposalDialog` — extend
       `apps/web/components/ai/ProposalDialog.tsx` with three tabs:
       **Manual** (current), **Photo** (file input → base64 → POST to
       `/api/skills/run` with `skillSlug: "mikoshi-tracker-food"`),

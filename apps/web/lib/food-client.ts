@@ -144,6 +144,24 @@ export async function createFoodEvent(entryId: string, payload: FoodPayload, occ
   return body.item;
 }
 
+export async function runFoodSkill(input: {
+  tool: "food_log_from_input" | "food_query_range" | "food_edit_event" | "food_delete_event";
+  text?: string;
+  imageBase64?: string;
+}): Promise<unknown> {
+  const response = await fetch(createApiUrl("/api/skills/run"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ skillSlug: "mikoshi-tracker-food", input }),
+  });
+  if (!response.ok) {
+    const message = await response.text().catch(() => "");
+    throw new Error(message || `Skill run failed (${response.status})`);
+  }
+  return (await response.json()) as unknown;
+}
+
 export async function attachImageToFoodEvent(
   eventId: string,
   base64: string,
