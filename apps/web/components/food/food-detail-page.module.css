@@ -258,6 +258,36 @@
   margin: 0;
 }
 
+.mutationDiffEmpty {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.mutationDiffList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.mutationDiffItem {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-mono, ui-monospace, "Menlo", "Consolas", monospace);
+}
+
+.mutationDiffField {
+  color: var(--color-text-soft);
+  min-width: 5rem;
+}
+
+.mutationDiffValue {
+  color: var(--color-text);
+}
+
 .mutationTime {
   font-size: 0.78rem;
   color: var(--color-text-soft);

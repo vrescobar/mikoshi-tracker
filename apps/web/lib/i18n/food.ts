@@ -103,6 +103,12 @@ export type FoodCopy = {
         SYSTEM: string;
         CIRCLE: string;
       };
+      diff: {
+        noChanges: string;
+        added: string;
+        removed: string;
+        unchanged: string;
+      };
     };
   };
   dialog: {
@@ -282,6 +288,12 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
           SYSTEM: "System",
           CIRCLE: "Circle",
         },
+        diff: {
+          noChanges: "No payload changes",
+          added: "added",
+          removed: "removed",
+          unchanged: "unchanged",
+        },
       },
     },
     dialog: {
@@ -457,6 +469,12 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
           AI: "AI",
           SYSTEM: "系统",
           CIRCLE: "圈子",
+        },
+        diff: {
+          noChanges: "无变化",
+          added: "新增",
+          removed: "移除",
+          unchanged: "未变",
         },
       },
     },
@@ -634,6 +652,12 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
           AI: "IA",
           SYSTEM: "Sistema",
           CIRCLE: "Círculo",
+        },
+        diff: {
+          noChanges: "Sin cambios",
+          added: "añadido",
+          removed: "eliminado",
+          unchanged: "sin cambios",
         },
       },
     },

@@ -10,6 +10,7 @@ import type { FoodPayload } from "../../lib/food-client";
 import { deleteFoodEvent, getFoodEventDetail, isFoodPayload, undoFoodEvent, updateFoodEvent } from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
+import { diffPayload } from "../../lib/payload-diff";
 import { useLocale } from "../locale";
 import { Badge, Button, Field, Input, Notice, Surface } from "../ui";
 import styles from "./food-detail-page.module.css";
@@ -87,13 +88,42 @@ export function isDeleted(event: EntryEventDetail): boolean {
   return sorted[0]?.type === "DELETE";
 }
 
+function formatDiffValue(value: unknown, removedLabel: string): string {
+  if (value === undefined) return removedLabel;
+  if (value === null) return "null";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return JSON.stringify(value);
+}
+
 function MutationRow({ mutation, copy }: { mutation: EventMutationRecord; copy: ReturnType<typeof getFoodCopy>["detail"]["mutations"] }) {
+  const isDelete = mutation.type === "DELETE";
+  // For CREATE/DELETE/UNDO/UPDATE, the diff is from previousPayload to nextPayload
+  // as stored on the mutation row. UNDO mutations carry the swap (next = the
+  // payload state restored, previous = what was active just before).
+  const entries = diffPayload(mutation.previousPayload, mutation.nextPayload);
   return (
     <div className={styles.mutationRow} data-type={mutation.type}>
       <div className={styles.mutationMeta}>
-        <Badge tone={mutation.type === "DELETE" ? "neutral" : "info"}>{copy.types[mutation.type]}</Badge>
+        <Badge tone={isDelete ? "neutral" : "info"}>{copy.types[mutation.type]}</Badge>
         <span className={styles.mutationSource}>{copy.sources[mutation.source]}</span>
       </div>
+      {entries.length === 0 ? (
+        <p className={styles.mutationDiffEmpty}>{copy.diff.noChanges}</p>
+      ) : (
+        <ul className={styles.mutationDiffList} data-testid="mutation-diff">
+          {entries.map((entry) => (
+            <li key={entry.field} className={styles.mutationDiffItem}>
+              <span className={styles.mutationDiffField}>{entry.field}</span>
+              <span className={styles.mutationDiffValue}>
+                {formatDiffValue(entry.before, copy.diff.removed)}
+                <span aria-hidden="true"> → </span>
+                {formatDiffValue(entry.after, copy.diff.removed)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {mutation.note ? <p className={styles.mutationNote}>{mutation.note}</p> : null}
       <span className={styles.mutationTime}>{mutation.createdAt}</span>
     </div>

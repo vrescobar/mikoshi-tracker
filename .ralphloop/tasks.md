@@ -384,7 +384,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       meals grouped by `name` with sums + counts + limit. Reference:
       §G-ENG-1.
 
-- [ ] **66** Audit-trail diff view — add
+- [x] **66** Audit-trail diff view — add
       `apps/web/lib/payload-diff.ts` with `diffPayload(previous, next)`
       returning `{ field, before, after }[]` (primitives only, deep-equal
       skip for unchanged). Replace the JSON block in
