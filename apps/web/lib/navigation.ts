@@ -9,6 +9,8 @@ export const routes = {
   foodInsights: "/food/insights",
   foodDetail: (eventId: string) => `/food/${eventId}`,
   apiAccess: "/api-access",
+  settings: "/settings",
+  settingsSkills: "/settings/skills",
   newHabit: "/habits/new",
   habitDetail: (habitId: string) => `/habits/${habitId}`,
   entryDetail: (entryId: string) => `/entries/${entryId}`,
@@ -44,8 +46,12 @@ export function getPrimaryAppNavigation(labels: {
   ] as const;
 }
 
-export function getUtilityAppNavigation(labels: { apiAccess: string }) {
+export function getUtilityAppNavigation(labels: { apiAccess: string; settings: string }) {
   return [
+    {
+      href: routes.settings,
+      label: labels.settings,
+    },
     {
       href: routes.apiAccess,
       label: labels.apiAccess,

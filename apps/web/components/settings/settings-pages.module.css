@@ -1,0 +1,134 @@
+.stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface, #fff);
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  background: var(--color-surface-muted, #f3f4f6);
+  border-color: var(--color-accent, #111827);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.cardDescription {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.cardCta {
+  font-size: 0.82rem;
+  color: var(--color-accent, #111827);
+  font-weight: 600;
+}
+
+.skillsList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.skillRow {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface, #fff);
+}
+
+.skillHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.skillName {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.skillSlug {
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+  font-family: var(--font-mono, ui-monospace, "Menlo", "Consolas", monospace);
+}
+
+.skillStatus {
+  font-size: 0.82rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+}
+
+.skillStatus[data-tone="enrolled"] {
+  background: color-mix(in srgb, var(--color-accent, #111827) 8%, white);
+  border-color: var(--color-accent, #111827);
+  color: var(--color-accent, #111827);
+}
+
+.skillStatus[data-tone="not-enrolled"] {
+  color: var(--color-text-muted);
+}
+
+.skillStatus[data-tone="unreachable"] {
+  background: color-mix(in srgb, var(--color-danger, #e53e3e) 8%, white);
+  border-color: var(--color-danger, #e53e3e);
+  color: var(--color-danger, #e53e3e);
+}
+
+.skillMeta {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  gap: 0.2rem 0.8rem;
+}
+
+.skillMetaLabel {
+  color: var(--color-text-soft);
+}
+
+.skillMetaError {
+  font-family: var(--font-mono, ui-monospace, "Menlo", "Consolas", monospace);
+  word-break: break-word;
+}
+
+.backLink {
+  font-size: 0.85rem;
+  color: var(--color-accent, #111827);
+  text-decoration: none;
+}
+
+.backLink:hover {
+  text-decoration: underline;
+}
+
+.empty {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}

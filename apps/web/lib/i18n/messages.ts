@@ -76,6 +76,7 @@ export type LocaleMessages = {
       circles: string;
       food: string;
       apiAccess: string;
+      settings: string;
     };
     signOut: string;
   };
@@ -342,6 +343,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         circles: "Circles",
         food: "Food",
         apiAccess: "API Access",
+        settings: "Settings",
       },
       signOut: "Log out",
     },
@@ -611,6 +613,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         circles: "圈子",
         food: "饮食",
         apiAccess: "API 访问",
+        settings: "设置",
       },
       signOut: "退出登录",
     },
@@ -875,6 +878,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         circles: "Círculos",
         food: "Comida",
         apiAccess: "Acceso API",
+        settings: "Ajustes",
       },
       signOut: "Cerrar sesión",
     },

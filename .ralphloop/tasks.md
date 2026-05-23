@@ -429,7 +429,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       "Edit target" toggle. EN/ZH/ES strings. Tests for the new
       component. Reference: §G-DASH-3.
 
-- [ ] **70** Skills health page — create
+- [x] **70** Skills health page — create
       `apps/web/app/(app)/settings/page.tsx` and `settings/skills/page.tsx`
       (server pages). The skills page lists `EntryType`s with non-null
       `skillSlug` and, for each, queries

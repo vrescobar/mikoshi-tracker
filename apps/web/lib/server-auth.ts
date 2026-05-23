@@ -292,6 +292,54 @@ export type EntryTypeRecord = {
   isBuiltIn: boolean;
 };
 
+export type SkillHealthSnapshot = {
+  skillSlug: string;
+  enrolled: boolean | null;
+  lastRunAt: string | null;
+  lastError: string | null;
+  unreachable: boolean;
+};
+
+/**
+ * Fetch the skill runner's health for a single slug via the API proxy. Maps
+ * 503/504 (runner unreachable/timeout) to `unreachable: true` so the settings
+ * page can show a graceful state instead of throwing.
+ */
+export async function getSkillHealthFromCookieHeader(
+  cookieHeader: string,
+  slug: string,
+): Promise<SkillHealthSnapshot> {
+  const response = await fetch(
+    createServerApiUrl(`/api/skills/${encodeURIComponent(slug)}/health`),
+    {
+      headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+      cache: "no-store",
+    },
+  );
+
+  if (response.status === 503 || response.status === 504 || response.status === 502) {
+    return { skillSlug: slug, enrolled: null, lastRunAt: null, lastError: null, unreachable: true };
+  }
+
+  if (!response.ok) {
+    return { skillSlug: slug, enrolled: null, lastRunAt: null, lastError: null, unreachable: true };
+  }
+
+  const body = (await response.json()) as {
+    skillSlug?: string;
+    enrolled?: boolean;
+    lastRunAt?: string | null;
+    lastError?: string | null;
+  };
+  return {
+    skillSlug: body.skillSlug ?? slug,
+    enrolled: body.enrolled ?? null,
+    lastRunAt: body.lastRunAt ?? null,
+    lastError: body.lastError ?? null,
+    unreachable: false,
+  };
+}
+
 export async function listEntryTypesFromCookieHeader(
   cookieHeader: string,
 ): Promise<EntryTypeRecord[]> {
