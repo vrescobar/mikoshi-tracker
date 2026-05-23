@@ -80,11 +80,18 @@ export type LocaleMessages = {
   };
   dashboard: {
     emptyStates: {
-      noHabits: {
+      noEntries: {
         eyebrow: string;
         title: string;
         description: string;
-        action: string;
+        createHabit: string;
+        logMeal: string;
+      };
+      habitsEmpty: {
+        eyebrow: string;
+        title: string;
+        description: string;
+        createHabit: string;
       };
       archivedOnly: {
         eyebrow: string;
@@ -319,11 +326,20 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     },
     dashboard: {
       emptyStates: {
-        noHabits: {
+        noEntries: {
           eyebrow: "Today",
-          title: "No habits yet",
-          description: "Create your first habit to turn this dashboard into a useful today view.",
-          action: "Create first habit",
+          title: "Nothing tracked yet",
+          description:
+            "Start by creating your first habit, or log a meal — both live side by side on this dashboard.",
+          createHabit: "Create first habit",
+          logMeal: "Log a meal",
+        },
+        habitsEmpty: {
+          eyebrow: "Today",
+          title: "No active habits right now",
+          description:
+            "Food tracking is on. Create a habit to round out your daily loop, or keep logging meals.",
+          createHabit: "Create first habit",
         },
         archivedOnly: {
           eyebrow: "Today",
@@ -559,11 +575,18 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     },
     dashboard: {
       emptyStates: {
-        noHabits: {
+        noEntries: {
           eyebrow: "今天",
-          title: "还没有习惯",
-          description: "先创建第一个习惯，这个页面才会真正成为你今天的行动视图。",
-          action: "创建第一个习惯",
+          title: "还没有任何记录",
+          description: "先创建一个习惯，或记录一餐 —— 两者都会出现在这个页面。",
+          createHabit: "创建第一个习惯",
+          logMeal: "记录一餐",
+        },
+        habitsEmpty: {
+          eyebrow: "今天",
+          title: "当前没有启用中的习惯",
+          description: "饮食记录已就绪。创建一个习惯让你的日常更完整，或继续记录餐食。",
+          createHabit: "创建第一个习惯",
         },
         archivedOnly: {
           eyebrow: "今天",
@@ -796,11 +819,20 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     },
     dashboard: {
       emptyStates: {
-        noHabits: {
+        noEntries: {
           eyebrow: "Hoy",
-          title: "Aún no hay hábitos",
-          description: "Crea tu primer hábito para convertir este panel en una vista útil de hoy.",
-          action: "Crear primer hábito",
+          title: "Aún no registras nada",
+          description:
+            "Empieza creando tu primer hábito o registra una comida — los dos viven en este panel.",
+          createHabit: "Crear primer hábito",
+          logMeal: "Registrar comida",
+        },
+        habitsEmpty: {
+          eyebrow: "Hoy",
+          title: "No hay hábitos activos ahora mismo",
+          description:
+            "Tu registro de comida sigue activo. Crea un hábito para completar tu rutina diaria o sigue registrando comidas.",
+          createHabit: "Crear primer hábito",
         },
         archivedOnly: {
           eyebrow: "Hoy",

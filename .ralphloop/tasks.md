@@ -289,7 +289,7 @@ tables or services per `EntryType`; no domain logic in the API; the single
 write path remains `events.service.persistEvent(...)`. Phase 13's
 acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
 
-- [ ] **59** Dashboard empty-state taxonomy includes food — extend
+- [x] **59** Dashboard empty-state taxonomy includes food — extend
       `apps/web/app/(app)/dashboard/page.tsx:39` to compute
       `emptyState: "no-entries" | "habits-empty" | "archived-only" | null`.
       `"no-entries"` only when the user has zero entries of any type AND

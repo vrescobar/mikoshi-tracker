@@ -22,7 +22,7 @@ export function DashboardShell({
   initialSummary,
   initialFoodTodayAggregations = null,
 }: {
-  emptyState?: "no-habits" | "archived-only" | null;
+  emptyState?: "no-entries" | "habits-empty" | "archived-only" | null;
   initialLoadError?: string | null;
   initialOverview: OverviewStats | null;
   initialSummary: TodaySummary | null;
@@ -104,17 +104,41 @@ export function DashboardShell({
     setRetryNonce((value) => value + 1);
   }
 
-  if (emptyState === "no-habits") {
+  if (emptyState === "no-entries") {
     return (
       <div className={styles.stack}>
         <StatePanel
           testId="dashboard-primary-state"
-          eyebrow={copy.dashboard.emptyStates.noHabits.eyebrow}
-          title={copy.dashboard.emptyStates.noHabits.title}
-          description={copy.dashboard.emptyStates.noHabits.description}
+          eyebrow={copy.dashboard.emptyStates.noEntries.eyebrow}
+          title={copy.dashboard.emptyStates.noEntries.title}
+          description={copy.dashboard.emptyStates.noEntries.description}
+          actions={
+            <div className={styles.actionRow}>
+              <Button type="button" onClick={() => router.push(routes.newHabit)}>
+                {copy.dashboard.emptyStates.noEntries.createHabit}
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => router.push(routes.food)}>
+                {copy.dashboard.emptyStates.noEntries.logMeal}
+              </Button>
+            </div>
+          }
+        />
+        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
+      </div>
+    );
+  }
+
+  if (emptyState === "habits-empty") {
+    return (
+      <div className={styles.stack}>
+        <StatePanel
+          testId="dashboard-primary-state"
+          eyebrow={copy.dashboard.emptyStates.habitsEmpty.eyebrow}
+          title={copy.dashboard.emptyStates.habitsEmpty.title}
+          description={copy.dashboard.emptyStates.habitsEmpty.description}
           actions={
             <Button type="button" onClick={() => router.push(routes.newHabit)}>
-              {copy.dashboard.emptyStates.noHabits.action}
+              {copy.dashboard.emptyStates.habitsEmpty.createHabit}
             </Button>
           }
         />

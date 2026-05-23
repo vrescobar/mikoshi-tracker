@@ -36,17 +36,49 @@ async function listHabitIds(page: import("@playwright/test").Page) {
   });
 }
 
-test("dashboard keeps no-habits guidance in place instead of redirecting away", async ({ page }) => {
-  const email = `dashboard-no-habits-${Date.now()}@example.com`;
+test("dashboard shows the no-entries panel for a brand-new user with food panel visible", async ({
+  page,
+}) => {
+  const email = `dashboard-no-entries-${Date.now()}@example.com`;
 
-  await signUpInBrowser(page, email, "No Habits User");
+  await signUpInBrowser(page, email, "No Entries User");
 
-  // Phase 12 removed the dedicated onboarding form; a brand-new user now lands
-  // on the dashboard, which keeps its own no-habits guidance.
+  // Phase 13: empty-state taxonomy distinguishes "no entries of any type" from
+  // "only food" and "only archived habits". A brand-new user has neither
+  // habits nor food, so the panel offers both CTAs and the food panel still
+  // surfaces beside the empty state.
   await expect(page).toHaveURL(/\/dashboard$/);
 
-  await expect(page.getByText("No habits yet")).toBeVisible();
+  await expect(page.getByText("Nothing tracked yet")).toBeVisible();
   await expect(page.getByRole("button", { name: "Create first habit" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Log a meal" })).toBeVisible();
+  await expect(page.getByTestId("dashboard-food-today")).toBeVisible();
+});
+
+test("dashboard shows the habits-empty panel when only food is present", async ({ page }) => {
+  const email = `dashboard-habits-empty-${Date.now()}@example.com`;
+
+  await signUpInBrowser(page, email, "Habits Empty User");
+
+  // Create a food_meal entry via API so the user has food but zero habits.
+  await page.evaluate(async () => {
+    const entriesResponse = await fetch("http://127.0.0.1:3001/api/entries", {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        entryTypeSlug: "food_meal",
+        name: "Meals",
+        config: {},
+      }),
+    });
+    if (!entriesResponse.ok) throw new Error(await entriesResponse.text());
+  });
+
+  await page.goto("/dashboard");
+
+  await expect(page.getByText("No active habits right now")).toBeVisible();
+  await expect(page.getByTestId("dashboard-food-today")).toBeVisible();
 });
 
 test("dashboard distinguishes nothing due today from all done", async ({ page }) => {

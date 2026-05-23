@@ -5,6 +5,7 @@ import {
   getOverviewStatsFromCookieHeader,
   getSessionFromCookieHeader,
   getTodaySummaryFromCookieHeader,
+  listEntriesFromCookieHeader,
   listHabitsFromCookieHeader,
   todayKeyInTimeZone,
 } from "../../../lib/server-auth";
@@ -28,15 +29,28 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const session = await getSessionFromCookieHeader(cookieHeader);
   const today = todayKeyInTimeZone(session?.timezone);
 
-  const [[activeHabits, archivedHabits], foodAggregationsResult] = await Promise.all([
+  const [[activeHabits, archivedHabits], foodAggregationsResult, foodEntries] = await Promise.all([
     Promise.all([
       listHabitsFromCookieHeader(cookieHeader, { status: "active" }),
       listHabitsFromCookieHeader(cookieHeader, { status: "archived" }),
     ]),
     getFoodAggregationsFromCookieHeader(cookieHeader, today, today).catch(() => null),
+    listEntriesFromCookieHeader(cookieHeader, { entryTypeSlug: "food_meal", isActive: true }).catch(
+      () => [],
+    ),
   ]);
 
-  const emptyState = activeHabits.length === 0 ? (archivedHabits.length > 0 ? "archived-only" : "no-habits") : null;
+  const foodEventsToday = foodAggregationsResult?.total.count ?? 0;
+  const hasAnyFood = foodEntries.length > 0 || foodEventsToday > 0;
+
+  const emptyState: "no-entries" | "habits-empty" | "archived-only" | null =
+    activeHabits.length === 0
+      ? hasAnyFood
+        ? "habits-empty"
+        : archivedHabits.length > 0
+          ? "archived-only"
+          : "no-entries"
+      : null;
 
   let initialSummary = null;
   let initialOverview = null;

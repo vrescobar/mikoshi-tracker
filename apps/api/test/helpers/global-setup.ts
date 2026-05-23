@@ -62,11 +62,14 @@ export async function setup(): Promise<void> {
   // `prisma db push` creates the SQLite file itself — no need to pre-create
   // an empty placeholder (a placeholder is also a hazard: anything copying it
   // before the push finishes gets a 0-byte, schema-less DB).
+  // Invoke the project-local prisma CLI directly. Using `pnpm exec prisma`
+  // triggers a full workspace install in pnpm 11.x, which fails on this ARM
+  // Jetson host because the optional `sharp` native build cannot resolve a
+  // pre-built binary.
+  const prismaBin = join(REPO_ROOT, "node_modules", ".bin", "prisma");
   execFileSync(
-    "pnpm",
+    prismaBin,
     [
-      "exec",
-      "prisma",
       "db",
       "push",
       "--config",
