@@ -58,7 +58,7 @@ test("archiving the last active habit keeps dashboard in place and restore makes
 
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText(/^1 pending$/)).toBeVisible();
+  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
 
   // Archive the only active habit — the dashboard keeps its protected shell and
   // surfaces guidance instead of redirecting away.
@@ -72,5 +72,5 @@ test("archiving the last active habit keeps dashboard in place and restore makes
   await setHabitArchived(page, habitId, false);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText(/^1 pending$/)).toBeVisible();
+  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
 });

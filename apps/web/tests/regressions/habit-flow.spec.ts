@@ -94,7 +94,7 @@ test("habit regression: sign up, create habit, complete, undo, view stats overvi
 
   // The card should return to pending state.
   await expect(habitCard.getByRole("button", { name: /complete/i })).toBeVisible();
-  await expect(page.getByText(/^1 pending$/)).toBeVisible();
+  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
 
   // (6) View the stats overview panel — proves the overview renders after a check-in cycle.
   await expect(page.getByTestId("dashboard-overview")).toBeVisible();
