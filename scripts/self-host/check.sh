@@ -6,27 +6,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 cd "$ROOT_DIR"
 
-# shellcheck source=scripts/self-host/lib.sh
-source "${SCRIPT_DIR}/lib.sh"
-COMPOSE="$(detect_compose)"
-
-if [[ -f ".env" ]]; then
-  set -a
-  # shellcheck disable=SC1091
-  source ".env"
-  set +a
-fi
-
 APP_BASE_URL="${APP_BASE_URL:-http://localhost:${MIKOSHI_TRACKER_PUBLIC_PORT:-8080}}"
 
-echo "==> Checking ${COMPOSE} services"
-running_services="$(${COMPOSE} ps --services --status running)"
-
-for service in proxy web api; do
-  if ! grep -qx "$service" <<<"$running_services"; then
-    echo "Service '$service' is not running"
+echo "==> Checking systemd user units"
+for unit in mikoshi-tracker-api mikoshi-tracker-web; do
+  status="$(systemctl --user is-active "${unit}" 2>/dev/null || true)"
+  if [[ "$status" != "active" ]]; then
+    echo "Unit '${unit}' is not active (status: ${status})"
+    echo "Run: journalctl --user -u ${unit} -n 50"
     exit 1
   fi
+  echo "  ${unit}: active"
 done
 
 echo "==> Checking API health endpoint"

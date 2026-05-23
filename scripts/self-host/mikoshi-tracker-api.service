@@ -1,0 +1,15 @@
+[Unit]
+Description=MikoshiTracker API (Fastify)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/victor/projects/mikoshi-tracker
+EnvironmentFile=%h/.config/mikoshi-tracker/env
+Environment=PORT=3001
+ExecStart=/usr/bin/node --import tsx apps/api/dist/src/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

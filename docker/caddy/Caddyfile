@@ -1,19 +1,20 @@
-# Site address. Defaults to plain HTTP on :80 (the proxy container's internal
-# port, published to the host as ${MIKOSHI_TRACKER_PUBLIC_PORT}).
-#
-# For a public deployment, set MIKOSHI_TRACKER_SITE_ADDRESS to your real hostname
-# (e.g. "habits.example.com") and publish ports 80 and 443 from the proxy
-# service. Caddy then provisions and renews a Let's Encrypt TLS certificate
-# automatically and enables HSTS. See docs/PUBLIC-DEPLOYMENT.md.
+# Site address.
+# - Native deployment: set MIKOSHI_TRACKER_SITE_ADDRESS to ":7080" so Caddy
+#   binds on a non-privileged port directly on the host.
+# - Containerised deployment: leave it unset (defaults to :80); the container
+#   publishes ${MIKOSHI_TRACKER_PUBLIC_PORT}:80.
+# - Public HTTPS: set to your real hostname (e.g. "habits.example.com") and
+#   Caddy provisions a Let's Encrypt certificate automatically.
+#   See docs/PUBLIC-DEPLOYMENT.md.
 {$MIKOSHI_TRACKER_SITE_ADDRESS::80} {
 	encode gzip
 
 	handle /api/* {
-		reverse_proxy api:3001
+		reverse_proxy {$MIKOSHI_TRACKER_API_UPSTREAM:127.0.0.1:3001}
 	}
 
 	handle /health {
-		reverse_proxy api:3001
+		reverse_proxy {$MIKOSHI_TRACKER_API_UPSTREAM:127.0.0.1:3001}
 	}
 
 	# Web (Next.js). The API already sets its own security headers via helmet;
@@ -25,6 +26,6 @@
 			Referrer-Policy strict-origin-when-cross-origin
 			-Server
 		}
-		reverse_proxy web:3000
+		reverse_proxy {$MIKOSHI_TRACKER_WEB_UPSTREAM:127.0.0.1:3000}
 	}
 }

@@ -1,0 +1,16 @@
+[Unit]
+Description=MikoshiTracker Web (Next.js)
+After=mikoshi-tracker-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/victor/projects/mikoshi-tracker
+EnvironmentFile=%h/.config/mikoshi-tracker/env
+Environment=PORT=3000
+Environment=API_INTERNAL_BASE_URL=http://127.0.0.1:3001
+ExecStart=/usr/bin/node apps/web/.next/standalone/apps/web/server.js
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

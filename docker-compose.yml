@@ -1,6 +1,17 @@
 services:
+  # In the native deployment (default for Jetson/self-host) all three services
+  # run as systemd user units; this compose file is only used for third-party
+  # containerised deployments.  See scripts/self-host/ and scripts/deploy.sh.
+  #
+  # To run fully containerised:
+  #   docker compose --profile containerised up -d
+  # That starts web + api inside containers and the Caddy proxy in front.
+  # In that mode the Caddyfile upstream names ("api", "web") match Docker's
+  # internal DNS; change them back to container names if needed.
+
   proxy:
     image: caddy:2.10-alpine
+    profiles: ["containerised"]
     restart: unless-stopped
     depends_on:
       api:
@@ -12,17 +23,22 @@ services:
       # For a public HTTPS deployment, also publish 443 and set
       # MIKOSHI_TRACKER_SITE_ADDRESS below so Caddy can provision Let's Encrypt TLS:
       # - "443:443"
-    # environment:
-    #   MIKOSHI_TRACKER_SITE_ADDRESS: ${MIKOSHI_TRACKER_SITE_ADDRESS}
+    environment:
+      # Override upstreams to internal container names when running containerised
+      MIKOSHI_TRACKER_API_UPSTREAM: api:3001
+      MIKOSHI_TRACKER_WEB_UPSTREAM: web:3000
+      # MIKOSHI_TRACKER_SITE_ADDRESS: ${MIKOSHI_TRACKER_SITE_ADDRESS}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
 
+  # web and api services kept for reference / third-party containerised deployments.
   web:
     build:
       context: .
       dockerfile: Dockerfile.web
+    profiles: ["containerised"]
     restart: unless-stopped
     depends_on:
       api:
@@ -32,8 +48,6 @@ services:
       PORT: 3000
       API_INTERNAL_BASE_URL: ${API_INTERNAL_BASE_URL:-http://api:3001}
     healthcheck:
-      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
-      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
           "CMD-SHELL",
@@ -48,6 +62,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
+    profiles: ["containerised"]
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -57,17 +72,11 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
       CORS_ORIGIN: ${CORS_ORIGIN:-}
-      # Admin provisioning API key. When unset the admin routes return 503
-      # ("Admin provisioning API is disabled"). Mikoshi's
-      # MikoshiTrackerProvisionService needs this set to auto-enrol users.
       MIKOSHI_TRACKER_ADMIN_API_KEY: ${MIKOSHI_TRACKER_ADMIN_API_KEY:-}
-      # Uploaded attachment files live on the same persistent volume as the DB.
       ATTACHMENTS_DIR: ${ATTACHMENTS_DIR:-/data/attachments}
     volumes:
       - sqlite_data:/data
     healthcheck:
-      # CMD-SHELL (not exec-form CMD): podman-compose passes exec-form arrays
-      # through /bin/sh, which chokes on the JS arrow-function parentheses.
       test:
         [
           "CMD-SHELL",

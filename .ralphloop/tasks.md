@@ -543,7 +543,7 @@ per-type logic in the engine.
 
 ## Phase 15 — Native deployment + Bun migration
 
-- [ ] **82** Native web service — implement `docs/architecture/deployment-native.md`.
+- [x] **82** Native web service — implement `docs/architecture/deployment-native.md`.
       Create `scripts/self-host/mikoshi-tracker-api.service` and
       `scripts/self-host/mikoshi-tracker-web.service` (systemd unit templates).
       Create `scripts/deploy.sh` (build + migrate + restart in one command).
