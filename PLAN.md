@@ -9,6 +9,14 @@
 > The full architecture spec for this plan is `GOAL.md` → "Generic Entries
 > Architecture" (§G1–§G9 added by this refactor). The phased checklist that
 > implements it is `.ralphloop/tasks.md` → tasks **32–58**.
+>
+> **Phase 13 — Food tracking completion.** Phase 12 shipped the engine but
+> food was not surfaced enough for daily use. Phase 13 closes the UX,
+> surfacing and skill-bridge gaps so food is a first-class part of the
+> dashboard, not a back room. Full spec:
+> `docs/architecture/food-tracking-gaps.md` and `GOAL.md` §G10. Checklist:
+> `.ralphloop/tasks.md` tasks **59–72**. The tracker-wide
+> `TRACKER_COMPLETE` marker moves from task 58 to task 72.
 
 ## Context
 
@@ -164,8 +172,46 @@ External: `/home/victor/projects/mikoshi/skills/mikoshi-tracker-food/`
   confirmation; pure text triggers `web_lookup` or `vision_only` with
   confirmation. Edit and delete from the web preserve audit trail.
 
+## Phase 13 — Food tracking completion
+
+Phase 12's verification passed, but real-world use exposed that the food
+feature was not *findable* from the dashboard, *reachable in one click* from
+where users start, or *usable without WhatsApp*. Phase 13 is the polish +
+closure pass. It does not re-architect anything; the §G9.1 invariants hold.
+
+What Phase 13 ships (one task per gap; full design in
+`docs/architecture/food-tracking-gaps.md`):
+
+- **59** Dashboard empty-state taxonomy considers food, not just habits.
+- **60** Quick-add for food directly from the dashboard panel.
+- **61** Photo attachments on `EntryEvent` via a new
+  `POST /api/attachments/event` endpoint (`Attachment.mutationId` becomes
+  nullable; `eventMutationId` carries the linkage).
+- **62** Primary nav: Dashboard · Entries · Food · Circles, with a generic
+  `EntryTypeFilter` chip row on the entries page.
+- **63** `POST /api/skills/run` bridge endpoint so the tracker can delegate
+  to Mikoshi skills synchronously (without skills becoming part of the
+  tracker — the IPC contract stays one-way).
+- **64** Multi-tab `ProposalDialog` (Manual · Photo · Text), with web
+  confirmation of skill proposals; Photo/Text gated behind a feature flag.
+- **65** `groupByPayload` aggregation primitive (group by a payload field,
+  not just a date bucket).
+- **66** Audit-trail diff view (field-level before/after, not raw JSON).
+- **67** Insights macro distribution + kcal trend chart (no new
+  dependencies).
+- **68** Repeated meals "Log again" on the food page (uses §G-ENG-1).
+- **69** Today unified strip + optional `dailyKcalTarget` per food entry.
+- **70** Read-only skills health page at `/settings/skills`.
+- **71** MCP convenience tools `food_log_text` / `food_log_image` that go
+  through the skills bridge.
+- **72** Phase 13 acceptance + halt — moves the `TRACKER_COMPLETE` marker
+  to this task. Includes the §G-DOC-1 recipe
+  `docs/architecture/adding-an-entry-type.md` as a sub-deliverable.
+
 ## Stop marker
 
 The whole tracker roadmap halts on `TRACKER_COMPLETE` (configured in
-`.ralphloop/config.yaml`), written **only** by the final task (task 58) once
-the verification matrix above is fully green. No per-phase early stops.
+`.ralphloop/config.yaml`), written **only** by the final task of the final
+phase once its verification matrix is fully green. Phase 12 wrote the
+marker at task 58; Phase 13 supersedes it at task 72. No per-phase early
+stops.

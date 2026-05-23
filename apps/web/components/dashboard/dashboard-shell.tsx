@@ -118,6 +118,7 @@ export function DashboardShell({
             </Button>
           }
         />
+        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
       </div>
     );
   }
@@ -141,6 +142,7 @@ export function DashboardShell({
             </div>
           }
         />
+        <FoodTodayPanel aggregations={initialFoodTodayAggregations} />
       </div>
     );
   }

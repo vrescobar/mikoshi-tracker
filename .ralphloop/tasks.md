@@ -274,3 +274,198 @@ plan: `PLAN.md`. Do not regress Circles (§C14), Phase 11 admin endpoints,
       above is green, write the literal token `TRACKER_COMPLETE` **on a
       line by itself** at the bottom of `.ralphloop/progress.md`. Do not
       write the marker for any other reason.
+
+## Phase 13 — Food tracking completion (UX, surfacing, skill bridge)
+
+Phase 12 shipped the generic entries engine and the `food_meal` foundation
+(schema, REST, web pages, dashboard panel, skill in Mikoshi). User feedback
+on landing the dashboard: "I don't see food anywhere — where do I log it?".
+Phase 13 closes the polish + surfacing + skill-bridge gaps so food is a
+first-class part of the daily loop, not a back room. Full design spec:
+`docs/architecture/food-tracking-gaps.md`. Do not regress Phase 11 (admin),
+Phase 12 (engine), Circles (§C14), `@mikoshi-tracker/mcp`, or the legacy
+`/api/habits/*` + `/api/today/*` aliases. The §G9.1 invariants hold: no new
+tables or services per `EntryType`; no domain logic in the API; the single
+write path remains `events.service.persistEvent(...)`. Phase 13's
+acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
+
+- [ ] **59** Dashboard empty-state taxonomy includes food — extend
+      `apps/web/app/(app)/dashboard/page.tsx:39` to compute
+      `emptyState: "no-entries" | "habits-empty" | "archived-only" | null`.
+      `"no-entries"` only when the user has zero entries of any type AND
+      zero `EntryEvent`s today. `"habits-empty"` when active habits = 0
+      but the user has food entries or events. `"archived-only"` keeps its
+      meaning. Update `DashboardShell` (`apps/web/components/dashboard/
+      dashboard-shell.tsx`) to render the matching panel for each state
+      and always keep `FoodTodayPanel` visible. Add
+      `copy.dashboard.emptyStates.noEntries` + `habitsEmpty` blocks to
+      EN/ZH/ES `apps/web/lib/i18n/messages.ts`. Update
+      `apps/web/tests/dashboard/dashboard-states.spec.ts` to cover the new
+      states. Reference: `docs/architecture/food-tracking-gaps.md`
+      §G-DASH-1.
+
+- [ ] **60** Dashboard quick-add for food — extend `FoodTodayPanel`
+      (`apps/web/components/dashboard/food-today-panel.tsx`) to accept an
+      `onQuickAdd?: () => void` prop; when set, render an inline `+` button
+      next to the title. Create `apps/web/components/dashboard/
+      dashboard-food-section.tsx` (client) that owns `ProposalDialog`
+      state and renders panel + dialog together. Refactor `DashboardShell`
+      to use it. After save, refresh the panel via Next.js router refresh
+      (`router.refresh()`). Add `dashboard.foodToday.quickAdd` i18n keys
+      (EN/ZH/ES). Update `food-today-panel.test.tsx`. Reference:
+      §G-DASH-2.
+
+- [ ] **61** Photo attachments on food events — make `Attachment.mutationId`
+      nullable in `prisma/schema.prisma` (migration
+      `make_attachment_mutation_id_optional`) since `eventMutationId`
+      already exists. Add `POST /api/attachments/event` accepting
+      `{ eventId, fileBase64 | multipart }`; stores into `Attachment` with
+      `eventMutationId` set to the event's latest `EventMutation`,
+      `mutationId` null. Add `attachmentTargetSchema` discriminated union
+      to `packages/contracts/src/attachments.ts`. Extend `ProposalDialog`
+      with an optional file input that uploads after `createFoodEvent`
+      resolves. Test in `apps/api/test/attachments/event-attachments.test.ts`
+      (upload + list + delete) and assert `food-detail-page.tsx` renders
+      the uploaded image in its gallery. Reference: §G-FOOD-1.
+
+- [ ] **62** Generic entries nav with type filter — change
+      `apps/web/lib/navigation.ts:18` primary nav to:
+      Dashboard · Entries · Food · Circles (remove the standalone
+      "Habits" item; `/habits` keeps its redirect to `/entries?…`). Update
+      labels in `messages.ts` (EN/ZH/ES) — `shell.navigation.habits` →
+      `shell.navigation.entries`. Add `EntryTypeFilter` component to
+      `apps/web/components/entries/entry-type-filter.tsx` (chip row sourced
+      from `GET /api/entry-types`, active set persisted in
+      `?entryTypeSlug=`). Wire it into `entries-page.tsx`. Update
+      `EventCard.test.tsx` and add filter-component tests. Reference:
+      §G-NAV-1.
+
+- [ ] **63** `POST /api/skills/run` bridge endpoint — add
+      `apps/api/src/modules/skills/{skill.routes.ts,skill.controller.ts,
+      skill.service.ts}` exposing `POST /api/skills/run { skillSlug, input }`.
+      Spawns the Mikoshi skill via the existing skill-runner IPC
+      (env-var `MIKOSHI_SKILL_RUNNER_URL` defaults to
+      `http://localhost:7990`), forwards stdin, returns the skill's stdout
+      JSON. Schema-validates `skillSlug` against `EntryType.skillSlug`
+      values so only registered skills can be invoked. Per-user timeout
+      30s. Add `skillRunInputSchema` / `skillRunResponseSchema` to
+      `packages/contracts/src/skills.ts`. Document in `openapi.ts` under a
+      new "Skills" section. Tests:
+      `apps/api/test/skills/skill-run.test.ts` covering happy path
+      (mocked runner), unknown slug (404), runner unreachable (503),
+      timeout (504). Reference: §G-FOOD-2.
+
+- [ ] **64** Multi-tab `ProposalDialog` — extend
+      `apps/web/components/ai/ProposalDialog.tsx` with three tabs:
+      **Manual** (current), **Photo** (file input → base64 → POST to
+      `/api/skills/run` with `skillSlug: "mikoshi-tracker-food"`),
+      **Text** (textarea → same endpoint). Render skill response: when
+      `action === "auto_posted"`, refresh and close; when
+      `action === "pending_confirmation"`, render an editable preview the
+      user accepts / edits / cancels (accept calls
+      `POST /api/entries/:id/events` with the proposed payload). Gate the
+      Photo / Text tabs behind `NEXT_PUBLIC_FEATURE_WEB_SKILL_RUN=1`
+      (default off) so manual entry is never blocked. Add EN/ZH/ES strings
+      under `food.dialog.tabs.*`. Update `ProposalDialog.test.tsx`.
+      Reference: §G-FOOD-2.
+
+- [ ] **65** `groupByPayload` aggregation primitive — extend
+      `packages/contracts/src/aggregations.ts` `AggregationFilters` with
+      optional `groupByPayload?: string` (validated by
+      `/^[a-zA-Z][a-zA-Z0-9_]*$/`). Update
+      `apps/api/src/modules/aggregations/aggregation.repository.ts` to use
+      `json_extract(payload, '$.<field>')` as the GROUP BY when set; bound
+      the result with the existing `limit` filter. Change
+      `AggregationBucket.key` to a discriminated union
+      `{ kind: "date", value } | { kind: "payload", field, value }`;
+      keep date-grouped responses backward compatible via the default
+      `kind: "date"`. Document in OpenAPI. Tests:
+      `apps/api/test/aggregations/groupby-payload.test.ts` covers food
+      meals grouped by `name` with sums + counts + limit. Reference:
+      §G-ENG-1.
+
+- [ ] **66** Audit-trail diff view — add
+      `apps/web/lib/payload-diff.ts` with `diffPayload(previous, next)`
+      returning `{ field, before, after }[]` (primitives only, deep-equal
+      skip for unchanged). Replace the JSON block in
+      `apps/web/components/food/food-detail-page.tsx` audit section with
+      a diff list per mutation row. `CREATE` shows `before: undefined`;
+      `DELETE` shows `after: undefined`; `UNDO` reverses its target's
+      diff. Add EN/ZH/ES strings under `food.detail.audit.diff.*`. Unit
+      tests in `apps/web/lib/__tests__/payload-diff.test.ts`. Reference:
+      §G-FOOD-4.
+
+- [ ] **67** Insights macros + trend — add two new components to
+      `apps/web/components/food/`: `MacroPie.tsx` (SVG donut showing
+      protein/carb/fat as % of total kcal across the selected range) and
+      `KcalTrend.tsx` (inline SVG line chart, one point per day). Both
+      compute from the existing range aggregation response — no new API
+      call. Render below the summary facts in `food-insights-page.tsx`.
+      Empty state: one-line localised hint. Component tests for both. No
+      new dependencies. Reference: §G-FOOD-5.
+
+- [ ] **68** Repeated meals "Log again" on food page — add a "Repeats"
+      panel to `apps/web/components/food/food-page.tsx` under the
+      `DayTotalsStrip`. Sourced from `GET /api/aggregations?
+      entryTypeSlug=food_meal&groupByPayload=name&fields=kcal&
+      include=count&limit=5&from=<-30d>&to=<today>` (depends on task 65).
+      Each row has a "Log again" button that POSTs a new event copying
+      the historical payload (latest by occurredAt for that name) with
+      today's `occurredAt`, `source: "similar_to_event"`, confidence 1.0.
+      Add EN/ZH/ES strings under `food.page.repeats.*`. Tests in
+      `apps/web/components/food/__tests__/food-page-repeats.test.tsx`.
+      Reference: §G-FOOD-3.
+
+- [ ] **69** Today unified strip + daily kcal target — extend the
+      `food_meal` `EntryType.configSchema` to include optional
+      `dailyKcalTarget: number?` (additive, no migration of existing
+      `Entry.config`). Add `apps/web/components/dashboard/
+      today-unified-strip.tsx` rendering one row per still-open habit
+      ("Walk — pending") and a kcal row ("kcal: 1820 / 2200" with
+      progress bar) when the user has set a target. Each row has a
+      single primary action: check habit / open food quick-add. Render
+      above `TodayDashboard` and `FoodTodayPanel`. Settings UI to set the
+      target: small inline editor in `FoodTodayPanel` header gated by
+      "Edit target" toggle. EN/ZH/ES strings. Tests for the new
+      component. Reference: §G-DASH-3.
+
+- [ ] **70** Skills health page — create
+      `apps/web/app/(app)/settings/page.tsx` and `settings/skills/page.tsx`
+      (server pages). The skills page lists `EntryType`s with non-null
+      `skillSlug` and, for each, queries
+      `GET /api/skills/:slug/health` (proxy added to `skill.controller.ts`,
+      depends on task 63 infrastructure). Shows enrolment status, last
+      run timestamp, last error. Read-only; configuration of secrets
+      remains in Mikoshi. Add settings entry to the user menu (sibling
+      of `/api-access`). EN/ZH/ES strings. Tests: skill health endpoint
+      contract test + page render test. Reference: §G-SKILL-1.
+
+- [ ] **71** MCP convenience tools for food via skill bridge — add
+      `packages/mcp/src/tools/food.ts` with `food_log_text({ text })` and
+      `food_log_image({ imageBase64 })` that POST to `/api/skills/run`
+      with `skillSlug: "mikoshi-tracker-food"`. Register both in
+      `catalog.ts` and `runtime.ts`. Update README tool table.
+      `verify:openclaw` and `@mikoshi-tracker/mcp` test suites must pass
+      with zero plugin changes. Reference: §G-MCP-1.
+
+- [ ] **72** Phase 13 acceptance + halt — `pnpm prisma migrate deploy &&
+      pnpm -r build && pnpm -r lint && pnpm typecheck && pnpm --filter
+      @mikoshi-tracker/api test && pnpm --filter @mikoshi-tracker/contracts
+      test && pnpm --filter @mikoshi-tracker/mcp test && pnpm --filter
+      @mikoshi-tracker/openclaw-plugin test && pnpm test:e2e &&
+      pnpm verify:openclaw`. Manual smoke pass per
+      `docs/architecture/food-tracking-gaps.md`: open dashboard with zero
+      habits → see food empty-state + panel + quick-add; click `+` →
+      dialog opens inline; submit → totals refresh; visit `/food` → see
+      Repeats and Log Again works; visit `/food/insights` → see MacroPie
+      and KcalTrend; visit `/settings/skills` → see Mikoshi food skill
+      listed; toggle `NEXT_PUBLIC_FEATURE_WEB_SKILL_RUN=1` and submit a
+      photo → see pending-confirmation preview. Add the
+      `docs/architecture/adding-an-entry-type.md` walkthrough (§G-DOC-1)
+      as a sub-deliverable of this task — a one-page recipe using a
+      hypothetical `weight_log` type, cross-linked from
+      `generic-entries.md` and `GOAL.md` §G9.1. When **all** of the above
+      is green, replace the existing `TRACKER_COMPLETE` line at the
+      bottom of `.ralphloop/progress.md` (or append one if absent) with
+      a fresh `TRACKER_COMPLETE` on a line by itself. Do not write the
+      marker for any other reason.

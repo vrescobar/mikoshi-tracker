@@ -896,3 +896,91 @@ destination tables before declaring the backfill complete.
 - **The single write path is `events.service.persistEvent(...)`.** Every
   controller routes through it so the `EventMutation` audit trail can never
   be bypassed.
+
+## Food tracking completion (Phase 13)
+
+Phase 12 (§G0–§G9.1) built the generic engine and shipped `food_meal` as
+the first non-habit type. Phase 13 closes the surfacing + UX + skill-bridge
+gaps that prevent food from being a daily-use feature. The full design
+spec is `docs/architecture/food-tracking-gaps.md`; the phased checklist is
+`.ralphloop/tasks.md` tasks **59–72**. Phase 13 does not change the engine
+or the §G9.1 invariants — it adds two type-agnostic endpoints
+(`POST /api/attachments/event`, `POST /api/skills/run`), one engine
+parameter (`groupByPayload`), one optional config field
+(`food_meal.dailyKcalTarget`), and the UI surfaces to use them.
+
+### G10 — Surfacing
+
+- Dashboard empty-state taxonomy includes a `"no-entries"` state and a
+  `"habits-empty"` state distinct from `"no-habits"`. `FoodTodayPanel` is
+  rendered in every state, not gated behind the habits-only branch.
+- `FoodTodayPanel` exposes a `+` quick-add that opens `ProposalDialog`
+  inline; no navigation is required to log a meal.
+- Primary nav reorders to Dashboard · Entries · Food · Circles. The
+  Habits item is folded into the generic Entries page, which gains an
+  `EntryTypeFilter` chip row sourced from `GET /api/entry-types`.
+
+### G11 — Attachments on events
+
+`Attachment.mutationId` becomes nullable; the existing `eventMutationId`
+column is the canonical link for event attachments. A new
+`POST /api/attachments/event` endpoint accepts `{ eventId, fileBase64 |
+multipart }` and stores into `Attachment` with `eventMutationId` set to
+the event's most recent `EventMutation`. `ProposalDialog` and
+`food-detail-page.tsx` use this to attach photos to food events.
+
+### G12 — Skills bridge (`POST /api/skills/run`)
+
+A new tracker endpoint synchronously invokes a Mikoshi skill registered on
+some `EntryType`. The tracker does **not** load or sandbox skills — it
+forwards to the Mikoshi skill-runner via IPC (`MIKOSHI_SKILL_RUNNER_URL`,
+default `http://localhost:7990`) and returns stdout. Only `skillSlug`s
+matching a registered `EntryType.skillSlug` are accepted. Per-call
+timeout 30s. The §G9.1 invariant that skills are not loaded or executed
+by MikoshiTracker still holds: the tracker is a thin RPC client, not a
+host.
+
+### G13 — Skill-driven web entry
+
+`ProposalDialog` grows tabs **Manual · Photo · Text**. Photo and Text
+submit to `/api/skills/run` with `skillSlug: "mikoshi-tracker-food"`.
+When the skill returns `action: "pending_confirmation"`, the dialog
+renders an editable preview the user accepts / edits / cancels — web
+confirmation is a peer of the WhatsApp confirmation path, not a
+replacement. Both tabs are gated behind
+`NEXT_PUBLIC_FEATURE_WEB_SKILL_RUN` so a runner outage cannot block
+manual entry.
+
+### G14 — Aggregations: `groupByPayload`
+
+The aggregations engine gains a `groupByPayload` parameter that groups
+`EntryEvent` rows by a payload field. The repository uses
+`json_extract(payload, '$.<field>')` as the GROUP BY key. The new
+`AggregationBucket.key` shape is a discriminated union
+`{ kind: "date" | "payload", … }`; existing date-grouped responses keep
+their shape under `kind: "date"`. Unlocks the food page's "Repeats"
+panel and the insights page's repeated-meals view without bespoke SQL.
+
+### G15 — Today unified strip + per-entry kcal target
+
+`food_meal.configSchema` gains an optional `dailyKcalTarget: number?`.
+The dashboard renders a `TodayUnifiedStrip` above the habit and food
+panels with one row per open habit and one kcal row showing
+today-vs-target. Each row offers a single primary action: check off the
+habit, or open the food quick-add. The strip is purely a presentational
+projection over `EntryEvent`s and habit state — no new persistent state.
+
+### G16 — Skill health visibility
+
+A read-only page `/settings/skills` lists each `EntryType` with a non-null
+`skillSlug` plus a health summary fetched via the skills bridge
+(`GET /api/skills/:slug/health` proxies to the runner). Configuration
+remains in Mikoshi; the tracker only displays.
+
+### G17 — Recipe doc for new entry types
+
+`docs/architecture/adding-an-entry-type.md` walks through adding a
+hypothetical `weight_log` type end-to-end: migration seed, payload
+schema, aggregations spec, optional skill, optional dedicated web page,
+default generic-entries rendering. Reduces the cost of future entry
+types to a checklist.
