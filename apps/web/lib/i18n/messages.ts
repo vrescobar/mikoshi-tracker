@@ -71,6 +71,7 @@ export type LocaleMessages = {
     brandCopy: string;
     navigation: {
       dashboard: string;
+      entries: string;
       habits: string;
       circles: string;
       food: string;
@@ -317,6 +318,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       brandCopy: "Calm daily execution with a stable AI-ready habit system.",
       navigation: {
         dashboard: "Today",
+        entries: "Entries",
         habits: "Habits",
         circles: "Circles",
         food: "Food",
@@ -566,6 +568,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       brandCopy: "平静完成每天该做的事，同时保持一套稳定、可供 AI 读取的习惯系统。",
       navigation: {
         dashboard: "今天",
+        entries: "条目",
         habits: "习惯",
         circles: "圈子",
         food: "饮食",
@@ -810,6 +813,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       brandCopy: "Ejecución diaria tranquila con un sistema de hábitos estable y preparado para IA.",
       navigation: {
         dashboard: "Hoy",
+        entries: "Entradas",
         habits: "Hábitos",
         circles: "Círculos",
         food: "Comida",

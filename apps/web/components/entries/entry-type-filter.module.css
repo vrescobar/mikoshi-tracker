@@ -1,0 +1,44 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted, #6b7280);
+  margin-right: 0.4rem;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--color-border, #d6dadf);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #111827);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  background: var(--color-surface-muted, #f3f4f6);
+}
+
+.chipActive {
+  background: var(--color-accent, #111827);
+  color: var(--color-on-accent, #fff);
+  border-color: var(--color-accent, #111827);
+}
+
+.chipActive:hover,
+.chipActive:focus-visible {
+  background: var(--color-accent-hover, #1f2937);
+}

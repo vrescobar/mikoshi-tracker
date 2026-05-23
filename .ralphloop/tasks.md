@@ -328,7 +328,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       (upload + list + delete) and assert `food-detail-page.tsx` renders
       the uploaded image in its gallery. Reference: §G-FOOD-1.
 
-- [ ] **62** Generic entries nav with type filter — change
+- [x] **62** Generic entries nav with type filter — change
       `apps/web/lib/navigation.ts:18` primary nav to:
       Dashboard · Entries · Food · Circles (remove the standalone
       "Habits" item; `/habits` keeps its redirect to `/entries?…`). Update

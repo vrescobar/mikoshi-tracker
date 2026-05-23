@@ -48,6 +48,10 @@ export type EntriesCopy = {
     habit_quantity: string;
     food_meal: string;
   };
+  filter: {
+    label: string;
+    all: string;
+  };
 };
 
 const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
@@ -99,6 +103,10 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_quantity: "Quantity",
       food_meal: "Food",
     },
+    filter: {
+      label: "Show",
+      all: "All",
+    },
   },
   "zh-CN": {
     page: {
@@ -148,6 +156,10 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_quantity: "数值型",
       food_meal: "饮食",
     },
+    filter: {
+      label: "显示",
+      all: "全部",
+    },
   },
   es: {
     page: {
@@ -196,6 +208,10 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_boolean: "Registro",
       habit_quantity: "Cantidad",
       food_meal: "Comida",
+    },
+    filter: {
+      label: "Mostrar",
+      all: "Todas",
     },
   },
 };

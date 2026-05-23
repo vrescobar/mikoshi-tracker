@@ -1,5 +1,9 @@
 import { EntriesPage } from "../../../components/entries/entries-page";
-import { buildCookieHeader, listEntriesFromCookieHeader } from "../../../lib/server-auth";
+import {
+  buildCookieHeader,
+  listEntriesFromCookieHeader,
+  listEntryTypesFromCookieHeader,
+} from "../../../lib/server-auth";
 
 type EntriesManagementPageProps = {
   searchParams?: Promise<{
@@ -14,10 +18,19 @@ export default async function EntriesManagementPage({ searchParams }: EntriesMan
   const isActive = params?.status !== "archived";
 
   const cookieHeader = await buildCookieHeader();
-  const initialItems = await listEntriesFromCookieHeader(cookieHeader, {
-    entryTypeSlug,
-    isActive,
-  });
+  const [initialItems, entryTypes] = await Promise.all([
+    listEntriesFromCookieHeader(cookieHeader, {
+      entryTypeSlug,
+      isActive,
+    }),
+    listEntryTypesFromCookieHeader(cookieHeader).catch(() => []),
+  ]);
 
-  return <EntriesPage initialItems={initialItems} entryTypeSlug={entryTypeSlug} />;
+  return (
+    <EntriesPage
+      initialItems={initialItems}
+      entryTypeSlug={entryTypeSlug}
+      entryTypes={entryTypes}
+    />
+  );
 }

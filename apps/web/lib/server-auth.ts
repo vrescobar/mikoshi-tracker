@@ -283,6 +283,33 @@ export async function listEntriesFromCookieHeader(
   return body.items;
 }
 
+export type EntryTypeRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  cadence: "recurring" | "ad-hoc";
+  skillSlug: string | null;
+  isBuiltIn: boolean;
+};
+
+export async function listEntryTypesFromCookieHeader(
+  cookieHeader: string,
+): Promise<EntryTypeRecord[]> {
+  const response = await fetch(createServerApiUrl("/api/entry-types"), {
+    headers: cookieHeader.length > 0 ? { cookie: cookieHeader } : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 401) return [];
+
+  if (!response.ok) {
+    throw new Error("Unable to load entry types");
+  }
+
+  const body = (await response.json()) as { items: EntryTypeRecord[] };
+  return body.items;
+}
+
 export async function getHabitDetailFromCookieHeader(
   cookieHeader: string,
   habitId: string,

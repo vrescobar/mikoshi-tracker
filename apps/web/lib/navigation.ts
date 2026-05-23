@@ -15,26 +15,31 @@ export const routes = {
   circleDetail: (circleId: string) => `/circles/${circleId}`,
 } as const;
 
-export function getPrimaryAppNavigation(labels: { dashboard: string; habits: string; circles: string; food: string }) {
+export function getPrimaryAppNavigation(labels: {
+  dashboard: string;
+  entries: string;
+  circles: string;
+  food: string;
+}) {
   return [
     {
       href: routes.dashboard,
       label: labels.dashboard,
     },
+    // Phase 13 G-NAV-1: surface the generic entries list directly instead of
+    // the legacy "Habits" item. /habits keeps a server-side redirect to
+    // /entries?... for old URLs.
     {
-      // Point straight at the entries destination rather than /habits (which
-      // server-redirects here). A direct client navigation keeps focus and
-      // active-state stable on the primary nav.
-      href: routes.habitEntries,
-      label: labels.habits,
-    },
-    {
-      href: routes.circles,
-      label: labels.circles,
+      href: routes.entries,
+      label: labels.entries,
     },
     {
       href: routes.food,
       label: labels.food,
+    },
+    {
+      href: routes.circles,
+      label: labels.circles,
     },
   ] as const;
 }
