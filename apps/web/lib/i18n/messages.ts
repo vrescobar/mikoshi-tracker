@@ -155,6 +155,7 @@ export type LocaleMessages = {
       title: string;
       description: string;
       quickAdd: string;
+      quickAddLabel: string;
       target: {
         editLabel: string;
         currentLabel: (kcal: number) => string;
@@ -177,6 +178,14 @@ export type LocaleMessages = {
         description: string;
       };
       viewFood: string;
+    };
+    weightToday: {
+      eyebrow: string;
+      title: string;
+      latestLabel: string;
+      emptyTitle: string;
+      emptyDescription: string;
+      viewWeight: string;
     };
   };
   today: {
@@ -425,6 +434,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         title: "Food today",
         description: "Calories and macros logged so far today.",
         quickAdd: "Log a meal",
+        quickAddLabel: "Add meal",
         target: {
           editLabel: "Edit target",
           currentLabel: (kcal) => `Daily target: ${kcal} kcal`,
@@ -447,6 +457,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           description: "Log meals via WhatsApp to see them here.",
         },
         viewFood: "View food log →",
+      },
+      weightToday: {
+        eyebrow: "Weight",
+        title: "Latest weight",
+        latestLabel: "kg",
+        emptyTitle: "No weight logged",
+        emptyDescription: "Log your weight to track your progress.",
+        viewWeight: "View weight log →",
       },
     },
     today: {
@@ -681,7 +699,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       },
       todayUnified: {
         habitsLabel: "习惯",
-        habitsPending: (count) => `${count} 个待完成`,
+        habitsPending: (count) => `${count} 个未完成`,
         habitsAllDone: "已全部完成",
         kcalLabel: "热量",
         kcalProgress: (current, target) => `${current} / ${target}`,
@@ -692,6 +710,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         title: "今日饮食",
         description: "今天已记录的热量和营养素。",
         quickAdd: "记录一餐",
+        quickAddLabel: "记录",
         target: {
           editLabel: "编辑目标",
           currentLabel: (kcal) => `每日目标：${kcal} 千卡`,
@@ -714,6 +733,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           description: "通过 WhatsApp 记录饮食，它们会显示在这里。",
         },
         viewFood: "查看饮食记录 →",
+      },
+      weightToday: {
+        eyebrow: "体重",
+        title: "最新体重",
+        latestLabel: "kg",
+        emptyTitle: "尚未记录体重",
+        emptyDescription: "记录你的体重以追踪进度。",
+        viewWeight: "查看体重记录 →",
       },
     },
     today: {
@@ -950,7 +977,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
       },
       todayUnified: {
         habitsLabel: "Hábitos",
-        habitsPending: (count) => `${count} pendiente${count === 1 ? "" : "s"}`,
+        habitsPending: (count) => `${count} por hacer`,
         habitsAllDone: "Todo hecho",
         kcalLabel: "Kcal",
         kcalProgress: (current, target) => `${current} / ${target}`,
@@ -961,6 +988,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         title: "Hoy en comida",
         description: "Calorías y macros registrados hasta ahora hoy.",
         quickAdd: "Registrar comida",
+        quickAddLabel: "Añadir",
         target: {
           editLabel: "Editar objetivo",
           currentLabel: (kcal) => `Objetivo diario: ${kcal} kcal`,
@@ -983,6 +1011,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
           description: "Registra comidas vía WhatsApp para verlas aquí.",
         },
         viewFood: "Ver registro de comida →",
+      },
+      weightToday: {
+        eyebrow: "Peso",
+        title: "Último peso",
+        latestLabel: "kg",
+        emptyTitle: "Sin peso registrado",
+        emptyDescription: "Registra tu peso para hacer seguimiento.",
+        viewWeight: "Ver registro de peso →",
       },
     },
     today: {

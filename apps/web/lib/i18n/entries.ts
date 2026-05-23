@@ -47,6 +47,7 @@ export type EntriesCopy = {
     habit_boolean: string;
     habit_quantity: string;
     food_meal: string;
+    weight_log: string;
   };
   filter: {
     label: string;
@@ -102,6 +103,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_boolean: "Check-in",
       habit_quantity: "Quantity",
       food_meal: "Food",
+      weight_log: "Weight log",
     },
     filter: {
       label: "Show",
@@ -155,6 +157,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_boolean: "打卡型",
       habit_quantity: "数值型",
       food_meal: "饮食",
+      weight_log: "体重记录",
     },
     filter: {
       label: "显示",
@@ -208,6 +211,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_boolean: "Registro",
       habit_quantity: "Cantidad",
       food_meal: "Comida",
+      weight_log: "Registro de peso",
     },
     filter: {
       label: "Mostrar",

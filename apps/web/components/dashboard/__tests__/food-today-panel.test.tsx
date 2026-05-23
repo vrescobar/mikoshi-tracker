@@ -92,7 +92,7 @@ describe("FoodTodayPanel — quick add", () => {
     renderPanel(null, onQuickAdd);
     const button = screen.getByTestId("food-today-quick-add");
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute("aria-label", "Log a meal");
+    expect(button).toHaveAttribute("aria-label", "Add meal");
   });
 
   it("invokes onQuickAdd when the button is clicked", () => {

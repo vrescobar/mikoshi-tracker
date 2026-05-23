@@ -70,7 +70,7 @@ export function FoodTodayPanel({
               type="button"
               className={styles.quickAddButton}
               onClick={onQuickAdd}
-              aria-label={c.quickAdd}
+              aria-label={c.quickAddLabel}
               data-testid="food-today-quick-add"
             >
               +
