@@ -7,8 +7,10 @@ import {
   getTodaySummaryFromCookieHeader,
   listEntriesFromCookieHeader,
   listHabitsFromCookieHeader,
+  listWeightEventsFromCookieHeader,
   todayKeyInTimeZone,
 } from "../../../lib/server-auth";
+import { isWeightPayload } from "../../../lib/weight-client";
 
 type DashboardPageProps = {
   searchParams?: Promise<{
@@ -29,7 +31,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const session = await getSessionFromCookieHeader(cookieHeader);
   const today = todayKeyInTimeZone(session?.timezone);
 
-  const [[activeHabits, archivedHabits], foodAggregationsResult, foodEntries] = await Promise.all([
+  function shiftDays(dateKey: string, days: number): string {
+    const date = new Date(`${dateKey}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  }
+
+  const from30 = shiftDays(today, -30);
+
+  const [[activeHabits, archivedHabits], foodAggregationsResult, foodEntries, latestWeightEvents] = await Promise.all([
     Promise.all([
       listHabitsFromCookieHeader(cookieHeader, { status: "active" }),
       listHabitsFromCookieHeader(cookieHeader, { status: "archived" }),
@@ -38,7 +48,16 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     listEntriesFromCookieHeader(cookieHeader, { entryTypeSlug: "food_meal", isActive: true }).catch(
       () => [],
     ),
+    listWeightEventsFromCookieHeader(cookieHeader, from30, today).catch(() => []),
   ]);
+
+  const latestWeightEvent = [...latestWeightEvents].sort(
+    (a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime(),
+  )[0] ?? null;
+  const latestWeightKg = latestWeightEvent && isWeightPayload(latestWeightEvent.payload)
+    ? latestWeightEvent.payload.weight_kg
+    : null;
+  const latestWeightDate = latestWeightEvent?.dateKey ?? null;
 
   const foodEventsToday = foodAggregationsResult?.total.count ?? 0;
   const hasAnyFood = foodEntries.length > 0 || foodEventsToday > 0;
@@ -92,6 +111,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       initialFoodTodayAggregations={foodAggregationsResult}
       foodEntryId={foodEntryId}
       dailyKcalTarget={dailyKcalTarget}
+      latestWeightKg={latestWeightKg}
+      latestWeightDate={latestWeightDate}
     />
   );
 }

@@ -14,6 +14,7 @@ import { TodayDashboard } from "../today/today-dashboard";
 import { DashboardFoodSection } from "./dashboard-food-section";
 import { OverviewSection } from "./overview-section";
 import { TodayUnifiedStrip } from "./today-unified-strip";
+import { WeightTodayPanel } from "./weight-today-panel";
 import styles from "./dashboard-shell.module.css";
 
 export function DashboardShell({
@@ -24,6 +25,8 @@ export function DashboardShell({
   initialFoodTodayAggregations = null,
   foodEntryId = null,
   dailyKcalTarget = null,
+  latestWeightKg = null,
+  latestWeightDate = null,
 }: {
   emptyState?: "no-entries" | "habits-empty" | "archived-only" | null;
   initialLoadError?: string | null;
@@ -32,6 +35,8 @@ export function DashboardShell({
   initialFoodTodayAggregations?: AggregationResponse | null;
   foodEntryId?: string | null;
   dailyKcalTarget?: number | null;
+  latestWeightKg?: number | null;
+  latestWeightDate?: string | null;
 }) {
   const router = useRouter();
   const { copy } = useLocale();
@@ -133,6 +138,7 @@ export function DashboardShell({
           foodEntryId={foodEntryId}
           dailyKcalTarget={dailyKcalTarget}
         />
+        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -156,6 +162,7 @@ export function DashboardShell({
           foodEntryId={foodEntryId}
           dailyKcalTarget={dailyKcalTarget}
         />
+        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -184,6 +191,7 @@ export function DashboardShell({
           foodEntryId={foodEntryId}
           dailyKcalTarget={dailyKcalTarget}
         />
+        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -235,6 +243,7 @@ export function DashboardShell({
           foodEntryId={foodEntryId}
           dailyKcalTarget={dailyKcalTarget}
         />
+      <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       <OverviewSection overview={overview} isRefreshing={isRefreshingOverview} />
     </div>
   );
