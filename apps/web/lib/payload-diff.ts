@@ -25,8 +25,8 @@ function deepEqual(a: unknown, b: unknown): boolean {
     return a.every((v, i) => deepEqual(v, b[i]));
   }
   if (Array.isArray(b)) return false;
-  const aKeys = Object.keys(a as Record<string, unknown>);
-  const bKeys = Object.keys(b as Record<string, unknown>);
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
   if (aKeys.length !== bKeys.length) return false;
   return aKeys.every((k) =>
     deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),

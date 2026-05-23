@@ -26,8 +26,12 @@ export function TodayUnifiedStrip({ summary, foodAggregations, dailyKcalTarget }
   const completed = summary?.completedCount ?? 0;
   const kcalToday = Math.round(foodAggregations?.total.sum.kcal ?? 0);
 
-  const hasKcalTarget = typeof dailyKcalTarget === "number" && dailyKcalTarget > 0;
-  const kcalPct = hasKcalTarget ? Math.min(100, Math.round((kcalToday / dailyKcalTarget!) * 100)) : 0;
+  const resolvedTarget =
+    typeof dailyKcalTarget === "number" && dailyKcalTarget > 0 ? dailyKcalTarget : null;
+  const hasKcalTarget = resolvedTarget !== null;
+  const kcalPct = resolvedTarget !== null
+    ? Math.min(100, Math.round((kcalToday / resolvedTarget) * 100))
+    : 0;
 
   const isEmpty = pending === 0 && completed === 0 && kcalToday === 0 && !hasKcalTarget;
   if (isEmpty) return null;
@@ -43,17 +47,17 @@ export function TodayUnifiedStrip({ summary, foodAggregations, dailyKcalTarget }
       <div className={styles.row} data-row="kcal">
         <span className={styles.label}>{c.kcalLabel}</span>
         <strong className={styles.value}>
-          {hasKcalTarget
-            ? c.kcalProgress(kcalToday, dailyKcalTarget!)
+          {resolvedTarget !== null
+            ? c.kcalProgress(kcalToday, resolvedTarget)
             : c.kcalNoTarget(kcalToday)}
         </strong>
-        {hasKcalTarget ? (
+        {resolvedTarget !== null ? (
           <div
             className={styles.progress}
             role="progressbar"
             aria-valuenow={kcalToday}
             aria-valuemin={0}
-            aria-valuemax={dailyKcalTarget!}
+            aria-valuemax={resolvedTarget}
             data-testid="today-unified-strip-progress"
           >
             <div className={styles.progressFill} style={{ width: `${kcalPct}%` }} />

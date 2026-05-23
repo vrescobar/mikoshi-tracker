@@ -86,7 +86,7 @@ export async function runSkill(
       throw new SkillRunnerError(text || `Runner returned ${response.status}`, response.status);
     }
 
-    return (await response.json()) as unknown;
+    return await response.json();
   } catch (error) {
     if (error instanceof SkillRunnerError) throw error;
     if (error instanceof Error && error.name === "AbortError") {
@@ -128,7 +128,7 @@ export async function getSkillHealth(
       throw new SkillRunnerError(text || `Runner returned ${response.status}`, response.status);
     }
 
-    return (await response.json()) as unknown;
+    return await response.json();
   } catch (error) {
     if (error instanceof SkillRunnerError) throw error;
     if (error instanceof Error && error.name === "AbortError") {

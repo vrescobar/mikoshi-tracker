@@ -11,7 +11,7 @@ export default async function SettingsSkillsRoute() {
   const entryTypes = await listEntryTypesFromCookieHeader(cookieHeader).catch(() => []);
   const skillSlugs = entryTypes
     .filter((t) => typeof t.skillSlug === "string" && t.skillSlug.length > 0)
-    .map((t) => ({ entryTypeName: t.name, slug: t.skillSlug as string }));
+    .map((t) => ({ entryTypeName: t.name, slug: t.skillSlug! }));
 
   const healthEntries: Array<{ entryTypeName: string; health: SkillHealthSnapshot }> =
     await Promise.all(

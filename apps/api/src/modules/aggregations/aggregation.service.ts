@@ -197,7 +197,7 @@ export async function computeAggregations(
         key: {
           kind: "payload",
           field: groupByPayload,
-          value: String(row.bucket),
+          value: row.bucket,
           ...(sample !== undefined ? { sample } : {}),
         },
         sum,

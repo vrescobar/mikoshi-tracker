@@ -107,7 +107,13 @@ describe("RepeatsPanel", () => {
 
     await waitFor(() => expect(onLogged).toHaveBeenCalledTimes(1));
     expect(createFoodEvent).toHaveBeenCalledTimes(1);
-    const [, payload] = (createFoodEvent as ReturnType<typeof vi.fn>).mock.calls[0];
+    const call = (createFoodEvent as ReturnType<typeof vi.fn>).mock.calls[0] as unknown[];
+    const payload = call[1] as {
+      source: string;
+      confidence: number;
+      name: string;
+      kcal: number;
+    };
     expect(payload.source).toBe("similar_to_event");
     expect(payload.confidence).toBe(1.0);
     expect(payload.name).toBe("Oatmeal");

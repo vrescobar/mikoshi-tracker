@@ -448,7 +448,7 @@ acceptance task is **72**; only that task writes `TRACKER_COMPLETE`.
       `verify:openclaw` and `@mikoshi-tracker/mcp` test suites must pass
       with zero plugin changes. Reference: §G-MCP-1.
 
-- [ ] **72** Phase 13 acceptance + halt — `pnpm prisma migrate deploy &&
+- [x] **72** Phase 13 acceptance + halt — `pnpm prisma migrate deploy &&
       pnpm -r build && pnpm -r lint && pnpm typecheck && pnpm --filter
       @mikoshi-tracker/api test && pnpm --filter @mikoshi-tracker/contracts
       test && pnpm --filter @mikoshi-tracker/mcp test && pnpm --filter
