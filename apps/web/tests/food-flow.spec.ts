@@ -94,7 +94,14 @@ test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
   // (3) POST a complete food_meal event referencing the attachment.
   //     wireAttachmentsToMutation links the uploaded attachment to the EventMutation
   //     created for this event via the attachmentIds field.
-  const today = new Date().toISOString().slice(0, 10);
+  // Use the user's default timezone (Asia/Shanghai) to match the wall-clock date the
+  // API will assign as dateKey for food events (cutoffHour=0 for event_log types).
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
   const eventId = await page.evaluate(
     async ({ aId, todayStr }: { aId: string; todayStr: string }) => {
       // Reuse an existing food_meal Entry or create one.

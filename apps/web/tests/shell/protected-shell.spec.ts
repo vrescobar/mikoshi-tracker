@@ -17,12 +17,12 @@ test("protected shell shows utility access and active desktop navigation", async
   await expect(apiAccessEntry).toHaveAttribute("data-accented", "true");
   await expect(apiAccessEntry).not.toHaveAttribute("aria-current", "page");
 
-  const habitsLink = primaryNav.getByRole("link", { name: "Habits" });
-  await habitsLink.focus();
-  await habitsLink.press("Enter");
+  const entriesLink = primaryNav.getByRole("link", { name: "Entries" });
+  await entriesLink.focus();
+  await entriesLink.press("Enter");
   await expect(page).toHaveURL(/\/entries/);
-  await expect(primaryNav.getByRole("link", { name: "Habits" })).toBeFocused();
-  await expect(primaryNav.getByRole("link", { name: "Habits" })).toHaveAttribute("aria-current", "page");
+  await expect(primaryNav.getByRole("link", { name: "Entries" })).toBeFocused();
+  await expect(primaryNav.getByRole("link", { name: "Entries" })).toHaveAttribute("aria-current", "page");
 
   const apiAccessLink = utilityNav.getByRole("link", { name: "API Access" });
   await apiAccessLink.focus();
@@ -50,14 +50,14 @@ test.describe("mobile shell", () => {
     await expect(page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" })).toBeVisible();
     await expect(mobileNav.getByRole("link", { name: "今天" })).toHaveAttribute("aria-current", "page");
 
-    const mobileHabitsLink = mobileNav.getByRole("link", { name: "习惯" });
-    await mobileHabitsLink.focus();
-    await mobileHabitsLink.press("Enter");
+    const mobileEntriesLink = mobileNav.getByRole("link", { name: "条目" });
+    await mobileEntriesLink.focus();
+    await mobileEntriesLink.press("Enter");
     await expect(page).toHaveURL(/\/entries/);
-    await expect(mobileHabitsLink.locator("span").last()).toBeVisible();
-    await expect(mobileHabitsLink.locator("span").last()).toHaveText("习惯");
-    await expect(mobileNav.getByRole("link", { name: "习惯" })).toBeFocused();
-    await expect(mobileNav.getByRole("link", { name: "习惯" })).toHaveAttribute("aria-current", "page");
+    await expect(mobileEntriesLink.locator("span").last()).toBeVisible();
+    await expect(mobileEntriesLink.locator("span").last()).toHaveText("条目");
+    await expect(mobileNav.getByRole("link", { name: "条目" })).toBeFocused();
+    await expect(mobileNav.getByRole("link", { name: "条目" })).toHaveAttribute("aria-current", "page");
 
     const mobileApiAccessLink = page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" });
     await mobileApiAccessLink.focus();

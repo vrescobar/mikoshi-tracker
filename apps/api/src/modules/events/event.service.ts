@@ -94,9 +94,9 @@ function extractProjections(payload: unknown): { value: number | null; completed
   };
 }
 
-function resolveDateKey(timezone: string | null | undefined, occurredAt: Date): string {
+function resolveDateKey(timezone: string | null | undefined, occurredAt: Date, cutoffHour = 4): string {
   const tz = normalizeUserTimeZone(timezone);
-  return resolveHabitDay({ timestamp: occurredAt, timeZone: tz }).todayKey;
+  return resolveHabitDay({ timestamp: occurredAt, timeZone: tz, cutoffHour }).todayKey;
 }
 
 function serializeAttachment(a: EventMutationWithAttachments["attachments"][number]) {
@@ -222,7 +222,10 @@ export async function persistEvent(
   const validatedPayload = await validatePayload(deps, entry.entryTypeId, params.payload);
   const payloadStr = JSON.stringify(validatedPayload);
   const { value, completed } = extractProjections(validatedPayload);
-  const dateKey = resolveDateKey(entry.user.timezone, params.occurredAt);
+  // Habits use a 4-hour night cutoff so late-night completions bucket to the previous day.
+  // Event-log types (food, weight) use wall-clock date — a meal at 01:00 belongs to that day.
+  const cutoffHour = entry.entryType.cadence === "recurring" ? 4 : 0;
+  const dateKey = resolveDateKey(entry.user.timezone, params.occurredAt, cutoffHour);
 
   let event: EventWithMutations;
   let mutationType: string;
