@@ -79,7 +79,10 @@ export async function issueMagicLink(opts: {
   });
 
   const base = trimTrailingSlash(opts.appBaseUrl);
-  const url = `${base}/auth/magic?t=${encodeURIComponent(plaintext)}`;
+  // Next.js route-group convention: `app/(auth)/magic/page.tsx` resolves to
+  // `/magic` (the `(auth)` parentheses are stripped from the URL — they group
+  // routes under a shared layout but do not become a path segment).
+  const url = `${base}/magic?t=${encodeURIComponent(plaintext)}`;
   return { url, expiresAt };
 }
 

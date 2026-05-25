@@ -53,7 +53,9 @@ describe("magic-link routes", () => {
 
       expect(res.statusCode).toBe(201);
       const body = res.json() as { url: string; expiresAt: string };
-      expect(body.url).toMatch(/^http:\/\/127\.0\.0\.1:3001\/auth\/magic\?t=[0-9a-f]{64}$/);
+      // `(auth)` is a Next.js route group and gets stripped from the URL —
+      // the page lives at `/magic`, not `/auth/magic`.
+      expect(body.url).toMatch(/^http:\/\/127\.0\.0\.1:3001\/magic\?t=[0-9a-f]{64}$/);
       const expires = new Date(body.expiresAt).getTime();
       const now = Date.now();
       // Default TTL is 15 min — accept anywhere in [10, 20) min to absorb test latency.
