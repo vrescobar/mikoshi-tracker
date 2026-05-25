@@ -18,7 +18,9 @@ import {
 } from "@mikoshi-tracker/contracts/admin";
 
 import {
+  consumeMagicLinkHandler,
   enrollMemberByExternalIdHandler,
+  issueMagicLinkHandler,
   provisionUserHandler,
   resetProvisionedTokenHandler,
 } from "./admin.controller";
@@ -236,4 +238,10 @@ export async function registerAdminRoutes(app: FastifyInstance) {
   app.post("/api/admin/provision-user", provisionUserHandler);
   app.post("/api/admin/provision-user/reset-token", resetProvisionedTokenHandler);
   app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
+  // Magic-link issuance is admin-gated (creates a single-use login URL).
+  app.post("/api/admin/issue-magic-link", issueMagicLinkHandler);
+  // Consumption is public — the URL token IS the credential. Single-use
+  // `consumedAt` write makes the URL non-replayable; 32 random bytes of
+  // entropy make brute force infeasible.
+  app.post("/api/auth/magic-link/consume", consumeMagicLinkHandler);
 }

@@ -5,9 +5,15 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { Prisma } from "../../generated/prisma/client";
 import { AdminKeyError, requireAdminKey } from "../../auth/admin-key";
 import { resetPersonalApiToken } from "../../auth/api-token";
+import {
+  consumeMagicLink,
+  issueMagicLink,
+} from "../../auth/magic-link";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import {
+  consumeMagicLinkInputSchema,
   enrollMemberInputSchema,
+  issueMagicLinkInputSchema,
   provisionUserInputSchema,
   resetProvisionedTokenInputSchema,
 } from "@mikoshi-tracker/contracts/admin";
@@ -127,6 +133,100 @@ export async function resetProvisionedTokenHandler(request: FastifyRequest, repl
     return { userId: user.id, personalToken: token };
   } catch (error) {
     return sendAdminError(reply, error);
+  }
+}
+
+// ─── Magic-link issuance + consumption ─────────────────────────────────────
+
+export async function issueMagicLinkHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  try {
+    await requireAdminKey(request);
+    const input = issueMagicLinkInputSchema.parse(request.body);
+
+    const appBaseUrl = request.server.env.BETTER_AUTH_URL;
+    let issued;
+    try {
+      issued = await issueMagicLink({
+        db: request.server.db,
+        appBaseUrl,
+        externalId: input.externalId,
+        next: input.next,
+      });
+    } catch (validationError) {
+      const message =
+        validationError instanceof Error ? validationError.message : "Invalid next";
+      return await reply.status(400).send({
+        code: "BAD_REQUEST",
+        message,
+      });
+    }
+
+    if (!issued) {
+      return await reply.status(404).send({
+        code: "NOT_FOUND",
+        message: "No provisioned user found with that externalId",
+      });
+    }
+
+    reply.status(201);
+    return { url: issued.url, expiresAt: issued.expiresAt.toISOString() };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+export async function consumeMagicLinkHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  try {
+    const input = consumeMagicLinkInputSchema.parse(request.body);
+
+    const result = await consumeMagicLink({
+      db: request.server.db,
+      token: input.token,
+      secret: request.server.env.BETTER_AUTH_SECRET,
+      // Mirror better-auth's secure-cookie default: HTTPS base URL → secure.
+      secureCookies: request.server.env.BETTER_AUTH_URL.startsWith("https://"),
+    });
+
+    if (!result.ok) {
+      // 410 Gone for used/expired, 404 for not-found — keeps "URL still works"
+      // distinguishable from "URL was a typo" in the page UI.
+      const status = result.reason === "not-found" ? 404 : 410;
+      const code = result.reason === "not-found" ? "NOT_FOUND" : "GONE";
+      return await reply.status(status).send({
+        code,
+        message: `Magic link ${result.reason}`,
+      });
+    }
+
+    return {
+      userId: result.userId,
+      next: result.next ?? "",
+      cookie: {
+        name: result.cookie.name,
+        value: result.cookie.value,
+        httpOnly: result.cookie.attributes.httpOnly,
+        sameSite: result.cookie.attributes.sameSite,
+        path: result.cookie.attributes.path,
+        secure: result.cookie.attributes.secure,
+        maxAgeSeconds: result.cookie.attributes.maxAgeSeconds,
+      },
+    };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      reply.status(400);
+      return {
+        code: "BAD_REQUEST",
+        message: "Invalid request payload",
+        issues: error.flatten(),
+      };
+    }
+    throw error;
   }
 }
 

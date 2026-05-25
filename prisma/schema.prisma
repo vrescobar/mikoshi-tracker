@@ -21,11 +21,31 @@ model User {
   sessions          Session[]
   accounts          Account[]
   apiToken          ApiToken?
+  magicLinks        MagicLink[]
   circlesOwned      Circle[]           @relation("CircleOwner")
   circleMemberships CircleMembership[]
   attachments       Attachment[]
   entries           Entry[]
   entryEvents       EntryEvent[]
+}
+
+/// One-shot login link issued by /api/admin/issue-magic-link for a provisioned
+/// user. `token` stores the SHA-256 hash of the plaintext token that the
+/// recipient receives in the URL (same pattern as ApiToken). Consumed at
+/// `consumedAt` and never re-usable; expires at `expiresAt` (default 15 min
+/// after creation, but the issuer sets this explicitly).
+model MagicLink {
+  id         String    @id @default(cuid())
+  userId     String
+  token      String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  next       String?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model AppSettings {
