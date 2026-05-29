@@ -2,15 +2,26 @@
  * GET /magic?t=<token>&next=/path
  *
  * Magic-link landing route. Exchanges the token for a session cookie via
- * `POST /api/auth/magic-link/consume` and 302-redirects the user into the app.
+ * `POST /api/auth/magic-link/consume` and 303-redirects the user into the app.
  *
  * Why a Route Handler instead of a Server Component page:
  *   Next.js 15+ refuses `cookies().set()` from a Server Component (it can
  *   only be called from a Server Action or Route Handler). We need to set
  *   the session cookie on the *outgoing* response, so a Route Handler is
- *   the natural fit. It also lets us return a real 302 instead of a
+ *   the natural fit. It also lets us return a real 3xx instead of a
  *   client-side soft redirect, which is what email clients and OS-level
  *   handoff expect from a "magic link".
+ *
+ * Why a RELATIVE Location:
+ *   Behind the Caddy reverse proxy the app listens on the internal bind
+ *   address `0.0.0.0:3000`, and `req.url` resolves to that internal origin —
+ *   so building the redirect with `new URL(path, req.url)` produced
+ *   `http://0.0.0.0:3000/`, which is unreachable from the user's browser.
+ *   A relative `Location` (e.g. `/`) is resolved by the browser against the
+ *   public origin in its address bar (`http://jetson:7080`), with no
+ *   dependence on forwarded headers or env vars. `next` is always a validated
+ *   same-origin path (starts with "/", never "//"), so it is safe to emit
+ *   verbatim as a relative redirect target.
  *
  * Security:
  *   - The token is the credential — single-use, hashed in DB, never logged.
@@ -49,16 +60,26 @@ function isSafePath(p: string | undefined | null): p is string {
   return p.startsWith("/") && !p.startsWith("//");
 }
 
-function errorRedirect(req: NextRequest, reason: string): NextResponse {
-  const url = new URL("/", req.url);
-  url.searchParams.set("magicError", reason);
-  return NextResponse.redirect(url);
+/**
+ * 303 redirect to a same-origin relative path. The browser resolves the
+ * relative `Location` against the public origin it requested, not the app's
+ * internal bind address.
+ */
+function relativeRedirect(path: string): NextResponse {
+  return new NextResponse(null, {
+    status: 303,
+    headers: { Location: path },
+  });
+}
+
+function errorRedirect(reason: string): NextResponse {
+  return relativeRedirect(`/?magicError=${encodeURIComponent(reason)}`);
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const token = req.nextUrl.searchParams.get("t")?.trim() ?? "";
   if (!token) {
-    return errorRedirect(req, "missing");
+    return errorRedirect("missing");
   }
 
   const response = await fetch(createServerApiUrl("/api/auth/magic-link/consume"), {
@@ -77,12 +98,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       // ignore
     }
     if (response.status === 410) {
-      return errorRedirect(req, payloadMessage?.includes("expired") ? "expired" : "used");
+      return errorRedirect(payloadMessage?.includes("expired") ? "expired" : "used");
     }
     if (response.status === 404) {
-      return errorRedirect(req, "invalid");
+      return errorRedirect("invalid");
     }
-    return errorRedirect(req, "server-error");
+    return errorRedirect("server-error");
   }
 
   const data = (await response.json()) as ConsumeResponse;
@@ -90,9 +111,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const queryNext = req.nextUrl.searchParams.get("next");
   const linkNext = isSafePath(data.next) ? data.next : null;
   const safeQueryNext = isSafePath(queryNext) ? queryNext : null;
-  const destination = new URL(linkNext ?? safeQueryNext ?? SAFE_DEFAULT, req.url);
+  const destination = linkNext ?? safeQueryNext ?? SAFE_DEFAULT;
 
-  const out = NextResponse.redirect(destination);
+  const out = relativeRedirect(destination);
   out.cookies.set({
     name: data.cookie.name,
     value: data.cookie.value,

@@ -23,8 +23,8 @@ done
 
 echo "==> Building API"
 if [[ $SKIP_API -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1 && [[ -f bun.lockb ]]; then
-    bun --filter @mikoshi-tracker/api run build
+  if command -v bun >/dev/null 2>&1; then
+    bun run --filter @mikoshi-tracker/api build
   else
     pnpm --filter @mikoshi-tracker/api build
   fi
@@ -32,8 +32,8 @@ fi
 
 echo "==> Building web"
 if [[ $SKIP_WEB -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1 && [[ -f bun.lockb ]]; then
-    bun --filter @mikoshi-tracker/web run build
+  if command -v bun >/dev/null 2>&1; then
+    bun run --filter @mikoshi-tracker/web build
   else
     pnpm --filter @mikoshi-tracker/web build
   fi
@@ -41,7 +41,7 @@ fi
 
 echo "==> Running database migrations"
 if [[ $SKIP_MIGRATE -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1 && [[ -f bun.lockb ]]; then
+  if command -v bun >/dev/null 2>&1; then
     bun run prisma:migrate
   else
     pnpm exec prisma migrate deploy \
