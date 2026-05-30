@@ -11,17 +11,56 @@ import {
 } from "../../auth/magic-link";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import {
+  bulkEnrollInputSchema,
   consumeMagicLinkInputSchema,
+  createCircleInputSchema,
   enrollMemberInputSchema,
   issueMagicLinkInputSchema,
   provisionUserInputSchema,
   resetProvisionedTokenInputSchema,
+  updateCircleInputSchema,
 } from "@mikoshi-tracker/contracts/admin";
+import { createCircleToken } from "../../auth/circle-token";
 import {
   addCircleMemberRecord,
+  countCircleMembers,
+  createCircleWithLifecycle,
   findCircleMembershipByUserId,
+  findCircleRecord,
   findUserByExternalId,
+  updateCircleLifecycle,
 } from "../circles/circle.repository";
+
+/** Serialize a circle record (+ member count) into the admin contract shape. */
+function serializeAdminCircle(
+  circle: {
+    id: string;
+    name: string;
+    ownerId: string;
+    status: string;
+    season: string | null;
+    contestStartAt: Date | null;
+    contestEndAt: Date | null;
+    leaderboardMode: string;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  memberCount: number,
+) {
+  return {
+    id: circle.id,
+    name: circle.name,
+    ownerId: circle.ownerId,
+    status: circle.status,
+    season: circle.season,
+    contestStartAt: circle.contestStartAt ? circle.contestStartAt.toISOString() : null,
+    contestEndAt: circle.contestEndAt ? circle.contestEndAt.toISOString() : null,
+    leaderboardMode: circle.leaderboardMode,
+    memberCount,
+    createdAt: circle.createdAt.toISOString(),
+    updatedAt: circle.updatedAt.toISOString(),
+  };
+}
 
 function sendAdminError(reply: FastifyReply, error: unknown) {
   if (error instanceof AdminKeyError) {
@@ -227,6 +266,151 @@ export async function consumeMagicLinkHandler(
       };
     }
     throw error;
+  }
+}
+
+// ─── Admin circle lifecycle (contest management) ────────────────────────────
+
+export async function createCircleAdminHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const input = createCircleInputSchema.parse(request.body);
+
+    const owner = await findUserByExternalId(request.server.db, input.ownerExternalId);
+    if (!owner) {
+      return await reply.status(404).send({
+        code: "NOT_FOUND",
+        message: "No provisioned user found for ownerExternalId — provision the owner first",
+      });
+    }
+
+    const circle = await createCircleWithLifecycle(request.server.db, {
+      ownerId: owner.id,
+      name: input.name,
+      season: input.season ?? null,
+      contestStartAt: input.contestStartAt ? new Date(input.contestStartAt) : null,
+      contestEndAt: input.contestEndAt ? new Date(input.contestEndAt) : null,
+    });
+
+    // Mint a read-only circle token so the caller (mikoshi) can store the
+    // chat-scope binding in one round-trip. Returned once, never re-readable.
+    const { token } = await createCircleToken(request.server.db, circle.id, "mikoshi-binding");
+    const memberCount = await countCircleMembers(request.server.db, circle.id);
+
+    reply.status(201);
+    return { circle: serializeAdminCircle(circle, memberCount), circleToken: token };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+export async function updateCircleAdminHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const { circleId } = request.params as { circleId: string };
+    const input = updateCircleInputSchema.parse(request.body);
+
+    const existing = await findCircleRecord(request.server.db, circleId);
+    if (!existing) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
+    }
+
+    const updated = await updateCircleLifecycle(request.server.db, circleId, {
+      status: input.status,
+      season: input.season,
+      contestStartAt:
+        input.contestStartAt === undefined
+          ? undefined
+          : input.contestStartAt === null
+            ? null
+            : new Date(input.contestStartAt),
+      contestEndAt:
+        input.contestEndAt === undefined
+          ? undefined
+          : input.contestEndAt === null
+            ? null
+            : new Date(input.contestEndAt),
+      leaderboardMode: input.leaderboardMode,
+    });
+    const memberCount = await countCircleMembers(request.server.db, circleId);
+
+    return { circle: serializeAdminCircle(updated, memberCount) };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+export async function getCircleAdminHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const { circleId } = request.params as { circleId: string };
+    const circle = await findCircleRecord(request.server.db, circleId);
+    if (!circle) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
+    }
+    const memberCount = await countCircleMembers(request.server.db, circleId);
+    return { circle: serializeAdminCircle(circle, memberCount) };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const { circleId } = request.params as { circleId: string };
+    const input = bulkEnrollInputSchema.parse(request.body);
+
+    const circle = await request.server.db.circle.findUnique({
+      where: { id: circleId },
+      select: { id: true },
+    });
+    if (!circle) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
+    }
+
+    const added: string[] = [];
+    const alreadyMembers: string[] = [];
+    const notProvisioned: string[] = [];
+
+    // De-dup input while preserving order.
+    for (const externalId of [...new Set(input.externalIds)]) {
+      const user = await findUserByExternalId(request.server.db, externalId);
+      if (!user) {
+        notProvisioned.push(externalId);
+        continue;
+      }
+      const existing = await findCircleMembershipByUserId(request.server.db, {
+        circleId,
+        userId: user.id,
+      });
+      if (existing) {
+        alreadyMembers.push(externalId);
+        continue;
+      }
+      try {
+        await addCircleMemberRecord(request.server.db, {
+          circleId,
+          userId: user.id,
+          externalId,
+        });
+        added.push(externalId);
+      } catch (createError) {
+        // Concurrent enrol race — treat as already-member.
+        if (
+          createError instanceof Prisma.PrismaClientKnownRequestError &&
+          createError.code === "P2002"
+        ) {
+          alreadyMembers.push(externalId);
+        } else {
+          throw createError;
+        }
+      }
+    }
+
+    return { added, alreadyMembers, notProvisioned };
+  } catch (error) {
+    return sendAdminError(reply, error);
   }
 }
 

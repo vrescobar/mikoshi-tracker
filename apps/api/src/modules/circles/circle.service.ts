@@ -147,12 +147,52 @@ export class CircleTokenNotFoundError extends Error {
   }
 }
 
+/**
+ * Thrown when a check-in is attempted on a contest that is not accepting
+ * writes: status is `closed`/`archived`, or "now" falls outside the
+ * [contestStartAt, contestEndAt] window. Maps to 409 CIRCLE_CLOSED.
+ */
+export class CircleClosedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CircleClosedError";
+  }
+}
+
 export type CircleServiceDependencies = { db: PrismaClient };
+
+/**
+ * Contest-window gate: rejects writes when the circle is closed/archived or the
+ * moment falls outside the configured window. A circle with status `active` and
+ * no window (the legacy default) always passes. Pass `now` for determinism in
+ * tests.
+ */
+export function assertCircleAcceptsCheckins(
+  circle: { status: string; contestStartAt: Date | null; contestEndAt: Date | null },
+  now: Date = new Date(),
+): void {
+  if (circle.status !== "active") {
+    throw new CircleClosedError(`This contest is ${circle.status} and no longer accepts check-ins`);
+  }
+  if (circle.contestStartAt && now < circle.contestStartAt) {
+    throw new CircleClosedError("This contest has not started yet");
+  }
+  if (circle.contestEndAt && now > circle.contestEndAt) {
+    throw new CircleClosedError("This contest has ended");
+  }
+}
 
 export async function assertCircleHabitWritable(
   { db }: CircleServiceDependencies,
   params: { circleId: string; userId: string; habitId: string },
 ): Promise<void> {
+  // Rule 0: the contest must be open (status active + within window, if any).
+  const circle = await findCircleRecord(db, params.circleId);
+  if (!circle) {
+    throw new CircleMemberNotFoundError();
+  }
+  assertCircleAcceptsCheckins(circle);
+
   // Rule 1: userId must have a CircleMembership in circleId
   const membership = await findCircleMembershipByUserId(db, {
     circleId: params.circleId,

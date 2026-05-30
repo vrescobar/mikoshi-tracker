@@ -37,6 +37,64 @@ export async function createCircleRecord(db: PrismaClient, params: { ownerId: st
   });
 }
 
+/**
+ * Admin-side circle creation with contest-lifecycle fields. Like
+ * `createCircleRecord` (owner becomes owner-member) but seeds status/season/
+ * window. Used by `POST /api/admin/circles`.
+ */
+export async function createCircleWithLifecycle(
+  db: PrismaClient,
+  params: {
+    ownerId: string;
+    name: string;
+    season?: string | null;
+    contestStartAt?: Date | null;
+    contestEndAt?: Date | null;
+  },
+) {
+  return db.circle.create({
+    data: {
+      name: params.name,
+      ownerId: params.ownerId,
+      season: params.season ?? null,
+      contestStartAt: params.contestStartAt ?? null,
+      contestEndAt: params.contestEndAt ?? null,
+      memberships: {
+        create: { userId: params.ownerId, role: "owner" },
+      },
+    },
+  });
+}
+
+/** Patch contest-lifecycle fields on a circle. Only provided keys are written. */
+export async function updateCircleLifecycle(
+  db: PrismaClient,
+  circleId: string,
+  patch: {
+    status?: string;
+    season?: string | null;
+    contestStartAt?: Date | null;
+    contestEndAt?: Date | null;
+    leaderboardMode?: string;
+  },
+) {
+  return db.circle.update({
+    where: { id: circleId },
+    data: {
+      ...(patch.status !== undefined ? { status: patch.status } : {}),
+      ...(patch.season !== undefined ? { season: patch.season } : {}),
+      ...(patch.contestStartAt !== undefined ? { contestStartAt: patch.contestStartAt } : {}),
+      ...(patch.contestEndAt !== undefined ? { contestEndAt: patch.contestEndAt } : {}),
+      ...(patch.leaderboardMode !== undefined ? { leaderboardMode: patch.leaderboardMode } : {}),
+    },
+  });
+}
+
+/** Number of memberships in a circle (for admin circle detail). */
+export async function countCircleMembers(db: PrismaClient, circleId: string) {
+  return db.circleMembership.count({ where: { circleId } });
+}
+
 export async function listCirclesByUserId(db: PrismaClient, userId: string) {
   return db.circle.findMany({
     where: {

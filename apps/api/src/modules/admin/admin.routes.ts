@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { z } from "zod";
 
 import {
   badRequestErrorSchema,
@@ -6,7 +7,12 @@ import {
   unauthorizedErrorSchema,
 } from "@mikoshi-tracker/contracts/api";
 import {
+  adminCircleSchema,
   adminCirclePathParamsSchema,
+  bulkEnrollInputSchema,
+  bulkEnrollResponseSchema,
+  createCircleInputSchema,
+  createCircleResponseSchema,
   enrollMemberInputSchema,
   enrollMemberResponseSchema,
   provisionUserInputSchema,
@@ -15,16 +21,23 @@ import {
   resetProvisionedTokenInputSchema,
   resetProvisionedTokenResponseSchema,
   serviceUnavailableErrorSchema,
+  updateCircleInputSchema,
 } from "@mikoshi-tracker/contracts/admin";
 
 import {
+  bulkEnrollAdminHandler,
   consumeMagicLinkHandler,
+  createCircleAdminHandler,
   enrollMemberByExternalIdHandler,
+  getCircleAdminHandler,
   issueMagicLinkHandler,
   provisionUserHandler,
   resetProvisionedTokenHandler,
+  updateCircleAdminHandler,
 } from "./admin.controller";
 import type { PublicApiRouteDefinition } from "../../plugins/openapi";
+
+const adminCircleEnvelopeSchema = z.object({ circle: adminCircleSchema });
 
 const serviceUnavailableResponse = {
   description: "Admin provisioning API is disabled (MIKOSHI_TRACKER_ADMIN_API_KEY not configured).",
@@ -232,11 +245,85 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
       503: serviceUnavailableResponse,
     },
   },
+  {
+    method: "POST",
+    path: "/api/admin/circles",
+    operationId: "createCircleAdmin",
+    summary: "Create a contest circle",
+    description:
+      "Creates a circle owned by a provisioned user (resolved by ownerExternalId) with optional contest window/season, and mints a read-only circle token (returned once). Requires the admin key.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: { body: createCircleInputSchema },
+    responses: {
+      201: { description: "Circle created.", schema: createCircleResponseSchema },
+      400: { description: "Invalid request payload.", schema: badRequestErrorSchema },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
+  {
+    method: "GET",
+    path: "/api/admin/circles/:circleId",
+    operationId: "getCircleAdmin",
+    summary: "Get contest circle detail",
+    description: "Returns a circle's lifecycle fields and member count. Requires the admin key.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: { params: adminCirclePathParamsSchema },
+    responses: {
+      200: { description: "Circle detail.", schema: adminCircleEnvelopeSchema },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
+  {
+    method: "PATCH",
+    path: "/api/admin/circles/:circleId",
+    operationId: "updateCircleAdmin",
+    summary: "Update contest lifecycle",
+    description:
+      "Patches a circle's status (active/closed/archived), contest window, season, or leaderboard mode. Requires the admin key.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: { params: adminCirclePathParamsSchema, body: updateCircleInputSchema },
+    responses: {
+      200: { description: "Circle updated.", schema: adminCircleEnvelopeSchema },
+      400: { description: "Invalid request payload.", schema: badRequestErrorSchema },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
+  {
+    method: "POST",
+    path: "/api/admin/circles/:circleId/members/bulk",
+    operationId: "bulkEnrollCircleMembers",
+    summary: "Bulk-enrol members by externalId",
+    description:
+      "Enrols many provisioned users into a circle in one call. Idempotent; reports which externalIds were added, already members, or not yet provisioned. Requires the admin key.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: { params: adminCirclePathParamsSchema, body: bulkEnrollInputSchema },
+    responses: {
+      200: { description: "Bulk enrol result.", schema: bulkEnrollResponseSchema },
+      400: { description: "Invalid request payload.", schema: badRequestErrorSchema },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
 ];
 
 export async function registerAdminRoutes(app: FastifyInstance) {
   app.post("/api/admin/provision-user", provisionUserHandler);
   app.post("/api/admin/provision-user/reset-token", resetProvisionedTokenHandler);
+  app.post("/api/admin/circles", createCircleAdminHandler);
+  app.get("/api/admin/circles/:circleId", getCircleAdminHandler);
+  app.patch("/api/admin/circles/:circleId", updateCircleAdminHandler);
+  app.post("/api/admin/circles/:circleId/members/bulk", bulkEnrollAdminHandler);
   app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
   // Magic-link issuance is admin-gated (creates a single-use login URL).
   app.post("/api/admin/issue-magic-link", issueMagicLinkHandler);

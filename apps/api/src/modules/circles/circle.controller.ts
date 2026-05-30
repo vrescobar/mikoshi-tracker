@@ -15,6 +15,7 @@ import { getRequestTimestamp, sendAuthError } from "../../shared/controller-help
 import {
   addCircleMember,
   circleCompleteHabit,
+  CircleClosedError,
   CircleForbiddenError,
   CircleHabitAlreadySharedError,
   CircleHabitInactiveError,
@@ -66,6 +67,10 @@ function sendCircleWriteError(reply: FastifyReply, error: unknown) {
   }
   if (error instanceof CircleHabitInactiveError) {
     reply.status(409).send({ code: "HABIT_INACTIVE", message: error.message });
+    return reply;
+  }
+  if (error instanceof CircleClosedError) {
+    reply.status(409).send({ code: "CIRCLE_CLOSED", message: error.message });
     return reply;
   }
   if (error instanceof CircleUndoNotCircleSourcedError) {

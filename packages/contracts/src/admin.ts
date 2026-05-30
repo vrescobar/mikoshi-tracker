@@ -47,6 +47,74 @@ export const adminCirclePathParamsSchema = z.object({
   circleId: nonEmptyString,
 });
 
+// ─── Admin circle lifecycle (contest management) ────────────────────────────
+
+export const circleStatusSchema = z.enum(["active", "closed", "archived"]);
+export const circleLeaderboardModeSchema = z.enum(["rolling", "snapshot"]);
+
+/** Shared serialized shape of a circle returned by admin endpoints. */
+export const adminCircleSchema = z.object({
+  id: nonEmptyString,
+  name: nonEmptyString,
+  ownerId: nonEmptyString,
+  status: circleStatusSchema,
+  season: z.string().nullable(),
+  contestStartAt: z.string().nullable(),
+  contestEndAt: z.string().nullable(),
+  leaderboardMode: circleLeaderboardModeSchema,
+  memberCount: z.number().int().nonnegative(),
+  createdAt: nonEmptyString,
+  updatedAt: nonEmptyString,
+});
+
+export const createCircleInputSchema = z.object({
+  name: nonEmptyString,
+  /** externalId of the provisioned user that will own the circle (owner-member). */
+  ownerExternalId: nonEmptyString,
+  season: nonEmptyString.optional(),
+  contestStartAt: z.string().datetime().optional(),
+  contestEndAt: z.string().datetime().optional(),
+});
+
+export const createCircleResponseSchema = z.object({
+  circle: adminCircleSchema,
+  /** Read-only circle token, returned once for the chat-scope binding. */
+  circleToken: nonEmptyString,
+});
+
+export const updateCircleInputSchema = z
+  .object({
+    status: circleStatusSchema.optional(),
+    season: nonEmptyString.nullable().optional(),
+    contestStartAt: z.string().datetime().nullable().optional(),
+    contestEndAt: z.string().datetime().nullable().optional(),
+    leaderboardMode: circleLeaderboardModeSchema.optional(),
+  })
+  .refine((v) => Object.keys(v).length > 0, {
+    message: "At least one field must be provided",
+  });
+
+export const bulkEnrollInputSchema = z.object({
+  externalIds: z.array(nonEmptyString).min(1).max(500),
+});
+
+export const bulkEnrollResponseSchema = z.object({
+  /** externalIds newly added as members. */
+  added: z.array(nonEmptyString),
+  /** externalIds that were already members (idempotent no-op). */
+  alreadyMembers: z.array(nonEmptyString),
+  /** externalIds with no provisioned user (skipped — provision them first). */
+  notProvisioned: z.array(nonEmptyString),
+});
+
+export type CircleStatus = z.infer<typeof circleStatusSchema>;
+export type AdminCircle = z.infer<typeof adminCircleSchema>;
+export type CreateCircleInput = z.infer<typeof createCircleInputSchema>;
+export type CreateCircleResponse = z.infer<typeof createCircleResponseSchema>;
+export type UpdateCircleInput = z.infer<typeof updateCircleInputSchema>;
+export type BulkEnrollInput = z.infer<typeof bulkEnrollInputSchema>;
+export type BulkEnrollResponse = z.infer<typeof bulkEnrollResponseSchema>;
+
 // ─── Magic-link issuance ────────────────────────────────────────────────────
 
 export const issueMagicLinkInputSchema = z.object({

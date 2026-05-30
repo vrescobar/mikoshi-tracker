@@ -24,6 +24,7 @@ model User {
   magicLinks        MagicLink[]
   circlesOwned      Circle[]           @relation("CircleOwner")
   circleMemberships CircleMembership[]
+  leaderboardSnapshots CircleLeaderboardSnapshot[]
   attachments       Attachment[]
   entries           Entry[]
   entryEvents       EntryEvent[]
@@ -134,12 +135,44 @@ model Circle {
   id          String             @id @default(cuid())
   name        String
   ownerId     String
+  /// Contest lifecycle. "active" accepts check-ins; "closed" freezes them
+  /// (results snapshotted); "archived" hides the contest from default views.
+  status      String             @default("active")
+  /// Optional contest window. When set, check-ins are rejected outside
+  /// [contestStartAt, contestEndAt] and the leaderboard is scored over it.
+  contestStartAt DateTime?
+  contestEndAt   DateTime?
+  /// Free-form season/edition label (e.g. "bikini-2026") used to key snapshots.
+  season         String?
+  /// "rolling" = live 30d/7d windows (default, legacy parity).
+  /// "snapshot" = frozen final standings served from CircleLeaderboardSnapshot.
+  leaderboardMode String           @default("rolling")
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   owner       User               @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   memberships CircleMembership[]
   tokens      CircleToken[]
   entryShares CircleEntryShare[]
+  leaderboardSnapshots CircleLeaderboardSnapshot[]
+}
+
+/// Frozen leaderboard row captured at contest close (`leaderboard/snapshot`).
+/// One row per (circle, season, user); `data` holds the full leaderboard entry
+/// JSON so the standings survive even if shares/events change afterwards.
+model CircleLeaderboardSnapshot {
+  id        String   @id @default(cuid())
+  circleId  String
+  season    String
+  userId    String
+  rank      Int
+  score     Int
+  data      String
+  createdAt DateTime @default(now())
+  circle    Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([circleId, season, userId])
+  @@index([circleId, season])
 }
 
 model CircleMembership {
