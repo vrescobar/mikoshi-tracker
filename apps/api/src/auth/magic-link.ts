@@ -86,6 +86,51 @@ export async function issueMagicLink(opts: {
   return { url, expiresAt };
 }
 
+/**
+ * Issue a one-shot login link for an arbitrary user identified by `userId`
+ * (NOT externalId). This powers admin "log in as / view as" (God Mode): an
+ * admin mints a single-use URL that, when opened, starts a session as that
+ * user — the clean way to see exactly what a member sees without a second
+ * account. Same single-use + TTL + hash-only storage guarantees as the
+ * externalId variant. Returns null when the user does not exist.
+ */
+export async function issueMagicLinkForUserId(opts: {
+  db: PrismaClient;
+  appBaseUrl: string;
+  userId: string;
+  next?: string;
+  ttlSeconds?: number;
+  now?: Date;
+}): Promise<IssuedMagicLink | null> {
+  const user = await opts.db.user.findUnique({
+    where: { id: opts.userId },
+    select: { id: true },
+  });
+  if (!user) return null;
+
+  validateNextPath(opts.next);
+
+  const plaintext = randomBytes(MAGIC_LINK_TOKEN_BYTES).toString("hex");
+  const tokenHash = hashMagicLinkToken(plaintext);
+  const now = opts.now ?? new Date();
+  const ttl = (opts.ttlSeconds ?? MAGIC_LINK_DEFAULT_TTL_SECONDS) * 1000;
+  const expiresAt = new Date(now.getTime() + ttl);
+
+  await opts.db.magicLink.create({
+    data: {
+      userId: user.id,
+      token: tokenHash,
+      expiresAt,
+      next: opts.next ?? null,
+      createdAt: now,
+    },
+  });
+
+  const base = trimTrailingSlash(opts.appBaseUrl);
+  const url = `${base}/magic?t=${encodeURIComponent(plaintext)}`;
+  return { url, expiresAt };
+}
+
 export type ConsumeResult =
   | { ok: true; userId: string; cookie: SignedSessionCookie; next: string | null }
   | { ok: false; reason: "not-found" | "expired" | "used" };

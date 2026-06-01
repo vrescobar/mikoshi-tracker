@@ -8,14 +8,19 @@ import { resetPersonalApiToken } from "../../auth/api-token";
 import {
   consumeMagicLink,
   issueMagicLink,
+  issueMagicLinkForUserId,
 } from "../../auth/magic-link";
+import { mergeUsers, UserMergeError } from "./user-merge";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import {
+  adminLoginAsInputSchema,
+  attachExternalIdInputSchema,
   bulkEnrollInputSchema,
   consumeMagicLinkInputSchema,
   createCircleInputSchema,
   enrollMemberInputSchema,
   issueMagicLinkInputSchema,
+  mergeUsersInputSchema,
   provisionUserInputSchema,
   resetProvisionedTokenInputSchema,
   updateCircleInputSchema,
@@ -473,6 +478,119 @@ export async function enrollMemberByExternalIdHandler(
       }
       throw createError;
     }
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+/**
+ * Merge a duplicate User row (`sourceUserId`) into the canonical one
+ * (`targetUserId`): re-parent all data, carry externalId + admin flag, delete
+ * the source. Used to consolidate a human's web account + provisioned account.
+ */
+export async function mergeUsersHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const input = mergeUsersInputSchema.parse(request.body);
+    const result = await mergeUsers(request.server.db, input);
+    reply.status(200);
+    return result;
+  } catch (error) {
+    if (error instanceof UserMergeError) {
+      const status = error.code === "SAME_USER" ? 400 : 404;
+      return await reply.status(status).send({
+        code: error.code === "SAME_USER" ? "BAD_REQUEST" : "NOT_FOUND",
+        message: error.message,
+      });
+    }
+    return sendAdminError(reply, error);
+  }
+}
+
+/**
+ * Attach a Mikoshi `externalId` (WhatsApp identity) to an existing user so the
+ * magic-link + skill token resolve to that account — instead of provisioning
+ * spawning a second synthetic-email row. Rejects if the user already has an
+ * externalId (unless `force`) or the externalId is taken by another user.
+ */
+export async function attachExternalIdHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const input = attachExternalIdInputSchema.parse(request.body);
+
+    const user = await request.server.db.user.findUnique({
+      where: { id: input.userId },
+      select: { id: true, externalId: true },
+    });
+    if (!user) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "No user with that id" });
+    }
+    if (user.externalId && user.externalId !== input.externalId && !input.force) {
+      return await reply.status(409).send({
+        code: "CONFLICT",
+        message: `User already has externalId "${user.externalId}". Pass force:true to overwrite.`,
+      });
+    }
+
+    try {
+      await request.server.db.user.update({
+        where: { id: input.userId },
+        data: { externalId: input.externalId },
+      });
+    } catch (updateError) {
+      if (
+        updateError instanceof Prisma.PrismaClientKnownRequestError &&
+        updateError.code === "P2002"
+      ) {
+        return await reply.status(409).send({
+          code: "CONFLICT",
+          message: `externalId "${input.externalId}" is already attached to another user`,
+        });
+      }
+      throw updateError;
+    }
+
+    reply.status(200);
+    return {
+      userId: input.userId,
+      externalId: input.externalId,
+      previousExternalId: user.externalId,
+    };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+/**
+ * God Mode: mint a single-use login link for ANY user by id, so an admin can
+ * see/use exactly what that member sees without a second account. Same
+ * single-use + TTL guarantees as the externalId magic link.
+ */
+export async function adminLoginAsHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const input = adminLoginAsInputSchema.parse(request.body);
+
+    const appBaseUrl = request.server.env.BETTER_AUTH_URL;
+    let issued;
+    try {
+      issued = await issueMagicLinkForUserId({
+        db: request.server.db,
+        appBaseUrl,
+        userId: input.userId,
+        next: input.next,
+      });
+    } catch (validationError) {
+      const message = validationError instanceof Error ? validationError.message : "Invalid next";
+      return await reply.status(400).send({ code: "BAD_REQUEST", message });
+    }
+
+    if (!issued) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "No user with that id" });
+    }
+
+    reply.status(201);
+    return { url: issued.url, userId: input.userId, expiresAt: issued.expiresAt.toISOString() };
   } catch (error) {
     return sendAdminError(reply, error);
   }

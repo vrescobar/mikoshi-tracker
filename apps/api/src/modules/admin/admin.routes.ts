@@ -25,12 +25,15 @@ import {
 } from "@mikoshi-tracker/contracts/admin";
 
 import {
+  adminLoginAsHandler,
+  attachExternalIdHandler,
   bulkEnrollAdminHandler,
   consumeMagicLinkHandler,
   createCircleAdminHandler,
   enrollMemberByExternalIdHandler,
   getCircleAdminHandler,
   issueMagicLinkHandler,
+  mergeUsersHandler,
   provisionUserHandler,
   resetProvisionedTokenHandler,
   updateCircleAdminHandler,
@@ -325,6 +328,10 @@ export async function registerAdminRoutes(app: FastifyInstance) {
   app.patch("/api/admin/circles/:circleId", updateCircleAdminHandler);
   app.post("/api/admin/circles/:circleId/members/bulk", bulkEnrollAdminHandler);
   app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
+  // User consolidation + God Mode (admin-key gated).
+  app.post("/api/admin/users/merge", mergeUsersHandler);
+  app.post("/api/admin/users/attach-external-id", attachExternalIdHandler);
+  app.post("/api/admin/login-as", adminLoginAsHandler);
   // Magic-link issuance is admin-gated (creates a single-use login URL).
   app.post("/api/admin/issue-magic-link", issueMagicLinkHandler);
   // Consumption is public — the URL token IS the credential. Single-use

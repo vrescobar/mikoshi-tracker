@@ -158,3 +158,76 @@ export type ResetProvisionedTokenResponse = z.infer<typeof resetProvisionedToken
 export type ServiceUnavailableError = z.infer<typeof serviceUnavailableErrorSchema>;
 export type EnrollMemberInput = z.infer<typeof enrollMemberInputSchema>;
 export type EnrollMemberResponse = z.infer<typeof enrollMemberResponseSchema>;
+
+// ─── User consolidation (merge / link) + impersonation ──────────────────────
+// One human can end up with two User rows: a web account (real email,
+// externalId = null) and a provisioned account (synthetic email, externalId
+// set by Mikoshi). These primitives consolidate them and let an admin act as
+// any user (God Mode), so "admin vs member" is one account + a flag, not two
+// fighting records.
+
+export const mergeUsersInputSchema = z.object({
+  /** The duplicate row to fold in and delete. */
+  sourceUserId: nonEmptyString,
+  /** The surviving canonical row (e.g. the real-email account). */
+  targetUserId: nonEmptyString,
+});
+
+export const mergeUsersResponseSchema = z.object({
+  targetUserId: nonEmptyString,
+  /** externalId moved from source → target, if the source had one and target didn't. */
+  movedExternalId: z.string().nullable(),
+  /** true if the merged target ends up admin (either side was admin). */
+  targetIsAdmin: z.boolean(),
+  reparented: z.object({
+    entries: z.number().int(),
+    entryEvents: z.number().int(),
+    eventMutations: z.number().int(),
+    attachments: z.number().int(),
+    circlesOwned: z.number().int(),
+    circleMemberships: z.number().int(),
+    circleMembershipsDeduped: z.number().int(),
+    leaderboardSnapshots: z.number().int(),
+    leaderboardSnapshotsDeduped: z.number().int(),
+    sessions: z.number().int(),
+    accounts: z.number().int(),
+    magicLinks: z.number().int(),
+    apiTokenMoved: z.boolean(),
+  }),
+});
+
+export const attachExternalIdInputSchema = z.object({
+  userId: nonEmptyString,
+  externalId: nonEmptyString,
+  /** Overwrite an existing externalId on the target (default: reject if set). */
+  force: z.boolean().optional(),
+});
+
+export const attachExternalIdResponseSchema = z.object({
+  userId: nonEmptyString,
+  externalId: nonEmptyString,
+  previousExternalId: z.string().nullable(),
+});
+
+export const adminLoginAsInputSchema = z.object({
+  /** Any user id — admin mints a single-use login link to act as them. */
+  userId: nonEmptyString,
+  next: z
+    .string()
+    .startsWith("/", "next must be a relative app path starting with '/'")
+    .max(512)
+    .optional(),
+});
+
+export const adminLoginAsResponseSchema = z.object({
+  url: nonEmptyString,
+  userId: nonEmptyString,
+  expiresAt: nonEmptyString, // ISO timestamp
+});
+
+export type MergeUsersInput = z.infer<typeof mergeUsersInputSchema>;
+export type MergeUsersResponse = z.infer<typeof mergeUsersResponseSchema>;
+export type AttachExternalIdInput = z.infer<typeof attachExternalIdInputSchema>;
+export type AttachExternalIdResponse = z.infer<typeof attachExternalIdResponseSchema>;
+export type AdminLoginAsInput = z.infer<typeof adminLoginAsInputSchema>;
+export type AdminLoginAsResponse = z.infer<typeof adminLoginAsResponseSchema>;
