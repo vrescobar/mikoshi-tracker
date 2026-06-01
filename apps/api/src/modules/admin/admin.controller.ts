@@ -102,10 +102,20 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
 
     const existing = await request.server.db.user.findUnique({
       where: { externalId: input.externalId },
-      select: { id: true },
+      select: { id: true, name: true },
     });
 
     if (existing) {
+      // Self-heal: earlier provisions that ran without a name left `name`
+      // equal to the externalId, which surfaces as a raw UUID/LID in the UI
+      // (violates the "names always readable" rule). If we now have a real
+      // name and the stored one is still just the externalId, backfill it.
+      if (input.name && input.name !== input.externalId && existing.name === input.externalId) {
+        await request.server.db.user.update({
+          where: { id: existing.id },
+          data: { name: input.name },
+        });
+      }
       reply.status(200);
       return { userId: existing.id, alreadyExists: true as const };
     }

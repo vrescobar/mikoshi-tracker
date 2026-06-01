@@ -75,6 +75,57 @@ describe("admin provisioning routes", () => {
       expect(secondBody).not.toHaveProperty("personalToken");
     });
 
+    it("backfills the name on a repeated call when the stored name is still the externalId", async () => {
+      context = await createTestContext();
+
+      // First provision WITHOUT a name → name defaults to the externalId.
+      const first = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-backfill-1" },
+      });
+      expect(first.statusCode).toBe(201);
+      const userId = (first.json() as { userId: string }).userId;
+      const before = await context.app.db.user.findUnique({ where: { id: userId } });
+      expect(before?.name).toBe("ext-backfill-1");
+
+      // Re-provision WITH a real name → self-heals the placeholder.
+      const second = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-backfill-1", name: "Manuel" },
+      });
+      expect(second.statusCode).toBe(200);
+      expect(second.json()).toMatchObject({ userId, alreadyExists: true });
+      const after = await context.app.db.user.findUnique({ where: { id: userId } });
+      expect(after?.name).toBe("Manuel");
+    });
+
+    it("does not clobber an existing real name on a repeated call", async () => {
+      context = await createTestContext();
+
+      const first = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-keepname-1", name: "Alice" },
+      });
+      expect(first.statusCode).toBe(201);
+      const userId = (first.json() as { userId: string }).userId;
+
+      const second = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/provision-user",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-keepname-1", name: "Bob" },
+      });
+      expect(second.statusCode).toBe(200);
+      const after = await context.app.db.user.findUnique({ where: { id: userId } });
+      expect(after?.name).toBe("Alice");
+    });
+
     it("returns 401 when admin key is missing", async () => {
       context = await createTestContext();
 
