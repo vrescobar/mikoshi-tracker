@@ -12,8 +12,15 @@ import {
 } from "../../auth/magic-link";
 import { mergeUsers, UserMergeError } from "./user-merge";
 import { normalizeUserTimeZone } from "../../shared/timezone";
+import { createHabit } from "../habits/habit.service";
+import {
+  CircleHabitAlreadySharedError,
+  CircleHabitNotFoundError,
+  shareHabit,
+} from "../circles/circle.service";
 import {
   adminLoginAsInputSchema,
+  assignHabitInputSchema,
   attachExternalIdInputSchema,
   bulkEnrollInputSchema,
   consumeMagicLinkInputSchema,
@@ -424,6 +431,93 @@ export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: Fas
     }
 
     return { added, alreadyMembers, notProvisioned };
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
+/**
+ * Assign a habit to a circle member on the operator's behalf (admin key).
+ *
+ * Two modes (exactly one of `habit` / `habitId` in the body):
+ *  - `habit`:   create a new habit as the user, then share it into the circle.
+ *  - `habitId`: share an existing habit (owned by the user) into the circle.
+ *
+ * Reuses the same business logic as the user-facing flow (`createHabit` +
+ * `shareHabit`), so validation, config serialization and ownership checks are
+ * identical. The share step is idempotent: a pre-existing link returns
+ * `alreadyShared: true` instead of erroring.
+ */
+export async function assignHabitAdminHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const { circleId } = request.params as { circleId: string };
+    const input = assignHabitInputSchema.parse(request.body);
+
+    const circle = await request.server.db.circle.findUnique({
+      where: { id: circleId },
+      select: { id: true },
+    });
+    if (!circle) {
+      return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
+    }
+
+    const user = await findUserByExternalId(request.server.db, input.externalId);
+    if (!user) {
+      return await reply.status(404).send({
+        code: "NOT_FOUND",
+        message: "No provisioned user found with that externalId",
+      });
+    }
+
+    // Verify membership up front so we never create an orphan habit for a
+    // non-member (shareHabit also checks, but only after the habit exists).
+    const membership = await findCircleMembershipByUserId(request.server.db, {
+      circleId,
+      userId: user.id,
+    });
+    if (!membership) {
+      return await reply.status(400).send({
+        code: "NOT_A_MEMBER",
+        message: "User is not a member of this circle — enrol them first",
+      });
+    }
+
+    // Resolve the habit: create a new one as the user, or use the supplied id.
+    let habitId: string;
+    let created: boolean;
+    if (input.habit) {
+      const item = await createHabit(
+        { db: request.server.db },
+        { userId: user.id, input: input.habit },
+      );
+      habitId = item.id;
+      created = true;
+    } else {
+      habitId = input.habitId!;
+      created = false;
+    }
+
+    // Share into the circle (idempotent on the (circleId, entryId) link).
+    let alreadyShared = false;
+    try {
+      await shareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+    } catch (shareError) {
+      if (shareError instanceof CircleHabitAlreadySharedError) {
+        alreadyShared = true;
+      } else if (shareError instanceof CircleHabitNotFoundError) {
+        // Only reachable in habitId mode: the habit doesn't exist or isn't the user's.
+        return await reply.status(404).send({
+          code: "NOT_FOUND",
+          message: "No habit with that id owned by the user",
+        });
+      } else {
+        throw shareError;
+      }
+    }
+
+    reply.status(created ? 201 : 200);
+    return { userId: user.id, habitId, created, shared: true, alreadyShared };
   } catch (error) {
     return sendAdminError(reply, error);
   }

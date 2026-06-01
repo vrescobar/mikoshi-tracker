@@ -9,6 +9,8 @@ import {
 import {
   adminCircleSchema,
   adminCirclePathParamsSchema,
+  assignHabitInputSchema,
+  assignHabitResponseSchema,
   bulkEnrollInputSchema,
   bulkEnrollResponseSchema,
   createCircleInputSchema,
@@ -26,6 +28,7 @@ import {
 
 import {
   adminLoginAsHandler,
+  assignHabitAdminHandler,
   attachExternalIdHandler,
   bulkEnrollAdminHandler,
   consumeMagicLinkHandler,
@@ -318,6 +321,25 @@ export const adminApiRouteDefinitions: PublicApiRouteDefinition[] = [
       503: serviceUnavailableResponse,
     },
   },
+  {
+    method: "POST",
+    path: "/api/admin/circles/:circleId/assign-habit",
+    operationId: "assignHabitToCircleMember",
+    summary: "Assign a habit to a circle member",
+    description:
+      "Assigns a habit to a member on the operator's behalf: either creates a new habit as the user and shares it into the circle (`habit`), or shares an existing habit owned by the user (`habitId`). The share step is idempotent. Requires the admin key.",
+    tags: ["Admin"],
+    security: [{ AdminKeyAuth: [] }],
+    request: { params: adminCirclePathParamsSchema, body: assignHabitInputSchema },
+    responses: {
+      200: { description: "Habit shared into the circle.", schema: assignHabitResponseSchema },
+      201: { description: "Habit created and shared into the circle.", schema: assignHabitResponseSchema },
+      400: { description: "Invalid payload or user is not a member.", schema: badRequestErrorSchema },
+      401: adminUnauthorizedResponse,
+      404: commonNotFoundResponse,
+      503: serviceUnavailableResponse,
+    },
+  },
 ];
 
 export async function registerAdminRoutes(app: FastifyInstance) {
@@ -328,6 +350,7 @@ export async function registerAdminRoutes(app: FastifyInstance) {
   app.patch("/api/admin/circles/:circleId", updateCircleAdminHandler);
   app.post("/api/admin/circles/:circleId/members/bulk", bulkEnrollAdminHandler);
   app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
+  app.post("/api/admin/circles/:circleId/assign-habit", assignHabitAdminHandler);
   // User consolidation + God Mode (admin-key gated).
   app.post("/api/admin/users/merge", mergeUsersHandler);
   app.post("/api/admin/users/attach-external-id", attachExternalIdHandler);

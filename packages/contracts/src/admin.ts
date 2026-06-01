@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { createHabitInputSchema } from "./habits";
+
 const nonEmptyString = z.string().trim().min(1);
 
 export const provisionUserInputSchema = z.object({
@@ -107,6 +109,37 @@ export const bulkEnrollResponseSchema = z.object({
   notProvisioned: z.array(nonEmptyString),
 });
 
+// ─── Admin: assign a habit to a member inside a circle ──────────────────────
+//
+// Habits are personal `Entry` rows shared into a circle via `CircleEntryShare`,
+// normally created with the user's own personal token. This admin primitive
+// acts on the user's behalf (admin key) so an operator can rescue/seed habits:
+// either create a new habit and share it, or share an existing one. Exactly one
+// of `habit` / `habitId` must be provided.
+export const assignHabitInputSchema = z
+  .object({
+    /** Mikoshi identity id of the member to assign the habit to. */
+    externalId: nonEmptyString,
+    /** Create this habit as the user, then share it into the circle. */
+    habit: createHabitInputSchema.optional(),
+    /** Or share an existing habit (by id, owned by the user) into the circle. */
+    habitId: nonEmptyString.optional(),
+  })
+  .refine((v) => (v.habit === undefined) !== (v.habitId === undefined), {
+    message: "Provide exactly one of `habit` or `habitId`",
+  });
+
+export const assignHabitResponseSchema = z.object({
+  userId: nonEmptyString,
+  habitId: nonEmptyString,
+  /** true if a new habit was created; false if an existing habitId was shared. */
+  created: z.boolean(),
+  /** true if the habit is now linked to the circle (whether new or pre-existing). */
+  shared: z.boolean(),
+  /** true if the share already existed (idempotent no-op on the link). */
+  alreadyShared: z.boolean(),
+});
+
 export type CircleStatus = z.infer<typeof circleStatusSchema>;
 export type AdminCircle = z.infer<typeof adminCircleSchema>;
 export type CreateCircleInput = z.infer<typeof createCircleInputSchema>;
@@ -114,6 +147,8 @@ export type CreateCircleResponse = z.infer<typeof createCircleResponseSchema>;
 export type UpdateCircleInput = z.infer<typeof updateCircleInputSchema>;
 export type BulkEnrollInput = z.infer<typeof bulkEnrollInputSchema>;
 export type BulkEnrollResponse = z.infer<typeof bulkEnrollResponseSchema>;
+export type AssignHabitInput = z.infer<typeof assignHabitInputSchema>;
+export type AssignHabitResponse = z.infer<typeof assignHabitResponseSchema>;
 
 // ─── Magic-link issuance ────────────────────────────────────────────────────
 
