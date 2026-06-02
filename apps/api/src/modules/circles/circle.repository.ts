@@ -237,6 +237,32 @@ export async function listCircleHabitSharesByUser(
   return shares.map((share) => ({ habit: { id: share.entry.id, name: share.entry.name } }));
 }
 
+/**
+ * Map each given entry (habit) id to the circles it's shared into, with the
+ * circle name. Batched in a single query; returns an empty map for empty input
+ * (avoids an `IN ()`). Ownership is the caller's responsibility — pass only
+ * entry ids the user already owns.
+ */
+export async function findCirclesForEntries(
+  db: PrismaClient,
+  entryIds: string[],
+): Promise<Map<string, Array<{ circleId: string; name: string }>>> {
+  const result = new Map<string, Array<{ circleId: string; name: string }>>();
+  if (entryIds.length === 0) return result;
+
+  const shares = await db.circleEntryShare.findMany({
+    where: { entryId: { in: entryIds } },
+    include: { circle: { select: { id: true, name: true } } },
+  });
+
+  for (const share of shares) {
+    const list = result.get(share.entryId) ?? [];
+    list.push({ circleId: share.circle.id, name: share.circle.name });
+    result.set(share.entryId, list);
+  }
+  return result;
+}
+
 export async function findCircleHabitShare(
   db: PrismaClient,
   params: { circleId: string; habitId: string },

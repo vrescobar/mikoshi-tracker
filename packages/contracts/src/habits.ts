@@ -119,6 +119,11 @@ export const habitRecordSchema = z.object({
   weekdays: z.array(weekdaySchema),
   createdAt: z.date(),
   updatedAt: z.date(),
+  // Circles this habit is shared into (read-only enrichment). Optional/additive:
+  // consumers can warn that archiving the habit removes it from these contests.
+  sharedInCircles: z
+    .array(z.object({ circleId: nonEmptyString, name: nonEmptyString }))
+    .optional(),
 });
 
 export const habitDetailStatsSchema = z.object({

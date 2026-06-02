@@ -32,6 +32,7 @@ import {
   setHabitActiveState,
   updateHabitRecord,
 } from "./habit.repository";
+import { findCirclesForEntries } from "../circles/circle.repository";
 import {
   normalizeCreateHabitInput,
   parseCreateHabitInput,
@@ -120,6 +121,27 @@ function serializeHabit(record: PersistedHabitRecord): HabitRecord {
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
+}
+
+/**
+ * Attach `sharedInCircles` (read-only enrichment) to already-serialized habits
+ * in a single batched query. The field is only set when the habit is actually
+ * shared into ≥1 circle, keeping the response clean (the contract field is
+ * optional). The input habits must belong to the requesting user.
+ */
+async function attachSharedCircles(
+  db: PrismaClient,
+  habits: HabitRecord[],
+): Promise<HabitRecord[]> {
+  if (habits.length === 0) return habits;
+  const circlesByHabit = await findCirclesForEntries(
+    db,
+    habits.map((habit) => habit.id),
+  );
+  return habits.map((habit) => {
+    const circles = circlesByHabit.get(habit.id);
+    return circles && circles.length > 0 ? { ...habit, sharedInCircles: circles } : habit;
+  });
 }
 
 type HabitServiceDependencies = {
@@ -467,7 +489,10 @@ export async function listHabits(
     filters,
   });
 
-  return records.map((record) => serializeHabit(record));
+  return attachSharedCircles(
+    dependencies.db,
+    records.map((record) => serializeHabit(record)),
+  );
 }
 
 export async function getHabitDetail(
@@ -508,8 +533,10 @@ export async function getHabitDetail(
 
   const computedHistory = buildComputedHistory(record, day.todayKey);
 
+  const [habit] = await attachSharedCircles(dependencies.db, [serializeHabit(record)]);
+
   return {
-    habit: serializeHabit(record),
+    habit: habit!,
     stats: buildStats(computedHistory),
     recentHistory: computedHistory.filter(isSettledRow).reverse().slice(0, 10),
     trends: {
