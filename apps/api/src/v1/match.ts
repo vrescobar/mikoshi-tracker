@@ -32,7 +32,7 @@ export interface V1Context<Input = unknown, Query = unknown, Params = unknown> {
   params: Params;
 }
 
-export type V1Handler = (ctx: V1Context) => Promise<unknown> | unknown;
+export type V1Handler = (ctx: V1Context) => unknown;
 
 export interface V1RouteMeta {
   method: "GET" | "POST";

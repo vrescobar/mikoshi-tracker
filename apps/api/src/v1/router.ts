@@ -36,8 +36,8 @@ async function resolveAuth(
 
 async function runRoute(deps: ApiV1Deps, route: V1RouteMeta, request: FastifyRequest, reply: FastifyReply) {
   try {
-    const params = parseWith(route.paramsSchema, request.params) ?? (request.params as Record<string, unknown>);
-    const principal = await resolveAuth(route, request, params as Record<string, unknown>);
+    const params = (parseWith(route.paramsSchema, request.params) ?? request.params) as Record<string, unknown>;
+    const principal = await resolveAuth(route, request, params);
     const input = parseWith(route.inputSchema, request.body ?? {});
     const query = parseWith(route.querySchema, request.query ?? {});
 
