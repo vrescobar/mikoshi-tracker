@@ -8,6 +8,8 @@ import { todayV1Routes } from "./resources/today";
 import { aggregationsV1Routes } from "./resources/aggregations";
 import { statsV1Routes } from "./resources/stats";
 import { circlesV1Routes } from "./resources/circles";
+import { attachmentsV1Routes } from "./resources/attachments";
+import { skillsV1Routes } from "./resources/skills";
 import { adminV1Routes } from "./resources/admin";
 import type { ApiV1Deps, V1RouteMeta } from "./match";
 
@@ -28,6 +30,8 @@ export function buildV1RouteTable(deps: ApiV1Deps): V1RouteMeta[] {
     ...aggregationsV1Routes(deps),
     ...statsV1Routes(deps),
     ...circlesV1Routes(deps),
+    ...attachmentsV1Routes(deps),
+    ...skillsV1Routes(deps),
     ...adminV1Routes(deps),
   ];
 }
