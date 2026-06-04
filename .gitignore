@@ -44,10 +44,14 @@ skills-lock.json
 
 *.tsbuildinfo
 
-# Ralphloop runtime state
+# Ralphloop runtime state (automated-loop working files, not source)
 .ralphloop/state.json
 .ralphloop/state.json.tmp
 .ralphloop/lock
 .ralphloop/metrics.jsonl
 .ralphloop/logs/
 .ralphloop/archive/
+.ralphloop/config.yaml
+.ralphloop/progress.md
+.ralphloop/prompt.md
+.ralphloop/tasks.md

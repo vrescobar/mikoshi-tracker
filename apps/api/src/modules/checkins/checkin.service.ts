@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import { NothingToUndoError } from "../../shared/errors";
 import {
   serializeContractFrequencyType,
   serializeContractHabitKind,
@@ -63,11 +64,7 @@ export class TodayActionUnavailableError extends Error {
   }
 }
 
-export class NothingToUndoError extends Error {
-  constructor() {
-    super("There is no successful today action to undo");
-  }
-}
+export { NothingToUndoError };
 
 function serializeHabit(habit: PersistedCheckinHabit) {
   return {
@@ -289,7 +286,7 @@ export async function undoHabitForToday(dependencies: CheckinDependencies, param
   });
 
   if (!latestMutation) {
-    throw new NothingToUndoError();
+    throw new NothingToUndoError("There is no successful today action to undo");
   }
 
   const nextState = {
