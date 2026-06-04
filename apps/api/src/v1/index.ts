@@ -5,6 +5,7 @@ import { registerV1Routes } from "./router";
 import { entriesV1Routes, entryTypesV1Routes } from "./resources/entries";
 import { eventsV1Routes } from "./resources/events";
 import { todayV1Routes } from "./resources/today";
+import { checkinsV1Routes } from "./resources/checkins";
 import { aggregationsV1Routes } from "./resources/aggregations";
 import { statsV1Routes } from "./resources/stats";
 import { circlesV1Routes } from "./resources/circles";
@@ -27,6 +28,7 @@ export function buildV1RouteTable(deps: ApiV1Deps): V1RouteMeta[] {
     ...entriesV1Routes(deps),
     ...eventsV1Routes(deps),
     ...todayV1Routes(deps),
+    ...checkinsV1Routes(deps),
     ...aggregationsV1Routes(deps),
     ...statsV1Routes(deps),
     ...circlesV1Routes(deps),
