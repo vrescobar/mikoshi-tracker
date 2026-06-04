@@ -2,9 +2,11 @@ import { useState } from "react";
 
 import { api, type AdminEvent } from "../lib/api";
 import { useAsync } from "../lib/useAsync";
+import { navigate } from "../lib/router";
 import { DataTable, Pager, type Column } from "../components/DataTable";
 import { Pill, fmtDateTime } from "../components/ui";
 import { EventDrawer } from "./UserDetail";
+import { prefetchAllUsers, userLabel } from "../lib/userCache";
 
 const LIMIT = 50;
 
@@ -14,6 +16,8 @@ export function Events() {
   const [to, setTo] = useState("");
   const [offset, setOffset] = useState(0);
   const [open, setOpen] = useState<AdminEvent | null>(null);
+  const users = useAsync(() => prefetchAllUsers(), []);
+  void users.data; // re-render the table once names resolve
   const list = useAsync(
     () =>
       api.admin.listEvents({
@@ -29,7 +33,18 @@ export function Events() {
   const cols: Column<AdminEvent>[] = [
     { header: "Date", cell: (e) => <span className="strong">{e.dateKey}</span> },
     { header: "Occurred", cell: (e) => <span className="dim">{fmtDateTime(e.occurredAt)}</span> },
-    { header: "User", cell: (e) => <span className="mono">{e.userId.slice(0, 12)}</span> },
+    {
+      header: "User",
+      cell: (e) => (
+        <button
+          className="btn link"
+          style={{ padding: 0 }}
+          onClick={() => navigate(`users/${encodeURIComponent(e.userId)}`)}
+        >
+          {userLabel(e.userId)}
+        </button>
+      ),
+    },
     { header: "Entry", cell: (e) => <span className="mono">{e.entryId.slice(0, 12)}</span> },
     {
       header: "Completed",

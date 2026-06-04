@@ -5,6 +5,7 @@ import { useAsync, errorMessage } from "../lib/useAsync";
 import { navigate } from "../lib/router";
 import { DataTable, Pager, SearchBox, type Column } from "../components/DataTable";
 import { Pill, fmtDate, useToast } from "../components/ui";
+import { prefetchAllUsers, userLabel } from "../lib/userCache";
 
 const LIMIT = 50;
 
@@ -14,10 +15,13 @@ export function Entries() {
   const [slug, setSlug] = useState("");
   const [offset, setOffset] = useState(0);
   const [busy, setBusy] = useState<string | null>(null);
+  const users = useAsync(() => prefetchAllUsers(), []);
   const list = useAsync(
     () => api.admin.listEntries({ q: q || undefined, entryTypeSlug: slug || undefined, limit: LIMIT, offset }),
     [q, slug, offset],
   );
+  // `users.data` is referenced so the table re-renders once names resolve.
+  void users.data;
 
   const archiveToggle = async (e: AdminEntry) => {
     setBusy(e.id);
@@ -37,7 +41,18 @@ export function Entries() {
   const cols: Column<AdminEntry>[] = [
     { header: "Name", cell: (e) => <span className="strong">{e.name}</span> },
     { header: "Type", cell: (e) => <span className="tag">{e.entryTypeSlug}</span> },
-    { header: "Owner", cell: (e) => <span className="mono">{e.userId.slice(0, 12)}</span> },
+    {
+      header: "Owner",
+      cell: (e) => (
+        <button
+          className="btn link"
+          style={{ padding: 0 }}
+          onClick={() => navigate(`users/${encodeURIComponent(e.userId)}`)}
+        >
+          {userLabel(e.userId)}
+        </button>
+      ),
+    },
     { header: "Status", cell: (e) => (e.isActive ? <Pill kind="active">active</Pill> : <Pill kind="archived">archived</Pill>) },
     { header: "Created", cell: (e) => <span className="dim">{fmtDate(e.createdAt)}</span> },
     {
@@ -45,9 +60,6 @@ export function Entries() {
       align: "right",
       cell: (e) => (
         <div className="row-actions">
-          <button className="btn ghost sm" onClick={() => navigate(`users/${encodeURIComponent(e.userId)}`)}>
-            Owner
-          </button>
           <button className="btn ghost sm" disabled={busy === e.id} onClick={() => void archiveToggle(e)}>
             {e.isActive ? "Archive" : "Restore"}
           </button>

@@ -22,3 +22,16 @@ export async function resolveUser(id: string): Promise<AdminUser | null> {
   cacheUsers(items);
   return cache.get(id) ?? null;
 }
+
+/** Fetch a page of users (cached) so id→name lookups resolve in list views. */
+export async function prefetchAllUsers(): Promise<AdminUser[]> {
+  const { items } = await adminApi.listUsers({ limit: 500 });
+  cacheUsers(items);
+  return items;
+}
+
+/** Human label for a user id: cached display name, else a short id. */
+export function userLabel(id: string): string {
+  const u = cache.get(id);
+  return u?.name || u?.email || id.slice(0, 12);
+}
