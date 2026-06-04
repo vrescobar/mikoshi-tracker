@@ -54,6 +54,27 @@ describe("v1 events RPC flow", () => {
     expect(body.data.mutations[0]?.source).toBe("AI");
   });
 
+  it("records onBehalfOfCircleId for an AI-acting-for-a-circle event", async () => {
+    const entryId = await createEntry(ctx.app, cookie);
+    const created = await ctx.app.inject({
+      method: "POST",
+      url: "/api/v1/events/create",
+      headers: { cookie },
+      payload: {
+        entryId,
+        occurredAt: "2026-05-23T08:00:00.000Z",
+        payload: { completed: true },
+        source: "ai",
+        onBehalfOfCircleId: "circle_demo_123",
+      },
+    });
+    const body = created.json() as Envelope<{ mutations: { source: string; onBehalfOfCircleId: string | null }[] }>;
+    expect(body.ok).toBe(true);
+    if (!body.ok) throw new Error("expected success");
+    expect(body.data.mutations[0]?.source).toBe("AI");
+    expect(body.data.mutations[0]?.onBehalfOfCircleId).toBe("circle_demo_123");
+  });
+
   it("lists, gets, updates, undoes, and deletes an event", async () => {
     const entryId = await createEntry(ctx.app, cookie);
     const created = await ctx.app.inject({

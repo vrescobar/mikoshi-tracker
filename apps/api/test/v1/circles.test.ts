@@ -121,6 +121,14 @@ describe("v1 circles RPC flow", () => {
     );
     expect(data.completed).toBe(true);
 
+    // B7a: the mutation records WHICH circle it was made on behalf of.
+    const mutation = await ctx.app.db.eventMutation.findFirst({
+      where: { onBehalfOfCircleId: circleId, type: { not: "UNDO" } },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(mutation?.source).toBe("CIRCLE");
+    expect(mutation?.onBehalfOfCircleId).toBe(circleId);
+
     // Now the leaderboard reflects the completion.
     const lb = unwrap<{ leaderboard: { userId: string; completedTodayCount: number }[] }>(
       await ctx.app.inject({

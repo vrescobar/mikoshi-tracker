@@ -23,6 +23,8 @@ export const eventMutationRecordSchema = z.object({
   dateKey: isoDateSchema,
   type: eventMutationTypeSchema,
   source: eventSourceSchema,
+  /** Circle this mutation was made on behalf of (circle-token / AI-for-circle); null otherwise. */
+  onBehalfOfCircleId: z.string().nullable(),
   note: z.string().nullable(),
   previousPayload: z.unknown(),
   nextPayload: z.unknown(),

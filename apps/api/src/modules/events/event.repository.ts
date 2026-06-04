@@ -157,6 +157,7 @@ export async function createMutationRecord(
     type: string;
     source: string;
     note: string | null;
+    onBehalfOfCircleId?: string | null;
     previousPayload: string | null;
     nextPayload: string | null;
   },
@@ -170,6 +171,7 @@ export async function createMutationRecord(
       type: params.type,
       source: params.source,
       note: params.note,
+      onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
       previousPayload: params.previousPayload,
       nextPayload: params.nextPayload,
     },

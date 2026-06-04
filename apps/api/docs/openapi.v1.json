@@ -314,6 +314,16 @@
                     "CIRCLE"
                   ]
                 },
+                "onBehalfOfCircleId": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
                 "note": {
                   "anyOf": [
                     {
@@ -426,6 +436,7 @@
                 "dateKey",
                 "type",
                 "source",
+                "onBehalfOfCircleId",
                 "note",
                 "previousPayload",
                 "nextPayload",
@@ -3586,6 +3597,16 @@
                                   "CIRCLE"
                                 ]
                               },
+                              "onBehalfOfCircleId": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "note": {
                                 "anyOf": [
                                   {
@@ -3698,6 +3719,7 @@
                               "dateKey",
                               "type",
                               "source",
+                              "onBehalfOfCircleId",
                               "note",
                               "previousPayload",
                               "nextPayload",
@@ -3891,6 +3913,10 @@
                       "circle"
                     ]
                   },
+                  "onBehalfOfCircleId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
                   "note": {
                     "anyOf": [
                       {
@@ -4030,6 +4056,16 @@
                                   "CIRCLE"
                                 ]
                               },
+                              "onBehalfOfCircleId": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "note": {
                                 "anyOf": [
                                   {
@@ -4142,6 +4178,7 @@
                               "dateKey",
                               "type",
                               "source",
+                              "onBehalfOfCircleId",
                               "note",
                               "previousPayload",
                               "nextPayload",
@@ -4450,6 +4487,16 @@
                                   "CIRCLE"
                                 ]
                               },
+                              "onBehalfOfCircleId": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "note": {
                                 "anyOf": [
                                   {
@@ -4562,6 +4609,7 @@
                               "dateKey",
                               "type",
                               "source",
+                              "onBehalfOfCircleId",
                               "note",
                               "previousPayload",
                               "nextPayload",
@@ -4955,6 +5003,16 @@
                                   "CIRCLE"
                                 ]
                               },
+                              "onBehalfOfCircleId": {
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
                               "note": {
                                 "anyOf": [
                                   {
@@ -5067,6 +5125,7 @@
                               "dateKey",
                               "type",
                               "source",
+                              "onBehalfOfCircleId",
                               "note",
                               "previousPayload",
                               "nextPayload",

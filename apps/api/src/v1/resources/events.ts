@@ -54,6 +54,8 @@ const eventsCreateInputSchema = z.object({
   payload: z.unknown(),
   attachmentIds: z.array(nonEmpty).optional(),
   source: sourceSchema.default("web"),
+  /** Circle scope, e.g. an AI logging an event on behalf of a circle (source "ai"). */
+  onBehalfOfCircleId: nonEmpty.optional(),
   note: z.string().trim().min(1).nullable().optional(),
 });
 
@@ -118,6 +120,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           payload: input.payload,
           source: sourceToLegacy(input.source),
           note: input.note,
+          onBehalfOfCircleId: input.onBehalfOfCircleId,
           attachmentIds: input.attachmentIds ?? [],
         });
       },

@@ -115,6 +115,7 @@ function serializeMutation(m: EventMutationWithAttachments): EventMutationRecord
     dateKey: m.dateKey,
     type: m.type as EventMutationRecord["type"],
     source: m.source as EventMutationRecord["source"],
+    onBehalfOfCircleId: m.onBehalfOfCircleId ?? null,
     note: m.note ?? null,
     previousPayload: m.previousPayload ? (JSON.parse(m.previousPayload) as unknown) : null,
     nextPayload: m.nextPayload ? (JSON.parse(m.nextPayload) as unknown) : null,
@@ -199,6 +200,7 @@ export async function persistEvent(
     payload: unknown;
     source: string;
     note: string | null | undefined;
+    onBehalfOfCircleId?: string | null;
     attachmentIds: string[];
   },
 ): Promise<EntryEventDetail> {
@@ -265,6 +267,7 @@ export async function persistEvent(
     type: mutationType,
     source: params.source,
     note: params.note ?? null,
+    onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
     previousPayload,
     nextPayload: payloadStr,
   });

@@ -290,6 +290,10 @@ model EventMutation {
   note            String?
   previousPayload String?
   nextPayload     String?
+  /// Circle this mutation was made on behalf of, when a circle token (or an AI
+  /// acting for a circle) wrote it. Null for personal/web/standalone-AI writes.
+  /// Orthogonal to `source`: source = who (actor), this = for which circle (scope).
+  onBehalfOfCircleId String?
   createdAt       DateTime     @default(now())
   entry           Entry        @relation(fields: [entryId], references: [id], onDelete: Cascade)
   event           EntryEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
@@ -297,6 +301,7 @@ model EventMutation {
 
   @@index([entryId, dateKey, createdAt])
   @@index([eventId, createdAt])
+  @@index([onBehalfOfCircleId])
 }
 
 model CircleEntryShare {
