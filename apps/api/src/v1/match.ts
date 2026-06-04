@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import type { PrismaClient } from "../generated/prisma/client";
+import type { AdminOperator } from "../auth/admin-key";
 import type { AuthenticatedUser } from "../auth/session";
 
 export type V1Auth = "bearer" | "admin-key" | "circle" | "public";
@@ -18,7 +19,7 @@ export interface ApiV1Deps {
 /** Auth principal resolved by the pipeline before the handler runs. */
 export type V1Principal =
   | { kind: "user"; user: AuthenticatedUser }
-  | { kind: "admin" }
+  | { kind: "admin"; operator: AdminOperator }
   | { kind: "circle"; circleId: string }
   | { kind: "public" };
 

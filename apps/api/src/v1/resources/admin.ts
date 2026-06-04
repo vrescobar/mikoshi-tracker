@@ -17,10 +17,12 @@ import {
 } from "../../modules/circles/circle-snapshot.service";
 import { bulkAssignHabit } from "../../modules/admin/admin-bulk.service";
 import { ensureUserToken, readUserTokenMeta } from "../../modules/admin/admin-token.service";
+import { listAdminAuditLog, recordAdminAction } from "../../modules/admin/admin-audit.service";
+import { createAdminToken, listAdminTokens, revokeAdminToken } from "../../auth/admin-token";
 import { createHabitInputSchema } from "@mikoshi-tracker/contracts/habits";
 import { getRequestTimestamp } from "../../shared/controller-helpers";
 import { registerSchema } from "../apiMeta";
-import { envelope, envelopeList, envelopeOne } from "../context";
+import { envelope, envelopeList, requireAdminOperator } from "../context";
 import type { ApiV1Deps, V1RouteMeta } from "../match";
 
 const nonEmpty = z.string().trim().min(1);
@@ -113,6 +115,10 @@ const bulkAssignInput = z.object({
   habit: createHabitInputSchema,
 });
 
+const adminTokenMintInput = z.object({ label: nonEmpty });
+const adminTokenRevokeInput = z.object({ tokenId: nonEmpty });
+const auditLogQuery = paginationQuerySchema.extend({ action: z.string().optional() });
+
 export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
   return [
     {
@@ -189,13 +195,21 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       successStatus: 201,
       inputSchema: snapshotCreateInput,
       outputSchema: envelope(z.object({ circleId: nonEmpty, season: z.string(), count: z.number().int() })),
-      handler: (ctx) => {
+      handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof snapshotCreateInput>;
-        return createCircleLeaderboardSnapshot(ctx.deps, {
+        const result = await createCircleLeaderboardSnapshot(ctx.deps, {
           circleId: input.circleId,
           season: input.season,
           timestamp: getRequestTimestamp(ctx.request),
         });
+        await recordAdminAction(ctx.deps, {
+          operator: requireAdminOperator(ctx),
+          action: "circle.snapshot.create",
+          targetType: "circle",
+          targetId: input.circleId,
+          metadata: { season: result.season, count: result.count },
+        });
+        return result;
       },
     },
     {
@@ -282,7 +296,17 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           updatedAt: z.string(),
         }),
       ),
-      handler: (ctx) => ensureUserToken(ctx.deps, ctx.input as z.infer<typeof userRefInput>),
+      handler: async (ctx) => {
+        const result = await ensureUserToken(ctx.deps, ctx.input as z.infer<typeof userRefInput>);
+        await recordAdminAction(ctx.deps, {
+          operator: requireAdminOperator(ctx),
+          action: "user.token.ensure",
+          targetType: "user",
+          targetId: result.userId,
+          metadata: { created: result.created },
+        });
+        return result;
+      },
     },
     // ── Bulk contest setup ───────────────────────────────────────────────────
     {
@@ -301,13 +325,127 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           notProvisioned: z.array(z.string()),
         }),
       ),
-      handler: (ctx) => {
+      handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof bulkAssignInput>;
-        return bulkAssignHabit(ctx.deps, {
+        const result = await bulkAssignHabit(ctx.deps, {
           circleId: input.circleId,
           externalIds: input.externalIds,
           habit: input.habit,
         });
+        await recordAdminAction(ctx.deps, {
+          operator: requireAdminOperator(ctx),
+          action: "circle.bulk_assign_habit",
+          targetType: "circle",
+          targetId: input.circleId,
+          metadata: { assigned: result.assigned.length, habit: input.habit.name },
+        });
+        return result;
+      },
+    },
+    // ── Named admin tokens (per-operator identity; root key bootstraps) ───────
+    {
+      method: "POST",
+      resource: "admin",
+      path: "/admin/tokens/mint",
+      operationId: "adminTokenMint",
+      summary: "Mint a named admin token (plaintext returned once)",
+      auth: "admin-key",
+      mutating: true,
+      successStatus: 201,
+      inputSchema: adminTokenMintInput,
+      outputSchema: envelope(
+        z.object({ token: nonEmpty, tokenId: nonEmpty, label: z.string(), createdAt: z.string() }),
+      ),
+      handler: async (ctx) => {
+        const input = ctx.input as z.infer<typeof adminTokenMintInput>;
+        const result = await createAdminToken(ctx.deps.db, input.label);
+        await recordAdminAction(ctx.deps, {
+          operator: requireAdminOperator(ctx),
+          action: "admin_token.mint",
+          targetType: "admin_token",
+          targetId: result.tokenId,
+          metadata: { label: result.label },
+        });
+        return result;
+      },
+    },
+    {
+      method: "GET",
+      resource: "admin",
+      path: "/admin/tokens",
+      operationId: "adminTokenList",
+      summary: "List named admin tokens (metadata only)",
+      auth: "admin-key",
+      mutating: false,
+      outputSchema: envelope(
+        z.object({
+          tokens: z.array(
+            z.object({
+              tokenId: nonEmpty,
+              label: z.string(),
+              revoked: z.boolean(),
+              lastUsedAt: z.string().nullable(),
+              createdAt: z.string(),
+            }),
+          ),
+        }),
+      ),
+      handler: async (ctx) => {
+        requireAdminOperator(ctx);
+        return { tokens: await listAdminTokens(ctx.deps.db) };
+      },
+    },
+    {
+      method: "POST",
+      resource: "admin",
+      path: "/admin/tokens/revoke",
+      operationId: "adminTokenRevoke",
+      summary: "Revoke a named admin token",
+      auth: "admin-key",
+      mutating: true,
+      inputSchema: adminTokenRevokeInput,
+      outputSchema: envelope(z.object({ revoked: z.boolean() })),
+      handler: async (ctx) => {
+        const input = ctx.input as z.infer<typeof adminTokenRevokeInput>;
+        const revoked = await revokeAdminToken(ctx.deps.db, input.tokenId);
+        await recordAdminAction(ctx.deps, {
+          operator: requireAdminOperator(ctx),
+          action: "admin_token.revoke",
+          targetType: "admin_token",
+          targetId: input.tokenId,
+        });
+        return { revoked };
+      },
+    },
+    {
+      method: "GET",
+      resource: "admin",
+      path: "/admin/audit-log",
+      operationId: "adminAuditLog",
+      summary: "God-mode: recent admin actions (who did what)",
+      auth: "admin-key",
+      mutating: false,
+      list: true,
+      querySchema: auditLogQuery,
+      outputSchema: envelopeList(
+        registerSchema(
+          "AdminAuditEntry",
+          z.object({
+            id: nonEmpty,
+            actorType: z.string(),
+            actorId: z.string().nullable(),
+            actorLabel: z.string().nullable(),
+            action: z.string(),
+            targetType: z.string().nullable(),
+            targetId: z.string().nullable(),
+            metadata: z.unknown(),
+            createdAt: z.string(),
+          }),
+        ),
+      ),
+      handler: (ctx) => {
+        requireAdminOperator(ctx);
+        return listAdminAuditLog(ctx.deps, ctx.query as z.infer<typeof auditLogQuery>);
       },
     },
   ];

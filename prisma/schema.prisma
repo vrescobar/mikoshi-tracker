@@ -315,3 +315,37 @@ model CircleEntryShare {
   @@unique([circleId, entryId])
   @@index([entryId])
 }
+
+/// A named admin credential. Lets god-mode be operated by several people/bots
+/// with per-operator identity (vs the single static MIKOSHI_TRACKER_ADMIN_API_KEY,
+/// which remains the root credential that bootstraps these). `token` is a SHA-256
+/// hash; the plaintext (mikoshi_tracker_admin_*) is shown once at creation.
+model AdminToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  label      String
+  revoked    Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([revoked])
+}
+
+/// Append-only audit trail of admin (god-mode) actions, so "who did what" is
+/// answerable. `actorType` is "env" (static key) or "token" (named AdminToken);
+/// `metadata` is an optional JSON string of action-specific detail.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorType  String
+  actorId    String?
+  actorLabel String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}

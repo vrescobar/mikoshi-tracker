@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-import { requireAdminKey } from "../auth/admin-key";
+import { resolveAdminOperator } from "../auth/admin-key";
 import { requireAuthenticatedUser } from "../auth/session";
 import { requireCircleContext } from "../auth/circle-session";
 import { mapV1Error } from "./errors";
@@ -23,8 +23,8 @@ async function resolveAuth(
       return { kind: "user", user };
     }
     case "admin-key": {
-      await requireAdminKey(request);
-      return { kind: "admin" };
+      const operator = await resolveAdminOperator(request);
+      return { kind: "admin", operator };
     }
     case "circle": {
       const circleId = String(params.circleId ?? "");

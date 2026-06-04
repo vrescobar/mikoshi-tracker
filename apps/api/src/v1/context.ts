@@ -3,12 +3,19 @@ import { z } from "zod";
 import { listResponse, mutationEnvelope } from "@mikoshi-tracker/contracts/envelope";
 
 import { V1ApiError } from "./errors";
+import type { AdminOperator } from "../auth/admin-key";
 import type { V1Context } from "./match";
 
 /** Narrows the resolved principal to a user id (bearer routes). */
 export function requireUserId(ctx: V1Context): string {
   if (ctx.principal.kind === "user") return ctx.principal.user.id;
   throw new V1ApiError(401, "UNAUTHORIZED", "Authentication required");
+}
+
+/** Narrows the resolved principal to the admin operator (admin-key routes). */
+export function requireAdminOperator(ctx: V1Context): AdminOperator {
+  if (ctx.principal.kind === "admin") return ctx.principal.operator;
+  throw new V1ApiError(401, "UNAUTHORIZED", "Admin authentication required");
 }
 
 /** Narrows the resolved principal to a circle id (circle-token routes). */
