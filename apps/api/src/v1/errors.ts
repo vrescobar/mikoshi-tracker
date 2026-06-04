@@ -25,7 +25,7 @@ type MappedError = { status: number; code: ErrorCode; message: string };
  * v1 error envelope. Domain errors are matched by `error.name` so v1 does not
  * have to import all ~40 module error classes (and avoids import cycles).
  */
-const DOMAIN_ERROR_TABLE: Record<string, { status: number; code: ErrorCode }> = {
+export const DOMAIN_ERROR_TABLE: Record<string, { status: number; code: ErrorCode }> = {
   // entries / events
   EntryNotFoundError: { status: 404, code: "NOT_FOUND" },
   EntryInactiveError: { status: 409, code: "ENTRY_INACTIVE" },
