@@ -37,6 +37,7 @@ import { registerDb } from "./plugins/db";
 import { registerEnv } from "./plugins/env";
 import { registerMultipart } from "./plugins/multipart";
 import { registerOpenApi } from "./plugins/openapi";
+import { registerV1 } from "./v1";
 import { authRateLimitOptions, registerSecurity } from "./plugins/security";
 import { normalizeUserTimeZone } from "./shared/timezone";
 import { sendAuthError } from "./shared/controller-helpers";
@@ -116,6 +117,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerAttachmentRoutes(app);
   await registerSkillRoutes(app);
   await registerOpenApi(app);
+  await registerV1(app);
 
   app.get("/health", async () => ({ ok: true }));
 
