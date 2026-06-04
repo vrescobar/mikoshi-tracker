@@ -128,6 +128,41 @@ const WEIGHT_LOG_AGGREGATIONS = JSON.stringify({
   cachedColumns: {},
 });
 
+// Temptation journal: an event-log for cravings/urges behind a negative habit
+// ("días sin fumar", resisting tentations). The negative habit itself is just a
+// habit_boolean "stayed clean today" (its streak leaderboard already ranks the
+// longest clean runs); this type captures WHEN/WHY urges happened and whether
+// they were resisted, so it powers reflection + "most resisted" metric contests.
+const TEMPTATION_PAYLOAD_SCHEMA = JSON.stringify({
+  type: "object",
+  required: ["intensity", "resisted"],
+  properties: {
+    intensity: { type: "integer", minimum: 1, maximum: 5 },
+    resisted: { type: "boolean" },
+    resistedValue: { type: "integer", minimum: 0, maximum: 1, nullable: true },
+    trigger: { type: "string", nullable: true },
+    note: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const TEMPTATION_CONFIG_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {
+    /// Optional label of the habit this journal supports (free-form, e.g. "smoking").
+    habitLabel: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const TEMPTATION_AGGREGATIONS = JSON.stringify({
+  metrics: ["count", "sum"],
+  // intensity → total urge strength faced; resistedValue (0/1) → # resisted, so a
+  // metric contest can score "most temptations resisted" via cumulative sum.
+  sumFields: ["intensity", "resistedValue"],
+  groupBy: ["day", "week", "month"],
+});
+
 const BUILT_IN_ENTRY_TYPES: Array<{
   slug: string;
   displayName: string;
@@ -175,6 +210,16 @@ const BUILT_IN_ENTRY_TYPES: Array<{
     payloadSchema: WEIGHT_LOG_PAYLOAD_SCHEMA,
     configSchema: WEIGHT_LOG_CONFIG_SCHEMA,
     aggregations: WEIGHT_LOG_AGGREGATIONS,
+    skillSlug: null,
+    isBuiltIn: true,
+  },
+  {
+    slug: "temptation",
+    displayName: "entry_type.temptation",
+    cadence: "event_log",
+    payloadSchema: TEMPTATION_PAYLOAD_SCHEMA,
+    configSchema: TEMPTATION_CONFIG_SCHEMA,
+    aggregations: TEMPTATION_AGGREGATIONS,
     skillSlug: null,
     isBuiltIn: true,
   },
