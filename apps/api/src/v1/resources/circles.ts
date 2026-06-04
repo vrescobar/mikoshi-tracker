@@ -34,7 +34,7 @@ import {
 } from "../../modules/circles/circle.service";
 import { registerSchema } from "../apiMeta";
 import { envelope, envelopeList, requireCircleId, requireUserId } from "../context";
-import { paginate } from "../shared";
+import { paginate, sortItems } from "../shared";
 import type { ApiV1Deps, V1RouteMeta } from "../match";
 
 const Circle = registerSchema("Circle", circleRecordSchema);
@@ -44,6 +44,10 @@ const CircleMemberHabit = registerSchema("CircleMemberHabit", circleMemberHabitS
 const CircleTokenMeta = registerSchema("CircleTokenMeta", circleTokenMetaSchema);
 
 const nonEmpty = z.string().trim().min(1);
+const circlesListQuerySchema = paginationQuerySchema.extend({
+  sort: z.string().optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+});
 const circleIdParams = z.object({ circleId: nonEmpty });
 const memberParams = z.object({ circleId: nonEmpty, userId: nonEmpty });
 
@@ -102,11 +106,12 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       auth: "bearer",
       mutating: false,
       list: true,
-      querySchema: paginationQuerySchema,
+      querySchema: circlesListQuerySchema,
       outputSchema: envelopeList(Circle),
       handler: async (ctx) => {
+        const query = ctx.query as z.infer<typeof circlesListQuerySchema>;
         const { items } = await listUserCircles(ctx.deps, { userId: requireUserId(ctx) });
-        return paginate(items, ctx.query as z.infer<typeof paginationQuerySchema>);
+        return paginate(sortItems(items, query), query);
       },
     },
     {

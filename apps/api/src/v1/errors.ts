@@ -56,6 +56,7 @@ export const DOMAIN_ERROR_TABLE: Record<string, { status: number; code: ErrorCod
   CircleTokenNotFoundError: { status: 404, code: "NOT_FOUND" },
   // admin
   UserMergeError: { status: 409, code: "CONFLICT" },
+  AdminUserNotFoundError: { status: 404, code: "NOT_FOUND" },
   // attachments
   AttachmentNotFoundError: { status: 404, code: "NOT_FOUND" },
   AttachmentFileMissingError: { status: 404, code: "ATTACHMENT_FILE_MISSING" },

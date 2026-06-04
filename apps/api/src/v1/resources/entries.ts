@@ -15,7 +15,7 @@ import {
 } from "../../modules/entries/entry.service";
 import { registerSchema } from "../apiMeta";
 import { envelopeList, envelopeOne, requireUserId } from "../context";
-import { paginate } from "../shared";
+import { paginate, sortItems } from "../shared";
 import type { ApiV1Deps, V1RouteMeta } from "../match";
 
 const Entry = registerSchema("Entry", entryRecordSchema);
@@ -26,6 +26,8 @@ const nonEmpty = z.string().trim().min(1);
 const entriesListQuerySchema = paginationQuerySchema.extend({
   entryTypeSlug: z.string().optional(),
   isActive: z.coerce.boolean().optional(),
+  sort: z.string().optional(),
+  order: z.enum(["asc", "desc"]).optional(),
 });
 
 const entryIdInputSchema = z.object({ entryId: nonEmpty });
@@ -103,7 +105,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           userId: requireUserId(ctx),
           filters: { entryTypeSlug: query.entryTypeSlug, isActive: query.isActive, query: query.q },
         });
-        return paginate(items, query);
+        return paginate(sortItems(items, query), query);
       },
     },
     {

@@ -1,6 +1,6 @@
 import { overviewStatsSchema } from "@mikoshi-tracker/contracts/stats";
 
-import { getRequestTimestamp } from "../../shared/controller-helpers";
+import { getRequestTimestamp, getRequestTimeZoneOverride } from "../../shared/controller-helpers";
 import { getOverviewStats } from "../../modules/stats/stats.service";
 import { registerSchema } from "../apiMeta";
 import { envelope, requireUserId } from "../context";
@@ -23,6 +23,7 @@ export function statsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
         getOverviewStats(ctx.deps, {
           userId: requireUserId(ctx),
           timestamp: getRequestTimestamp(ctx.request),
+          timeZone: getRequestTimeZoneOverride(ctx.request),
         }),
     },
   ];

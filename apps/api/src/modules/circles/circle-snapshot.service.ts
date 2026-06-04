@@ -47,6 +47,62 @@ export async function createCircleLeaderboardSnapshot(
   return { circleId: params.circleId, season, count: leaderboard.length };
 }
 
+/**
+ * Diffs two frozen seasons of a circle: per-user rank/score movement between
+ * `seasonA` (baseline) and `seasonB` (later). Members present in only one season
+ * surface with a null on the missing side, so a contest "who improved / who
+ * dropped / who's new" view needs no client-side joining.
+ */
+export async function compareCircleLeaderboardSnapshots(
+  deps: Deps,
+  params: { circleId: string; seasonA: string; seasonB: string },
+): Promise<{
+  circleId: string;
+  seasonA: string;
+  seasonB: string;
+  rows: {
+    userId: string;
+    rankA: number | null;
+    rankB: number | null;
+    rankDelta: number | null;
+    scoreA: number | null;
+    scoreB: number | null;
+    scoreDelta: number | null;
+  }[];
+}> {
+  const [a, b] = await Promise.all([
+    listCircleLeaderboardSnapshots(deps, { circleId: params.circleId, season: params.seasonA }),
+    listCircleLeaderboardSnapshots(deps, { circleId: params.circleId, season: params.seasonB }),
+  ]);
+
+  const byUserA = new Map(a.map((r) => [r.userId, r]));
+  const byUserB = new Map(b.map((r) => [r.userId, r]));
+  const userIds = [...new Set([...byUserA.keys(), ...byUserB.keys()])];
+
+  const rows = userIds
+    .map((userId) => {
+      const ra = byUserA.get(userId) ?? null;
+      const rb = byUserB.get(userId) ?? null;
+      const rankA = ra?.rank ?? null;
+      const rankB = rb?.rank ?? null;
+      const scoreA = ra?.score ?? null;
+      const scoreB = rb?.score ?? null;
+      return {
+        userId,
+        rankA,
+        rankB,
+        // A smaller rank is better, so improvement is rankA - rankB (positive = moved up).
+        rankDelta: rankA != null && rankB != null ? rankA - rankB : null,
+        scoreA,
+        scoreB,
+        scoreDelta: scoreA != null && scoreB != null ? scoreB - scoreA : null,
+      };
+    })
+    .sort((x, y) => (x.rankB ?? Number.MAX_SAFE_INTEGER) - (y.rankB ?? Number.MAX_SAFE_INTEGER));
+
+  return { circleId: params.circleId, seasonA: params.seasonA, seasonB: params.seasonB, rows };
+}
+
 export async function listCircleLeaderboardSnapshots(
   deps: Deps,
   params: { circleId: string; season?: string },

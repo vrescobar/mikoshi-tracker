@@ -11,9 +11,13 @@ import {
   listAllUsers,
 } from "../../modules/admin/admin-explore.repository";
 import {
+  compareCircleLeaderboardSnapshots,
   createCircleLeaderboardSnapshot,
   listCircleLeaderboardSnapshots,
 } from "../../modules/circles/circle-snapshot.service";
+import { bulkAssignHabit } from "../../modules/admin/admin-bulk.service";
+import { ensureUserToken, readUserTokenMeta } from "../../modules/admin/admin-token.service";
+import { createHabitInputSchema } from "@mikoshi-tracker/contracts/habits";
 import { getRequestTimestamp } from "../../shared/controller-helpers";
 import { registerSchema } from "../apiMeta";
 import { envelope, envelopeList, envelopeOne } from "../context";
@@ -97,6 +101,17 @@ const eventsQuery = paginationQuerySchema.extend({
 });
 const snapshotCreateInput = z.object({ circleId: nonEmpty, season: nonEmpty.optional() });
 const snapshotListQuery = z.object({ circleId: nonEmpty, season: z.string().optional() });
+const snapshotCompareQuery = z.object({ circleId: nonEmpty, seasonA: nonEmpty, seasonB: nonEmpty });
+
+const userRefQuery = z
+  .object({ userId: z.string().optional(), externalId: z.string().optional() })
+  .refine((v) => Boolean(v.userId) || Boolean(v.externalId), { message: "Provide userId or externalId" });
+const userRefInput = userRefQuery;
+const bulkAssignInput = z.object({
+  circleId: nonEmpty,
+  externalIds: z.array(nonEmpty).min(1),
+  habit: createHabitInputSchema,
+});
 
 export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
   return [
@@ -198,6 +213,101 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
         const query = ctx.query as z.infer<typeof snapshotListQuery>;
         const items = await listCircleLeaderboardSnapshots(ctx.deps, query);
         return { items, total: items.length };
+      },
+    },
+    {
+      method: "GET",
+      resource: "admin",
+      path: "/admin/circles/snapshot/compare",
+      operationId: "adminCircleSnapshotCompare",
+      summary: "Diff two frozen seasons: per-user rank/score movement",
+      auth: "admin-key",
+      mutating: false,
+      querySchema: snapshotCompareQuery,
+      outputSchema: envelope(
+        z.object({
+          circleId: nonEmpty,
+          seasonA: z.string(),
+          seasonB: z.string(),
+          rows: z.array(
+            z.object({
+              userId: nonEmpty,
+              rankA: z.number().int().nullable(),
+              rankB: z.number().int().nullable(),
+              rankDelta: z.number().int().nullable(),
+              scoreA: z.number().int().nullable(),
+              scoreB: z.number().int().nullable(),
+              scoreDelta: z.number().int().nullable(),
+            }),
+          ),
+        }),
+      ),
+      handler: (ctx) => compareCircleLeaderboardSnapshots(ctx.deps, ctx.query as z.infer<typeof snapshotCompareQuery>),
+    },
+    // ── Per-user personal token (read-only meta + idempotent ensure) ──────────
+    {
+      method: "GET",
+      resource: "admin",
+      path: "/admin/users/token",
+      operationId: "adminUserTokenMeta",
+      summary: "Personal-token metadata for a user (never returns the plaintext)",
+      auth: "admin-key",
+      mutating: false,
+      querySchema: userRefQuery,
+      outputSchema: envelope(
+        z.object({
+          userId: nonEmpty,
+          hasToken: z.boolean(),
+          createdAt: z.string().nullable(),
+          updatedAt: z.string().nullable(),
+        }),
+      ),
+      handler: (ctx) => readUserTokenMeta(ctx.deps, ctx.query as z.infer<typeof userRefQuery>),
+    },
+    {
+      method: "POST",
+      resource: "admin",
+      path: "/admin/users/token/ensure",
+      operationId: "adminUserTokenEnsure",
+      summary: "Mint a personal token only if absent (plaintext returned once on creation)",
+      auth: "admin-key",
+      mutating: true,
+      inputSchema: userRefInput,
+      outputSchema: envelope(
+        z.object({
+          userId: nonEmpty,
+          created: z.boolean(),
+          hasToken: z.boolean(),
+          token: z.string().nullable(),
+          updatedAt: z.string(),
+        }),
+      ),
+      handler: (ctx) => ensureUserToken(ctx.deps, ctx.input as z.infer<typeof userRefInput>),
+    },
+    // ── Bulk contest setup ───────────────────────────────────────────────────
+    {
+      method: "POST",
+      resource: "admin",
+      path: "/admin/circles/bulk-assign-habit",
+      operationId: "adminBulkAssignHabit",
+      summary: "Create + share one habit for many circle members in a single call",
+      auth: "admin-key",
+      mutating: true,
+      inputSchema: bulkAssignInput,
+      outputSchema: envelope(
+        z.object({
+          assigned: z.array(z.string()),
+          notMember: z.array(z.string()),
+          notProvisioned: z.array(z.string()),
+        }),
+      ),
+      handler: (ctx) => {
+        const input = ctx.input as z.infer<typeof bulkAssignInput>;
+        return bulkAssignHabit(ctx.deps, {
+          circleId: input.circleId,
+          externalIds: input.externalIds,
+          habit: input.habit,
+        });
       },
     },
   ];

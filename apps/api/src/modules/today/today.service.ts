@@ -61,7 +61,7 @@ function incrementPeriodCounter(counters: Map<string, PeriodCounter>, habitId: s
  */
 export async function getTodaySummary(
   deps: TodayServiceDeps,
-  params: { userId: string; timestamp: Date | number | string },
+  params: { userId: string; timestamp: Date | number | string; timeZone?: string },
 ): Promise<{ summary: TodaySummary }> {
   const user = await deps.db.user.findUnique({
     where: { id: params.userId },
@@ -74,7 +74,7 @@ export async function getTodaySummary(
 
   const day = resolveHabitDay({
     timestamp: params.timestamp,
-    timeZone: user.timezone,
+    timeZone: params.timeZone ?? user.timezone,
   });
   const rangeStart = day.weekStartKey < day.monthStartKey ? day.weekStartKey : day.monthStartKey;
   const rangeEnd = day.weekEndKey > day.monthEndKey ? day.weekEndKey : day.monthEndKey;

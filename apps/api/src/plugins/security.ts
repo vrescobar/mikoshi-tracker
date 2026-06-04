@@ -54,5 +54,15 @@ export async function registerSecurity(app: FastifyInstance): Promise<void> {
     global: true,
     max: isTestEnv(app) ? TEST_MAX : GLOBAL_MAX,
     timeWindow: "1 minute",
+    // The plugin already emits x-ratelimit-* and retry-after headers. We only
+    // override the 429 *body* so /api/v1 stays in the {ok,code,error} envelope
+    // (code: RATE_LIMITED); legacy /api keeps its historical Fastify shape.
+    errorResponseBuilder: (request, context) => {
+      const message = `Rate limit exceeded, retry in ${Math.ceil(context.ttl / 1000)}s`;
+      if (request.url.startsWith("/api/v1")) {
+        return { ok: false, code: "RATE_LIMITED", error: message };
+      }
+      return { statusCode: 429, error: "Too Many Requests", message };
+    },
   });
 }

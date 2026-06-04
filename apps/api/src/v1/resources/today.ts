@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { todaySummarySchema } from "@mikoshi-tracker/contracts/today";
 
-import { getRequestTimestamp } from "../../shared/controller-helpers";
+import { getRequestTimestamp, getRequestTimeZoneOverride } from "../../shared/controller-helpers";
 import { getTodaySummary } from "../../modules/today/today.service";
 import { registerSchema } from "../apiMeta";
 import { envelope, requireUserId } from "../context";
@@ -27,6 +27,7 @@ export function todayV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
         getTodaySummary(ctx.deps, {
           userId: requireUserId(ctx),
           timestamp: getRequestTimestamp(ctx.request),
+          timeZone: getRequestTimeZoneOverride(ctx.request),
         }),
     },
   ];
