@@ -32,6 +32,10 @@ import {
   unshareHabit,
   updateCircleMember,
 } from "../../modules/circles/circle.service";
+import {
+  configureCircleContest,
+  getCircleMetricLeaderboard,
+} from "../../modules/circles/circle-metric.service";
 import { registerSchema } from "../apiMeta";
 import { envelope, envelopeList, requireCircleId, requireUserId } from "../context";
 import { paginate, sortItems } from "../shared";
@@ -68,6 +72,36 @@ const updateMemberInputSchema = z
     message: "At least one of role or externalId must be provided",
   });
 const removeMemberInputSchema = z.object({ circleId: nonEmpty, membershipId: nonEmpty });
+
+const contestConfigInputSchema = z
+  .object({
+    circleId: nonEmpty,
+    contestKind: z.enum(["habit", "metric"]),
+    metricEntryTypeSlug: nonEmpty.optional(),
+    metricField: nonEmpty.optional(),
+    metricMode: z.enum(["cumulative", "adherence", "delta"]).optional(),
+    metricTarget: z.number().optional(),
+    metricGoal: z.enum(["higher", "lower"]).optional(),
+  })
+  .refine(
+    (v) =>
+      v.contestKind !== "metric" ||
+      (Boolean(v.metricEntryTypeSlug) && Boolean(v.metricField) && Boolean(v.metricMode)),
+    { message: "metric contests require metricEntryTypeSlug, metricField and metricMode" },
+  )
+  .refine((v) => v.metricMode !== "adherence" || v.metricTarget !== undefined, {
+    message: "adherence contests require metricTarget",
+  });
+
+const metricLeaderboardEntrySchema = z.object({
+  userId: nonEmpty,
+  displayName: nonEmpty,
+  role: z.enum(["owner", "member"]),
+  externalId: z.string().nullable(),
+  rank: z.number().int().positive(),
+  score: z.number(),
+  mode: z.enum(["cumulative", "adherence", "delta"]),
+});
 
 const shareInputSchema = z.object({ circleId: nonEmpty, habitId: nonEmpty });
 const checkinInputSchema = z.object({ userId: nonEmpty, habitId: nonEmpty });
@@ -210,6 +244,33 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
         return {};
       },
     },
+    {
+      method: "POST",
+      resource: "circles",
+      path: "/circles/contest/configure",
+      operationId: "circleContestConfigure",
+      summary: "Configure contest scoring: habit completion or a metric (owner only)",
+      auth: "bearer",
+      mutating: true,
+      inputSchema: contestConfigInputSchema,
+      outputSchema: envelope(
+        z.object({
+          circle: z.object({
+            id: nonEmpty,
+            contestKind: z.string(),
+            metricEntryTypeSlug: z.string().nullable(),
+            metricField: z.string().nullable(),
+            metricMode: z.string().nullable(),
+            metricTarget: z.number().nullable(),
+            metricGoal: z.string().nullable(),
+          }),
+        }),
+      ),
+      handler: (ctx) => {
+        const { circleId, ...config } = ctx.input as z.infer<typeof contestConfigInputSchema>;
+        return configureCircleContest(ctx.deps, { circleId, callerId: requireUserId(ctx), config });
+      },
+    },
     // ── Circle token: reads ──────────────────────────────────────────────────
     {
       method: "GET",
@@ -223,6 +284,22 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: leaderboardOutputSchema,
       handler: (ctx) =>
         getCircleLeaderboard(ctx.deps, { circleId: requireCircleId(ctx), timestamp: getRequestTimestamp(ctx.request) }),
+    },
+    {
+      method: "GET",
+      resource: "circles",
+      path: "/circles/:circleId/metric-leaderboard",
+      operationId: "circleMetricLeaderboard",
+      summary: "Metric-contest standings (kcal/weight/steps) — circle token",
+      auth: "circle",
+      mutating: false,
+      paramsSchema: circleIdParams,
+      outputSchema: envelope(z.object({ leaderboard: z.array(metricLeaderboardEntrySchema) })),
+      handler: (ctx) =>
+        getCircleMetricLeaderboard(ctx.deps, {
+          circleId: requireCircleId(ctx),
+          timestamp: getRequestTimestamp(ctx.request),
+        }),
     },
     {
       method: "GET",

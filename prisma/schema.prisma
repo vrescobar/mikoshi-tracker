@@ -147,6 +147,19 @@ model Circle {
   /// "rolling" = live 30d/7d windows (default, legacy parity).
   /// "snapshot" = frozen final standings served from CircleLeaderboardSnapshot.
   leaderboardMode String           @default("rolling")
+  /// Contest scoring kind: "habit" (shared-habit completion, default/legacy) or
+  /// "metric" (aggregate a payload field of an entry type — kcal/weight/steps).
+  contestKind         String  @default("habit")
+  /// Metric-contest config (only meaningful when contestKind = "metric").
+  metricEntryTypeSlug String?
+  metricField         String?
+  /// "cumulative" (sum over window), "adherence" (# days meeting target),
+  /// "delta" (last logged value − first, e.g. weight change).
+  metricMode          String?
+  metricTarget        Float?
+  /// Whether a higher or lower metric is better — drives ranking direction and
+  /// the adherence test (higher → value ≥ target; lower → value ≤ target).
+  metricGoal          String? @default("higher")
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   owner       User               @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)

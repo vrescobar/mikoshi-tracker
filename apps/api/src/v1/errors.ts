@@ -57,6 +57,7 @@ export const DOMAIN_ERROR_TABLE: Record<string, { status: number; code: ErrorCod
   // admin
   UserMergeError: { status: 409, code: "CONFLICT" },
   AdminUserNotFoundError: { status: 404, code: "NOT_FOUND" },
+  CircleNotMetricContestError: { status: 409, code: "CONFLICT" },
   // attachments
   AttachmentNotFoundError: { status: 404, code: "NOT_FOUND" },
   AttachmentFileMissingError: { status: 404, code: "ATTACHMENT_FILE_MISSING" },
