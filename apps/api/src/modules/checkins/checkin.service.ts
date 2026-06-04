@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import { NothingToUndoError } from "../../shared/errors";
 import {
   serializeContractFrequencyType,
   serializeContractHabitKind,
@@ -48,6 +49,8 @@ type BaseCheckinParams = {
   habitId: string;
   source: CheckinSourceInput;
   note?: string | null;
+  /** Circle scope of the write (set by circle-token check-ins); null otherwise. */
+  onBehalfOfCircleId?: string | null;
   timestamp?: ServiceTimestamp;
 };
 
@@ -63,11 +66,7 @@ export class TodayActionUnavailableError extends Error {
   }
 }
 
-export class NothingToUndoError extends Error {
-  constructor() {
-    super("There is no successful today action to undo");
-  }
-}
+export { NothingToUndoError };
 
 function serializeHabit(habit: PersistedCheckinHabit) {
   return {
@@ -147,6 +146,7 @@ async function persistMutation(
     type: keyof typeof mutationTypeMap;
     source: CheckinSourceInput;
     note?: string | null;
+    onBehalfOfCircleId?: string | null;
   },
 ) {
   const persisted = await persistCheckinMutation(dependencies.db, {
@@ -157,6 +157,7 @@ async function persistMutation(
     type: mutationTypeMap[params.type],
     source: sourceMap[params.source],
     note: normalizeOptionalNote(params.note),
+    onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
     previousValue: params.currentState.value,
     nextValue: params.nextState.value,
     previousCompleted: params.currentState.completed,
@@ -224,6 +225,7 @@ export async function completeHabitForToday(dependencies: CheckinDependencies, p
     type: "complete",
     source: parsed.source,
     note: parsed.note,
+    onBehalfOfCircleId: params.onBehalfOfCircleId,
   });
 }
 
@@ -264,6 +266,7 @@ export async function setHabitTotalForToday(
     type: "setTotal",
     source: parsed.source,
     note: parsed.note,
+    onBehalfOfCircleId: params.onBehalfOfCircleId,
   });
 }
 
@@ -289,7 +292,7 @@ export async function undoHabitForToday(dependencies: CheckinDependencies, param
   });
 
   if (!latestMutation) {
-    throw new NothingToUndoError();
+    throw new NothingToUndoError("There is no successful today action to undo");
   }
 
   const nextState = {
@@ -305,5 +308,6 @@ export async function undoHabitForToday(dependencies: CheckinDependencies, param
     type: "undo",
     source: parsed.source,
     note: parsed.note,
+    onBehalfOfCircleId: params.onBehalfOfCircleId,
   });
 }

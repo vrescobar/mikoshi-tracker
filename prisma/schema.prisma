@@ -147,6 +147,19 @@ model Circle {
   /// "rolling" = live 30d/7d windows (default, legacy parity).
   /// "snapshot" = frozen final standings served from CircleLeaderboardSnapshot.
   leaderboardMode String           @default("rolling")
+  /// Contest scoring kind: "habit" (shared-habit completion, default/legacy) or
+  /// "metric" (aggregate a payload field of an entry type — kcal/weight/steps).
+  contestKind         String  @default("habit")
+  /// Metric-contest config (only meaningful when contestKind = "metric").
+  metricEntryTypeSlug String?
+  metricField         String?
+  /// "cumulative" (sum over window), "adherence" (# days meeting target),
+  /// "delta" (last logged value − first, e.g. weight change).
+  metricMode          String?
+  metricTarget        Float?
+  /// Whether a higher or lower metric is better — drives ranking direction and
+  /// the adherence test (higher → value ≥ target; lower → value ≤ target).
+  metricGoal          String? @default("higher")
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   owner       User               @relation("CircleOwner", fields: [ownerId], references: [id], onDelete: Cascade)
@@ -290,6 +303,10 @@ model EventMutation {
   note            String?
   previousPayload String?
   nextPayload     String?
+  /// Circle this mutation was made on behalf of, when a circle token (or an AI
+  /// acting for a circle) wrote it. Null for personal/web/standalone-AI writes.
+  /// Orthogonal to `source`: source = who (actor), this = for which circle (scope).
+  onBehalfOfCircleId String?
   createdAt       DateTime     @default(now())
   entry           Entry        @relation(fields: [entryId], references: [id], onDelete: Cascade)
   event           EntryEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
@@ -297,6 +314,7 @@ model EventMutation {
 
   @@index([entryId, dateKey, createdAt])
   @@index([eventId, createdAt])
+  @@index([onBehalfOfCircleId])
 }
 
 model CircleEntryShare {
@@ -309,4 +327,38 @@ model CircleEntryShare {
 
   @@unique([circleId, entryId])
   @@index([entryId])
+}
+
+/// A named admin credential. Lets god-mode be operated by several people/bots
+/// with per-operator identity (vs the single static MIKOSHI_TRACKER_ADMIN_API_KEY,
+/// which remains the root credential that bootstraps these). `token` is a SHA-256
+/// hash; the plaintext (mikoshi_tracker_admin_*) is shown once at creation.
+model AdminToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  label      String
+  revoked    Boolean   @default(false)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([revoked])
+}
+
+/// Append-only audit trail of admin (god-mode) actions, so "who did what" is
+/// answerable. `actorType` is "env" (static key) or "token" (named AdminToken);
+/// `metadata` is an optional JSON string of action-specific detail.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorType  String
+  actorId    String?
+  actorLabel String?
+  action     String
+  targetType String?
+  targetId   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
 }

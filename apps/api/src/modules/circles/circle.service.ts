@@ -390,6 +390,7 @@ export async function circleCompleteHabit(
       userId: params.userId,
       habitId: params.habitId,
       source: "circle",
+      onBehalfOfCircleId: params.circleId,
       timestamp: params.timestamp,
     },
   );
@@ -412,6 +413,7 @@ export async function circleSetHabitTotal(
       userId: params.userId,
       habitId: params.habitId,
       source: "circle",
+      onBehalfOfCircleId: params.circleId,
       total: params.total,
       timestamp: params.timestamp,
     },
@@ -458,6 +460,7 @@ export async function circleUndoHabit(
       userId: params.userId,
       habitId: params.habitId,
       source: "circle",
+      onBehalfOfCircleId: params.circleId,
       timestamp: params.timestamp,
     },
   );

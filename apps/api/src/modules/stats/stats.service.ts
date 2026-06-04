@@ -37,6 +37,7 @@ export async function getOverviewStats(
   params: {
     userId: string;
     timestamp?: Date | number | string;
+    timeZone?: string;
   },
 ) {
   const user = await findUserTimezone(dependencies.db, {
@@ -47,7 +48,7 @@ export async function getOverviewStats(
     throw new Error("User not found");
   }
 
-  const timeZone = normalizeUserTimeZone(user.timezone);
+  const timeZone = params.timeZone ?? normalizeUserTimeZone(user.timezone);
   const day = resolveHabitDay({
     timestamp: params.timestamp ?? new Date(),
     timeZone,

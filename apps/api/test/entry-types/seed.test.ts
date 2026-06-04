@@ -17,7 +17,7 @@ describe("seedBuiltInEntryTypes", () => {
     }
   });
 
-  it("inserts the four built-in entry type slugs", async () => {
+  it("inserts the five built-in entry type slugs", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
 
     const types = await context!.app.db.entryType.findMany({
@@ -30,6 +30,7 @@ describe("seedBuiltInEntryTypes", () => {
     expect(slugs).toContain("habit_boolean");
     expect(slugs).toContain("habit_quantity");
     expect(slugs).toContain("weight_log");
+    expect(slugs).toContain("temptation");
   });
 
   it("stores payloadSchemas that parse as valid JSON Schema objects", async () => {
@@ -39,7 +40,7 @@ describe("seedBuiltInEntryTypes", () => {
       orderBy: { slug: "asc" },
     });
 
-    expect(types).toHaveLength(4);
+    expect(types).toHaveLength(5);
 
     for (const type of types) {
       const schema = JSON.parse(type.payloadSchema) as unknown;
@@ -47,7 +48,7 @@ describe("seedBuiltInEntryTypes", () => {
     }
   });
 
-  it("marks all four as isBuiltIn and isActive", async () => {
+  it("marks all built-ins as isBuiltIn and isActive", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
 
     const notBuiltIn = await context!.app.db.entryType.findMany({
@@ -61,12 +62,22 @@ describe("seedBuiltInEntryTypes", () => {
     expect(inactive).toHaveLength(0);
   });
 
-  it("is idempotent — calling twice leaves exactly 4 rows", async () => {
+  it("is idempotent — calling twice leaves exactly 5 rows", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
     await seedBuiltInEntryTypes(context!.app.db);
 
     const count = await context!.app.db.entryType.count();
-    expect(count).toBe(4);
+    expect(count).toBe(5);
+  });
+
+  it("seeds the temptation journal as an event_log type with a resistedValue sum field", async () => {
+    await seedBuiltInEntryTypes(context!.app.db);
+
+    const temptation = await context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "temptation" } });
+    expect(temptation.cadence).toBe("event_log");
+    expect(temptation.skillSlug).toBeNull();
+    const agg = JSON.parse(temptation.aggregations) as { sumFields: string[] };
+    expect(agg.sumFields).toContain("resistedValue");
   });
 
   it("seeds food_meal with skillSlug mikoshi-tracker-food and cadence event_log", async () => {

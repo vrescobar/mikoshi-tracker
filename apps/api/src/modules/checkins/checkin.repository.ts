@@ -152,6 +152,7 @@ export async function persistCheckinMutation(
     type: string;
     source: string;
     note: string | null;
+    onBehalfOfCircleId?: string | null;
     previousValue: number | null;
     nextValue: number | null;
     previousCompleted: boolean;
@@ -201,6 +202,7 @@ export async function persistCheckinMutation(
         type: genericType,
         source: params.source,
         note: params.note,
+        onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
         previousPayload: existing ? existing.payload : null,
         nextPayload: payload,
       },

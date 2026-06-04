@@ -4,11 +4,6 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";
 import {
-  serializeContractFrequencyType,
-  serializeContractHabitKind,
-  serializeContractWeekdays,
-} from "../../shared/habit-contract-mappers";
-import {
   completeHabitForToday,
   NothingToUndoError,
   setHabitTotalForToday,
@@ -17,148 +12,10 @@ import {
 } from "../checkins/checkin.service";
 import { HabitInactiveError } from "../habits/habit.service";
 
-import { HABIT_ENTRY_TYPE_SLUGS, mapEntryToHabit } from "../habits/habit-entry-adapter";
-
-import { buildTodaySummary } from "./today-summary";
-import { resolveHabitDay } from "./today-clock";
-
-type PeriodCounter = {
-  week: number;
-  month: number;
-};
-
-function serializeHabit(habit: {
-  id: string;
-  name: string;
-  kind: string;
-  frequencyType: string;
-  frequencyCount: number | null;
-  targetValue: number | null;
-  unit: string | null;
-  startDate: string;
-  weekdays: Array<{ day: string }>;
-}) {
-  return {
-    id: habit.id,
-    name: habit.name,
-    kind: serializeContractHabitKind(habit.kind),
-    frequencyType: serializeContractFrequencyType(habit.frequencyType),
-    frequencyCount: habit.frequencyCount,
-    targetValue: habit.targetValue,
-    unit: habit.unit,
-    startDate: habit.startDate,
-    weekdays: serializeContractWeekdays(habit.weekdays),
-  };
-}
-
-function incrementPeriodCounter(counters: Map<string, PeriodCounter>, habitId: string, key: keyof PeriodCounter) {
-  const current = counters.get(habitId) ?? {
-    week: 0,
-    month: 0,
-  };
-
-  current[key] += 1;
-  counters.set(habitId, current);
-}
+import { getTodaySummary } from "./today.service";
 
 async function buildTodayResponse(request: FastifyRequest, userId: string, timestamp: Date | number | string) {
-  const user = await request.server.db.user.findUnique({
-    where: {
-      id: userId,
-    },
-    select: {
-      timezone: true,
-    },
-  });
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const day = resolveHabitDay({
-    timestamp,
-    timeZone: user.timezone,
-  });
-  const rangeStart = day.weekStartKey < day.monthStartKey ? day.weekStartKey : day.monthStartKey;
-  const rangeEnd = day.weekEndKey > day.monthEndKey ? day.weekEndKey : day.monthEndKey;
-
-  // Habits are Entry rows of the two habit types; check-ins are their EntryEvents.
-  const habitSlugFilter = { entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } };
-  const [habitEntries, dayStates, completedStates] = await Promise.all([
-    request.server.db.entry.findMany({
-      where: {
-        userId,
-        isActive: true,
-        ...habitSlugFilter,
-      },
-      include: {
-        entryType: { select: { slug: true } },
-        weekdays: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    }),
-    request.server.db.entryEvent.findMany({
-      where: {
-        userId,
-        entry: habitSlugFilter,
-        dateKey: day.todayKey,
-      },
-    }),
-    request.server.db.entryEvent.findMany({
-      where: {
-        userId,
-        entry: habitSlugFilter,
-        completed: true,
-        dateKey: {
-          gte: rangeStart,
-          lte: rangeEnd,
-        },
-      },
-    }),
-  ]);
-
-  const periodCounters = new Map<string, PeriodCounter>();
-
-  for (const state of completedStates) {
-    if (state.dateKey >= day.weekStartKey && state.dateKey <= day.weekEndKey) {
-      incrementPeriodCounter(periodCounters, state.entryId, "week");
-    }
-
-    if (state.dateKey >= day.monthStartKey && state.dateKey <= day.monthEndKey) {
-      incrementPeriodCounter(periodCounters, state.entryId, "month");
-    }
-  }
-
-  const summary = buildTodaySummary({
-    day,
-    habits: habitEntries.map((entry) => serializeHabit(mapEntryToHabit(entry))),
-    dayStates: dayStates.map((state) => ({
-      habitId: state.entryId,
-      dateKey: state.dateKey,
-      value: state.value === null ? null : Number(state.value),
-      completed: state.completed ?? false,
-    })),
-    periodProgress: Array.from(periodCounters.entries()).flatMap(([habitId, counts]) => [
-      {
-        habitId,
-        period: "week" as const,
-        periodKey: day.weekKey,
-        completions: counts.week,
-      },
-      {
-        habitId,
-        period: "month" as const,
-        periodKey: day.monthKey,
-        completions: counts.month,
-      },
-    ]),
-  });
-
-  return {
-    summary,
-  };
+  return getTodaySummary({ db: request.server.db }, { userId, timestamp });
 }
 
 function sendRequestError(reply: FastifyReply, error: unknown) {

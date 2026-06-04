@@ -7,6 +7,7 @@ import type {
 } from "@mikoshi-tracker/contracts/events";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import { NothingToUndoError } from "../../shared/errors";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { resolveHabitDay } from "../today/today-clock";
 import { getCompiledSchema } from "../entry-types/schema-cache";
@@ -56,12 +57,7 @@ export class EntryForEventInactiveError extends Error {
   }
 }
 
-export class NothingToUndoError extends Error {
-  constructor() {
-    super("No mutation to undo");
-    this.name = "NothingToUndoError";
-  }
-}
+export { NothingToUndoError };
 
 // ─── Internal types ────────────────────────────────────────────────────────────
 
@@ -69,13 +65,9 @@ type EventServiceDeps = { db: PrismaClient };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function latestMutation(
-  mutations: EventMutationWithAttachments[],
-): EventMutationWithAttachments | null {
+function latestMutation(mutations: EventMutationWithAttachments[]): EventMutationWithAttachments | null {
   if (mutations.length === 0) return null;
-  return [...mutations].sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id),
-  )[0];
+  return [...mutations].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.id.localeCompare(a.id))[0];
 }
 
 function isEventDeleted(event: EventWithMutations): boolean {
@@ -123,6 +115,7 @@ function serializeMutation(m: EventMutationWithAttachments): EventMutationRecord
     dateKey: m.dateKey,
     type: m.type as EventMutationRecord["type"],
     source: m.source as EventMutationRecord["source"],
+    onBehalfOfCircleId: m.onBehalfOfCircleId ?? null,
     note: m.note ?? null,
     previousPayload: m.previousPayload ? (JSON.parse(m.previousPayload) as unknown) : null,
     nextPayload: m.nextPayload ? (JSON.parse(m.nextPayload) as unknown) : null,
@@ -181,20 +174,12 @@ async function requireOwnedEvent(
   return event;
 }
 
-async function validatePayload(
-  deps: EventServiceDeps,
-  entryTypeId: string,
-  payload: unknown,
-): Promise<unknown> {
+async function validatePayload(deps: EventServiceDeps, entryTypeId: string, payload: unknown): Promise<unknown> {
   const compiled = await getCompiledSchema(deps.db, entryTypeId);
   return compiled.payload.parse(payload);
 }
 
-async function reloadEvent(
-  deps: EventServiceDeps,
-  eventId: string,
-  userId: string,
-): Promise<EntryEventDetail> {
+async function reloadEvent(deps: EventServiceDeps, eventId: string, userId: string): Promise<EntryEventDetail> {
   const fresh = await findOwnedEvent(deps.db, { eventId, userId });
   if (!fresh) throw new EventNotFoundError();
   return serializeEventDetail(fresh);
@@ -215,6 +200,7 @@ export async function persistEvent(
     payload: unknown;
     source: string;
     note: string | null | undefined;
+    onBehalfOfCircleId?: string | null;
     attachmentIds: string[];
   },
 ): Promise<EntryEventDetail> {
@@ -281,6 +267,7 @@ export async function persistEvent(
     type: mutationType,
     source: params.source,
     note: params.note ?? null,
+    onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
     previousPayload,
     nextPayload: payloadStr,
   });
@@ -348,9 +335,7 @@ export async function updateEvent(
 
   const currentPayloadStr = event.payload;
   let newPayloadStr = currentPayloadStr;
-  let newValue: number | null = event.value !== null && event.value !== undefined
-    ? Number(event.value)
-    : null;
+  let newValue: number | null = event.value !== null && event.value !== undefined ? Number(event.value) : null;
   let newCompleted: boolean | null = event.completed ?? null;
 
   if (patch.payload !== undefined) {

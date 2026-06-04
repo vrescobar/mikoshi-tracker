@@ -1,6 +1,6 @@
 export const DEFAULT_TIMEZONE = "Asia/Shanghai";
 
-function isValidTimeZone(timeZone: string) {
+export function isValidTimeZone(timeZone: string) {
   try {
     new Intl.DateTimeFormat("en-US", {
       timeZone,

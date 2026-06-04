@@ -5,6 +5,8 @@
   "type": "module",
   "exports": {
     "./api": "./src/api.ts",
+    "./errors": "./src/errors.ts",
+    "./envelope": "./src/envelope.ts",
     "./habits": "./src/habits.ts",
     "./checkins": "./src/checkins.ts",
     "./attachments": "./src/attachments.ts",

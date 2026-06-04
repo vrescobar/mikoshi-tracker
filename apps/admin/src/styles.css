@@ -1,0 +1,205 @@
+:root {
+  color-scheme: light;
+  --ink: #1f2733;
+  --muted: #6b7685;
+  --line: #e3e7ee;
+  --accent: #173d35;
+  --bg: #f7f8fa;
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+button.ghost {
+  background: transparent;
+}
+
+/* Login */
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.card {
+  width: min(420px, 100%);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 24px 60px rgba(20, 30, 45, 0.07);
+}
+
+.card h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+}
+
+.card input {
+  width: 100%;
+  font: inherit;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 1rem 0 0.75rem;
+}
+
+.card button {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Shell */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar nav {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.topbar nav + button {
+  margin-left: auto;
+}
+
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.error {
+  color: #b3261e;
+}
+
+.flash {
+  color: var(--accent);
+  background: #eaf3ef;
+  border: 1px solid #cfe5db;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Metrics */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.metric {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.metric-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+}
+
+th {
+  background: #fbfcfe;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pill {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: #eef1f5;
+}
+
+.pill.active {
+  background: #e3f3ec;
+  color: #16613f;
+}
+
+.pill.closed {
+  background: #fdeccd;
+  color: #8a5b13;
+}
+
+.pill.archived {
+  background: #eceef1;
+  color: #6b7685;
+}

@@ -536,7 +536,7 @@ export async function getHabitDetail(
   const [habit] = await attachSharedCircles(dependencies.db, [serializeHabit(record)]);
 
   return {
-    habit: habit!,
+    habit,
     stats: buildStats(computedHistory),
     recentHistory: computedHistory.filter(isSettledRow).reverse().slice(0, 10),
     trends: {
