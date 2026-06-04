@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
 import { requireAdminKey } from "../auth/admin-key";
@@ -34,7 +36,18 @@ async function resolveAuth(
   }
 }
 
+function requestId(request: FastifyRequest): string {
+  const header = request.headers["x-request-id"];
+  const provided = Array.isArray(header) ? header[0] : header;
+  return provided && provided.length > 0 ? provided : randomUUID();
+}
+
 async function runRoute(deps: ApiV1Deps, route: V1RouteMeta, request: FastifyRequest, reply: FastifyReply) {
+  // Correlation id: honour an inbound X-Request-ID or mint one; echo on every
+  // response (success or error) so a client/log can trace a single call.
+  const id = requestId(request);
+  reply.header("X-Request-ID", id);
+
   try {
     const params = (parseWith(route.paramsSchema, request.params) ?? request.params) as Record<string, unknown>;
     const principal = await resolveAuth(route, request, params);
@@ -54,6 +67,9 @@ async function runRoute(deps: ApiV1Deps, route: V1RouteMeta, request: FastifyReq
     return { ok: true as const, data };
   } catch (error) {
     const mapped = mapV1Error(error);
+    if (mapped.status >= 500) {
+      request.log.error({ err: error, requestId: id, path: v1FullPath(route) }, "v1 request failed");
+    }
     reply.status(mapped.status);
     return { ok: false as const, code: mapped.code, error: mapped.message };
   }
