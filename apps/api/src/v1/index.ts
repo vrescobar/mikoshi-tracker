@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 
 import { generateV1OpenApi } from "./openapi";
 import { registerV1Routes } from "./router";
+import { entriesV1Routes, entryTypesV1Routes } from "./resources/entries";
 import type { ApiV1Deps, V1RouteMeta } from "./match";
 
 export { generateV1OpenApi } from "./openapi";
@@ -12,12 +13,12 @@ export type { ApiV1Deps, V1RouteMeta } from "./match";
  * Pure function of `deps` so tests can build and inspect it without a server.
  * Resource sub-tables are added incrementally (stages 3–4).
  */
-export function buildV1RouteTable(_deps: ApiV1Deps): V1RouteMeta[] {
+export function buildV1RouteTable(deps: ApiV1Deps): V1RouteMeta[] {
   return [
-    // ...entryTypeV1Routes(deps),  (stage 3)
-    // ...entriesV1Routes(deps),
-    // ...circlesV1Routes(deps),
-    // ...adminV1Routes(deps),
+    ...entryTypesV1Routes(deps),
+    ...entriesV1Routes(deps),
+    // ...circlesV1Routes(deps),   (stage 3d)
+    // ...adminV1Routes(deps),     (stage 4)
   ];
 }
 
