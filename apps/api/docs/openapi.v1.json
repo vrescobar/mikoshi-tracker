@@ -907,6 +907,59 @@
               ],
               "additionalProperties": false
             }
+          },
+          "nutrition": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kcal": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "protein_g": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "carbs_g": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "fat_g": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "mealCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "kcalTarget": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "exclusiveMinimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "kcal",
+                  "protein_g",
+                  "carbs_g",
+                  "fat_g",
+                  "mealCount",
+                  "kcalTarget"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -5586,6 +5639,59 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "nutrition": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kcal": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "protein_g": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "carbs_g": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "fat_g": {
+                                      "type": "number",
+                                      "minimum": 0
+                                    },
+                                    "mealCount": {
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "kcalTarget": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "exclusiveMinimum": 0
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "kcal",
+                                    "protein_g",
+                                    "carbs_g",
+                                    "fat_g",
+                                    "mealCount",
+                                    "kcalTarget"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           },
                           "required": [

@@ -37,6 +37,20 @@ export const todayItemSchema = z.object({
   progress: todayProgressSchema,
 });
 
+/**
+ * Today's diet roll-up (kcal + macros logged vs target). Present only for users
+ * who actually log food (have an active food_meal entry); null otherwise so the
+ * habit-only experience is unchanged. Sums exclude soft-deleted events.
+ */
+export const todayNutritionSchema = z.object({
+  kcal: z.number().nonnegative(),
+  protein_g: z.number().nonnegative(),
+  carbs_g: z.number().nonnegative(),
+  fat_g: z.number().nonnegative(),
+  mealCount: z.number().int().nonnegative(),
+  kcalTarget: z.number().positive().nullable(),
+});
+
 export const todaySummarySchema = z.object({
   date: isoDateKeySchema,
   totalCount: z.number().int().nonnegative(),
@@ -45,6 +59,8 @@ export const todaySummarySchema = z.object({
   completionRate: z.number().min(0).max(1),
   pendingItems: z.array(todayItemSchema),
   completedItems: z.array(todayItemSchema),
+  /** Diet roll-up; null for users who don't log food. */
+  nutrition: todayNutritionSchema.nullable().optional(),
 });
 
 export const todayPeriodKeySchema = z.object({
@@ -83,5 +99,6 @@ export type TodayFrequencyType = z.infer<typeof todayFrequencyTypeSchema>;
 export type TodayWeekday = z.infer<typeof todayWeekdaySchema>;
 export type TodayProgress = z.infer<typeof todayProgressSchema>;
 export type TodayItem = z.infer<typeof todayItemSchema>;
+export type TodayNutrition = z.infer<typeof todayNutritionSchema>;
 export type TodaySummary = z.infer<typeof todaySummarySchema>;
 export type TodayAffectedHabit = z.infer<typeof todayAffectedHabitSchema>;

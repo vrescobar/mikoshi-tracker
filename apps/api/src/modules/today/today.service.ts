@@ -1,6 +1,7 @@
-import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
+import type { TodayNutrition, TodaySummary } from "@mikoshi-tracker/contracts/today";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import { computeAggregations } from "../aggregations/aggregation.service";
 import {
   serializeContractFrequencyType,
   serializeContractHabitKind,
@@ -12,6 +13,57 @@ import { buildTodaySummary } from "./today-summary";
 import { resolveHabitDay } from "./today-clock";
 
 type TodayServiceDeps = { db: PrismaClient };
+
+const FOOD_MEAL_SLUG = "food_meal";
+
+/**
+ * Today's diet roll-up for the "today" view. Reuses `computeAggregations` (so
+ * soft-deleted events are excluded and kcal uses the cached column) over the
+ * single day. Returns null for users who don't log food, leaving the habit-only
+ * experience untouched.
+ */
+async function computeNutrition(
+  deps: TodayServiceDeps,
+  userId: string,
+  todayKey: string,
+): Promise<TodayNutrition | null> {
+  const foodEntries = await deps.db.entry.findMany({
+    where: { userId, isActive: true, entryType: { slug: FOOD_MEAL_SLUG } },
+    select: { config: true },
+  });
+  if (foodEntries.length === 0) return null;
+
+  const agg = await computeAggregations(deps, {
+    userId,
+    entryTypeSlug: FOOD_MEAL_SLUG,
+    from: todayKey,
+    to: todayKey,
+    groupBy: "none",
+  });
+  const sum = agg.total.sum;
+
+  let kcalTarget: number | null = null;
+  for (const entry of foodEntries) {
+    try {
+      const cfg = JSON.parse(entry.config) as { dailyKcalTarget?: unknown };
+      if (typeof cfg.dailyKcalTarget === "number" && cfg.dailyKcalTarget > 0) {
+        kcalTarget = cfg.dailyKcalTarget;
+        break;
+      }
+    } catch {
+      // Malformed config is ignored; the target simply stays null.
+    }
+  }
+
+  return {
+    kcal: sum.kcal ?? 0,
+    protein_g: sum.protein_g ?? 0,
+    carbs_g: sum.carbs_g ?? 0,
+    fat_g: sum.fat_g ?? 0,
+    mealCount: agg.total.count,
+    kcalTarget,
+  };
+}
 
 type PeriodCounter = {
   week: number;
@@ -153,5 +205,7 @@ export async function getTodaySummary(
     ]),
   });
 
-  return { summary };
+  const nutrition = await computeNutrition(deps, params.userId, day.todayKey);
+
+  return { summary: { ...summary, nutrition } };
 }
