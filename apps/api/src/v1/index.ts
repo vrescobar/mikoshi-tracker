@@ -7,6 +7,7 @@ import { eventsV1Routes } from "./resources/events";
 import { todayV1Routes } from "./resources/today";
 import { aggregationsV1Routes } from "./resources/aggregations";
 import { statsV1Routes } from "./resources/stats";
+import { circlesV1Routes } from "./resources/circles";
 import { adminV1Routes } from "./resources/admin";
 import type { ApiV1Deps, V1RouteMeta } from "./match";
 
@@ -26,8 +27,8 @@ export function buildV1RouteTable(deps: ApiV1Deps): V1RouteMeta[] {
     ...todayV1Routes(deps),
     ...aggregationsV1Routes(deps),
     ...statsV1Routes(deps),
+    ...circlesV1Routes(deps),
     ...adminV1Routes(deps),
-    // ...circlesV1Routes(deps),   (stage 3d)
   ];
 }
 
