@@ -990,4 +990,239 @@ td .row-actions {
   .field-row {
     grid-template-columns: 1fr;
   }
+  .week-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Plan & Diet tabs ───────────────────────────────────────────────────── */
+
+.search-input {
+  max-width: 240px;
+}
+.sm {
+  font-size: 0.8rem;
+}
+
+/* Weekly schedule grid */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.week-col {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.week-col.is-today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.week-col-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-weight: 620;
+  color: var(--ink-soft);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.week-col-count {
+  color: var(--faint);
+  font-weight: 500;
+}
+.week-col-body {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.week-chip {
+  font-size: 0.76rem;
+  line-height: 1.25;
+  padding: 4px 7px;
+  border-radius: var(--r-sm);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.flex-note {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Charts */
+.chart-card {
+  overflow: hidden;
+}
+.chart-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+/* Habit list */
+.habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.habit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.habit-row.is-muted {
+  opacity: 0.72;
+}
+.habit-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.habit-sub {
+  font-size: 0.82rem;
+  margin-top: 3px;
+}
+.habit-aside {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.strip {
+  display: flex;
+  gap: 3px;
+}
+.strip .cell {
+  width: 10px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.strip .cell.off {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+}
+.strip .cell.done {
+  background: var(--accent);
+}
+.strip .cell.miss {
+  background: var(--danger-soft);
+}
+.adh {
+  font-size: 0.9rem;
+  font-weight: 660;
+  min-width: 42px;
+  text-align: right;
+}
+.adh.good {
+  color: var(--ok);
+}
+.adh.mid {
+  color: var(--warn);
+}
+.adh.low {
+  color: var(--danger);
+}
+
+/* Segmented toggle */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.segmented button {
+  border: none;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 560;
+  cursor: pointer;
+}
+.segmented button + button {
+  border-left: 1px solid var(--line);
+}
+.segmented button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Diet today card */
+.kcal-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.kcal-head .metric-label {
+  margin-left: 8px;
+}
+.kcal-pct {
+  font-size: 1.5rem;
+  font-weight: 680;
+  color: var(--ok);
+}
+.kcal-pct.over {
+  color: var(--danger);
+}
+.kcal-bar {
+  height: 8px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 12px 0 18px;
+}
+.kcal-bar .fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+.kcal-bar .fill.over {
+  background: var(--danger);
+}
+.macros {
+  display: flex;
+  gap: 28px;
+}
+.macro {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.macro-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  align-self: center;
+}
+.macro-val {
+  font-size: 1.1rem;
+  font-weight: 640;
+  color: var(--ink);
+}
+.macro-label {
+  font-size: 0.82rem;
+  color: var(--muted);
 }

@@ -5,6 +5,8 @@ import { useAsync, errorMessage } from "../lib/useAsync";
 import { resolveUser } from "../lib/userCache";
 import { navigate } from "../lib/router";
 import { DataTable, type Column } from "../components/DataTable";
+import { PlanTab } from "./PlanTab";
+import { DietTab } from "./DietTab";
 import {
   ConfirmDialog,
   Drawer,
@@ -20,7 +22,16 @@ import {
   useToast,
 } from "../components/ui";
 
-type Tab = "habits" | "history" | "circles" | "account";
+type Tab = "habits" | "plan" | "diet" | "history" | "circles" | "account";
+
+const TAB_LABELS: Record<Tab, string> = {
+  habits: "Habits",
+  plan: "Plan",
+  diet: "Diet",
+  history: "History",
+  circles: "Circles",
+  account: "Account",
+};
 
 export function UserDetail({ userId }: { userId: string }) {
   const user = useAsync(() => resolveUser(userId), [userId]);
@@ -59,14 +70,16 @@ export function UserDetail({ userId }: { userId: string }) {
       </div>
 
       <div className="tabs">
-        {(["habits", "history", "circles", "account"] as Tab[]).map((t) => (
+        {(["habits", "plan", "diet", "history", "circles", "account"] as Tab[]).map((t) => (
           <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>
-            {t === "habits" ? "Habits" : t === "history" ? "History" : t === "circles" ? "Circles" : "Account"}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
 
       {tab === "habits" && <HabitsTab userId={userId} />}
+      {tab === "plan" && <PlanTab userId={userId} />}
+      {tab === "diet" && <DietTab userId={userId} />}
       {tab === "history" && <HistoryTab userId={userId} />}
       {tab === "circles" && <CirclesTab userId={userId} />}
       {tab === "account" && <AccountTab user={u} userId={userId} onChanged={user.reload} />}

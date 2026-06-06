@@ -32,7 +32,7 @@ export function LoginGate({ onAuthed }: { onAuthed: () => void }) {
         </div>
         <h1>Admin God Mode</h1>
         <p className="dim" style={{ margin: "8px 0 0" }}>
-          Paste the operator admin API key. It stays in this tab only.
+          Paste the operator admin API key. It is stored in this browser until you Lock.
         </p>
         <input
           type="password"

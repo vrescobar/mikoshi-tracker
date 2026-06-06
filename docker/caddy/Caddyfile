@@ -17,6 +17,28 @@
 		reverse_proxy {$MIKOSHI_TRACKER_API_UPSTREAM:127.0.0.1:3001}
 	}
 
+	# Bare /admin → /admin/ so the SPA loads when the path is typed without the
+	# trailing slash.
+	handle /admin {
+		redir * /admin/ 308
+	}
+
+	# Admin god-mode SPA (Vite build). Served statically under /admin/; the
+	# /admin prefix is stripped before hitting the filesystem. SPA fallback to
+	# index.html keeps client-side state routing working on deep links/refresh.
+	# It authenticates by Bearer admin key against /api, not cookies.
+	handle_path /admin/* {
+		header {
+			X-Content-Type-Options nosniff
+			X-Frame-Options DENY
+			Referrer-Policy strict-origin-when-cross-origin
+			-Server
+		}
+		root * apps/admin/dist
+		try_files {path} /index.html
+		file_server
+	}
+
 	# Web (Next.js). The API already sets its own security headers via helmet;
 	# these cover the web responses that do not pass through the API.
 	handle {

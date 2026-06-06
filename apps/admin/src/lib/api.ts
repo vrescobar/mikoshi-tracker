@@ -261,6 +261,15 @@ export type TodayItem = {
   progress?: { currentValue: number | null; targetValue: number | null; unit: string | null };
 };
 
+export type TodayNutrition = {
+  kcal: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  mealCount: number;
+  kcalTarget: number | null;
+};
+
 export type TodaySummary = {
   date: string;
   totalCount: number;
@@ -269,6 +278,39 @@ export type TodaySummary = {
   completionRate: number;
   pendingItems: TodayItem[];
   completedItems: TodayItem[];
+  /** Diet roll-up for the day; null for users who don't log food. */
+  nutrition?: TodayNutrition | null;
+};
+
+// ── Aggregations (diet/kcal page contract) ────────────────────────────────────
+
+export type AggregationGroupBy = "day" | "week" | "month" | "none";
+
+export type AggregationBucket = {
+  key:
+    | { kind: "date"; value: string }
+    | { kind: "payload"; field: string; value: string; sample?: unknown };
+  sum: Record<string, number>;
+  count: number;
+  missing: boolean;
+};
+
+export type AggregationResponse = {
+  buckets: AggregationBucket[];
+  total: { sum: Record<string, number>; count: number };
+  weeklyAverage: { sum: Record<string, number>; count: number } | null;
+};
+
+export type AggregationQuery = {
+  entryTypeSlug: string;
+  entryId?: string;
+  from: string;
+  to: string;
+  groupBy?: AggregationGroupBy;
+  fields?: string;
+  include?: string;
+  groupByPayload?: string;
+  limit?: number;
 };
 
 export type CircleContestConfig = {
@@ -450,6 +492,24 @@ export function asUser(userId: string) {
 
     // today + stats
     today: () => call<{ summary: TodaySummary }>("GET", "/today/summary", act),
+
+    // aggregations (powers the diet/kcal exploration)
+    aggregations: (p: AggregationQuery) =>
+      call<AggregationResponse>(
+        "GET",
+        `/aggregations${qs({
+          entryTypeSlug: p.entryTypeSlug,
+          entryId: p.entryId,
+          from: p.from,
+          to: p.to,
+          groupBy: p.groupBy ?? "day",
+          fields: p.fields,
+          include: p.include,
+          groupByPayload: p.groupByPayload,
+          limit: p.limit,
+        })}`,
+        act,
+      ),
 
     // circles (owner-scoped operations run as the circle owner)
     listCircles: () =>
