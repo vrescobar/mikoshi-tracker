@@ -246,6 +246,39 @@ describe("circle read endpoints", () => {
       expect(aliceEntry.weeklyCompletionRate).toBe(0.75);
     });
 
+    it("counts 'today' in each member's timezone, not UTC", async () => {
+      // Regression: a member ahead of UTC whose local date has already rolled
+      // over. At 20:00 UTC, Asia/Shanghai (UTC+8) is 04:00 the NEXT day → the
+      // check-in lands on 2026-05-19. A UTC-only leaderboard would look at
+      // 2026-05-18 and miss it (completedTodayCount 0).
+      const BOUNDARY_NOW = "2026-05-18T20:00:00.000Z";
+      context = await createTestContext();
+      const { body: alice } = await signUp(context.app, { email: "tz@example.com", name: "Tz", timezone: "Asia/Shanghai" });
+      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "TZ Circle" });
+      const { token } = await createCircleToken(context.app.db, circle.id);
+      const habit = await createHabit(
+        { db: context.app.db },
+        { userId: alice.user.id, input: { name: "Habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-19" },
+      );
+      await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: habit.id });
+
+      // Complete via the circle endpoint at the same boundary instant.
+      const complete = await context.app.inject({
+        method: "POST",
+        url: `/api/circles/${circle.id}/members/${alice.user.id}/habits/${habit.id}/complete`,
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": BOUNDARY_NOW },
+      });
+      expect(complete.statusCode).toBe(200);
+
+      const response = await context.app.inject({
+        method: "GET",
+        url: `/api/circles/${circle.id}/leaderboard`,
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": BOUNDARY_NOW },
+      });
+      const { leaderboard } = response.json() as { leaderboard: Array<{ userId: string; completedTodayCount: number }> };
+      expect(leaderboard.find((e) => e.userId === alice.user.id)!.completedTodayCount).toBe(1);
+    });
+
     it("ranks by completedToday desc then currentStreak desc then displayName asc", async () => {
       context = await createTestContext();
       const { alice, bob, circle, token } = await setupFixture(context);

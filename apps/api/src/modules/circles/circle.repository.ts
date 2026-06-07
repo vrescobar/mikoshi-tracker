@@ -287,7 +287,7 @@ export async function getCircleLeaderboardData(
 ) {
   const memberships = await db.circleMembership.findMany({
     where: { circleId: params.circleId },
-    include: { user: { select: { id: true, name: true } } },
+    include: { user: { select: { id: true, name: true, timezone: true } } },
     orderBy: { joinedAt: "asc" },
   });
 

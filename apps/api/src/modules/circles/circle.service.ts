@@ -272,15 +272,17 @@ export async function getCircleLeaderboard(
   params: { circleId: string; timestamp?: Date | number | string },
 ) {
   const now = params.timestamp ? new Date(params.timestamp) : new Date();
-  const todayKey = now.toISOString().slice(0, 10);
-  const rangeStart = addDays(todayKey, -29);
-  const weekStart = addDays(todayKey, -6);
-  const yesterday = addDays(todayKey, -1);
+  // Each member's "today" is resolved in THEIR timezone (matching how check-ins
+  // are recorded), so the event-fetch window is anchored to UTC with ±1 day of
+  // slack to cover members whose local date leads/lags UTC.
+  const utcToday = now.toISOString().slice(0, 10);
+  const fetchRangeStart = addDays(utcToday, -30);
+  const fetchRangeEnd = addDays(utcToday, 1);
 
   const { memberships, shares } = await getCircleLeaderboardData(db, {
     circleId: params.circleId,
-    rangeStart,
-    todayKey,
+    rangeStart: fetchRangeStart,
+    todayKey: fetchRangeEnd,
   });
 
   const sharesByUser = new Map<string, (typeof shares)[number][]>();
@@ -294,8 +296,15 @@ export async function getCircleLeaderboard(
   const leaderboard = memberships.map((membership) => {
     const userShares = sharesByUser.get(membership.userId) ?? [];
 
+    // Resolve this member's day keys in their own timezone — a UTC-only "today"
+    // miscounts members whose local date differs from UTC at request time.
+    const memberToday = resolveHabitDay({ timestamp: now, timeZone: membership.user.timezone }).todayKey;
+    const weekStart = addDays(memberToday, -6);
+    const yesterday = addDays(memberToday, -1);
+    const rangeStart = addDays(memberToday, -29);
+
     const completedTodayCount = userShares.filter((share) =>
-      share.habit.dayStates.some((state) => state.dateKey === todayKey && state.completed),
+      share.habit.dayStates.some((state) => state.dateKey === memberToday && state.completed),
     ).length;
 
     const sharedHabitCount = userShares.length;
@@ -313,7 +322,7 @@ export async function getCircleLeaderboard(
         (state) =>
           state.completed &&
           compareDateKeys(state.dateKey, weekStart) >= 0 &&
-          compareDateKeys(state.dateKey, todayKey) <= 0,
+          compareDateKeys(state.dateKey, memberToday) <= 0,
       ).length;
       weeklyTargetCount += target;
       weeklyCompletedCount += Math.min(doneThisWeek, target);
