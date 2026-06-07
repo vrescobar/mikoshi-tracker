@@ -104,7 +104,8 @@ const metricLeaderboardEntrySchema = z.object({
 });
 
 const shareInputSchema = z.object({ circleId: nonEmpty, habitId: nonEmpty });
-const checkinInputSchema = z.object({ userId: nonEmpty, habitId: nonEmpty });
+const backdateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD");
+const checkinInputSchema = z.object({ userId: nonEmpty, habitId: nonEmpty, date: backdateSchema.optional() });
 const setTotalInputSchema = checkinInputSchema.extend({ total: z.number().int().nonnegative() });
 const tokenMintInputSchema = z.object({ circleId: nonEmpty, label: nonEmpty.optional() });
 const tokenRevokeInputSchema = z.object({ circleId: nonEmpty, tokenId: nonEmpty });
@@ -349,6 +350,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           userId: input.userId,
           habitId: input.habitId,
           timestamp: getRequestTimestamp(ctx.request),
+          date: input.date,
         });
       },
     },
@@ -371,6 +373,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           habitId: input.habitId,
           total: input.total,
           timestamp: getRequestTimestamp(ctx.request),
+          date: input.date,
         });
       },
     },
@@ -392,6 +395,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
           userId: input.userId,
           habitId: input.habitId,
           timestamp: getRequestTimestamp(ctx.request),
+          date: input.date,
         });
       },
     },

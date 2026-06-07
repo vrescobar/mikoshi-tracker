@@ -3,9 +3,12 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 
 import {
   addCircleMemberInputSchema,
+  circleCompleteInputSchema,
   circleSetTotalInputSchema,
+  circleUndoInputSchema,
   createCircleInputSchema,
   createCircleTokenInputSchema,
+  setCircleMemberNameInputSchema,
   shareHabitInputSchema,
   updateCircleMemberInputSchema,
 } from "@mikoshi-tracker/contracts/circles";
@@ -14,6 +17,7 @@ import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";
 import {
   addCircleMember,
+  CircleBackdateRangeError,
   circleCompleteHabit,
   CircleClosedError,
   CircleForbiddenError,
@@ -38,6 +42,7 @@ import {
   mintCircleToken,
   removeCircleMember,
   revokeCircleTokenForOwner,
+  setCircleMemberName,
   CircleTokenNotFoundError,
   shareHabit,
   TodayActionUnavailableError,
@@ -77,7 +82,7 @@ function sendCircleWriteError(reply: FastifyReply, error: unknown) {
     reply.status(409).send({ code: "UNDO_NOT_CIRCLE_SOURCED", message: error.message });
     return reply;
   }
-  if (error instanceof TodayActionUnavailableError) {
+  if (error instanceof TodayActionUnavailableError || error instanceof CircleBackdateRangeError) {
     reply.status(400).send({ code: "BAD_REQUEST", message: error.message });
     return reply;
   }
@@ -150,8 +155,9 @@ export async function circleCompleteHabitHandler(request: FastifyRequest, reply:
       habitId: string;
     };
     await requireCircleContext(request, circleId);
+    const { date } = circleCompleteInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
-    return await circleCompleteHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp });
+    return await circleCompleteHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
   } catch (error) {
     return sendCircleWriteError(reply, error);
   }
@@ -165,11 +171,11 @@ export async function circleSetHabitTotalHandler(request: FastifyRequest, reply:
       habitId: string;
     };
     await requireCircleContext(request, circleId);
-    const { total } = circleSetTotalInputSchema.parse(request.body);
+    const { total, date } = circleSetTotalInputSchema.parse(request.body);
     const timestamp = getRequestTimestamp(request);
     return await circleSetHabitTotal(
       { db: request.server.db },
-      { circleId, userId, habitId, total, timestamp },
+      { circleId, userId, habitId, total, timestamp, date },
     );
   } catch (error) {
     return sendCircleWriteError(reply, error);
@@ -184,8 +190,20 @@ export async function circleUndoHabitHandler(request: FastifyRequest, reply: Fas
       habitId: string;
     };
     await requireCircleContext(request, circleId);
+    const { date } = circleUndoInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
-    return await circleUndoHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp });
+    return await circleUndoHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
+  } catch (error) {
+    return sendCircleWriteError(reply, error);
+  }
+}
+
+export async function setCircleMemberNameHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    const { circleId, userId } = request.params as { circleId: string; userId: string };
+    await requireCircleContext(request, circleId);
+    const { name } = setCircleMemberNameInputSchema.parse(request.body);
+    return await setCircleMemberName({ db: request.server.db }, { circleId, userId, name });
   } catch (error) {
     return sendCircleWriteError(reply, error);
   }

@@ -79,6 +79,41 @@ export function compareDateKeys(left: string, right: string) {
   return left.localeCompare(right);
 }
 
+/** Offset (local wall-clock minus UTC) in ms for `date` in `timeZone`. */
+function timeZoneOffsetMs(date: Date, timeZone: string): number {
+  const parts = getFormatter(timeZone).formatToParts(date);
+  const map = Object.fromEntries(
+    parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]),
+  );
+  const asUtc = Date.UTC(
+    Number(map.year),
+    Number(map.month) - 1,
+    Number(map.day),
+    Number(map.hour),
+    Number(map.minute),
+    Number(map.second),
+  );
+  return asUtc - date.getTime();
+}
+
+/**
+ * Convert a calendar date (`YYYY-MM-DD`, as the member perceives it) into the
+ * UTC instant at **local noon** in `timeZone`. Local noon (not midnight) keeps
+ * `resolveHabitDay`'s 4am cutoff from rolling the day backward and is DST-safe.
+ *
+ * Round-trip invariant:
+ *   resolveHabitDay({ timestamp: dateKeyToLocalNoonTimestamp(dk, tz), timeZone: tz }).todayKey === dk
+ */
+export function dateKeyToLocalNoonTimestamp(dateKey: string, timeZone: string): Date {
+  const tz = normalizeUserTimeZone(timeZone);
+  const [year, month, day] = dateKey.split("-").map((value) => Number(value));
+  // Treat noon-on-dateKey as if it were UTC, then subtract the zone offset at
+  // that wall-clock so the resulting instant reads back as local noon.
+  const noonAsUtc = Date.UTC(year, month - 1, day, 12, 0, 0);
+  const offset = timeZoneOffsetMs(new Date(noonAsUtc), tz);
+  return new Date(noonAsUtc - offset);
+}
+
 export function getWeekday(dateKey: string): HabitWeekday {
   return WEEKDAY_NAMES[fromDateKey(dateKey).getUTCDay()];
 }

@@ -1,6 +1,6 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import { serializeContractHabitKind, serializeContractWeekday } from "../../shared/habit-contract-mappers";
-import { addDays, compareDateKeys, resolveHabitDay } from "../today/today-clock";
+import { addDays, compareDateKeys, dateKeyToLocalNoonTimestamp, resolveHabitDay } from "../today/today-clock";
 import { findLatestCheckinMutation } from "../checkins/checkin.repository";
 import {
   completeHabitForToday,
@@ -123,6 +123,17 @@ export class CircleUserNotFoundError extends Error {
   constructor() {
     super("User not found");
     this.name = "CircleUserNotFoundError";
+  }
+}
+
+/**
+ * Thrown when a backdated check-in targets a date in the future or older than
+ * MAX_BACKDATE_DAYS (measured against the member's local "today"). Maps to 400.
+ */
+export class CircleBackdateRangeError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CircleBackdateRangeError";
   }
 }
 
@@ -408,18 +419,68 @@ export async function getMemberHabitsForCircle(
   return { habits };
 }
 
+/** Max days a check-in may be backdated, measured from the member's local today. */
+const MAX_BACKDATE_DAYS = 14;
+
 type CircleWriteBaseParams = {
   circleId: string;
   userId: string;
   habitId: string;
+  /** The request "now" (real clock or test header) used to anchor the backdate guard. */
   timestamp?: Date | number | string;
+  /** Optional backdate target `YYYY-MM-DD`; when set, the check-in lands on that day. */
+  date?: string;
 };
+
+/**
+ * Validate a backdate `date` against the member's local today and return the
+ * UTC instant (local noon) to feed the checkin service. Rejects future dates and
+ * anything older than MAX_BACKDATE_DAYS.
+ */
+function resolveBackdateTimestamp(params: {
+  date: string;
+  timeZone: string;
+  now: Date | number | string;
+}): Date {
+  const today = resolveHabitDay({ timestamp: params.now, timeZone: params.timeZone }).todayKey;
+  const target = params.date;
+  if (compareDateKeys(target, today) > 0) {
+    throw new CircleBackdateRangeError(`No se puede registrar un check-in en una fecha futura (${target}).`);
+  }
+  const floor = addDays(today, -MAX_BACKDATE_DAYS);
+  if (compareDateKeys(target, floor) < 0) {
+    throw new CircleBackdateRangeError(
+      `No se puede corregir más de ${MAX_BACKDATE_DAYS} días atrás (${target} es anterior a ${floor}).`,
+    );
+  }
+  return dateKeyToLocalNoonTimestamp(target, params.timeZone);
+}
+
+/**
+ * Resolve the timestamp a circle write should use. With no `date` it is the
+ * request "now" (byte-identical to the old behavior). With a `date` it is the
+ * member's local noon on that day, after the backdate guard.
+ */
+async function resolveEffectiveTimestamp(
+  db: PrismaClient,
+  params: CircleWriteBaseParams,
+): Promise<Date | number | string | undefined> {
+  if (!params.date) return params.timestamp;
+  const user = await db.user.findUnique({ where: { id: params.userId }, select: { timezone: true } });
+  if (!user) throw new CircleMemberNotFoundError();
+  return resolveBackdateTimestamp({
+    date: params.date,
+    timeZone: user.timezone,
+    now: params.timestamp ?? new Date(),
+  });
+}
 
 export async function circleCompleteHabit(
   { db }: CircleServiceDependencies,
   params: CircleWriteBaseParams,
 ) {
   await assertCircleHabitWritable({ db }, params);
+  const timestamp = await resolveEffectiveTimestamp(db, params);
   const result = await completeHabitForToday(
     { db },
     {
@@ -427,7 +488,7 @@ export async function circleCompleteHabit(
       habitId: params.habitId,
       source: "circle",
       onBehalfOfCircleId: params.circleId,
-      timestamp: params.timestamp,
+      timestamp,
     },
   );
   return {
@@ -443,6 +504,7 @@ export async function circleSetHabitTotal(
   params: CircleWriteBaseParams & { total: number },
 ) {
   await assertCircleHabitWritable({ db }, params);
+  const timestamp = await resolveEffectiveTimestamp(db, params);
   const result = await setHabitTotalForToday(
     { db },
     {
@@ -451,7 +513,7 @@ export async function circleSetHabitTotal(
       source: "circle",
       onBehalfOfCircleId: params.circleId,
       total: params.total,
-      timestamp: params.timestamp,
+      timestamp,
     },
   );
   return {
@@ -476,8 +538,16 @@ export async function circleUndoHabit(
     throw new CircleMemberNotFoundError();
   }
 
+  const timestamp = params.date
+    ? resolveBackdateTimestamp({
+        date: params.date,
+        timeZone: user.timezone,
+        now: params.timestamp ?? new Date(),
+      })
+    : params.timestamp;
+
   const day = resolveHabitDay({
-    timestamp: params.timestamp ?? new Date(),
+    timestamp: timestamp ?? new Date(),
     timeZone: user.timezone,
   });
 
@@ -497,7 +567,7 @@ export async function circleUndoHabit(
       habitId: params.habitId,
       source: "circle",
       onBehalfOfCircleId: params.circleId,
-      timestamp: params.timestamp,
+      timestamp,
     },
   );
   return {
@@ -506,6 +576,32 @@ export async function circleUndoHabit(
     completed: result.currentState.completed,
     currentValue: result.currentState.value,
   };
+}
+
+/**
+ * Set a member's display name (global `User.name`). Circle-token authenticated:
+ * the token can only rename users who are members of ITS circle (we verify the
+ * membership first), so a circle token cannot touch arbitrary users. Owner-only
+ * enforcement lives in the bridge/skill — consistent with check-in writes, which
+ * the circle token already performs for any member.
+ */
+export async function setCircleMemberName(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; userId: string; name: string },
+) {
+  const membership = await findCircleMembershipByUserId(db, {
+    circleId: params.circleId,
+    userId: params.userId,
+  });
+  if (!membership) {
+    throw new CircleMemberNotFoundError();
+  }
+  await db.user.update({ where: { id: params.userId }, data: { name: params.name } });
+  const updated = await findCircleMembershipById(db, {
+    circleId: params.circleId,
+    membershipId: membership.id,
+  });
+  return { membership: serializeCircleMember(updated!) };
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────────

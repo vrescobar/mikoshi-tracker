@@ -8440,6 +8440,10 @@
                   "habitId": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                   }
                 },
                 "required": [
@@ -8569,6 +8573,10 @@
                   "habitId": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                   },
                   "total": {
                     "type": "integer",
@@ -8704,6 +8712,10 @@
                   "habitId": {
                     "type": "string",
                     "minLength": 1
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                   }
                 },
                 "required": [

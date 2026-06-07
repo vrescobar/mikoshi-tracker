@@ -4,6 +4,7 @@ import type { FastifyInstance } from "fastify";
 import { commonAuthErrorResponses, commonNotFoundResponse } from "@mikoshi-tracker/contracts/api";
 import {
   addCircleMemberInputSchema,
+  circleCompleteInputSchema,
   circleDetailResponseSchema,
   circleHabitActionResponseSchema,
   circleItemResponseSchema,
@@ -21,8 +22,10 @@ import {
   circleTokenCreatedResponseSchema,
   circleTokenListResponseSchema,
   circleTokenPathParamsSchema,
+  circleUndoInputSchema,
   createCircleInputSchema,
   createCircleTokenInputSchema,
+  setCircleMemberNameInputSchema,
   shareHabitInputSchema,
   undoNotCircleSourcedErrorSchema,
   updateCircleMemberInputSchema,
@@ -44,6 +47,7 @@ import {
   listCircleTokensHandler,
   removeCircleMemberHandler,
   revokeCircleTokenHandler,
+  setCircleMemberNameHandler,
   shareHabitHandler,
   unshareHabitHandler,
   updateCircleMemberHandler,
@@ -116,12 +120,23 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "circleCompleteHabit",
     summary: "Complete a habit (circle)",
     description:
-      "Records a boolean check-in for the member's shared habit. Requires a circle token. The mutation is recorded with source: 'circle'.",
+      "Records a boolean check-in for the member's shared habit. Requires a circle token. The mutation is recorded with source: 'circle'. Pass an optional `date` (YYYY-MM-DD, ≤14 days ago, never future) to backdate a correction.",
     tags: ["Circles"],
     security: [{ CircleBearerAuth: [] }],
-    request: { params: circleMemberHabitPathParamsSchema },
+    request: {
+      params: circleMemberHabitPathParamsSchema,
+      body: circleCompleteInputSchema,
+      bodyExamples: {
+        today: { summary: "Mark done today", value: {} },
+        backdated: { summary: "Backdate a missed check-in", value: { date: "2026-06-02" } },
+      },
+    },
     responses: {
       200: { description: "The updated habit state.", schema: circleHabitActionResponseSchema },
+      400: {
+        description: "The backdate target is in the future or older than 14 days.",
+        schema: z.object({ code: z.literal("BAD_REQUEST"), message: z.string() }),
+      },
       404: commonNotFoundResponse,
       409: habitInactiveCircleResponse,
       ...commonAuthErrorResponses,
@@ -141,10 +156,15 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
       body: circleSetTotalInputSchema,
       bodyExamples: {
         setPages: { summary: "Set daily reading total", value: { total: 15 } },
+        backdated: { summary: "Backdate a quantity check-in", value: { total: 15, date: "2026-06-02" } },
       },
     },
     responses: {
       200: { description: "The updated habit state.", schema: circleHabitActionResponseSchema },
+      400: {
+        description: "The backdate target is in the future or older than 14 days.",
+        schema: z.object({ code: z.literal("BAD_REQUEST"), message: z.string() }),
+      },
       404: commonNotFoundResponse,
       409: habitInactiveCircleResponse,
       ...commonAuthErrorResponses,
@@ -156,10 +176,17 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
     operationId: "circleUndoHabit",
     summary: "Undo last circle check-in",
     description:
-      "Undoes the day's latest check-in for the member's habit — only if that mutation was written by a circle token. Returns 409 UNDO_NOT_CIRCLE_SOURCED if the latest mutation came from a personal-token or web session.",
+      "Undoes the day's latest check-in for the member's habit — only if that mutation was written by a circle token. Returns 409 UNDO_NOT_CIRCLE_SOURCED if the latest mutation came from a personal-token or web session. Pass an optional `date` (YYYY-MM-DD) to undo a backdated correction.",
     tags: ["Circles"],
     security: [{ CircleBearerAuth: [] }],
-    request: { params: circleMemberHabitPathParamsSchema },
+    request: {
+      params: circleMemberHabitPathParamsSchema,
+      body: circleUndoInputSchema,
+      bodyExamples: {
+        today: { summary: "Undo today's check-in", value: {} },
+        backdated: { summary: "Undo a backdated check-in", value: { date: "2026-06-02" } },
+      },
+    },
     responses: {
       200: { description: "The habit state after undo.", schema: circleHabitActionResponseSchema },
       404: commonNotFoundResponse,
@@ -173,6 +200,32 @@ export const circleApiRouteDefinitions: PublicApiRouteDefinition[] = [
           },
         },
       },
+      ...commonAuthErrorResponses,
+    },
+  },
+  {
+    method: "PATCH",
+    path: "/api/circles/:circleId/members/:userId/name",
+    operationId: "setCircleMemberName",
+    summary: "Rename a circle member (circle token)",
+    description:
+      "Sets the member's display name (global User.name). Circle-token authenticated; the token can only rename users who are members of its circle. Owner-only enforcement is applied by the bridge that holds the token.",
+    tags: ["Circles"],
+    security: [{ CircleBearerAuth: [] }],
+    request: {
+      params: circleMemberPathParamsSchema,
+      body: setCircleMemberNameInputSchema,
+      bodyExamples: {
+        rename: { summary: "Give a UUID member a real name", value: { name: "Dani" } },
+      },
+    },
+    responses: {
+      200: { description: "The updated membership.", schema: circleMembershipResponseSchema },
+      400: {
+        description: "The name is empty or longer than 60 chars.",
+        schema: z.object({ code: z.literal("BAD_REQUEST"), message: z.string() }),
+      },
+      404: commonNotFoundResponse,
       ...commonAuthErrorResponses,
     },
   },
@@ -415,6 +468,7 @@ export async function registerCircleRoutes(app: FastifyInstance) {
     "/api/circles/:circleId/members/:userId/habits/:habitId/undo",
     circleUndoHabitHandler,
   );
+  app.patch("/api/circles/:circleId/members/:userId/name", setCircleMemberNameHandler);
 
   // ── Session-authenticated management routes ───────────────────────────────
   app.post("/api/circles", createCircleHandler);

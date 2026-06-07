@@ -130,8 +130,32 @@ export const createCircleTokenInputSchema = z.object({
 
 // ─── Circle-token write input schemas ────────────────────────────────────────
 
+/**
+ * Optional backdate target for a check-in correction (`YYYY-MM-DD`, as the
+ * member perceives the day). When omitted the check-in lands on "today". The
+ * server caps how far back this may be (see CircleBackdateRangeError) and never
+ * accepts a future date.
+ */
+export const circleBackdateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD");
+
+export const circleCompleteInputSchema = z.object({
+  date: circleBackdateSchema.optional(),
+});
+
+export const circleUndoInputSchema = z.object({
+  date: circleBackdateSchema.optional(),
+});
+
 export const circleSetTotalInputSchema = z.object({
   total: z.number().int().nonnegative(),
+  date: circleBackdateSchema.optional(),
+});
+
+/** Owner-gated (in the bridge) rename of a circle member's display name. */
+export const circleMemberNameSchema = z.string().trim().min(1).max(60);
+
+export const setCircleMemberNameInputSchema = z.object({
+  name: circleMemberNameSchema,
 });
 
 // ─── Response schemas ─────────────────────────────────────────────────────────
@@ -220,6 +244,9 @@ export type UpdateCircleMemberInput = z.infer<typeof updateCircleMemberInputSche
 export type ShareHabitInput = z.infer<typeof shareHabitInputSchema>;
 export type CreateCircleTokenInput = z.infer<typeof createCircleTokenInputSchema>;
 export type CircleSetTotalInput = z.infer<typeof circleSetTotalInputSchema>;
+export type CircleCompleteInput = z.infer<typeof circleCompleteInputSchema>;
+export type CircleUndoInput = z.infer<typeof circleUndoInputSchema>;
+export type SetCircleMemberNameInput = z.infer<typeof setCircleMemberNameInputSchema>;
 export type CircleListResponse = z.infer<typeof circleListResponseSchema>;
 export type CircleItemResponse = z.infer<typeof circleItemResponseSchema>;
 export type CircleSharedHabitSummary = z.infer<typeof circleSharedHabitSummarySchema>;
