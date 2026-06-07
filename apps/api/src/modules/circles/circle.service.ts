@@ -229,6 +229,33 @@ export async function listCircleMembersForToken(
   return { members: members.map(serializeCircleMember) };
 }
 
+/**
+ * How many completions in a rolling 7-day window count as 100% for one habit.
+ * Mirrors the per-period `completionTarget` semantics in `stats.shared.ts`:
+ *  - DAILY         → 7 (one per day)
+ *  - WEEKDAYS      → number of scheduled weekdays (each falls once per 7-day window)
+ *  - WEEKLY_COUNT  → its weekly count (e.g. 4x/week → 4)
+ *  - MONTHLY_COUNT → the monthly count amortized to a week (ceil over ~4 weeks)
+ * Always ≥ 1 so a misconfigured habit never divides by zero.
+ */
+function weeklyTargetForHabit(habit: {
+  frequencyType: string;
+  frequencyCount: number | null;
+  weekdays: Array<{ day: string }>;
+}): number {
+  switch (habit.frequencyType) {
+    case "WEEKDAYS":
+      return Math.max(1, habit.weekdays.length);
+    case "WEEKLY_COUNT":
+      return Math.max(1, habit.frequencyCount ?? 1);
+    case "MONTHLY_COUNT":
+      return Math.max(1, Math.ceil((habit.frequencyCount ?? 1) / 4));
+    case "DAILY":
+    default:
+      return 7;
+  }
+}
+
 export async function getCircleLeaderboard(
   { db }: CircleServiceDependencies,
   params: { circleId: string; timestamp?: Date | number | string },
@@ -262,21 +289,28 @@ export async function getCircleLeaderboard(
 
     const sharedHabitCount = userShares.length;
 
-    const completedInWeek = userShares.reduce((sum, share) => {
-      return (
-        sum +
-        share.habit.dayStates.filter(
-          (state) =>
-            state.completed &&
-            compareDateKeys(state.dateKey, weekStart) >= 0 &&
-            compareDateKeys(state.dateKey, todayKey) <= 0,
-        ).length
-      );
-    }, 0);
+    // Weekly adherence is `done / each-habit's-own-weekly-target`, NOT `done / 7`.
+    // A habit set to 4x/week with 3 check-ins is 3/4 = 75%, not 3/7 = 43%. We sum
+    // each habit's target (DAILY→7, WEEKDAYS→#days, WEEKLY_COUNT→count, …) and cap
+    // its numerator at its own target so one over-done habit can't paper over a
+    // neglected one.
+    let weeklyCompletedCount = 0;
+    let weeklyTargetCount = 0;
+    for (const share of userShares) {
+      const target = weeklyTargetForHabit(share.habit);
+      const doneThisWeek = share.habit.dayStates.filter(
+        (state) =>
+          state.completed &&
+          compareDateKeys(state.dateKey, weekStart) >= 0 &&
+          compareDateKeys(state.dateKey, todayKey) <= 0,
+      ).length;
+      weeklyTargetCount += target;
+      weeklyCompletedCount += Math.min(doneThisWeek, target);
+    }
 
     const weeklyCompletionRate =
-      sharedHabitCount > 0
-        ? Number(Math.min(1, completedInWeek / (sharedHabitCount * 7)).toFixed(2))
+      weeklyTargetCount > 0
+        ? Number(Math.min(1, weeklyCompletedCount / weeklyTargetCount).toFixed(2))
         : 0;
 
     let currentStreak = 0;
@@ -301,6 +335,8 @@ export async function getCircleLeaderboard(
       sharedHabitCount,
       currentStreak,
       weeklyCompletionRate,
+      weeklyCompletedCount,
+      weeklyTargetCount,
     };
   });
 

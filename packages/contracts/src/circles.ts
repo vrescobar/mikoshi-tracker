@@ -45,6 +45,12 @@ export const circleLeaderboardEntrySchema = z.object({
   sharedHabitCount: z.number().int().nonnegative(),
   currentStreak: z.number().int().nonnegative(),
   weeklyCompletionRate: z.number().min(0).max(1),
+  // Raw numerator/denominator behind `weeklyCompletionRate`, summed across the
+  // member's shared habits. `weeklyTargetCount` is the sum of each habit's own
+  // weekly target (a 4x/week habit counts 4, not 7), so a consumer can render
+  // an honest "X/Y → Z%" instead of inferring it from the rounded rate.
+  weeklyCompletedCount: z.number().int().nonnegative(),
+  weeklyTargetCount: z.number().int().nonnegative(),
 });
 
 // ─── Member habits with today state ──────────────────────────────────────────

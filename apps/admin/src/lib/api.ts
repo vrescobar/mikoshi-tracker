@@ -219,6 +219,8 @@ export type LeaderboardEntry = {
   sharedHabitCount: number;
   currentStreak: number;
   weeklyCompletionRate: number;
+  weeklyCompletedCount: number;
+  weeklyTargetCount: number;
 };
 
 export type MetricLeaderboardEntry = {

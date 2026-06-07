@@ -304,8 +304,8 @@ export async function getCircleLeaderboardData(
     },
     include: {
       entry: {
-        select: {
-          userId: true,
+        include: {
+          ...habitEntryInclude,
           events: {
             where: { dateKey: { gte: params.rangeStart, lte: params.todayKey } },
           },
@@ -314,9 +314,21 @@ export async function getCircleLeaderboardData(
     },
   });
 
-  const shares = shareRows.map((share) => ({
-    habit: { userId: share.entry.userId, dayStates: mapEventsToDayStates(share.entry.events) },
-  }));
+  const shares = shareRows.map((share) => {
+    // The weekly leaderboard needs each habit's own cadence (DAILY vs 4x/week vs
+    // specific weekdays) to compute its weekly target — not a flat 7. Reuse the
+    // canonical adapter so frequency semantics stay in one place.
+    const habit = mapEntryToHabit(share.entry);
+    return {
+      habit: {
+        userId: share.entry.userId,
+        frequencyType: habit.frequencyType,
+        frequencyCount: habit.frequencyCount,
+        weekdays: habit.weekdays,
+        dayStates: mapEventsToDayStates(share.entry.events),
+      },
+    };
+  });
 
   return { memberships, shares };
 }

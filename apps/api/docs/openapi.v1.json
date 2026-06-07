@@ -1458,6 +1458,16 @@
             "type": "number",
             "minimum": 0,
             "maximum": 1
+          },
+          "weeklyCompletedCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "weeklyTargetCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
           }
         },
         "required": [
@@ -1468,7 +1478,9 @@
           "completedTodayCount",
           "sharedHabitCount",
           "currentStreak",
-          "weeklyCompletionRate"
+          "weeklyCompletionRate",
+          "weeklyCompletedCount",
+          "weeklyTargetCount"
         ],
         "additionalProperties": false
       },
@@ -7894,6 +7906,16 @@
                                 "type": "number",
                                 "minimum": 0,
                                 "maximum": 1
+                              },
+                              "weeklyCompletedCount": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "weeklyTargetCount": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
                               }
                             },
                             "required": [
@@ -7904,7 +7926,9 @@
                               "completedTodayCount",
                               "sharedHabitCount",
                               "currentStreak",
-                              "weeklyCompletionRate"
+                              "weeklyCompletionRate",
+                              "weeklyCompletedCount",
+                              "weeklyTargetCount"
                             ],
                             "additionalProperties": false
                           }

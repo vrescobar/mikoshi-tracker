@@ -202,8 +202,48 @@ describe("circle read endpoints", () => {
       expect(aliceEntry.completedTodayCount).toBe(1);
       // Streak counts back from yesterday: completed 2026-05-17, not 2026-05-16 → streak = 1
       expect(aliceEntry.currentStreak).toBe(1);
-      // 2 completions in past 7 days, 1 habit * 7 days = 7; rate = min(1, 2/7) ≈ 0.29
+      // Daily habit → weekly target is 7. 2 completions in past 7 days → min(1, 2/7) ≈ 0.29
       expect(aliceEntry.weeklyCompletionRate).toBe(0.29);
+      expect(aliceEntry.weeklyCompletedCount).toBe(2);
+      expect(aliceEntry.weeklyTargetCount).toBe(7);
+    });
+
+    it("scores weekly_count habits against their own weekly target, not 7 days", async () => {
+      context = await createTestContext();
+      const { alice, circle, token } = await setupFixture(context);
+
+      // A 4x/week habit: its weekly target is 4, NOT 7.
+      const aliceHabit = await createHabit(
+        { db: context.app.db },
+        {
+          userId: alice.id,
+          input: { name: "Fuerza 4x", frequency: { type: "weekly_count", count: 4 }, startDate: "2026-05-01" },
+          today: "2026-05-18",
+        },
+      );
+      await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: aliceHabit.id });
+
+      // 3 of the 4 weekly check-ins done (today + the two prior days).
+      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-16T12:00:00.000Z" });
+
+      const response = await context.app.inject({
+        method: "GET",
+        url: `/api/circles/${circle.id}/leaderboard`,
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
+      });
+
+      expect(response.statusCode).toBe(200);
+      const { leaderboard } = response.json() as {
+        leaderboard: Array<{ userId: string; weeklyCompletionRate: number; weeklyCompletedCount: number; weeklyTargetCount: number }>;
+      };
+
+      const aliceEntry = leaderboard.find((e) => e.userId === alice.id)!;
+      // 3 done out of a weekly target of 4 → 0.75, NOT 3/7 ≈ 0.43.
+      expect(aliceEntry.weeklyCompletedCount).toBe(3);
+      expect(aliceEntry.weeklyTargetCount).toBe(4);
+      expect(aliceEntry.weeklyCompletionRate).toBe(0.75);
     });
 
     it("ranks by completedToday desc then currentStreak desc then displayName asc", async () => {
