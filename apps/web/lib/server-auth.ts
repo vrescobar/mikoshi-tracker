@@ -22,19 +22,9 @@ type SessionPayload = {
   timezone?: string;
 };
 
-/**
- * Today's date key (YYYY-MM-DD) in the given IANA timezone. Pages use this so the
- * day they query matches the timezone the API uses to bucket EntryEvent.dateKey;
- * a naive `new Date().toISOString()` would use UTC and miss events near midnight.
- */
-export function todayKeyInTimeZone(timeZone: string | undefined): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timeZone && timeZone.length > 0 ? timeZone : "UTC",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
+// Pure date helpers moved to ./dates so the SPA can share them; re-exported
+// here so server pages keep compiling until the Vite cutover deletes them.
+export { todayKeyInTimeZone } from "./dates";
 
 type RegistrationStatusPayload = {
   registrationEnabled: boolean;
@@ -283,22 +273,10 @@ export async function listEntriesFromCookieHeader(
   return body.items;
 }
 
-export type EntryTypeRecord = {
-  id: string;
-  slug: string;
-  name: string;
-  cadence: "recurring" | "ad-hoc";
-  skillSlug: string | null;
-  isBuiltIn: boolean;
-};
-
-export type SkillHealthSnapshot = {
-  skillSlug: string;
-  enrolled: boolean | null;
-  lastRunAt: string | null;
-  lastError: string | null;
-  unreachable: boolean;
-};
+export type { EntryTypeRecord } from "./entries-client";
+export type { SkillHealthSnapshot } from "./skills-client";
+import type { EntryTypeRecord } from "./entries-client";
+import type { SkillHealthSnapshot } from "./skills-client";
 
 /**
  * Fetch the skill runner's health for a single slug via the API proxy. Maps

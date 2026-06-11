@@ -120,3 +120,10 @@ export async function getWeightAggregations(
   const body = await requestJson<AggregationResponse>(`/api/aggregations?${params.toString()}`);
   return body;
 }
+
+/** The active weight_log entry, or null when none exists yet. */
+export async function getWeightEntry(): Promise<EntryRecord | null> {
+  const params = new URLSearchParams({ entryTypeSlug: "weight_log", isActive: "true" });
+  const body = await requestJson<{ items: EntryRecord[] }>(`/api/entries?${params.toString()}`);
+  return body.items[0] ?? null;
+}

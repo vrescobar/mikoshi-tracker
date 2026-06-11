@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { listEntries } from "../../lib/entries-client";
 import { getEntriesCopy } from "../../lib/i18n/entries";
-import type { EntryTypeRecord } from "../../lib/server-auth";
+import type { EntryTypeRecord } from "../../lib/entries-client";
 import { EventCard } from "../events/EventCard";
 import { useLocale } from "../locale";
 import { PageFrame, PageHeader, StatePanel, Surface } from "../ui";

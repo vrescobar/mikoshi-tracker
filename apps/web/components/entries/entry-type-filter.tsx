@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 
-import type { EntryTypeRecord } from "../../lib/server-auth";
+import type { EntryTypeRecord } from "../../lib/entries-client";
 
 import styles from "./entry-type-filter.module.css";
 

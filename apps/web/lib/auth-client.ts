@@ -28,6 +28,20 @@ export type HabitRecord = {
   weekdays: Weekday[];
 };
 
+export type SessionPayload = {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    isAdmin: boolean;
+  };
+  timezone?: string;
+  /** Present when an admin is viewing the app as this user (god-mode). */
+  impersonating?: {
+    operator: { type: "env" | "token" | "session"; label: string };
+  };
+};
+
 type TodaySummaryResponse = {
   summary: TodaySummary;
 };
@@ -245,6 +259,20 @@ export async function resetApiAccessToken() {
   return requestJson<ApiAccessTokenResponseBody>("/api/api-access/token/reset", {
     method: "POST",
   });
+}
+
+/** Current session, or null when not signed in (401). */
+export async function getSession(): Promise<SessionPayload | null> {
+  const response = await fetch(createApiUrl("/api/session"), {
+    credentials: "include",
+  });
+  if (response.status === 401) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error("Unable to validate session");
+  }
+  return (await response.json()) as SessionPayload;
 }
 
 export async function getRegistrationStatus() {

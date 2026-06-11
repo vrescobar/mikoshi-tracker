@@ -29,6 +29,20 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+export type EntryTypeRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  cadence: "recurring" | "ad-hoc";
+  skillSlug: string | null;
+  isBuiltIn: boolean;
+};
+
+export async function listEntryTypes(): Promise<EntryTypeRecord[]> {
+  const body = await requestJson<{ items: EntryTypeRecord[] }>("/api/entry-types");
+  return body.items;
+}
+
 export async function listEntries(filters?: { entryTypeSlug?: string; isActive?: boolean; query?: string }) {
   const params = new URLSearchParams();
   if (filters?.entryTypeSlug) params.set("entryTypeSlug", filters.entryTypeSlug);

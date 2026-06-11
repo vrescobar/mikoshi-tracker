@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-import type { SkillHealthSnapshot } from "../../lib/server-auth";
+import type { SkillHealthSnapshot } from "../../lib/skills-client";
 import { getSettingsCopy } from "../../lib/i18n/settings";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";

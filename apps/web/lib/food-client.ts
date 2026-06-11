@@ -192,3 +192,22 @@ export async function getFoodAggregations(from: string, to: string, groupBy: "da
   const body = await requestJson<AggregationResponse>(`/api/aggregations?${params.toString()}`);
   return body;
 }
+
+/**
+ * Repeated-meal aggregation grouped by `payload.name`, used by the "Repeats"
+ * panel on `/food` (Phase 13 G-FOOD-3).
+ */
+export async function getRepeatedFoodMeals(from: string, to: string, limit = 5) {
+  const params = new URLSearchParams({
+    entryTypeSlug: "food_meal",
+    from,
+    to,
+    groupBy: "none",
+    groupByPayload: "name",
+    fields: "kcal",
+    include: "count",
+    limit: String(limit),
+  });
+  const body = await requestJson<AggregationResponse>(`/api/aggregations?${params.toString()}`);
+  return body;
+}
