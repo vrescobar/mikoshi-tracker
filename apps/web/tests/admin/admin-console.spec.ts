@@ -77,3 +77,36 @@ test("non-admin gets 403 and no admin nav link", async ({ page, request, context
   await page.goto("/admin");
   await expect(page.getByTestId("admin-forbidden")).toBeVisible();
 });
+
+test("god mode: view as user, banner, audited mutation context, exit", async ({ page, request, context }) => {
+  const adminEmail = `admin-godmode-${Date.now()}@example.com`;
+  await signUpThroughApi(request, context, adminEmail, "Godmode Admin");
+  await promoteSignedInUserToAdmin(request);
+
+  // A target user to impersonate (no cookies added — separate account).
+  const targetEmail = `godmode-target-${Date.now()}@example.com`;
+  const targetResponse = await request.post("http://127.0.0.1:3001/api/auth/sign-up/email", {
+    data: { email: targetEmail, password: "password123", name: "Godmode Target" },
+  });
+  expect(targetResponse.ok()).toBeTruthy();
+
+  // Admin opens the target's detail and enters god mode.
+  await page.goto("/admin/users");
+  page.once("dialog", (dialog) => void dialog.accept());
+  await page.getByText(targetEmail).click();
+  await page.getByTestId("view-as-user").click();
+
+  // The protected shell now renders AS the target, with the banner pinned.
+  await expect(page.getByTestId("impersonation-banner")).toBeVisible();
+  await expect(page.getByTestId("app-shell-header")).toContainText(targetEmail);
+
+  // Refresh keeps god mode (sessionStorage survives reloads in the tab).
+  await page.reload();
+  await expect(page.getByTestId("impersonation-banner")).toBeVisible();
+
+  // Exit restores the admin and returns to the console.
+  await page.getByTestId("impersonation-exit").click();
+  await expect(page.getByTestId("impersonation-banner")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/admin\/users$/);
+  await expect(page.getByTestId("app-shell-header")).toContainText(adminEmail);
+});

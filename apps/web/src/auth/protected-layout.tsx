@@ -6,6 +6,7 @@ import { useLocale } from "../../components/locale";
 import { Button, PageFrame, StatePanel } from "../../components/ui";
 import { getSession, type SessionPayload } from "../../lib/auth-client";
 import { routes } from "../../lib/navigation";
+import { ImpersonationBanner, useActAs } from "../admin/impersonation";
 import { SessionProvider } from "./session";
 
 type SessionState =
@@ -27,6 +28,7 @@ export function ProtectedLayout() {
   const [state, setState] = useState<SessionState>({ status: "loading" });
   const [tick, setTick] = useState(0);
   const { copy } = useLocale();
+  const actAs = useActAs();
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +44,9 @@ export function ProtectedLayout() {
     return () => {
       cancelled = true;
     };
-  }, [tick]);
+    // The session answers as the god-mode target while impersonating, so a
+    // toggle must re-resolve it.
+  }, [tick, actAs?.userId]);
 
   const refresh = useCallback(() => setTick((value) => value + 1), []);
 
@@ -75,7 +79,10 @@ export function ProtectedLayout() {
 
   const { session } = state;
   return (
+    // Keyed on the god-mode target: toggling impersonation remounts the whole
+    // protected tree, so every page refetches as the (new) effective user.
     <SessionProvider
+      key={actAs?.userId ?? "self"}
       value={{
         user: session.user,
         timezone: session.timezone,
@@ -83,6 +90,7 @@ export function ProtectedLayout() {
         refresh,
       }}
     >
+      {actAs ? <ImpersonationBanner target={actAs} /> : null}
       <AppShell userEmail={session.user.email} isAdmin={session.user.isAdmin}>
         <Outlet />
       </AppShell>

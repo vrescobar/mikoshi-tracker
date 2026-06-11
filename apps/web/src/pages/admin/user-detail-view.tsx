@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
+import { setActAs } from "../../../lib/impersonation";
+
 import { api, type AdminEntry, type AdminEvent, type AdminUser, type TodayItem } from "../../../lib/admin-client";
 import { useAsync, errorMessage } from "../../admin/lib/use-async";
 import { resolveUser } from "../../admin/lib/user-cache";
@@ -65,6 +67,22 @@ export function UserDetail() {
           </div>
         </div>
         <div className="actions">
+          <button
+            className="btn"
+            data-testid="view-as-user"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `View the app as ${name}? Actions you take run as them and are audited under your name.`,
+                )
+              ) {
+                setActAs({ userId, name });
+                void navigate("/dashboard");
+              }
+            }}
+          >
+            View as user
+          </button>
           <button className="btn ghost" onClick={() => void loginAs(userId)}>
             Login as ↗
           </button>

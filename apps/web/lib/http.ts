@@ -1,4 +1,7 @@
+import { ACT_AS_HEADER } from "@mikoshi-tracker/contracts/api";
+
 import { createApiUrl } from "./api";
+import { getActAs } from "./impersonation";
 
 /**
  * Single fetch choke point for every API client. All requests go through
@@ -37,10 +40,21 @@ export async function readErrorMessage(response: Response): Promise<string> {
 }
 
 export async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const headers: Record<string, string> = { ...((init?.headers as Record<string, string>) ?? {}) };
+
+  // God-mode: while an admin "views as" a user, every API call runs as the
+  // target — except the auth surface, which must keep operating on the
+  // admin's own session, and except calls that already set the header
+  // explicitly (the admin console's asUser() helpers).
+  const actAs = getActAs();
+  if (actAs && !path.startsWith("/api/auth") && headers[ACT_AS_HEADER] === undefined) {
+    headers[ACT_AS_HEADER] = actAs.userId;
+  }
+
   return fetch(createApiUrl(path), {
     ...init,
     credentials: "include",
-    headers: { ...(init?.headers ?? {}) },
+    headers,
   });
 }
 
