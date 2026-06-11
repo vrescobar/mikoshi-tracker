@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";
 
@@ -33,7 +33,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const AUTH_DRAFT_STORAGE_KEY = "mikoshi-tracker-auth-form-draft";
 
 export function AuthForm({ copy, registrationEnabled }: { copy: AuthFormCopy; registrationEnabled: boolean }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -193,8 +193,7 @@ export function AuthForm({ copy, registrationEnabled }: { copy: AuthFormCopy; re
       if (mode === "sign-up") {
         await signUp(validation.sanitized);
         window.sessionStorage.removeItem(AUTH_DRAFT_STORAGE_KEY);
-        router.push(routes.newHabit);
-        router.refresh();
+        void navigate(routes.newHabit);
         return;
       }
 
@@ -204,8 +203,7 @@ export function AuthForm({ copy, registrationEnabled }: { copy: AuthFormCopy; re
       });
       window.sessionStorage.removeItem(AUTH_DRAFT_STORAGE_KEY);
       const habits = await listHabits();
-      router.push(habits.length === 0 ? routes.newHabit : routes.dashboard);
-      router.refresh();
+      void navigate(habits.length === 0 ? routes.newHabit : routes.dashboard);
     } catch (submissionError) {
       const message = submissionError instanceof Error ? submissionError.message : copy.feedback.submitErrorTitle;
 

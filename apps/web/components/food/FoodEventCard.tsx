@@ -1,7 +1,7 @@
 "use client";
 
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
-import Link from "next/link";
+import { Link } from "react-router";
 
 import type { FoodPayload, MealSlot } from "../../lib/food-client";
 import { isFoodPayload } from "../../lib/food-client";
@@ -84,7 +84,7 @@ export function FoodEventCard({ event }: FoodEventCardProps) {
       {payload.notes ? <p className={styles.notes}>{payload.notes}</p> : null}
 
       <div className={styles.actions}>
-        <Link href={routes.foodDetail(event.id)} className={styles.detailLink}>
+        <Link to={routes.foodDetail(event.id)} className={styles.detailLink}>
           {copy.page.card.viewDetail}
         </Link>
       </div>
@@ -107,7 +107,7 @@ export function DeletedFoodEventCard({ event }: FoodEventCardProps) {
         <h3 className={styles.name}>{payload?.name ?? "—"}</h3>
       </div>
       <div className={styles.actions}>
-        <Link href={routes.foodDetail(event.id)} className={styles.detailLink}>
+        <Link to={routes.foodDetail(event.id)} className={styles.detailLink}>
           {copy.page.card.viewDetail}
         </Link>
       </div>

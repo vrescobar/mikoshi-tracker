@@ -32,8 +32,8 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
 export type EntryTypeRecord = {
   id: string;
   slug: string;
-  name: string;
-  cadence: "recurring" | "ad-hoc";
+  displayName: string;
+  cadence: string;
   skillSlug: string | null;
   isBuiltIn: boolean;
 };

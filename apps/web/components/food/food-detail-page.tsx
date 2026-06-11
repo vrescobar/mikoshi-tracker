@@ -2,7 +2,7 @@
 
 import type { AttachmentMetadata } from "@mikoshi-tracker/contracts/attachments";
 import type { EntryEventDetail, EventMutationRecord } from "@mikoshi-tracker/contracts/events";
-import Link from "next/link";
+import { Link } from "react-router";
 import { useState, useTransition } from "react";
 
 import { attachmentFileUrl } from "../../lib/auth-client";
@@ -240,7 +240,7 @@ export function FoodDetailPage({ initialEvent }: FoodDetailPageProps) {
     <div className={styles.stack} data-testid="food-detail-page">
       <Surface variant="hero">
         <div className={styles.heroInner}>
-          <Link href={routes.food} className={styles.backLink}>
+          <Link to={routes.food} className={styles.backLink}>
             {copy.backToFood}
           </Link>
           <p className={styles.eyebrow}>{copy.header.eyebrow}</p>

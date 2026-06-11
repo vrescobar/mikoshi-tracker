@@ -3,24 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import * as circlesClient from "../../../lib/circles-client";
+import { MemoryRouter } from "react-router";
+
 import { LocaleProvider } from "../../locale";
 import { CircleDetailPage } from "../circle-detail-page";
-
-vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-    className,
-  }: {
-    href: string;
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <a href={href} className={className}>
-      {children}
-    </a>
-  ),
-}));
 
 vi.mock("../../../lib/circles-client", () => ({
   shareHabit: vi.fn().mockResolvedValue(undefined),
@@ -91,13 +77,15 @@ function renderPage(props: {
   const circle = props.circle ?? makeCircle();
   const members = props.members ?? [];
   return render(
+    <MemoryRouter>
     <LocaleProvider initialLocale="en">
       <CircleDetailPage
         initialDetail={{ circle, members, mySharedHabits: props.mySharedHabits ?? [] }}
         currentUserId={props.currentUserId ?? "user-1"}
         initialHabits={props.initialHabits ?? []}
       />
-    </LocaleProvider>,
+    </LocaleProvider>
+    </MemoryRouter>,
   );
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import type { CircleRecord } from "@mikoshi-tracker/contracts/circles";
-import Link from "next/link";
+import { Link } from "react-router";
 import { useRef, useState, useTransition } from "react";
 
 import { createCircle, listCircles } from "../../lib/circles-client";
@@ -172,7 +172,7 @@ export function CirclesPage({ initialItems, currentUserId }: CirclesPageProps) {
                 </div>
 
                 <div className={styles.actions}>
-                  <Link href={routes.circleDetail(circle.id)} className={styles.primaryAction}>
+                  <Link to={routes.circleDetail(circle.id)} className={styles.primaryAction}>
                     {copy.page.card.viewDetails}
                   </Link>
                 </div>

@@ -1,16 +1,13 @@
-const DEFAULT_INTERNAL_API_BASE_URL = "http://127.0.0.1:3001";
-
 function joinPath(path: string, baseUrl: string) {
   return new URL(path, baseUrl).toString();
 }
 
-export function createBrowserApiUrl(path: string) {
-  const publicBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+/**
+ * API URL for browser fetches. Defaults to a relative path (same-origin via
+ * the Caddy proxy in production, the Vite dev/preview proxy locally);
+ * VITE_API_BASE_URL overrides it for split-origin deployments.
+ */
+export function createApiUrl(path: string) {
+  const publicBaseUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
   return publicBaseUrl ? joinPath(path, publicBaseUrl) : path;
 }
-
-export function createServerApiUrl(path: string) {
-  return joinPath(path, process.env.API_INTERNAL_BASE_URL ?? process.env.API_BASE_URL ?? DEFAULT_INTERNAL_API_BASE_URL);
-}
-
-export const createApiUrl = createBrowserApiUrl;

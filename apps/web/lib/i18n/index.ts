@@ -1,6 +1,3 @@
-import "server-only";
-
-export { getMessages, getRequestLocale } from "./server";
 export {
   defaultLocale,
   localeCookieMaxAge,
@@ -9,3 +6,4 @@ export {
   resolveLocaleFromAcceptLanguage,
   supportedLocales,
 } from "./shared";
+export { resolveClientLocale } from "./client";

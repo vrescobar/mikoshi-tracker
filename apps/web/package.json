@@ -3,14 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "postbuild": "cp -r .next/static .next/standalone/apps/web/.next/static && if [ -d public ]; then cp -r public .next/standalone/apps/web/public; fi",
-    "start": "next start",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "playwright": "playwright",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "playwright": "playwright"
   },
   "dependencies": {
     "@mikoshi-tracker/contracts": "workspace:*",

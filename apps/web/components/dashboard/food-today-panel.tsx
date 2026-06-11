@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "react-router";
 import { useState, useTransition } from "react";
 
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
@@ -166,7 +166,7 @@ export function FoodTodayPanel({
         </div>
       ) : null}
 
-      <Link href={routes.food} className={styles.viewLink}>
+      <Link to={routes.food} className={styles.viewLink}>
         {c.viewFood}
       </Link>
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "react-router";
 import { useCallback, useMemo } from "react";
 
 import type { EntryTypeRecord } from "../../lib/entries-client";
@@ -32,8 +32,7 @@ function parseSelectedSlugs(raw: string | null): Set<string> {
 }
 
 export function EntryTypeFilter({ entryTypes, copy }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const selectedSlugs = useMemo(
     () => parseSelectedSlugs(searchParams.get("entryTypeSlug")),
     [searchParams],
@@ -52,10 +51,9 @@ export function EntryTypeFilter({ entryTypes, copy }: Props) {
             .join(","),
         );
       }
-      const qs = params.toString();
-      router.push(qs ? `/entries?${qs}` : "/entries");
+      setSearchParams(params);
     },
-    [router, searchParams],
+    [searchParams, setSearchParams],
   );
 
   const toggleSlug = useCallback(
@@ -88,7 +86,7 @@ export function EntryTypeFilter({ entryTypes, copy }: Props) {
       </button>
       {entryTypes.map((type) => {
         const active = selectedSlugs.has(type.slug);
-        const label = copy.slugs[type.slug] ?? type.name;
+        const label = copy.slugs[type.slug] ?? type.displayName ?? type.slug;
         return (
           <button
             key={type.slug}

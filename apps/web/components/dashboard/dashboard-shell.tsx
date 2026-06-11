@@ -3,7 +3,7 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 
 import { getOverviewStats, getTodaySummary } from "../../lib/auth-client";
@@ -38,7 +38,7 @@ export function DashboardShell({
   latestWeightKg?: number | null;
   latestWeightDate?: string | null;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { copy } = useLocale();
   const [overview, setOverview] = useState(initialOverview);
   const [summary, setSummary] = useState(initialSummary);
@@ -124,10 +124,10 @@ export function DashboardShell({
           description={copy.dashboard.emptyStates.noEntries.description}
           actions={
             <div className={styles.actionRow}>
-              <Button type="button" onClick={() => router.push(routes.newHabit)}>
+              <Button type="button" onClick={() => void navigate(routes.newHabit)}>
                 {copy.dashboard.emptyStates.noEntries.createHabit}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => router.push(routes.food)}>
+              <Button type="button" variant="secondary" onClick={() => void navigate(routes.food)}>
                 {copy.dashboard.emptyStates.noEntries.logMeal}
               </Button>
             </div>
@@ -152,7 +152,7 @@ export function DashboardShell({
           title={copy.dashboard.emptyStates.habitsEmpty.title}
           description={copy.dashboard.emptyStates.habitsEmpty.description}
           actions={
-            <Button type="button" onClick={() => router.push(routes.newHabit)}>
+            <Button type="button" onClick={() => void navigate(routes.newHabit)}>
               {copy.dashboard.emptyStates.habitsEmpty.createHabit}
             </Button>
           }
@@ -177,10 +177,10 @@ export function DashboardShell({
           description={copy.dashboard.emptyStates.archivedOnly.description}
           actions={
             <div className={styles.actionRow}>
-              <Button type="button" onClick={() => router.push(`${routes.habits}?status=archived`)}>
+              <Button type="button" onClick={() => void navigate(`${routes.habits}?status=archived`)}>
                 {copy.dashboard.emptyStates.archivedOnly.reviewArchived}
               </Button>
-              <Button type="button" variant="secondary" onClick={() => router.push(routes.newHabit)}>
+              <Button type="button" variant="secondary" onClick={() => void navigate(routes.newHabit)}>
                 {copy.dashboard.emptyStates.archivedOnly.createHabit}
               </Button>
             </div>

@@ -1,6 +1,6 @@
 import "@fontsource-variable/manrope";
 import "@fontsource-variable/fraunces";
-import "../app/globals.css";
+import "./styles/globals.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";

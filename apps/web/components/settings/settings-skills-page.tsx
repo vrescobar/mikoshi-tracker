@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "react-router";
 
 import type { SkillHealthSnapshot } from "../../lib/skills-client";
 import { getSettingsCopy } from "../../lib/i18n/settings";
@@ -33,7 +33,7 @@ export function SettingsSkillsPage({ entries }: Props) {
       <Surface variant="hero">
         <PageFrame>
           <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
-          <Link href={routes.settings} className={styles.backLink} data-testid="settings-skills-back">
+          <Link to={routes.settings} className={styles.backLink} data-testid="settings-skills-back">
             {copy.backLink}
           </Link>
         </PageFrame>

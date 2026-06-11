@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "react-router";
 
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
@@ -35,7 +35,7 @@ export function WeightTodayPanel({ latestWeightKg, latestDate }: Props) {
         </div>
       )}
 
-      <Link href={routes.weight} className={styles.viewLink}>
+      <Link to={routes.weight} className={styles.viewLink}>
         {c.viewWeight}
       </Link>
     </section>

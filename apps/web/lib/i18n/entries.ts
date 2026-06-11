@@ -48,6 +48,7 @@ export type EntriesCopy = {
     habit_quantity: string;
     food_meal: string;
     weight_log: string;
+    temptation: string;
   };
   filter: {
     label: string;
@@ -104,6 +105,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_quantity: "Quantity",
       food_meal: "Food",
       weight_log: "Weight log",
+      temptation: "Temptation",
     },
     filter: {
       label: "Show",
@@ -158,6 +160,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_quantity: "数值型",
       food_meal: "饮食",
       weight_log: "体重记录",
+      temptation: "诱惑日志",
     },
     filter: {
       label: "显示",
@@ -212,6 +215,7 @@ const entriesCopy: Record<SupportedLocale, EntriesCopy> = {
       habit_quantity: "Cantidad",
       food_meal: "Comida",
       weight_log: "Registro de peso",
+      temptation: "Tentación",
     },
     filter: {
       label: "Mostrar",

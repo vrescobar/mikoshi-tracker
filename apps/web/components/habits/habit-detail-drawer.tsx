@@ -1,7 +1,7 @@
 "use client";
 
 import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 
 import { getHabitsCopy } from "../../lib/i18n/habits";
 import { Badge, OverlayPanel } from "../ui";
@@ -44,7 +44,7 @@ export function HabitDetailDrawer({
   closeHref?: string;
   onClose?: () => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { locale } = useLocale();
   const copy = getHabitsCopy(locale);
 
@@ -54,7 +54,7 @@ export function HabitDetailDrawer({
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
           if (closeHref) {
-            router.push(closeHref);
+            void navigate(closeHref);
           }
           onClose?.();
         }

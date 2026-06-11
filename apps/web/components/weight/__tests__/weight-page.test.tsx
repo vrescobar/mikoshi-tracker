@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/link", () => ({ default: () => null }));
+vi.mock("react-router", () => ({ Link: () => null }));
 vi.mock("../../locale", () => ({ useLocale: () => ({ locale: "en" }) }));
 vi.mock("../../ui", () => ({
   Button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children?: React.ReactNode }) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "react-router";
 import * as Dialog from "@radix-ui/react-dialog";
 
 import { Button } from "./button";
@@ -50,7 +50,7 @@ export function OverlayPanel({
             </div>
 
             {closeHref ? (
-              <Link href={closeHref} className={styles.linkClose}>
+              <Link to={closeHref} className={styles.linkClose}>
                 {closeLabel}
               </Link>
             ) : (

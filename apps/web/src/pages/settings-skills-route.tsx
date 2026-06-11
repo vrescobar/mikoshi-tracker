@@ -11,7 +11,7 @@ export default function SettingsSkillsRoute() {
     const entryTypes = await listEntryTypes().catch(() => []);
     const skillSlugs = entryTypes
       .filter((type) => typeof type.skillSlug === "string" && type.skillSlug.length > 0)
-      .map((type) => ({ entryTypeName: type.name, slug: type.skillSlug! }));
+      .map((type) => ({ entryTypeName: type.displayName, slug: type.skillSlug! }));
 
     return Promise.all(
       skillSlugs.map(async (skill) => ({

@@ -2,7 +2,7 @@
 
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
-import Link from "next/link";
+import { Link } from "react-router";
 import { useEffect, useState } from "react";
 
 import { listFoodEvents } from "../../lib/food-client";
@@ -77,7 +77,7 @@ export function FoodPage({
                   <span className={styles.toolbarLabel}>{copy.page.toolbar.dateLabel}</span>
                 </div>
                 <div className={styles.toolbarActions}>
-                  <Link href={routes.foodInsights} className={styles.insightsLink}>
+                  <Link to={routes.foodInsights} className={styles.insightsLink}>
                     Insights →
                   </Link>
                   <Button

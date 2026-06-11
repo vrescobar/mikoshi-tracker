@@ -1,14 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
+import { MemoryRouter } from "react-router";
+
 import { LocaleProvider } from "../../locale";
 import { SettingsSkillsPage } from "../settings-skills-page";
 
 function renderPage(entries: Parameters<typeof SettingsSkillsPage>[0]["entries"]) {
   return render(
+    <MemoryRouter>
     <LocaleProvider initialLocale="en">
       <SettingsSkillsPage entries={entries} />
-    </LocaleProvider>,
+    </LocaleProvider>
+    </MemoryRouter>,
   );
 }
 

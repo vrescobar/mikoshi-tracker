@@ -1,7 +1,9 @@
 "use client";
 
 import { createHabitInputSchema, updateHabitInputSchema, type Weekday } from "@mikoshi-tracker/contracts/habits";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
+
+import { useRefresh } from "../../src/lib/use-page-data";
 import { useState, useTransition } from "react";
 
 import { createHabit, updateHabit, type HabitRecord } from "../../lib/auth-client";
@@ -38,7 +40,8 @@ export function HabitCreateForm({
   onCancel,
   onSubmitted,
 }: HabitCreateFormProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
+  const refresh = useRefresh();
   const { locale } = useLocale();
   const copy = getHabitsCopy(locale);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +86,7 @@ export function HabitCreateForm({
           });
           const saved = await updateHabit(initialHabit.id, parsed);
           await onSubmitted?.(saved);
-          router.refresh();
+          refresh();
           return;
         }
 
@@ -101,12 +104,11 @@ export function HabitCreateForm({
 
         if (onSubmitted) {
           await onSubmitted(saved);
-          router.refresh();
+          refresh();
           return;
         }
 
-        router.push(routes.dashboard);
-        router.refresh();
+        void navigate(routes.dashboard);
       } catch (submissionError) {
         setError(submissionError instanceof Error ? submissionError.message : copy.form.errorTitle);
       }

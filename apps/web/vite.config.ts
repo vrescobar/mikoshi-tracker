@@ -5,8 +5,10 @@ import { defineConfig } from "vite";
 // API; this proxy config replicates that topology for `vite dev` AND for
 // `vite preview` (preview inherits server.proxy), which Playwright uses.
 const apiProxy = {
-  "/api": { target: "http://127.0.0.1:3001", changeOrigin: true },
-  "/magic": { target: "http://127.0.0.1:3001", changeOrigin: true },
+  // Segment-anchored regex: a plain "/api" string key matches by prefix and
+  // would also swallow SPA routes like /api-access.
+  "^/api(/|$)": { target: "http://127.0.0.1:3001", changeOrigin: true },
+  "^/magic($|\\?)": { target: "http://127.0.0.1:3001", changeOrigin: true },
 };
 
 export default defineConfig({

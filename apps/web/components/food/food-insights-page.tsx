@@ -2,7 +2,7 @@
 
 import type { AggregationBucket, AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
-import Link from "next/link";
+import { Link } from "react-router";
 import { useState, useTransition } from "react";
 
 import type { FoodPayload } from "../../lib/food-client";
@@ -116,7 +116,7 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
       <Surface variant="hero">
         <PageFrame>
           <div className={styles.backRow}>
-            <Link href={routes.food} className={styles.backLink}>
+            <Link to={routes.food} className={styles.backLink}>
               ← {getFoodCopy(locale).detail.backToFood.replace("← ", "")}
             </Link>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import type { CircleDetailResponse, CircleMember } from "@mikoshi-tracker/contracts/circles";
-import Link from "next/link";
+import { Link } from "react-router";
 import { useState } from "react";
 
 import { shareHabit, unshareHabit } from "../../lib/circles-client";
@@ -95,7 +95,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
       <Surface variant="hero">
         <PageFrame>
           <div className={styles.backNav}>
-            <Link href={routes.circles} className={styles.backLink}>
+            <Link to={routes.circles} className={styles.backLink}>
               {copy.detail.backToCircles}
             </Link>
           </div>

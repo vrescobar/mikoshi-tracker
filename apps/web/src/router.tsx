@@ -26,7 +26,7 @@ function page(element: React.ReactNode) {
  * Route table mirroring the old Next.js app/ tree. The legacy /habits/*
  * routes redirect to the entries view exactly like their server pages did.
  */
-export const router = createBrowserRouter([
+export const routeConfig = [
   { path: routes.auth, element: page(<AuthPage />) },
   {
     element: <ProtectedLayout />,
@@ -49,4 +49,6 @@ export const router = createBrowserRouter([
       { path: "*", element: page(<NotFoundPage />) },
     ],
   },
-]);
+];
+
+export const router = createBrowserRouter(routeConfig);

@@ -2,6 +2,8 @@ import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregation
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { MemoryRouter } from "react-router";
+
 import { LocaleProvider } from "../../locale";
 import { FoodTodayPanel } from "../food-today-panel";
 
@@ -29,9 +31,11 @@ function makeAggregations(overrides: {
 
 function renderPanel(aggregations: AggregationResponse | null, onQuickAdd?: () => void) {
   return render(
+    <MemoryRouter>
     <LocaleProvider initialLocale="en">
       <FoodTodayPanel aggregations={aggregations} onQuickAdd={onQuickAdd} />
-    </LocaleProvider>,
+    </LocaleProvider>
+    </MemoryRouter>,
   );
 }
 

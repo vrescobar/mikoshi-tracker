@@ -2,20 +2,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+import { MemoryRouter } from "react-router";
+
 import { LocaleProvider } from "../../locale";
 import { CirclesPage } from "../circles-page";
 
 vi.mock("../../../lib/circles-client", () => ({
   createCircle: vi.fn(),
   listCircles: vi.fn(),
-}));
-
-vi.mock("next/link", () => ({
-  default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
-    <a href={href} className={className}>
-      {children}
-    </a>
-  ),
 }));
 
 import * as circlesClient from "../../../lib/circles-client";
@@ -35,9 +29,11 @@ function makeCircle(overrides: { id?: string; name?: string; ownerId?: string } 
 
 function renderPage(props: { initialItems?: ReturnType<typeof makeCircle>[]; currentUserId?: string } = {}) {
   return render(
-    <LocaleProvider initialLocale="en">
-      <CirclesPage initialItems={props.initialItems ?? []} currentUserId={props.currentUserId ?? "user-1"} />
-    </LocaleProvider>,
+    <MemoryRouter>
+      <LocaleProvider initialLocale="en">
+        <CirclesPage initialItems={props.initialItems ?? []} currentUserId={props.currentUserId ?? "user-1"} />
+      </LocaleProvider>
+    </MemoryRouter>,
   );
 }
 

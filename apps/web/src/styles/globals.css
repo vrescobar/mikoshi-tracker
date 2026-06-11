@@ -1,7 +1,8 @@
 :root {
   color-scheme: light;
-  --font-body: system-ui, sans-serif;
-  --font-display: Georgia, serif;
+  /* Self-hosted variable fonts loaded via @fontsource in src/main.tsx. */
+  --font-body: "Manrope Variable", system-ui, sans-serif;
+  --font-display: "Fraunces Variable", Georgia, serif;
 
   --color-canvas: #edf1f2;
   --color-canvas-strong: #e5ebec;

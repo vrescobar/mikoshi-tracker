@@ -31,19 +31,15 @@ export default defineConfig({
       },
     },
     {
+      // Vite preview serves the production build with the same /api + /magic
+      // proxy the dev server uses (preview inherits server.proxy), mirroring
+      // the Caddy topology in production.
       command:
-        "bun run --filter @mikoshi-tracker/web build && cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static && node apps/web/.next/standalone/apps/web/server.js",
+        "bun run --filter @mikoshi-tracker/web build && bun run --filter @mikoshi-tracker/web preview",
       cwd: "../..",
       port: 3000,
       timeout: 300_000,
       reuseExistingServer: false,
-      env: {
-        NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3001",
-        API_BASE_URL: "http://127.0.0.1:3001",
-        API_INTERNAL_BASE_URL: "http://127.0.0.1:3001",
-        HOSTNAME: "127.0.0.1",
-        PORT: "3000",
-      },
     },
   ],
 });

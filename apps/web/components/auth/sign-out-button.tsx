@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { useTransition } from "react";
 
 import { signOut } from "../../lib/auth-client";
@@ -8,7 +8,7 @@ import { routes } from "../../lib/navigation";
 import { Button } from "../ui";
 
 export function SignOutButton({ label = "Log out" }: { label?: string }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -20,8 +20,7 @@ export function SignOutButton({ label = "Log out" }: { label?: string }) {
       onClick={() =>
         startTransition(async () => {
           await signOut();
-          router.push(routes.auth);
-          router.refresh();
+          void navigate(routes.auth);
         })
       }
     >

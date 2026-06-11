@@ -1,18 +1,31 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
+import { MemoryRouter, useLocation, type Location } from "react-router";
 
 import { EntryTypeFilter, type EntryTypeFilterCopy } from "../entry-type-filter";
 
-const push = vi.fn();
-const searchParamsRef: { current: URLSearchParams } = { current: new URLSearchParams() };
+/** Captures the live router location so assertions can read the URL after clicks. */
+const locationRef: { current: Location | null } = { current: null };
 
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
-  useSearchParams: () => searchParamsRef.current,
-}));
+function LocationProbe() {
+  locationRef.current = useLocation();
+  return null;
+}
 
-function setQuery(qs: string) {
-  searchParamsRef.current = new URLSearchParams(qs);
+function renderWithQuery(qs: string) {
+  locationRef.current = null;
+  return render(
+    <MemoryRouter initialEntries={[qs ? `/entries?${qs}` : "/entries"]}>
+      <EntryTypeFilter entryTypes={TYPES} copy={COPY} />
+      <LocationProbe />
+    </MemoryRouter>,
+  );
+}
+
+function currentUrl(): string {
+  const location = locationRef.current;
+  if (!location) throw new Error("location probe not mounted");
+  return `${location.pathname}${decodeURIComponent(location.search)}`;
 }
 
 const COPY: EntryTypeFilterCopy = {
@@ -26,19 +39,14 @@ const COPY: EntryTypeFilterCopy = {
 };
 
 const TYPES = [
-  { id: "et-1", slug: "habit_boolean", name: "Habit (boolean)", cadence: "recurring" as const, skillSlug: null, isBuiltIn: true },
-  { id: "et-2", slug: "habit_quantity", name: "Habit (quantity)", cadence: "recurring" as const, skillSlug: null, isBuiltIn: true },
-  { id: "et-3", slug: "food_meal", name: "Food meal", cadence: "ad-hoc" as const, skillSlug: "mikoshi-tracker-food", isBuiltIn: true },
+  { id: "et-1", slug: "habit_boolean", displayName: "Habit (boolean)", cadence: "recurring", skillSlug: null, isBuiltIn: true },
+  { id: "et-2", slug: "habit_quantity", displayName: "Habit (quantity)", cadence: "recurring", skillSlug: null, isBuiltIn: true },
+  { id: "et-3", slug: "food_meal", displayName: "Food meal", cadence: "ad-hoc", skillSlug: "mikoshi-tracker-food", isBuiltIn: true },
 ];
-
-beforeEach(() => {
-  push.mockReset();
-  setQuery("");
-});
 
 describe("EntryTypeFilter", () => {
   it("renders one chip per known entry type plus an 'All' chip", () => {
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("");
 
     expect(screen.getByTestId("entry-type-filter-all")).toHaveTextContent("All");
     expect(screen.getByTestId("entry-type-filter-habit_boolean")).toHaveTextContent("Check-in");
@@ -51,19 +59,22 @@ describe("EntryTypeFilter", () => {
       {
         id: "et-9",
         slug: "weight_log",
-        name: "Weight log",
-        cadence: "recurring" as const,
+        displayName: "Weight log",
+        cadence: "recurring",
         skillSlug: null,
         isBuiltIn: false,
       },
     ];
-    render(<EntryTypeFilter entryTypes={TYPES_WITH_UNKNOWN} copy={COPY} />);
+    render(
+      <MemoryRouter initialEntries={["/entries"]}>
+        <EntryTypeFilter entryTypes={TYPES_WITH_UNKNOWN} copy={COPY} />
+      </MemoryRouter>,
+    );
     expect(screen.getByTestId("entry-type-filter-weight_log")).toHaveTextContent("Weight log");
   });
 
   it("treats no `entryTypeSlug` query as 'All' active", () => {
-    setQuery("");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("");
     expect(screen.getByTestId("entry-type-filter-all")).toHaveAttribute("aria-selected", "true");
     expect(screen.getByTestId("entry-type-filter-habit_boolean")).toHaveAttribute(
       "aria-selected",
@@ -72,8 +83,7 @@ describe("EntryTypeFilter", () => {
   });
 
   it("marks all slugs in the URL as active", () => {
-    setQuery("entryTypeSlug=food_meal,habit_boolean");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("entryTypeSlug=food_meal,habit_boolean");
     expect(screen.getByTestId("entry-type-filter-food_meal")).toHaveAttribute(
       "aria-selected",
       "true",
@@ -89,31 +99,27 @@ describe("EntryTypeFilter", () => {
     expect(screen.getByTestId("entry-type-filter-all")).toHaveAttribute("aria-selected", "false");
   });
 
-  it("clicking a chip pushes the new entryTypeSlug into the URL", () => {
-    setQuery("");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+  it("clicking a chip writes the new entryTypeSlug into the URL", () => {
+    renderWithQuery("");
     fireEvent.click(screen.getByTestId("entry-type-filter-food_meal"));
-    expect(push).toHaveBeenCalledWith("/entries?entryTypeSlug=food_meal");
+    expect(currentUrl()).toBe("/entries?entryTypeSlug=food_meal");
   });
 
   it("clicking an active chip removes it from the URL", () => {
-    setQuery("entryTypeSlug=food_meal,habit_boolean");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("entryTypeSlug=food_meal,habit_boolean");
     fireEvent.click(screen.getByTestId("entry-type-filter-food_meal"));
-    expect(push).toHaveBeenCalledWith("/entries?entryTypeSlug=habit_boolean");
+    expect(currentUrl()).toBe("/entries?entryTypeSlug=habit_boolean");
   });
 
   it("clicking 'All' clears the entryTypeSlug param", () => {
-    setQuery("entryTypeSlug=food_meal");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("entryTypeSlug=food_meal");
     fireEvent.click(screen.getByTestId("entry-type-filter-all"));
-    expect(push).toHaveBeenCalledWith("/entries");
+    expect(currentUrl()).toBe("/entries");
   });
 
   it("preserves other query parameters when toggling chips", () => {
-    setQuery("status=archived");
-    render(<EntryTypeFilter entryTypes={TYPES} copy={COPY} />);
+    renderWithQuery("status=archived");
     fireEvent.click(screen.getByTestId("entry-type-filter-habit_boolean"));
-    expect(push).toHaveBeenCalledWith("/entries?status=archived&entryTypeSlug=habit_boolean");
+    expect(currentUrl()).toBe("/entries?status=archived&entryTypeSlug=habit_boolean");
   });
 });

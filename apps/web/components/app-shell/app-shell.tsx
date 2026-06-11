@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link } from "react-router";
+import { useLocation } from "react-router";
 import type { ReactNode } from "react";
 
 import { LocaleSwitch, useLocale } from "../locale";
@@ -16,7 +16,7 @@ type AppShellProps = {
 };
 
 export function AppShell({ userEmail, children }: AppShellProps) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const { locale, copy } = useLocale();
   const primaryAppNavigation = getPrimaryAppNavigation(copy.shell.navigation);
   const utilityAppNavigation = getUtilityAppNavigation(copy.shell.navigation);
@@ -35,7 +35,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
                   return (
                     <Link
                       key={item.href}
-                      href={item.href}
+                      to={item.href}
                       data-accented={item.href === routes.apiAccess ? "true" : undefined}
                       className={cn(
                         styles.utilityLink,
@@ -59,7 +59,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
 
           <div className={styles.brandRow}>
             <div className={styles.brand}>
-              <Link href={routes.dashboard} className={styles.brandMark}>
+              <Link to={routes.dashboard} className={styles.brandMark}>
                 MikoshiTracker
               </Link>
               <p className={styles.brandCopy}>{copy.shell.brandCopy}</p>
@@ -76,7 +76,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    to={item.href}
                     className={cn(styles.navLink, active && styles.navLinkActive)}
                     aria-current={active ? "page" : undefined}
                   >
@@ -100,7 +100,7 @@ export function AppShell({ userEmail, children }: AppShellProps) {
           return (
             <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               className={cn(styles.mobileNavLink, active && styles.mobileNavLinkActive)}
               aria-current={active ? "page" : undefined}
             >

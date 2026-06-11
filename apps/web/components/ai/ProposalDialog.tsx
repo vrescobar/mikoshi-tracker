@@ -45,7 +45,7 @@ const emptyForm: FormState = {
   notes: "",
 };
 
-const SKILL_RUN_ENABLED = process.env.NEXT_PUBLIC_FEATURE_WEB_SKILL_RUN === "1";
+const SKILL_RUN_ENABLED = import.meta.env.VITE_FEATURE_WEB_SKILL_RUN === "1";
 
 function parseNonNegative(value: string): number | null {
   if (!value.trim()) return null;
