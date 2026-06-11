@@ -1,9 +1,9 @@
 "use client";
 
-import { AuthForm } from "../../components/auth/auth-form";
-import { LocaleSwitch, useLocale } from "../../components/locale";
-import { PageFrame, PageHeader, Surface } from "../../components/ui";
-import styles from "./page.module.css";
+import { AuthForm } from "./auth-form";
+import { LocaleSwitch, useLocale } from "../locale";
+import { PageFrame, PageHeader, Surface } from "../ui";
+import styles from "./auth-page.module.css";
 
 export function AuthPageContent({ registrationEnabled }: { registrationEnabled: boolean }) {
   const { copy } = useLocale();

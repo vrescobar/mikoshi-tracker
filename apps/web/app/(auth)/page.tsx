@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { AuthPageContent } from "./auth-page-content";
+import { AuthPageContent } from "../../components/auth/auth-page-content";
 import { routes } from "../../lib/navigation";
 import {
   buildCookieHeader,
