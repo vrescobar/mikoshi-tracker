@@ -16,7 +16,7 @@ Upgrades are intentionally conservative:
 #### 1. Stop the stack
 
 ```bash
-systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-api
 ```
 
 #### 2. Create a SQLite backup
@@ -71,7 +71,7 @@ If `APP_BASE_URL` changed in `~/.config/mikoshi-tracker/env`, re-run the health 
 Restore the backup and check out the previously deployed revision:
 
 ```bash
-systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-api
 cp "$DB.backup.<timestamp>" "$DB"
 git checkout <previous-revision>
 bun install
@@ -96,7 +96,7 @@ For the base install flow and locale-behavior notes, return to [the install guid
 #### 1. 停止服务
 
 ```bash
-systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-api
 ```
 
 #### 2. 创建 SQLite 备份
@@ -151,7 +151,7 @@ journalctl --user -u mikoshi-tracker-api -n 50
 恢复备份并切回上一个已部署的版本：
 
 ```bash
-systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-api
 cp "$DB.backup.<timestamp>" "$DB"
 git checkout <previous-revision>
 bun install
