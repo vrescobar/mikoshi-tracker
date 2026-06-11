@@ -1,5 +1,3 @@
-"use client";
-
 import styles from "./MacroPie.module.css";
 
 type Props = {

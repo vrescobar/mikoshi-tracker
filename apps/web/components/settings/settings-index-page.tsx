@@ -1,5 +1,3 @@
-"use client";
-
 import { Link } from "react-router";
 
 import { getSettingsCopy } from "../../lib/i18n/settings";

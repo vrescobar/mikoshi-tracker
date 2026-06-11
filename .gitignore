@@ -10,7 +10,6 @@ node_modules/
 apps/*/node_modules/
 apps/api/src/generated/
 apps/api/.tmp/
-.next/
 dist/
 coverage/
 test-results/

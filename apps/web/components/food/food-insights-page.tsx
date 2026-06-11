@@ -1,5 +1,3 @@
-"use client";
-
 import type { AggregationBucket, AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 import { Link } from "react-router";

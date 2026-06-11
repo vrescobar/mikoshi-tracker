@@ -1,5 +1,3 @@
-"use client";
-
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 import { messages, type LocaleMessages, type SupportedLocale } from "../../lib/i18n/messages";

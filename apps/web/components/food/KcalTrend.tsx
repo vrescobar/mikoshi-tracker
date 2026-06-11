@@ -1,5 +1,3 @@
-"use client";
-
 import type { AggregationBucket } from "@mikoshi-tracker/contracts/aggregations";
 
 import styles from "./KcalTrend.module.css";

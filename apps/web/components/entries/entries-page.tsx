@@ -1,5 +1,3 @@
-"use client";
-
 import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import { useState } from "react";
 

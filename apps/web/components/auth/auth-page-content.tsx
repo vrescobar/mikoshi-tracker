@@ -1,5 +1,3 @@
-"use client";
-
 import { AuthForm } from "./auth-form";
 import { LocaleSwitch, useLocale } from "../locale";
 import { PageFrame, PageHeader, Surface } from "../ui";

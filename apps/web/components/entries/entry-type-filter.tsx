@@ -1,5 +1,3 @@
-"use client";
-
 import { useSearchParams } from "react-router";
 import { useCallback, useMemo } from "react";
 

@@ -1,5 +1,3 @@
-"use client";
-
 import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
 import { useNavigate } from "react-router";
 

@@ -1,5 +1,3 @@
-"use client";
-
 import type { CircleRecord } from "@mikoshi-tracker/contracts/circles";
 import { Link } from "react-router";
 import { useRef, useState, useTransition } from "react";

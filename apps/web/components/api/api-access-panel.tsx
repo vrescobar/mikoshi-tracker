@@ -1,5 +1,3 @@
-"use client";
-
 import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 import { useState } from "react";
 

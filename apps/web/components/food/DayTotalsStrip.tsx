@@ -1,5 +1,3 @@
-"use client";
-
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 
 import type { FoodPayload } from "../../lib/food-client";

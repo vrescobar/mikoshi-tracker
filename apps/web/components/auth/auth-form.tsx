@@ -1,5 +1,3 @@
-"use client";
-
 import { useNavigate } from "react-router";
 import type { RefObject } from "react";
 import { useEffect, useRef, useState } from "react";

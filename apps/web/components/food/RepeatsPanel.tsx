@@ -1,5 +1,3 @@
-"use client";
-
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventDetail } from "@mikoshi-tracker/contracts/events";
 import { useState, useTransition } from "react";

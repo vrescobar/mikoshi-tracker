@@ -1,5 +1,3 @@
-"use client";
-
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 
 import { useLocale } from "../locale";

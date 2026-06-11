@@ -1,5 +1,3 @@
-"use client";
-
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";

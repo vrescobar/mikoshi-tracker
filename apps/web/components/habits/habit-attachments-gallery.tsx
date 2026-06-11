@@ -1,5 +1,3 @@
-"use client";
-
 import type { AttachmentMetadata } from "@mikoshi-tracker/contracts/attachments";
 import { useCallback, useEffect, useRef, useState } from "react";
 

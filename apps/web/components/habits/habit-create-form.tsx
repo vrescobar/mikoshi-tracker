@@ -1,5 +1,3 @@
-"use client";
-
 import { createHabitInputSchema, updateHabitInputSchema, type Weekday } from "@mikoshi-tracker/contracts/habits";
 import { useNavigate } from "react-router";
 

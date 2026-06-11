@@ -1,5 +1,3 @@
-"use client";
-
 import type { AttachmentMetadata } from "@mikoshi-tracker/contracts/attachments";
 import type { EntryEventDetail, EventMutationRecord } from "@mikoshi-tracker/contracts/events";
 import { Link } from "react-router";

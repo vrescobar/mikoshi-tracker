@@ -31,7 +31,7 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 | Layer    | Technology                                  |
 | -------- | ------------------------------------------- |
 | API      | Fastify, Prisma, better-auth, Zod           |
-| Web      | Next.js (App Router), CSS Modules, Radix UI |
+| Web      | Vite + React (SPA), React Router, CSS Modules, Radix UI |
 | Database | SQLite                                      |
 | Proxy    | Caddy                                       |
 | Runtime  | TypeScript, Bun (workspace), Node.js        |
@@ -194,12 +194,11 @@ apps/
       today/         Legacy alias over events/ (preserves /api/today/* contract)
       circles/       Habit Circles — social leaderboard + circle-token auth
       admin/         System-key provisioning for bot-operated circles
-  web/          Next.js web app
-    app/(app)/
-      entries/       Generic entry list with EntryType dispatch
-      food/          Food log — timeline, event detail, insights heatmap
-      habits/        Redirect to /entries?entryTypeSlug=habit_*
-      circles/       Circles management UI
+  web/          Vite + React SPA (served statically by Caddy)
+    src/pages/
+      entries        Generic entry list with EntryType dispatch
+      food           Food log — timeline, event detail, insights heatmap
+      circles        Circles management UI
 packages/
   contracts/    Shared Zod schemas and TypeScript types
     src/

@@ -1,5 +1,3 @@
-"use client";
-
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 import { useEffect, useState } from "react";
 

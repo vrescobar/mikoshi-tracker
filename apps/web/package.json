@@ -15,7 +15,6 @@
     "@mikoshi-tracker/contracts": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "better-auth": "^1.6.11",
-    "next": "^16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "zod": "^4.4.3",

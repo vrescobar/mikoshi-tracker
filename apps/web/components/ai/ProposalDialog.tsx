@@ -1,5 +1,3 @@
-"use client";
-
 import type { EntryEventDetail } from "@mikoshi-tracker/contracts/events";
 import { useRef, useState, useTransition } from "react";
 

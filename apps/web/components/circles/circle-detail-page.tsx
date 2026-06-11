@@ -1,5 +1,3 @@
-"use client";
-
 import type { CircleDetailResponse, CircleMember } from "@mikoshi-tracker/contracts/circles";
 import { Link } from "react-router";
 import { useState } from "react";

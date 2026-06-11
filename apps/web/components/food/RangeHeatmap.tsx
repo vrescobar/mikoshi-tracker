@@ -1,5 +1,3 @@
-"use client";
-
 import type { AggregationBucket } from "@mikoshi-tracker/contracts/aggregations";
 
 import { getFoodCopy } from "../../lib/i18n/food";

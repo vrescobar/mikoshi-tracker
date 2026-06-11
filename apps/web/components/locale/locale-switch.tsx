@@ -1,5 +1,3 @@
-"use client";
-
 import type { SupportedLocale } from "../../lib/i18n/messages";
 import { Button } from "../ui";
 import { useLocale } from "./locale-provider";

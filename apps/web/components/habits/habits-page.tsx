@@ -1,5 +1,3 @@
-"use client";
-
 import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
 import { useDeferredValue, useEffect, useRef, useState } from "react";
 
