@@ -88,7 +88,8 @@ export function DataTable<T>({
           {rows.length === 0 && (
             <tr>
               <td colSpan={columns.length} className={styles.emptyCell}>
-                {empty?.title ?? "No rows"}
+                {empty?.icon ? <div aria-hidden="true">{empty.icon}</div> : null}
+                {empty?.title ?? "Nothing here yet"}
                 {empty?.hint ? <div>{empty.hint}</div> : null}
               </td>
             </tr>

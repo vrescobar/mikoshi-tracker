@@ -6,6 +6,7 @@ import { useLocale } from "../../components/locale";
 import { Button, PageFrame, StatePanel } from "../../components/ui";
 import { getSession, type SessionPayload } from "../../lib/auth-client";
 import { routes } from "../../lib/navigation";
+import { clearActAs } from "../../lib/impersonation";
 import { ImpersonationBanner, useActAs } from "../admin/impersonation";
 import { SessionProvider } from "./session";
 
@@ -32,6 +33,10 @@ export function ProtectedLayout() {
 
   useEffect(() => {
     let cancelled = false;
+    // Back to loading so a god-mode toggle never renders the OLD identity
+    // (admin shell over target data, or a 403 flash on exit) while the new
+    // session resolves.
+    setState({ status: "loading" });
     getSession().then(
       (session) => {
         if (cancelled) return;
@@ -57,6 +62,10 @@ export function ProtectedLayout() {
   if (state.status === "error") {
     return (
       <PageFrame>
+        {/* The banner is the only god-mode exit; without it a failing
+            impersonated session (target deleted, admin key unconfigured)
+            would brick the tab with a retry-forever panel. */}
+        {actAs ? <ImpersonationBanner target={actAs} /> : null}
         <StatePanel
           tone="danger"
           eyebrow={copy.shared.pageLoadError.eyebrow}
@@ -74,6 +83,12 @@ export function ProtectedLayout() {
   }
 
   if (state.status === "anonymous") {
+    // A stale/forged god-mode target with no admin session behind it would
+    // otherwise loop: sign-in succeeds (auth routes skip the header) and the
+    // next session check 401s again.
+    if (actAs) {
+      clearActAs();
+    }
     return <Navigate to={routes.auth} replace />;
   }
 

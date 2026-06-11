@@ -43,11 +43,18 @@ export async function apiFetch(path: string, init?: RequestInit): Promise<Respon
   const headers: Record<string, string> = { ...((init?.headers as Record<string, string>) ?? {}) };
 
   // God-mode: while an admin "views as" a user, every API call runs as the
-  // target — except the auth surface, which must keep operating on the
-  // admin's own session, and except calls that already set the header
-  // explicitly (the admin console's asUser() helpers).
+  // target — except surfaces that must keep operating as the admin: the auth
+  // routes, api-access (the API ignores the header there, so sending it would
+  // silently rotate the ADMIN'S own token while the UI claims to act on the
+  // target), and the admin console's own endpoints. Calls that already set
+  // the header explicitly (the asUser() helpers) are left untouched.
   const actAs = getActAs();
-  if (actAs && !path.startsWith("/api/auth") && headers[ACT_AS_HEADER] === undefined) {
+  const adminOwnSurface =
+    path.startsWith("/api/auth") ||
+    path.startsWith("/api/api-access") ||
+    path.startsWith("/api/admin") ||
+    path.startsWith("/api/v1/admin");
+  if (actAs && !adminOwnSurface && headers[ACT_AS_HEADER] === undefined) {
     headers[ACT_AS_HEADER] = actAs.userId;
   }
 

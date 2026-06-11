@@ -38,6 +38,7 @@ const TAB_LABELS: Record<Tab, string> = {
 export function UserDetail() {
   const { userId = "" } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const user = useAsync(() => resolveUser(userId), [userId]);
   const [tab, setTab] = useState<Tab>("habits");
 
@@ -83,8 +84,17 @@ export function UserDetail() {
           >
             View as user
           </button>
-          <button className="btn ghost" onClick={() => void loginAs(userId)}>
-            Login as ↗
+          <button
+            className="btn ghost"
+            onClick={() => {
+              void loginAs(userId).then((copied) =>
+                copied
+                  ? toast.ok("Single-use login link copied — hand it to the user")
+                  : toast.error("Could not create the login link"),
+              );
+            }}
+          >
+            Copy login link
           </button>
         </div>
       </div>
@@ -107,12 +117,20 @@ export function UserDetail() {
   );
 }
 
-async function loginAs(userId: string) {
+/**
+ * Copies a single-use login URL for the user. Deliberately NOT opened in this
+ * browser: consuming it would replace the session cookie browser-wide and
+ * silently log the admin out of their own account — the link is for handing
+ * to the user (or another device/profile). In-place inspection is what
+ * "View as user" is for.
+ */
+async function loginAs(userId: string): Promise<boolean> {
   try {
     const { url } = await api.admin.loginAs(userId);
-    window.open(url, "_blank", "noopener");
+    await navigator.clipboard.writeText(url);
+    return true;
   } catch {
-    /* surfaced by toast elsewhere; window stays */
+    return false;
   }
 }
 
