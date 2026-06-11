@@ -18,7 +18,7 @@ type DataTableProps<T> = {
   onRowClick?: (row: T) => void;
   loading?: boolean;
   error?: string | null;
-  empty?: { title: string; hint?: string };
+  empty?: { title: string; hint?: string; icon?: string };
   footer?: ReactNode;
   testId?: string;
 };

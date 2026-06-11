@@ -1,0 +1,622 @@
+/*
+ * Operator-console styles, scoped under .admin-scope (set by AdminShell) so
+ * nothing leaks into the product UI. Implements the utility classes the
+ * ported admin views use, restyled on the shared design tokens — the retired
+ * admin SPA's 1228-line dark theme is intentionally discarded.
+ */
+
+.admin-scope {
+  display: grid;
+  gap: 1rem;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+
+/* ── Page scaffolding ─────────────────────────────────────────────────── */
+
+.admin-scope .page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.admin-scope .page-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  color: var(--color-heading);
+}
+
+.admin-scope .sub {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.admin-scope .section {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  padding: 1rem 1.15rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-scope .section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-scope .section-head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--color-heading);
+}
+
+.admin-scope .card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+}
+
+.admin-scope .card.pad {
+  padding: 0.9rem 1rem;
+}
+
+.admin-scope .filters,
+.admin-scope .search-row,
+.admin-scope .inline-actions,
+.admin-scope .row-actions,
+.admin-scope .field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-scope .row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-scope .actions {
+  text-align: right;
+}
+
+/* ── Metrics ──────────────────────────────────────────────────────────── */
+
+.admin-scope .metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-scope .metric {
+  display: grid;
+  gap: 0.15rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  padding: 0.85rem 1rem;
+}
+
+.admin-scope .metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-heading);
+}
+
+.admin-scope .metric-label {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────── */
+
+.admin-scope .table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+}
+
+.admin-scope table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-scope th {
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.admin-scope td {
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.admin-scope tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-scope tr.clickable {
+  cursor: pointer;
+}
+
+.admin-scope tr.clickable:hover td {
+  background: var(--color-surface-muted);
+}
+
+.admin-scope .skeleton-row {
+  height: 0.9rem;
+  margin: 0.7rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-accent);
+  animation: admin-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes admin-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ── Text utilities ───────────────────────────────────────────────────── */
+
+.admin-scope .dim {
+  color: var(--color-text-muted);
+}
+
+.admin-scope .strong {
+  font-weight: 650;
+  color: var(--color-heading);
+}
+
+.admin-scope .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+}
+
+.admin-scope .sm {
+  font-size: 0.8rem;
+}
+
+.admin-scope .count {
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+}
+
+.admin-scope .when {
+  white-space: nowrap;
+}
+
+/* ── Pills / tags / dots ──────────────────────────────────────────────── */
+
+.admin-scope .pill,
+.admin-scope .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: var(--radius-pill);
+  padding: 0.12rem 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: var(--color-neutral-soft);
+  color: var(--color-neutral);
+  white-space: nowrap;
+}
+
+.admin-scope .pill.ok,
+.admin-scope .pill.active {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+
+.admin-scope .pill.warn,
+.admin-scope .pill.closed {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.admin-scope .pill.danger,
+.admin-scope .pill.archived,
+.admin-scope .pill.revoked {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.admin-scope .pill.info {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.admin-scope .dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  display: inline-block;
+}
+
+/* ── Buttons (compat aliases over the token palette) ──────────────────── */
+
+.admin-scope .btn {
+  appearance: none;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  padding: 0.42rem 0.95rem;
+  cursor: pointer;
+}
+
+.admin-scope .btn:hover {
+  background: var(--color-accent-strong);
+}
+
+.admin-scope .btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.admin-scope .btn.ghost {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.admin-scope .btn.ghost:hover {
+  background: var(--color-surface-muted);
+}
+
+.admin-scope .btn.danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.admin-scope .btn.sm {
+  padding: 0.28rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.admin-scope .btn.link {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  padding: 0;
+}
+
+.admin-scope .link {
+  color: var(--color-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.admin-scope .link:hover {
+  text-decoration: underline;
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────── */
+
+.admin-scope input,
+.admin-scope select,
+.admin-scope textarea {
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.42rem 0.7rem;
+}
+
+.admin-scope input:focus-visible,
+.admin-scope select:focus-visible,
+.admin-scope textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.admin-scope .search-input {
+  min-width: 16rem;
+}
+
+.admin-scope .field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.admin-scope .field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.admin-scope .field .hint {
+  font-size: 0.76rem;
+  color: var(--color-text-soft);
+}
+
+/* ── Banners / empty / loading / json ─────────────────────────────────── */
+
+.admin-scope .banner.error {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+  padding: 0.7rem 0.9rem;
+}
+
+.admin-scope .empty {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  padding: 1.6rem 1rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.admin-scope .empty .big {
+  font-size: 1.6rem;
+}
+
+.admin-scope .empty .title {
+  font-weight: 650;
+  color: var(--color-text);
+}
+
+.admin-scope .loading {
+  color: var(--color-text-muted);
+  padding: 1rem 0;
+}
+
+.admin-scope .json {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  font-size: 0.78rem;
+  overflow-x: auto;
+  max-height: 18rem;
+}
+
+/* ── Tabs / segmented ─────────────────────────────────────────────────── */
+
+.admin-scope .tabs,
+.admin-scope .segmented {
+  display: inline-flex;
+  gap: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  padding: 0.2rem;
+}
+
+.admin-scope .tabs button,
+.admin-scope .segmented button {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.85rem;
+  cursor: pointer;
+}
+
+.admin-scope .tabs button.active,
+.admin-scope .segmented button.active {
+  background: var(--color-surface-strong);
+  color: var(--color-text);
+  box-shadow: var(--shadow-soft);
+}
+
+/* ── Profile header / avatar / kv ─────────────────────────────────────── */
+
+.admin-scope .profile-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-scope .profile-head .name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-heading);
+}
+
+.admin-scope .profile-head .meta {
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+}
+
+.admin-scope .avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font-weight: 700;
+}
+
+.admin-scope .kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.3rem 1rem;
+  font-size: 0.86rem;
+}
+
+.admin-scope .kv dt {
+  color: var(--color-text-muted);
+}
+
+.admin-scope .kv dd {
+  margin: 0;
+}
+
+/* ── Charts (Plan/Diet tabs) ──────────────────────────────────────────── */
+
+.admin-scope .chart-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-strong);
+  padding: 0.85rem 1rem;
+}
+
+.admin-scope .chart-title {
+  font-weight: 650;
+  color: var(--color-heading);
+  margin-bottom: 0.4rem;
+}
+
+.admin-scope .week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.3rem;
+}
+
+/* ── Overlays: modal / drawer / toasts ────────────────────────────────── */
+
+.admin-scope-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 24, 30, 0.45);
+  z-index: 60;
+  display: flex;
+}
+
+.admin-scope-overlay.center {
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-scope-overlay.right {
+  justify-content: flex-end;
+}
+
+.admin-scope-overlay .modal {
+  background: var(--color-surface-strong);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-panel);
+  width: min(34rem, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-scope-overlay .drawer {
+  background: var(--color-surface-strong);
+  border-left: 1px solid var(--color-border);
+  box-shadow: var(--shadow-panel);
+  width: min(40rem, 92vw);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-scope-overlay .modal-head,
+.admin-scope-overlay .drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.admin-scope-overlay .modal-head h3,
+.admin-scope-overlay .drawer-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--color-heading);
+}
+
+.admin-scope-overlay .modal-body,
+.admin-scope-overlay .drawer-body {
+  padding: 1rem 1.1rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-scope-overlay .modal-foot,
+.admin-scope-overlay .drawer-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.admin-scope-overlay .close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}
+
+.admin-toast-stack {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  display: grid;
+  gap: 0.5rem;
+  z-index: 70;
+}
+
+.admin-toast-stack .toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-strong);
+  box-shadow: var(--shadow-panel);
+  padding: 0.6rem 0.85rem;
+  font-size: 0.86rem;
+}
+
+.admin-toast-stack .toast.ok {
+  border-color: var(--color-success);
+}
+
+.admin-toast-stack .toast.error {
+  border-color: var(--color-danger);
+}
+
+.admin-toast-stack .close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+}

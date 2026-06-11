@@ -2,7 +2,9 @@ import { NavLink, Outlet } from "react-router";
 
 import { PageFrame, PageHeader, Surface, cn } from "../../components/ui";
 import { useSession } from "../auth/session";
+import { ToastProvider } from "./ui";
 import styles from "./admin-shell.module.css";
+import "./admin.css";
 
 /**
  * Operator surface: section navigation + outlet for the admin views. The
@@ -46,7 +48,11 @@ export function AdminShell() {
         </PageFrame>
       </Surface>
 
-      <Outlet />
+      <ToastProvider>
+        <div className="admin-scope">
+          <Outlet />
+        </div>
+      </ToastProvider>
     </div>
   );
 }
