@@ -12,6 +12,7 @@ export const routes = {
   apiAccess: "/api-access",
   settings: "/settings",
   settingsSkills: "/settings/skills",
+  admin: "/admin",
   newHabit: "/habits/new",
   habitDetail: (habitId: string) => `/habits/${habitId}`,
   entryDetail: (entryId: string) => `/entries/${entryId}`,
@@ -47,7 +48,10 @@ export function getPrimaryAppNavigation(labels: {
   ] as const;
 }
 
-export function getUtilityAppNavigation(labels: { apiAccess: string; settings: string }) {
+export function getUtilityAppNavigation(
+  labels: { apiAccess: string; settings: string; admin: string },
+  options: { isAdmin?: boolean } = {},
+) {
   return [
     {
       href: routes.settings,
@@ -57,5 +61,6 @@ export function getUtilityAppNavigation(labels: { apiAccess: string; settings: s
       href: routes.apiAccess,
       label: labels.apiAccess,
     },
-  ] as const;
+    ...(options.isAdmin ? [{ href: routes.admin, label: labels.admin }] : []),
+  ];
 }

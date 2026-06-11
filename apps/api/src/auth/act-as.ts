@@ -7,8 +7,10 @@ import type { AdminOperator } from "./admin-key";
  * credential plus this header runs a user-scoped route AS the named user.
  * Kept in its own module (no runtime imports from session/admin-key) so both
  * the session choke point and the v1 router can share it without cycles.
+ * Re-exported from @mikoshi-tracker/contracts/api as the cross-app SSOT.
  */
-export const ACT_AS_HEADER = "x-act-as-user";
+export { ACT_AS_HEADER } from "@mikoshi-tracker/contracts/api";
+import { ACT_AS_HEADER } from "@mikoshi-tracker/contracts/api";
 
 /** Set on the request when an admin impersonates a user via `x-act-as-user`. */
 export interface ImpersonationContext {

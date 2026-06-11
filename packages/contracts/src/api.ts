@@ -170,3 +170,11 @@ export type BadRequestError = z.infer<typeof badRequestErrorSchema>;
 export type NotFoundError = z.infer<typeof notFoundErrorSchema>;
 export type HabitInactiveError = z.infer<typeof habitInactiveErrorSchema>;
 export type DateTimeString = z.infer<typeof dateTimeStringSchema>;
+
+/**
+ * God-mode impersonation header: a request carrying a valid admin credential
+ * plus this header runs a user-scoped route AS the named user. Single source
+ * of truth shared by the API (apps/api/src/auth/act-as.ts) and the web admin
+ * client.
+ */
+export const ACT_AS_HEADER = "x-act-as-user";

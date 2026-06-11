@@ -83,7 +83,7 @@ export function ProtectedLayout() {
         refresh,
       }}
     >
-      <AppShell userEmail={session.user.email}>
+      <AppShell userEmail={session.user.email} isAdmin={session.user.isAdmin}>
         <Outlet />
       </AppShell>
     </SessionProvider>

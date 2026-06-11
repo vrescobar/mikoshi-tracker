@@ -10,14 +10,15 @@ import styles from "./app-shell.module.css";
 
 type AppShellProps = {
   userEmail: string;
+  isAdmin?: boolean;
   children: ReactNode;
 };
 
-export function AppShell({ userEmail, children }: AppShellProps) {
+export function AppShell({ userEmail, isAdmin = false, children }: AppShellProps) {
   const { pathname } = useLocation();
   const { locale, copy } = useLocale();
   const primaryAppNavigation = getPrimaryAppNavigation(copy.shell.navigation);
-  const utilityAppNavigation = getUtilityAppNavigation(copy.shell.navigation);
+  const utilityAppNavigation = getUtilityAppNavigation(copy.shell.navigation, { isAdmin });
 
   return (
     <main className={styles.shell} data-testid="app-shell">

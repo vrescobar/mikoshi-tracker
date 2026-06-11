@@ -1,0 +1,31 @@
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.navLink {
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.navLink:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.navLinkActive {
+  color: var(--color-text);
+  background: var(--color-surface-strong);
+  border-color: var(--color-border);
+}

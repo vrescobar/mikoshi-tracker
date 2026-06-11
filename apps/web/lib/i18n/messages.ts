@@ -85,6 +85,7 @@ export type LocaleMessages = {
       food: string;
       apiAccess: string;
       settings: string;
+      admin: string;
     };
     signOut: string;
   };
@@ -369,6 +370,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         food: "Food",
         apiAccess: "API Access",
         settings: "Settings",
+        admin: "Admin",
       },
       signOut: "Log out",
     },
@@ -656,6 +658,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         food: "饮食",
         apiAccess: "API 访问",
         settings: "设置",
+        admin: "管理",
       },
       signOut: "退出登录",
     },
@@ -938,6 +941,7 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
         food: "Comida",
         apiAccess: "Acceso API",
         settings: "Ajustes",
+        admin: "Admin",
       },
       signOut: "Cerrar sesión",
     },

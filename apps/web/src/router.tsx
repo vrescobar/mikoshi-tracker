@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter, Navigate } from "react-router";
 
 import { routes } from "../lib/navigation";
+import { AdminGuard } from "./admin/admin-guard";
 import { ProtectedLayout } from "./auth/protected-layout";
 
 const AuthPage = lazy(() => import("./pages/auth-page"));
@@ -17,6 +18,7 @@ const SettingsRoute = lazy(() => import("./pages/settings-route"));
 const SettingsSkillsRoute = lazy(() => import("./pages/settings-skills-route"));
 const ApiAccessRoute = lazy(() => import("./pages/api-access-route"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
+const AdminIndex = lazy(() => import("./pages/admin/index-placeholder"));
 
 function page(element: React.ReactNode) {
   return <Suspense fallback={null}>{element}</Suspense>;
@@ -42,6 +44,12 @@ export const routeConfig = [
       { path: "/settings", element: page(<SettingsRoute />) },
       { path: "/settings/skills", element: page(<SettingsSkillsRoute />) },
       { path: "/api-access", element: page(<ApiAccessRoute />) },
+      // Operator console — gated on the session's isAdmin flag.
+      {
+        path: "/admin",
+        element: <AdminGuard />,
+        children: [{ index: true, element: page(<AdminIndex />) }],
+      },
       // Legacy habit routes — preserved redirects from the Next pages.
       { path: "/habits", element: <Navigate to={routes.habitEntries} replace /> },
       { path: "/habits/new", element: <Navigate to={routes.habitEntries} replace /> },
