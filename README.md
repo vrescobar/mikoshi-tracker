@@ -24,7 +24,7 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 - **Trilingual UI** — English, Chinese, and Spanish with browser-language detection and manual switching
 - **Archive and restore** — shelve habits without losing history
 - **Admin controls** — first user becomes admin; toggle new-user registration on or off; system-key provisioning for bot-operated circles
-- **Single-binary deployment** — SQLite database, Docker Compose, no external services required
+- **Lightweight native deployment** — SQLite database, systemd user units + Caddy, no containers or external services required
 
 ## Tech Stack / 技术栈
 
@@ -34,50 +34,47 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 | Web      | Next.js (App Router), CSS Modules, Radix UI |
 | Database | SQLite                                      |
 | Proxy    | Caddy                                       |
-| Runtime  | Node.js, TypeScript, pnpm                   |
+| Runtime  | TypeScript, Bun (workspace), Node.js        |
 | Testing  | Vitest (API), Playwright (E2E)              |
 
-## Quick Start (Docker or Podman) / 快速开始
+## Quick Start (native) / 快速开始
 
 ```bash
 git clone https://github.com/vrescobar/mikoshi-tracker.git
 cd mikoshi-tracker
-cp .env.example .env
-# Edit .env — set BETTER_AUTH_SECRET (run: openssl rand -hex 32)
+bun install
 
-docker compose build web api
-docker compose run --rm migrate
-docker compose up -d
+./scripts/install-services.sh   # installs systemd user units
+# Create ~/.config/mikoshi-tracker/env as printed by the script
+# (BETTER_AUTH_SECRET: openssl rand -hex 32)
+./scripts/deploy.sh             # build + migrate + restart + health check
 ```
 
-Open `http://localhost:8080` — the first registered user becomes admin.
+Open `http://localhost:7080` — the first registered user becomes admin.
 
-> **Docker or Podman / Docker 或 Podman**: the stack also runs on rootless
-> Podman — just swap `docker compose` for `podman-compose` in the commands
-> above (the `self-host` scripts auto-detect the engine). See
-> [docs/PUBLIC-DEPLOYMENT.md](./docs/PUBLIC-DEPLOYMENT.md) for Podman notes and
-> public-internet hardening.
-
-For the full setup guide, see [Self-host install guide / 自托管安装指南](./docs/self-hosting.md).
+For the full setup guide (prerequisites, env reference, troubleshooting), see
+[Self-host install guide / 自托管安装指南](./docs/self-hosting.md). For
+public-internet hardening see
+[docs/PUBLIC-DEPLOYMENT.md](./docs/PUBLIC-DEPLOYMENT.md).
 
 For upgrades, see [Self-host upgrade guide / 自托管升级指南](./docs/self-hosting-upgrades.md).
 
 ## Local Development / 本地开发
 
-Prerequisites: Node.js 20+, pnpm 10+
+Prerequisites: Bun 1.3+, Node.js 20+
 
 ```bash
 # Install dependencies
-pnpm install
+bun install
 
 # Generate Prisma client
-pnpm prisma:generate
+bun run prisma:generate
 
 # Copy env and set BETTER_AUTH_SECRET
 cp .env.example .env
 
 # Start API and web in parallel
-pnpm dev
+bun run dev
 ```
 
 - Web: `http://localhost:3000`
@@ -88,10 +85,10 @@ pnpm dev
 
 ```bash
 # API unit tests (Vitest)
-pnpm test
+bun run test
 
 # E2E browser tests (Playwright)
-pnpm test:e2e
+bun run test:e2e
 ```
 
 ## Generic Entries Architecture / 通用条目架构

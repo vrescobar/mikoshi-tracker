@@ -6,7 +6,7 @@ Upgrades are intentionally conservative:
 
 1. stop the stack
 2. take a backup
-3. rebuild images
+3. update the code
 4. run migrations explicitly
 5. start the stack again
 6. rerun the health check
@@ -16,84 +16,67 @@ Upgrades are intentionally conservative:
 #### 1. Stop the stack
 
 ```bash
-docker compose down
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
 ```
 
 #### 2. Create a SQLite backup
 
-Run the backup while the stack is stopped so the SQLite file is not changing underneath you:
+Run the backup while the stack is stopped so the SQLite file is not changing underneath you. The database lives at the path configured in `DATABASE_URL` (default `~/.local/share/mikoshi-tracker/mikoshi-tracker.db`):
 
 ```bash
-docker compose run --rm --no-deps migrate sh -lc 'cp /data/mikoshi-tracker.db /data/mikoshi-tracker.backup.$(date +%Y%m%d%H%M%S).db'
+DB=~/.local/share/mikoshi-tracker/mikoshi-tracker.db
+cp "$DB" "$DB.backup.$(date +%Y%m%d%H%M%S)"
 ```
-
-This uses the same named volume that backs the default production database.
 
 #### 3. Update the code
 
-Pull the new revision or replace the working tree with the version you want to run.
-
-#### 4. Rebuild the runtime images
+Pull the new revision or replace the working tree with the version you want to run, then refresh dependencies:
 
 ```bash
-docker compose build web api
+git pull
+bun install
 ```
 
-#### 5. Apply migrations explicitly
+#### 4. Build, migrate, restart and verify
+
+`scripts/deploy.sh` performs the remaining steps in order — build, explicit `prisma migrate deploy`, unit restart, and a `/health` check:
 
 ```bash
-docker compose run --rm migrate
-```
-
-#### 6. Start the stack again
-
-```bash
-docker compose up -d
-```
-
-#### 7. Re-verify health
-
-```bash
+./scripts/deploy.sh
 ./scripts/self-host/check.sh
 ```
 
 If the health check fails, stop here and inspect the stack before resuming use.
 
-### Persisted-volume rehearsal
-
-The repository includes a repeatable upgrade rehearsal:
-
-```bash
-./scripts/self-host/verify-upgrade.sh
-```
-
-It exercises:
-
-- first install on a fresh volume
-- a backup taken from an existing volume
-- an explicit `docker compose run --rm migrate`
-- a controlled restart
-- a final public-entrypoint health check
-
 ### Common upgrade failures
 
 #### Backup file was never created
 
-Re-run the backup step before rebuilding or migrating. The official path assumes you have a recoverable copy before any schema change.
+Re-run the backup step before migrating. The official path assumes you have a recoverable copy before any schema change.
 
-#### `migrate` succeeds but the app still fails after restart
+#### Migrations succeed but the app still fails after restart
 
-Run `./scripts/self-host/check.sh` and inspect which of:
+Run `./scripts/self-host/check.sh` and inspect which unit failed to come back healthy, then check its journal:
 
-- `proxy`
-- `web`
-- `api`
+```bash
+journalctl --user -u mikoshi-tracker-api -n 50
+```
 
-failed to come back healthy.
+#### Operators changed the env file and forgot the public URL
 
-#### Operators changed `.env` and forgot the public URL
+If `APP_BASE_URL` changed in `~/.config/mikoshi-tracker/env`, re-run the health check against the actual URL you expect users to visit.
 
-If `APP_BASE_URL` changed, re-run the health check against the actual URL you expect users to visit.
+### Rollback
+
+Restore the backup and check out the previously deployed revision:
+
+```bash
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+cp "$DB.backup.<timestamp>" "$DB"
+git checkout <previous-revision>
+bun install
+./scripts/deploy.sh
+```
 
 For the base install flow and locale-behavior notes, return to [the install guide](./self-hosting.md).
 
@@ -103,7 +86,7 @@ For the base install flow and locale-behavior notes, return to [the install guid
 
 1. 停掉整套服务
 2. 先做备份
-3. 重建镜像
+3. 更新代码
 4. 显式执行 migrations
 5. 再次启动服务
 6. 重新跑健康检查
@@ -113,81 +96,66 @@ For the base install flow and locale-behavior notes, return to [the install guid
 #### 1. 停止服务
 
 ```bash
-docker compose down
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
 ```
 
 #### 2. 创建 SQLite 备份
 
-请在整套服务停止后执行备份，这样 SQLite 文件不会在复制时继续变化：
+请在整套服务停止后执行备份，这样 SQLite 文件不会在复制时继续变化。数据库位于 `DATABASE_URL` 配置的路径（默认 `~/.local/share/mikoshi-tracker/mikoshi-tracker.db`）：
 
 ```bash
-docker compose run --rm --no-deps migrate sh -lc 'cp /data/mikoshi-tracker.db /data/mikoshi-tracker.backup.$(date +%Y%m%d%H%M%S).db'
+DB=~/.local/share/mikoshi-tracker/mikoshi-tracker.db
+cp "$DB" "$DB.backup.$(date +%Y%m%d%H%M%S)"
 ```
-
-这里使用的是默认生产数据库所在的同一个 named volume。
 
 #### 3. 更新代码
 
-拉取新版本，或者把工作树替换成你准备运行的那个版本。
-
-#### 4. 重建运行时镜像
+拉取新版本，或者把工作树替换成你准备运行的那个版本，然后刷新依赖：
 
 ```bash
-docker compose build web api
+git pull
+bun install
 ```
 
-#### 5. 显式执行 migrations
+#### 4. 构建、迁移、重启并验证
+
+`scripts/deploy.sh` 会按顺序完成剩余步骤——构建、显式 `prisma migrate deploy`、重启单元，以及 `/health` 检查：
 
 ```bash
-docker compose run --rm migrate
-```
-
-#### 6. 再次启动整套服务
-
-```bash
-docker compose up -d
-```
-
-#### 7. 重新验证健康状态
-
-```bash
+./scripts/deploy.sh
 ./scripts/self-host/check.sh
 ```
 
 如果健康检查失败，请先停在这里排查，不要继续恢复使用。
 
-### 持久化 volume 升级演练
-
-仓库里提供了一个可重复执行的升级演练脚本：
-
-```bash
-./scripts/self-host/verify-upgrade.sh
-```
-
-它会覆盖这些步骤：
-
-- 在全新 volume 上进行首次安装
-- 从已有 volume 创建备份
-- 显式执行一次 `docker compose run --rm migrate`
-- 进行受控重启
-- 最后通过公网入口再次执行健康检查
-
 ### 常见升级失败场景
 
 #### 没有真正生成备份文件
 
-请先重新执行备份步骤，再去重建镜像或运行 migration。官方升级路径默认你在任何 schema 变化之前都已经有可恢复的备份。
+请先重新执行备份步骤，再去执行 migration。官方升级路径默认你在任何 schema 变化之前都已经有可恢复的备份。
 
-#### `migrate` 成功了，但重启后应用仍然失败
+#### migration 成功了，但重启后应用仍然失败
 
-运行 `./scripts/self-host/check.sh`，并检查下面哪个服务没有恢复健康：
+运行 `./scripts/self-host/check.sh`，查看哪个单元没有恢复健康，然后检查它的日志：
 
-- `proxy`
-- `web`
-- `api`
+```bash
+journalctl --user -u mikoshi-tracker-api -n 50
+```
 
-#### operator 改了 `.env`，却忘了同步公网 URL
+#### operator 改了 env 文件，却忘了同步公网 URL
 
-如果 `APP_BASE_URL` 发生变化，请用你期望用户真正访问的 URL 重新执行健康检查。
+如果 `~/.config/mikoshi-tracker/env` 里的 `APP_BASE_URL` 发生变化，请用你期望用户真正访问的 URL 重新执行健康检查。
+
+### 回滚
+
+恢复备份并切回上一个已部署的版本：
+
+```bash
+systemctl --user stop mikoshi-tracker-proxy mikoshi-tracker-web mikoshi-tracker-api
+cp "$DB.backup.<timestamp>" "$DB"
+git checkout <previous-revision>
+bun install
+./scripts/deploy.sh
+```
 
 安装流程和语言行为说明，请返回查看[安装指南](./self-hosting.md)。

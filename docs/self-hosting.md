@@ -1,81 +1,64 @@
 # Self-hosting / 自托管
 
-This repository ships an official self-hosted path based on Docker Compose with one public entrypoint.
+MikoshiTracker is deployed natively: systemd user units run the API and web
+servers and a native Caddy binary fronts them as the single public entrypoint.
+There is no container runtime involved.
 
-这个仓库提供一条官方自托管路径：基于 Docker Compose，并通过单一公网入口对外提供服务。
+MikoshiTracker 采用原生部署：systemd 用户单元运行 API 和 Web 服务，原生 Caddy
+二进制作为唯一公网入口反向代理。不需要任何容器运行时。
 
 ## English
 
 ### Topology
 
-- `proxy` is the only published service.
-- `web` serves the Next.js app.
-- `api` serves auth, habit APIs, today APIs, stats, and OpenAPI.
-- `migrate` is a one-off operator command used for first install and upgrades.
+- **Caddy proxy** (`mikoshi-tracker-proxy`) is the only published service. It
+  routes `/api/*` and `/health` to the API and everything else to the web app.
+- **API** (`mikoshi-tracker-api`) serves auth, habit/entry APIs, today APIs,
+  stats, and OpenAPI on `127.0.0.1:3001`.
+- **Web** (`mikoshi-tracker-web`) serves the web app on `127.0.0.1:3000`.
 
-By default the stack stores data in a named Docker volume and serves the app at `http://localhost:8080`.
+By default the stack stores data in `~/.local/share/mikoshi-tracker/` and
+serves the app at `http://localhost:7080`.
 
 ### Prerequisites
 
-- Docker Desktop or Docker Engine with Compose v2
-- A shell that can run the commands below
-
-### Configuration
-
-1. Copy the example file:
-
-```bash
-cp .env.example .env
-```
-
-2. Generate a secret:
-
-```bash
-openssl rand -hex 32
-```
-
-3. Edit `.env` and set at least:
-
-- `APP_BASE_URL`
-- `BETTER_AUTH_SECRET`
-
-Default first-install values:
-
-- `APP_BASE_URL=http://localhost:8080`
-- `MIKOSHI_TRACKER_PUBLIC_PORT=8080` is optional and only needed when the host port should differ from the URL default
-
-Advanced overrides remain optional:
-
-- `DATABASE_URL`
-- `API_INTERNAL_BASE_URL`
-- `BETTER_AUTH_URL`
-- `CORS_ORIGIN`
+- Bun 1.3+ (`curl -fsSL https://bun.sh/install | bash`)
+- Node.js 20+ in `PATH`
+- A Caddy binary at `~/.local/bin/caddy`
+  (download from https://github.com/caddyserver/caddy/releases)
+- A systemd user session (`loginctl enable-linger $USER` for boot-time start)
 
 ### First install
 
-The official install flow is two-step on purpose.
-
-#### Step 1: Prepare and initialize
-
-Build the runtime images and apply migrations before first start:
-
 ```bash
-docker compose build web api
-docker compose run --rm migrate
+git clone https://github.com/vrescobar/mikoshi-tracker.git
+cd mikoshi-tracker
+bun install
+
+# Install + enable the systemd user units
+./scripts/install-services.sh
 ```
 
-`docker compose run --rm migrate` is the canonical schema lifecycle command. It also handles first-time SQLite file creation for the default `file:/data/mikoshi-tracker.db` path.
-
-#### Step 2: Start and verify
-
-Start the stack and run the top-level health check:
+The install script prints the runtime configuration it expects at
+`~/.config/mikoshi-tracker/env`. Create that file with at least:
 
 ```bash
-docker compose up -d
-./scripts/self-host/check.sh
+NODE_ENV=production
+BETTER_AUTH_SECRET=<secret>          # openssl rand -hex 32
+APP_BASE_URL=http://localhost:7080
+DATABASE_URL=file:$HOME/.local/share/mikoshi-tracker/mikoshi-tracker.db
+ATTACHMENTS_DIR=$HOME/.local/share/mikoshi-tracker/attachments
+MIKOSHI_TRACKER_ADMIN_API_KEY=<key>  # openssl rand -hex 32, enables /api/admin/*
+MIKOSHI_TRACKER_SITE_ADDRESS=:7080   # port Caddy binds on
 ```
 
-If the health check passes, open `${APP_BASE_URL}/` to register.
+Then build, migrate and start everything:
+
+```bash
+./scripts/deploy.sh
+```
+
+If the health check at the end passes, open `${APP_BASE_URL}/` to register.
 
 ### After installation
 
@@ -97,7 +80,7 @@ The shipped product uses one shared locale model for the main app and docs surfa
 
 `./scripts/self-host/check.sh` verifies:
 
-- `proxy`, `web`, and `api` are running
+- the systemd user units are active
 - `${APP_BASE_URL}/health` returns `{ "ok": true }`
 - `${APP_BASE_URL}/api/openapi.json` is reachable
 - the web entrypoint returns HTML through the public proxy
@@ -106,15 +89,18 @@ The shipped product uses one shared locale model for the main app and docs surfa
 
 #### `BETTER_AUTH_SECRET is required`
 
-Your `.env` is missing `BETTER_AUTH_SECRET`, or it is too short. Generate a new one with `openssl rand -hex 32`.
+Your `~/.config/mikoshi-tracker/env` is missing `BETTER_AUTH_SECRET`, or it is too short. Generate a new one with `openssl rand -hex 32`.
 
 #### `APP_BASE_URL` does not match where you are browsing
 
 Set `APP_BASE_URL` to the actual public URL operators will use, including the port when not using default HTTP ports.
 
-#### `docker compose run --rm migrate` fails on first install
+#### A unit fails to start
 
-Re-run it before `docker compose up -d`. The runtime services are not expected to initialize schema automatically.
+```bash
+systemctl --user status mikoshi-tracker-api mikoshi-tracker-web mikoshi-tracker-proxy
+journalctl --user -u mikoshi-tracker-api -n 50
+```
 
 #### `/health` works but `/api/*` does not
 
@@ -122,93 +108,61 @@ This indicates the proxy is up but API routing is wrong. Re-check `scripts/self-
 
 #### The web app starts but server-side data loads fail
 
-Check `API_INTERNAL_BASE_URL`. In the official topology it should keep pointing at `http://api:3001`.
-
-### Rehearsal helpers
-
-For repeatable operator-path checks:
-
-```bash
-./scripts/self-host/verify-clean-install.sh
-./scripts/self-host/verify-upgrade.sh
-```
-
-These scripts are intended to mirror the documented flow rather than replace it.
+Check `API_INTERNAL_BASE_URL`. In the native topology it should point at `http://127.0.0.1:3001` (the default).
 
 ## 中文
 
 ### 拓扑
 
-- `proxy` 是唯一对外发布的服务。
-- `web` 提供 Next.js 应用。
-- `api` 提供 auth、habit API、today API、stats 和 OpenAPI。
-- `migrate` 是首次安装和升级时使用的一次性 operator 命令。
+- **Caddy 代理**（`mikoshi-tracker-proxy`）是唯一对外发布的服务，将 `/api/*`
+  和 `/health` 转发到 API，其余请求转发到 Web 应用。
+- **API**（`mikoshi-tracker-api`）在 `127.0.0.1:3001` 提供认证、习惯/条目、
+  today、统计与 OpenAPI 接口。
+- **Web**（`mikoshi-tracker-web`）在 `127.0.0.1:3000` 提供 Web 应用。
 
-默认情况下，整套服务会把数据保存在 Docker named volume 中，并通过 `http://localhost:8080` 提供访问。
+默认情况下数据保存在 `~/.local/share/mikoshi-tracker/`，应用地址为
+`http://localhost:7080`。
 
 ### 前置条件
 
-- Docker Desktop，或带 Compose v2 的 Docker Engine
-- 能运行下面命令的 shell 环境
-
-### 配置
-
-1. 复制示例文件：
-
-```bash
-cp .env.example .env
-```
-
-2. 生成密钥：
-
-```bash
-openssl rand -hex 32
-```
-
-3. 编辑 `.env`，至少设置：
-
-- `APP_BASE_URL`
-- `BETTER_AUTH_SECRET`
-
-首次安装的默认值：
-
-- `APP_BASE_URL=http://localhost:8080`
-- `MIKOSHI_TRACKER_PUBLIC_PORT=8080` 是可选项，只有当宿主机端口需要和默认 URL 端口不一致时才需要设置
-
-高级覆盖项仍然是可选的：
-
-- `DATABASE_URL`
-- `API_INTERNAL_BASE_URL`
-- `BETTER_AUTH_URL`
-- `CORS_ORIGIN`
+- Bun 1.3+（`curl -fsSL https://bun.sh/install | bash`）
+- `PATH` 中有 Node.js 20+
+- `~/.local/bin/caddy` 处有 Caddy 二进制
+  （从 https://github.com/caddyserver/caddy/releases 下载）
+- systemd 用户会话（开机自启需 `loginctl enable-linger $USER`）
 
 ### 首次安装
 
-官方安装流程刻意分成两步。
-
-#### 第一步：准备并初始化
-
-先构建运行时镜像，再在首次启动前执行 migrations：
-
 ```bash
-docker compose build web api
-docker compose run --rm migrate
+git clone https://github.com/vrescobar/mikoshi-tracker.git
+cd mikoshi-tracker
+bun install
+
+# 安装并启用 systemd 用户单元
+./scripts/install-services.sh
 ```
 
-`docker compose run --rm migrate` 是标准的 schema 生命周期命令；对于默认的 `file:/data/mikoshi-tracker.db` 路径，它也会负责首次创建 SQLite 文件。
-
-#### 第二步：启动并验证
-
-启动整套服务，并执行顶层健康检查：
+安装脚本会打印它期望的运行时配置文件 `~/.config/mikoshi-tracker/env`，至少包含：
 
 ```bash
-docker compose up -d
-./scripts/self-host/check.sh
+NODE_ENV=production
+BETTER_AUTH_SECRET=<secret>          # openssl rand -hex 32
+APP_BASE_URL=http://localhost:7080
+DATABASE_URL=file:$HOME/.local/share/mikoshi-tracker/mikoshi-tracker.db
+ATTACHMENTS_DIR=$HOME/.local/share/mikoshi-tracker/attachments
+MIKOSHI_TRACKER_ADMIN_API_KEY=<key>  # openssl rand -hex 32，启用 /api/admin/*
+MIKOSHI_TRACKER_SITE_ADDRESS=:7080   # Caddy 绑定的端口
 ```
 
-如果健康检查通过，请打开 `${APP_BASE_URL}/` 注册账号。
+然后构建、迁移并启动全部服务：
 
-### 安装后
+```bash
+./scripts/deploy.sh
+```
+
+末尾的健康检查通过后，打开 `${APP_BASE_URL}/` 注册账号。
+
+### 安装之后
 
 - **首个用户即管理员**：首个注册的账号会自动成为管理员，可以开关是否允许新用户注册。在公网实例上，请在公布 URL 之前立即注册你自己的账号，以免攻击者抢占管理员角色；如果不希望公开注册，注册后请在管理员设置中关闭它。参见 [Public deployment & hardening](./PUBLIC-DEPLOYMENT.md)。
 - **API 访问**：每个用户可以在 API Access 页面生成个人 API Token。Token 以 SHA-256 哈希存储，明文仅在创建时展示一次。
@@ -228,40 +182,28 @@ docker compose up -d
 
 `./scripts/self-host/check.sh` 会验证：
 
-- `proxy`、`web` 和 `api` 都在运行
+- systemd 用户单元处于 active 状态
 - `${APP_BASE_URL}/health` 返回 `{ "ok": true }`
 - `${APP_BASE_URL}/api/openapi.json` 可访问
-- web 入口能通过公网 `proxy` 正常返回 HTML
+- web 入口能通过公网代理正常返回 HTML
 
 ### 故障排查
 
 #### `BETTER_AUTH_SECRET is required`
 
-说明你的 `.env` 缺少 `BETTER_AUTH_SECRET`，或者它太短。请重新用 `openssl rand -hex 32` 生成一个。
+说明你的 `~/.config/mikoshi-tracker/env` 缺少 `BETTER_AUTH_SECRET`，或者它太短。请重新用 `openssl rand -hex 32` 生成一个。
 
-#### `APP_BASE_URL` 和你实际访问的地址不一致
+#### 某个单元启动失败
 
-请把 `APP_BASE_URL` 设置成 operator 实际会访问的公网 URL；如果不是默认 HTTP 端口，也要把端口带上。
-
-#### `docker compose run --rm migrate` 在首次安装时失败
-
-请在 `docker compose up -d` 之前重新运行它。运行时服务不会自动帮你初始化 schema。
+```bash
+systemctl --user status mikoshi-tracker-api mikoshi-tracker-web mikoshi-tracker-proxy
+journalctl --user -u mikoshi-tracker-api -n 50
+```
 
 #### `/health` 正常，但 `/api/*` 不正常
 
-这通常意味着 `proxy` 已经起来了，但 API 路由有问题。请重新检查 `scripts/self-host/Caddyfile`，然后再次运行 `./scripts/self-host/check.sh`。
+这通常意味着代理已经起来了，但 API 路由有问题。请重新检查 `scripts/self-host/Caddyfile`，然后再次运行 `./scripts/self-host/check.sh`。
 
 #### Web 能打开，但服务端数据加载失败
 
-请检查 `API_INTERNAL_BASE_URL`。在官方拓扑下，它应该继续指向 `http://api:3001`。
-
-### 演练辅助脚本
-
-如果你想重复验证 operator 路径，可以运行：
-
-```bash
-./scripts/self-host/verify-clean-install.sh
-./scripts/self-host/verify-upgrade.sh
-```
-
-这些脚本的目标是复现文档里的流程，而不是替代文档本身。
+请检查 `API_INTERNAL_BASE_URL`。在原生拓扑下它应该指向 `http://127.0.0.1:3001`（默认值）。

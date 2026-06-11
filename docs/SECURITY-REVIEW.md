@@ -42,8 +42,9 @@ mismo lote de trabajo que esta revisión — ver `docs/PUBLIC-DEPLOYMENT.md`.
   URLs son `localhost`/`127.0.0.1`, el servicio interno `api:3001`, y
   `habit.example.com` (un placeholder en la documentación del plugin).
 - **Sin telemetría/analytics:** la web (Next.js) no incluye Sentry, PostHog,
-  Google Analytics, Vercel Analytics ni `sendBeacon`. `NEXT_TELEMETRY_DISABLED=1`
-  está fijado en `Dockerfile.web`.
+  Google Analytics, Vercel Analytics ni `sendBeacon`. (`NEXT_TELEMETRY_DISABLED=1`
+  se fijaba en la imagen de contenedor, ya retirada; en el despliegue nativo
+  puede fijarse en la unidad systemd si se desea.)
 - **Sin scripts de instalación sospechosos:** el único `postinstall`
   (`package.json:8`) ejecuta `prisma generate` — legítimo. No hay
   `preinstall`/`prepare` en ningún `package.json`.
@@ -131,8 +132,8 @@ antiguo. El registro se puede desactivar (`/api/admin/registration`).
   no permisivo).
 - **Secretos:** ningún secreto hardcodeado. `.env` está en `.gitignore`;
   `.env.example` solo lleva placeholders. `BETTER_AUTH_SECRET` exige ≥32
-  caracteres (validado por Zod en `env.ts`) y el `docker-compose.yml` falla si
-  no se proporciona.
+  caracteres (validado por Zod en `env.ts`), así que el arranque falla si no
+  se proporciona.
 
 ## 7. Dependencias
 
