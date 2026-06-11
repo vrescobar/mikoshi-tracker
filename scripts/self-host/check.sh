@@ -9,7 +9,7 @@ cd "$ROOT_DIR"
 APP_BASE_URL="${APP_BASE_URL:-http://localhost:${MIKOSHI_TRACKER_PUBLIC_PORT:-7080}}"
 
 echo "==> Checking systemd user units"
-for unit in mikoshi-tracker-api mikoshi-tracker-web; do
+for unit in mikoshi-tracker-api mikoshi-tracker-proxy; do
   status="$(systemctl --user is-active "${unit}" 2>/dev/null || true)"
   if [[ "$status" != "active" ]]; then
     echo "Unit '${unit}' is not active (status: ${status})"

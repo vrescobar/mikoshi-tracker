@@ -1,6 +1,6 @@
 [Unit]
 Description=MikoshiTracker Proxy (Caddy)
-After=network.target mikoshi-tracker-api.service mikoshi-tracker-web.service
+After=network.target mikoshi-tracker-api.service
 
 [Service]
 Type=simple

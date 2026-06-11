@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Install MikoshiTracker as systemd user services (API + Web + Caddy proxy).
+# Install MikoshiTracker as systemd user services (API + Caddy proxy; the web
+# SPA is a static Vite build served by Caddy).
 # Run once on first setup. Subsequent deploys use scripts/deploy.sh.
 #
 # Prerequisites:
 #   - Bun in ~/.bun/bin/bun (https://bun.sh) — runs the API
-#   - Node.js in PATH — runs the web server and tooling
+#   - Node.js in PATH — runs tooling (prisma CLI, vitest, playwright)
 #   - Caddy binary in ~/.local/bin/caddy
 #     Download: https://github.com/caddyserver/caddy/releases
 #
@@ -42,14 +43,18 @@ mkdir -p "${DATA_DIR}/attachments"
 
 echo "==> Installing systemd unit files"
 cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-api.service"   "${SYSTEMD_USER_DIR}/mikoshi-tracker-api.service"
-cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-web.service"   "${SYSTEMD_USER_DIR}/mikoshi-tracker-web.service"
 cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-proxy.service" "${SYSTEMD_USER_DIR}/mikoshi-tracker-proxy.service"
+
+# Upgrade cleanup: the web app used to run as its own unit (Next.js server);
+# it is now a static build served by Caddy.
+systemctl --user disable --now mikoshi-tracker-web 2>/dev/null || true
+rm -f "${SYSTEMD_USER_DIR}/mikoshi-tracker-web.service"
 
 echo "==> Reloading systemd daemon"
 systemctl --user daemon-reload
 
 echo "==> Enabling units (start on login)"
-systemctl --user enable mikoshi-tracker-api mikoshi-tracker-web mikoshi-tracker-proxy
+systemctl --user enable mikoshi-tracker-api mikoshi-tracker-proxy
 
 PORT="${MIKOSHI_TRACKER_PUBLIC_PORT:-7080}"
 
@@ -64,5 +69,5 @@ echo "  ATTACHMENTS_DIR=${DATA_DIR}/attachments"
 echo "  MIKOSHI_TRACKER_ADMIN_API_KEY=<key>   # openssl rand -hex 32"
 echo "  MIKOSHI_TRACKER_SITE_ADDRESS=:${PORT} # port Caddy binds on"
 echo ""
-echo "Then run: systemctl --user start mikoshi-tracker-api mikoshi-tracker-web mikoshi-tracker-proxy"
+echo "Then run: systemctl --user start mikoshi-tracker-api mikoshi-tracker-proxy"
 echo "Or run:   ./scripts/deploy.sh  (build + migrate + restart all)"
