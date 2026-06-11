@@ -9,7 +9,8 @@
     "start": "next start",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "playwright": "playwright"
+    "playwright": "playwright",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@mikoshi-tracker/contracts": "workspace:*",

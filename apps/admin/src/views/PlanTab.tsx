@@ -13,6 +13,12 @@ import {
 } from "recharts";
 
 import { api, type AdminEvent } from "../lib/api";
+
+/** Recharts types the tooltip item payload as `any`; narrow it once here. */
+function tooltipCounts(item: unknown): string {
+  const payload = (item as { payload?: { completed?: number; scheduled?: number } }).payload;
+  return `${payload?.completed ?? 0}/${payload?.scheduled ?? 0}`;
+}
 import {
   CHART,
   WEEKDAYS,
@@ -218,7 +224,6 @@ function DailyCompletionChart({
         scheduled,
       };
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [habits, events, from]);
 
   if (deterministic.length === 0) {
@@ -245,9 +250,7 @@ function DailyCompletionChart({
             <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#6b7685" }} unit="%" width={44} />
             <Tooltip
               formatter={(v, _n, p) => [
-                v === null || v === undefined
-                  ? "no habits"
-                  : `${v}% (${p.payload.completed}/${p.payload.scheduled})`,
+                v === null || v === undefined ? "no habits" : `${v}% (${tooltipCounts(p)})`,
                 "Completion",
               ]}
               contentStyle={tooltipStyle}
@@ -303,7 +306,7 @@ function AdherenceRanking({
             />
             <Tooltip
               cursor={{ fill: "rgba(22,70,60,0.05)" }}
-              formatter={(v, _n, p) => [`${v}% (${p.payload.completed}/${p.payload.scheduled})`, "Adherence"]}
+              formatter={(v, _n, p) => [`${v}% (${tooltipCounts(p)})`, "Adherence"]}
               contentStyle={tooltipStyle}
             />
             <Bar dataKey="pct" radius={[0, 4, 4, 0]} barSize={16}>

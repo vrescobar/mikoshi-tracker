@@ -2,7 +2,9 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  plugins: [react()],
+  // Cast: @vitejs/plugin-react types resolve against vite 6 while
+  // vitest/config bundles vite 7 types; the runtime plugin API is compatible.
+  plugins: [react() as never],
   test: {
     environment: "jsdom",
     globals: true,

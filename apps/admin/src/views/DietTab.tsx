@@ -12,7 +12,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { api, type AggregationGroupBy, type EntryRecord, type EventDetail } from "../lib/api";
+import { api, type AggregationGroupBy, type EntryRecord } from "../lib/api";
 import { CHART, FOOD_MEAL_SLUG, daysAgoKey, fmtNum, todayKey } from "../lib/health";
 import { useAsync } from "../lib/useAsync";
 import { DataTable, type Column } from "../components/DataTable";
@@ -294,7 +294,7 @@ function MealLog({
     );
     const rows: MealRow[] = [];
     for (const list of lists) {
-      for (const ev of list.items as EventDetail[]) {
+      for (const ev of list.items) {
         const p = (ev.payload ?? {}) as MealPayload;
         rows.push({
           id: ev.id,

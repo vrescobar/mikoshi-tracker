@@ -68,6 +68,7 @@ function makeMutation(type: EventMutationRecord["type"], createdAt: string): Eve
     dateKey: createdAt.slice(0, 10),
     type,
     source: "WEB",
+    onBehalfOfCircleId: null,
     note: null,
     previousPayload: null,
     nextPayload: null,

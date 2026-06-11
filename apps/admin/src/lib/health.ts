@@ -33,7 +33,8 @@ export const CHART = {
   target: "#b3261e",
 } as const;
 
-export type FrequencyType = "DAILY" | "WEEKDAYS" | "WEEKLY_COUNT" | "MONTHLY_COUNT" | string;
+// Known values stay autocompletable while unknown server values remain valid.
+export type FrequencyType = "DAILY" | "WEEKDAYS" | "WEEKLY_COUNT" | "MONTHLY_COUNT" | (string & {});
 
 export type HabitConfig = {
   frequencyType?: FrequencyType;
@@ -58,7 +59,7 @@ export function toHabit(e: EntryRecord): Habit {
   const cfg = (e.config ?? {}) as HabitConfig;
   return {
     ...e,
-    freq: (cfg.frequencyType ?? "DAILY") as FrequencyType,
+    freq: (cfg.frequencyType ?? "DAILY"),
     freqCount: cfg.frequencyCount ?? null,
     targetValue: cfg.targetValue ?? null,
     unit: cfg.unit ?? null,

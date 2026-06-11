@@ -40,7 +40,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
-    "vitest": "vitest"
+    "vitest": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
