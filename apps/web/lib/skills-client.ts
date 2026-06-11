@@ -1,4 +1,4 @@
-import { createApiUrl } from "./api";
+import { apiFetch } from "./http";
 
 export type SkillHealthSnapshot = {
   skillSlug: string;
@@ -25,9 +25,7 @@ export async function getSkillHealth(slug: string): Promise<SkillHealthSnapshot>
 
   let response: Response;
   try {
-    response = await fetch(createApiUrl(`/api/skills/${encodeURIComponent(slug)}/health`), {
-      credentials: "include",
-    });
+    response = await apiFetch(`/api/skills/${encodeURIComponent(slug)}/health`);
   } catch {
     return unreachable;
   }

@@ -11,6 +11,7 @@ import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
 import type { TodaySummary } from "@mikoshi-tracker/contracts/today";
 
 import { createApiUrl } from "./api";
+import { ApiError, apiFetch, readErrorMessage, requestJson, requestNoContent } from "./http";
 
 export type HabitRecord = {
   id: string;
@@ -90,21 +91,6 @@ function getBrowserTimeZone() {
   }
 }
 
-async function readErrorMessage(response: Response) {
-  const text = await response.text();
-
-  if (!text) {
-    return response.statusText;
-  }
-
-  try {
-    const parsed = JSON.parse(text) as { message?: string };
-    return parsed.message ?? text;
-  } catch {
-    return text;
-  }
-}
-
 function buildHabitListPath(filters?: Partial<HabitListFilters>) {
   const params = new URLSearchParams();
 
@@ -126,38 +112,6 @@ function buildHabitListPath(filters?: Partial<HabitListFilters>) {
 
   const query = params.toString();
   return query.length > 0 ? `/api/habits?${query}` : "/api/habits";
-}
-
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const hasBody = init?.body !== undefined;
-  const response = await fetch(createApiUrl(path), {
-    ...init,
-    credentials: "include",
-    headers: {
-      ...(hasBody ? { "content-type": "application/json" } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
-  }
-
-  return (await response.json()) as T;
-}
-
-async function requestNoContent(path: string, init?: RequestInit): Promise<void> {
-  const response = await fetch(createApiUrl(path), {
-    ...init,
-    credentials: "include",
-    headers: {
-      ...(init?.headers ?? {}),
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
-  }
 }
 
 export async function signUp(input: SignUpInput) {
@@ -263,14 +217,12 @@ export async function resetApiAccessToken() {
 
 /** Current session, or null when not signed in (401). */
 export async function getSession(): Promise<SessionPayload | null> {
-  const response = await fetch(createApiUrl("/api/session"), {
-    credentials: "include",
-  });
+  const response = await apiFetch("/api/session");
   if (response.status === 401) {
     return null;
   }
   if (!response.ok) {
-    throw new Error("Unable to validate session");
+    throw new ApiError(response.status, "Unable to validate session");
   }
   return (await response.json()) as SessionPayload;
 }
@@ -331,14 +283,13 @@ export async function uploadHabitAttachments(habitId: string, files: File[]) {
   }
 
   // No explicit content-type header: the browser sets the multipart boundary.
-  const response = await fetch(createApiUrl("/api/attachments"), {
+  const response = await apiFetch("/api/attachments", {
     method: "POST",
-    credentials: "include",
     body: form,
   });
 
   if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
+    throw new ApiError(response.status, await readErrorMessage(response));
   }
 
   return (await response.json()) as AttachmentListResponse;

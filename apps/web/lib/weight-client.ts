@@ -2,34 +2,8 @@ import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregation
 import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 
-import { createApiUrl } from "./api";
-
-async function readErrorMessage(response: Response) {
-  const text = await response.text();
-  if (!text) return response.statusText;
-  try {
-    const parsed = JSON.parse(text) as { message?: string };
-    return parsed.message ?? text;
-  } catch {
-    return text;
-  }
-}
-
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const hasBody = init?.body !== undefined;
-  const response = await fetch(createApiUrl(path), {
-    ...init,
-    credentials: "include",
-    headers: {
-      ...(hasBody ? { "content-type": "application/json" } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
-  }
-  return (await response.json()) as T;
-}
+import { listEntries } from "./entries-client";
+import { requestJson } from "./http";
 
 export type WeightPayload = {
   weight_kg: number;
@@ -123,7 +97,6 @@ export async function getWeightAggregations(
 
 /** The active weight_log entry, or null when none exists yet. */
 export async function getWeightEntry(): Promise<EntryRecord | null> {
-  const params = new URLSearchParams({ entryTypeSlug: "weight_log", isActive: "true" });
-  const body = await requestJson<{ items: EntryRecord[] }>(`/api/entries?${params.toString()}`);
-  return body.items[0] ?? null;
+  const items = await listEntries({ entryTypeSlug: "weight_log", isActive: true });
+  return items[0] ?? null;
 }

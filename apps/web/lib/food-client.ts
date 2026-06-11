@@ -4,33 +4,7 @@ import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 import type { EntryEventDetail, EntryEventRecord, EventMutationRecord } from "@mikoshi-tracker/contracts/events";
 
 import { createApiUrl } from "./api";
-
-async function readErrorMessage(response: Response) {
-  const text = await response.text();
-  if (!text) return response.statusText;
-  try {
-    const parsed = JSON.parse(text) as { message?: string };
-    return parsed.message ?? text;
-  } catch {
-    return text;
-  }
-}
-
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const hasBody = init?.body !== undefined;
-  const response = await fetch(createApiUrl(path), {
-    ...init,
-    credentials: "include",
-    headers: {
-      ...(hasBody ? { "content-type": "application/json" } : {}),
-      ...(init?.headers ?? {}),
-    },
-  });
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
-  }
-  return (await response.json()) as T;
-}
+import { requestJson } from "./http";
 
 export type MealSlot = "breakfast" | "lunch" | "snack" | "dinner" | "other";
 
