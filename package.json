@@ -8,11 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run --filter @mikoshi-tracker/api dev & bun run --filter @mikoshi-tracker/web dev & bun run --filter @mikoshi-tracker/admin dev",
+    "dev": "bun run --filter @mikoshi-tracker/api dev & bun run --filter @mikoshi-tracker/web dev",
     "dev:api": "bun run --filter @mikoshi-tracker/api dev",
     "dev:web": "bun run --filter @mikoshi-tracker/web dev",
-    "dev:admin": "bun run --filter @mikoshi-tracker/admin dev",
-    "build:admin": "bun run --filter @mikoshi-tracker/admin build",
     "postinstall": "node node_modules/.bin/prisma generate --config prisma.config.ts --schema prisma/schema.prisma",
     "prisma:generate": "bun run --filter @mikoshi-tracker/api prisma:generate",
     "prisma:migrate": "prisma migrate deploy --config prisma.config.ts --schema prisma/schema.prisma",
