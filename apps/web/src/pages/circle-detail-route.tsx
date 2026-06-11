@@ -5,22 +5,22 @@ import { CircleDetailSkeleton } from "../../components/circles/circle-detail-ske
 import { listHabits } from "../../lib/auth-client";
 import { getCircleDetail } from "../../lib/circles-client";
 import { useSession } from "../auth/session";
-import { RefreshContext, usePageData } from "../lib/use-page-data";
-import NotFoundPage from "./not-found";
+import { PageBoundary } from "../lib/page-boundary";
+import { usePageData } from "../lib/use-page-data";
 
 import type { CircleDetailResponse } from "@mikoshi-tracker/contracts/circles";
 
-/** Port of app/(app)/circles/[circleId]/page.tsx. */
+/** Port of app/(app)/circles/[circleId]/page.tsx. 404 → NotFound; other errors surface. */
 export default function CircleDetailRoute() {
   const { circleId = "" } = useParams<{ circleId: string }>();
   const { user } = useSession();
 
-  const { data, loading, refresh } = usePageData<{
-    detail: CircleDetailResponse | null;
+  const state = usePageData<{
+    detail: CircleDetailResponse;
     habits: { id: string; name: string }[];
   }>(async () => {
     const [detail, habits] = await Promise.all([
-      getCircleDetail(circleId).catch(() => null),
+      getCircleDetail(circleId),
       listHabits({ status: "active" }).catch(() => []),
     ]);
     return {
@@ -29,21 +29,15 @@ export default function CircleDetailRoute() {
     };
   }, [circleId]);
 
-  if (loading) {
-    return <CircleDetailSkeleton />;
-  }
-
-  if (!data?.detail) {
-    return <NotFoundPage />;
-  }
-
   return (
-    <RefreshContext.Provider value={refresh}>
-      <CircleDetailPage
-        initialDetail={data.detail}
-        currentUserId={user.id}
-        initialHabits={data.habits}
-      />
-    </RefreshContext.Provider>
+    <PageBoundary state={state} skeleton={<CircleDetailSkeleton />} notFoundOn404>
+      {(data) => (
+        <CircleDetailPage
+          initialDetail={data.detail}
+          currentUserId={user.id}
+          initialHabits={data.habits}
+        />
+      )}
+    </PageBoundary>
   );
 }

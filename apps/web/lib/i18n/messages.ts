@@ -4,6 +4,14 @@ export type LocaleMessages = {
   meta: {
     localeSwitchLabel: string;
   };
+  shared: {
+    pageLoadError: {
+      eyebrow: string;
+      title: string;
+      description: string;
+      retry: string;
+    };
+  };
   auth: {
     page: {
       eyebrow: string;
@@ -281,6 +289,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
   en: {
     meta: {
       localeSwitchLabel: "Language switch",
+    },
+    shared: {
+      pageLoadError: {
+        eyebrow: "Error",
+        title: "We couldn't load this page",
+        description: "The server didn't respond as expected. Your data is safe — try again in a moment.",
+        retry: "Retry",
+      },
     },
     auth: {
       page: {
@@ -562,6 +578,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
     meta: {
       localeSwitchLabel: "语言切换",
     },
+    shared: {
+      pageLoadError: {
+        eyebrow: "错误",
+        title: "无法加载此页面",
+        description: "服务器未按预期响应。你的数据是安全的——请稍后重试。",
+        retry: "重试",
+      },
+    },
     auth: {
       page: {
         eyebrow: "欢迎回来",
@@ -834,6 +858,14 @@ export const messages: Record<SupportedLocale, LocaleMessages> = {
   es: {
     meta: {
       localeSwitchLabel: "Cambiar idioma",
+    },
+    shared: {
+      pageLoadError: {
+        eyebrow: "Error",
+        title: "No se pudo cargar esta página",
+        description: "El servidor no respondió como se esperaba. Tus datos están a salvo: inténtalo de nuevo en un momento.",
+        retry: "Reintentar",
+      },
     },
     auth: {
       page: {

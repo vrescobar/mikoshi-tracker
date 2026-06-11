@@ -4,7 +4,8 @@ import {
   getApiAccessToken,
 } from "../../lib/auth-client";
 import { useSession } from "../auth/session";
-import { RefreshContext, usePageData } from "../lib/use-page-data";
+import { PageBoundary } from "../lib/page-boundary";
+import { usePageData } from "../lib/use-page-data";
 
 import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 
@@ -12,7 +13,7 @@ import type { ApiAccessTokenResponse } from "@mikoshi-tracker/contracts/api";
 export default function ApiAccessRoute() {
   const { user } = useSession();
 
-  const { data, loading, refresh } = usePageData<{
+  const state = usePageData<{
     tokenState: ApiAccessTokenResponse;
     registrationState: { registrationEnabled: boolean } | null;
   }>(async () => {
@@ -23,16 +24,14 @@ export default function ApiAccessRoute() {
     return { tokenState, registrationState };
   }, [user.id, user.isAdmin]);
 
-  if (loading || !data) {
-    return null;
-  }
-
   return (
-    <RefreshContext.Provider value={refresh}>
-      <ApiAccessPanel
-        initialTokenState={data.tokenState}
-        initialRegistrationState={user.isAdmin ? data.registrationState : null}
-      />
-    </RefreshContext.Provider>
+    <PageBoundary state={state}>
+      {(data) => (
+        <ApiAccessPanel
+          initialTokenState={data.tokenState}
+          initialRegistrationState={user.isAdmin ? data.registrationState : null}
+        />
+      )}
+    </PageBoundary>
   );
 }

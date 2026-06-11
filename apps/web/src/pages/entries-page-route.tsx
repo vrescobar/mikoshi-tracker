@@ -6,7 +6,8 @@ import {
   listEntryTypes,
   type EntryTypeRecord,
 } from "../../lib/entries-client";
-import { RefreshContext, usePageData } from "../lib/use-page-data";
+import { PageBoundary } from "../lib/page-boundary";
+import { usePageData } from "../lib/use-page-data";
 
 import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 
@@ -16,7 +17,7 @@ export default function EntriesPageRoute() {
   const entryTypeSlug = searchParams.get("entryTypeSlug") ?? undefined;
   const isActive = searchParams.get("status") !== "archived";
 
-  const { data, loading, refresh } = usePageData<{
+  const state = usePageData<{
     items: EntryRecord[];
     entryTypes: EntryTypeRecord[];
   }>(async () => {
@@ -27,17 +28,15 @@ export default function EntriesPageRoute() {
     return { items, entryTypes };
   }, [entryTypeSlug ?? "", isActive]);
 
-  if (loading || !data) {
-    return null;
-  }
-
   return (
-    <RefreshContext.Provider value={refresh}>
-      <EntriesPage
-        initialItems={data.items}
-        entryTypeSlug={entryTypeSlug}
-        entryTypes={data.entryTypes}
-      />
-    </RefreshContext.Provider>
+    <PageBoundary state={state}>
+      {(data) => (
+        <EntriesPage
+          initialItems={data.items}
+          entryTypeSlug={entryTypeSlug}
+          entryTypes={data.entryTypes}
+        />
+      )}
+    </PageBoundary>
   );
 }

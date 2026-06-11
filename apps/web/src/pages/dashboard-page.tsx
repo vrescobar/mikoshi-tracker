@@ -12,7 +12,8 @@ import { listEntries } from "../../lib/entries-client";
 import { getFoodAggregations } from "../../lib/food-client";
 import { isWeightPayload, listWeightEvents } from "../../lib/weight-client";
 import { useSession } from "../auth/session";
-import { RefreshContext, usePageData } from "../lib/use-page-data";
+import { PageBoundary } from "../lib/page-boundary";
+import { usePageData } from "../lib/use-page-data";
 
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { OverviewStats } from "@mikoshi-tracker/contracts/stats";
@@ -39,7 +40,7 @@ export default function DashboardPage() {
     searchParams.get("simulateTodayError") === "1" ||
     searchParams.get("simulateOverviewError") === "1";
 
-  const { data, loading, refresh } = usePageData<DashboardData>(async () => {
+  const state = usePageData<DashboardData>(async () => {
     if (simulateLoading) {
       await new Promise((resolve) => setTimeout(resolve, 1200));
     }
@@ -125,23 +126,21 @@ export default function DashboardPage() {
     };
   }, [timezone, simulateLoading, simulateError]);
 
-  if (loading || !data) {
-    return <DashboardSkeleton />;
-  }
-
   return (
-    <RefreshContext.Provider value={refresh}>
-      <DashboardShell
-        emptyState={data.emptyState}
-        initialLoadError={data.initialLoadError}
-        initialOverview={data.initialOverview}
-        initialSummary={data.initialSummary}
-        initialFoodTodayAggregations={data.foodAggregations}
-        foodEntryId={data.foodEntryId}
-        dailyKcalTarget={data.dailyKcalTarget}
-        latestWeightKg={data.latestWeightKg}
-        latestWeightDate={data.latestWeightDate}
-      />
-    </RefreshContext.Provider>
+    <PageBoundary state={state} skeleton={<DashboardSkeleton />}>
+      {(data) => (
+        <DashboardShell
+          emptyState={data.emptyState}
+          initialLoadError={data.initialLoadError}
+          initialOverview={data.initialOverview}
+          initialSummary={data.initialSummary}
+          initialFoodTodayAggregations={data.foodAggregations}
+          foodEntryId={data.foodEntryId}
+          dailyKcalTarget={data.dailyKcalTarget}
+          latestWeightKg={data.latestWeightKg}
+          latestWeightDate={data.latestWeightDate}
+        />
+      )}
+    </PageBoundary>
   );
 }

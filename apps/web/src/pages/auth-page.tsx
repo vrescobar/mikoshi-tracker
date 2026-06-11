@@ -30,8 +30,11 @@ export default function AuthPage() {
         return;
       }
 
+      // On a transient failure, default to showing sign-up: the server
+      // enforces the real setting on submit, and hiding registration on a
+      // fresh install (API still booting) would strand the very first user.
       const registration = await getRegistrationStatus().catch(() => ({
-        registrationEnabled: false,
+        registrationEnabled: true,
         hasUsers: true,
       }));
       if (!cancelled) {

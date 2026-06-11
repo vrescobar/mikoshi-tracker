@@ -175,7 +175,7 @@ export function DashboardShell({
           description={copy.dashboard.emptyStates.archivedOnly.description}
           actions={
             <div className={styles.actionRow}>
-              <Button type="button" onClick={() => void navigate(`${routes.habits}?status=archived`)}>
+              <Button type="button" onClick={() => void navigate(`${routes.habitEntries}&status=archived`)}>
                 {copy.dashboard.emptyStates.archivedOnly.reviewArchived}
               </Button>
               <Button type="button" variant="secondary" onClick={() => void navigate(routes.newHabit)}>

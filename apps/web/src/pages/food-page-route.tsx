@@ -2,7 +2,8 @@ import { FoodPage } from "../../components/food/food-page";
 import { shiftDays, todayKeyInTimeZone } from "../../lib/dates";
 import { getRepeatedFoodMeals, listFoodEvents } from "../../lib/food-client";
 import { useSession } from "../auth/session";
-import { RefreshContext, usePageData } from "../lib/use-page-data";
+import { PageBoundary } from "../lib/page-boundary";
+import { usePageData } from "../lib/use-page-data";
 
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
@@ -13,7 +14,7 @@ export default function FoodPageRoute() {
   const today = todayKeyInTimeZone(timezone);
   const from30 = shiftDays(today, -30);
 
-  const { data, loading, refresh } = usePageData<{
+  const state = usePageData<{
     events: EntryEventRecord[];
     repeats: AggregationResponse | null;
   }>(async () => {
@@ -24,18 +25,16 @@ export default function FoodPageRoute() {
     return { events: events.items, repeats };
   }, [today, timezone]);
 
-  if (loading || !data) {
-    return null;
-  }
-
   return (
-    <RefreshContext.Provider value={refresh}>
-      <FoodPage
-        initialEvents={data.events}
-        dateKey={today}
-        timeZone={timezone}
-        initialRepeats={data.repeats}
-      />
-    </RefreshContext.Provider>
+    <PageBoundary state={state}>
+      {(data) => (
+        <FoodPage
+          initialEvents={data.events}
+          dateKey={today}
+          timeZone={timezone}
+          initialRepeats={data.repeats}
+        />
+      )}
+    </PageBoundary>
   );
 }

@@ -27,17 +27,3 @@ export function normalizeLocale(value: string | null | undefined): SupportedLoca
   return null;
 }
 
-export function resolveLocaleFromAcceptLanguage(value: string | null): SupportedLocale | null {
-  if (!value) {
-    return null;
-  }
-
-  for (const part of value.split(",")) {
-    const candidate = normalizeLocale(part.split(";")[0]?.trim());
-    if (candidate) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
