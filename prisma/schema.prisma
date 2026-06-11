@@ -346,7 +346,8 @@ model AdminToken {
 }
 
 /// Append-only audit trail of admin (god-mode) actions, so "who did what" is
-/// answerable. `actorType` is "env" (static key) or "token" (named AdminToken);
+/// answerable. `actorType` is "env" (static key), "token" (named AdminToken),
+/// or "session" (signed-in user with the isAdmin flag);
 /// `metadata` is an optional JSON string of action-specific detail.
 model AdminAuditLog {
   id         String   @id @default(cuid())

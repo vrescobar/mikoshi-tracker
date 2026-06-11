@@ -8,7 +8,10 @@ const CORRECT_KEY = "super-secret-admin-key-for-tests";
 /**
  * Minimal request mock. `adminToken` is what the named-token lookup
  * (`adminToken.findUnique`) returns when the static key doesn't match — null by
- * default so wrong-key cases fall through to a 401.
+ * default so wrong-key cases fall through to a 401. The better-auth session
+ * lookup (the no-bearer fallback) always resolves to "no session" here; the
+ * session-admin path is covered by integration tests
+ * (test/auth/admin-session-operator.test.ts).
  */
 function makeRequest(
   authorization?: string,
@@ -21,6 +24,11 @@ function makeRequest(
         adminToken: {
           findUnique: () => Promise.resolve(adminToken),
           update: () => Promise.resolve(undefined),
+        },
+      },
+      auth: {
+        api: {
+          getSession: () => Promise.resolve(null),
         },
       },
     },
