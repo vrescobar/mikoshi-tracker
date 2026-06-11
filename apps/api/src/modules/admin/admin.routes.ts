@@ -36,6 +36,7 @@ import {
   enrollMemberByExternalIdHandler,
   getCircleAdminHandler,
   issueMagicLinkHandler,
+  magicLinkRedirectHandler,
   mergeUsersHandler,
   provisionUserHandler,
   resetProvisionedTokenHandler,
@@ -361,4 +362,8 @@ export async function registerAdminRoutes(app: FastifyInstance) {
   // `consumedAt` write makes the URL non-replayable; 32 random bytes of
   // entropy make brute force infeasible.
   app.post("/api/auth/magic-link/consume", consumeMagicLinkHandler);
+  // Browser-facing landing route for issued magic links. The URL shape
+  // `{base}/magic?t=...` is a contract with the Mikoshi WhatsApp bot — links
+  // already sent in chat history must keep working.
+  app.get("/magic", magicLinkRedirectHandler);
 }

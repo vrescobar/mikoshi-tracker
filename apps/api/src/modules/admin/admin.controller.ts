@@ -291,6 +291,83 @@ export async function consumeMagicLinkHandler(
   }
 }
 
+const MAGIC_SAFE_DEFAULT = "/";
+
+/**
+ * Same-origin relative path guard for the post-login redirect. Blocks
+ * protocol-relative `//host` (browsers treat it as a scheme-relative URL)
+ * and full URLs — only same-origin paths are accepted.
+ */
+function isSafeNextPath(p: string | undefined | null): p is string {
+  if (typeof p !== "string" || p.length === 0) return false;
+  return p.startsWith("/") && !p.startsWith("//");
+}
+
+/**
+ * GET /magic?t=<token>&next=/path
+ *
+ * Magic-link landing route: consumes the token and 303-redirects into the app
+ * with the session cookie set. This URL shape is a contract with the Mikoshi
+ * WhatsApp bot — issued links (`{base}/magic?t=...`) live in chat history, so
+ * the path and query parameters must remain stable.
+ *
+ * Why a RELATIVE Location:
+ *   Behind the Caddy reverse proxy the API listens on an internal bind
+ *   address, so building an absolute redirect from the request would leak an
+ *   unreachable origin. A relative `Location` (e.g. `/`) is resolved by the
+ *   browser against the public origin in its address bar, with no dependence
+ *   on forwarded headers or env vars. `next` is always a validated
+ *   same-origin path (starts with "/", never "//").
+ *
+ * Security:
+ *   - The token is the credential — single-use, hashed in DB, never logged.
+ *   - Cookie attributes come straight from signSessionCookieValue so the
+ *     surface area for cookie mis-config stays in ONE place
+ *     (apps/api/src/auth/magic-link.ts).
+ *   - `next` precedence: per-link `next` (set at issuance) > `?next=` query
+ *     (could be tampered after the URL is in flight) > safe default `/`.
+ */
+export async function magicLinkRedirectHandler(request: FastifyRequest, reply: FastifyReply) {
+  const query = request.query as { t?: string; next?: string };
+  const redirect = (path: string) => reply.status(303).header("location", path).send();
+  const errorRedirect = (reason: string) =>
+    redirect(`/?magicError=${encodeURIComponent(reason)}`);
+
+  const token = query.t?.trim() ?? "";
+  if (!token) {
+    return errorRedirect("missing");
+  }
+
+  try {
+    const result = await consumeMagicLink({
+      db: request.server.db,
+      token,
+      secret: request.server.env.BETTER_AUTH_SECRET,
+      secureCookies: request.server.env.BETTER_AUTH_URL.startsWith("https://"),
+    });
+
+    if (!result.ok) {
+      return await errorRedirect(result.reason === "not-found" ? "invalid" : result.reason);
+    }
+
+    const linkNext = isSafeNextPath(result.next) ? result.next : null;
+    const queryNext = isSafeNextPath(query.next) ? query.next : null;
+    const destination = linkNext ?? queryNext ?? MAGIC_SAFE_DEFAULT;
+
+    // attrs.httpOnly is the literal `true` in SignedSessionCookie.
+    const attrs = result.cookie.attributes;
+    const cookie =
+      `${result.cookie.name}=${result.cookie.value}` +
+      `; Max-Age=${attrs.maxAgeSeconds}; Path=${attrs.path}; SameSite=${attrs.sameSite}` +
+      `; HttpOnly${attrs.secure ? "; Secure" : ""}`;
+    reply.header("set-cookie", cookie);
+    return await redirect(destination);
+  } catch (error) {
+    request.log.error(error, "magic-link redirect failed");
+    return errorRedirect("server-error");
+  }
+}
+
 // ─── Admin circle lifecycle (contest management) ────────────────────────────
 
 export async function createCircleAdminHandler(request: FastifyRequest, reply: FastifyReply) {
