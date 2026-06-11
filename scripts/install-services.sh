@@ -3,7 +3,8 @@
 # Run once on first setup. Subsequent deploys use scripts/deploy.sh.
 #
 # Prerequisites:
-#   - Node.js in /usr/bin/node
+#   - Bun in ~/.bun/bin/bun (https://bun.sh) — runs the API
+#   - Node.js in PATH — runs the web server and tooling
 #   - Caddy binary in ~/.local/bin/caddy
 #     Download: https://github.com/caddyserver/caddy/releases
 #
@@ -20,6 +21,11 @@ MIKOSHI_CONFIG_DIR="${HOME}/.config/mikoshi-tracker"
 DATA_DIR="${HOME}/.local/share/mikoshi-tracker"
 
 echo "==> Checking dependencies"
+if [[ ! -x "${HOME}/.bun/bin/bun" ]]; then
+  echo "ERROR: ~/.bun/bin/bun not found or not executable." >&2
+  echo "Install with: curl -fsSL https://bun.sh/install | bash" >&2
+  exit 1
+fi
 if ! command -v node >/dev/null 2>&1; then
   echo "ERROR: node not found in PATH" >&2; exit 1
 fi

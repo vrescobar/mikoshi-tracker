@@ -21,40 +21,24 @@ for arg in "$@"; do
   esac
 done
 
-echo "==> Building API"
+# The API runs from TypeScript source under Bun; "building" it is a typecheck.
+echo "==> Typechecking API"
 if [[ $SKIP_API -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1; then
-    bun run --filter @mikoshi-tracker/api build
-  else
-    pnpm --filter @mikoshi-tracker/api build
-  fi
+  bun run --filter @mikoshi-tracker/api typecheck
 fi
 
 echo "==> Building web"
 if [[ $SKIP_WEB -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1; then
-    bun run --filter @mikoshi-tracker/web build
-  else
-    pnpm --filter @mikoshi-tracker/web build
-  fi
+  bun run --filter @mikoshi-tracker/web build
 fi
 
 echo "==> Running database migrations"
 if [[ $SKIP_MIGRATE -eq 0 ]]; then
-  if command -v bun >/dev/null 2>&1; then
-    bun run prisma:migrate
-  else
-    pnpm exec prisma migrate deploy \
-      --config prisma.config.ts \
-      --schema prisma/schema.prisma
-  fi
+  bun run prisma:migrate
 fi
 
 echo "==> Restarting services"
 systemctl --user restart mikoshi-tracker-api mikoshi-tracker-web mikoshi-tracker-proxy
-
-echo "==> Waiting for services to start"
-sleep 3
 
 echo "==> Verifying health"
 SITE_ADDR="${MIKOSHI_TRACKER_SITE_ADDRESS:-}"
@@ -63,9 +47,14 @@ if [[ "$SITE_ADDR" =~ ^:[0-9]+$ ]]; then
 else
   API_URL="${APP_BASE_URL:-http://localhost:7080}"
 fi
-if curl --fail --silent --show-error "${API_URL}/health" | grep -q '"ok":true'; then
-  echo "Deploy complete. API healthy at ${API_URL}/health"
-else
-  echo "WARNING: /health check did not return ok:true"
-  echo "  Check: journalctl --user -u mikoshi-tracker-api"
-fi
+# Bun parses the API's TypeScript on boot, so allow a few seconds of retries.
+for attempt in $(seq 1 15); do
+  if curl --fail --silent "${API_URL}/health" 2>/dev/null | grep -q '"ok":true'; then
+    echo "Deploy complete. API healthy at ${API_URL}/health"
+    exit 0
+  fi
+  sleep 2
+done
+echo "WARNING: /health check did not return ok:true after 30s"
+echo "  Check: journalctl --user -u mikoshi-tracker-api"
+exit 1
