@@ -214,7 +214,7 @@ packages/
   openclaw-plugin/ Native OpenClaw plugin package
   mcp/          MCP server package for generic AI hosts
 prisma/         Database schema and migrations
-docker/         Caddy config
+scripts/self-host/ systemd units + Caddyfile
 docs/
   architecture/ Architecture docs (generic-entries, performance)
   self-hosting.md, self-hosting-upgrades.md, PUBLIC-DEPLOYMENT.md

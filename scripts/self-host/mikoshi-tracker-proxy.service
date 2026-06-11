@@ -6,8 +6,8 @@ After=network.target mikoshi-tracker-api.service mikoshi-tracker-web.service
 Type=simple
 WorkingDirectory=/home/victor/projects/mikoshi-tracker
 EnvironmentFile=%h/.config/mikoshi-tracker/env
-ExecStart=/home/victor/.local/bin/caddy run --config docker/caddy/Caddyfile
-ExecReload=/home/victor/.local/bin/caddy reload --config docker/caddy/Caddyfile
+ExecStart=/home/victor/.local/bin/caddy run --config scripts/self-host/Caddyfile
+ExecReload=/home/victor/.local/bin/caddy reload --config scripts/self-host/Caddyfile
 Restart=on-failure
 RestartSec=5
 

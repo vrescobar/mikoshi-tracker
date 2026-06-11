@@ -159,7 +159,7 @@ Change container hostnames to loopback addresses:
 +  reverse_proxy 127.0.0.1:3000
 ```
 
-Caddy can be run natively (`caddy run --config docker/caddy/Caddyfile`) or
+Caddy can be run natively (`caddy run --config scripts/self-host/Caddyfile`) or
 kept as a container with `--network=host` so it can reach the host's
 loopback. Native is simpler.
 
@@ -198,7 +198,7 @@ Caddy can be stopped too once the native Caddy is running.
 | `scripts/self-host/mikoshi-tracker-api.service` | New — systemd unit template |
 | `scripts/self-host/mikoshi-tracker-web.service` | New — systemd unit template |
 | `scripts/deploy.sh` | New — build + migrate + restart wrapper |
-| `docker/caddy/Caddyfile` | Edit — `api:3001` → `127.0.0.1:3001`, same for web |
+| `scripts/self-host/Caddyfile` | Edit — `api:3001` → `127.0.0.1:3001`, same for web |
 | `docker-compose.yml` | Edit — remove `web` and `api` services; keep `proxy` + `migrate` as optional helpers |
 | `Dockerfile.web` | Keep for reference / third-party deployments; not used locally |
 | `Dockerfile.api` | Keep for reference / third-party deployments; not used locally |

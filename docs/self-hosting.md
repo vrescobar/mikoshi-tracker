@@ -118,7 +118,7 @@ Re-run it before `docker compose up -d`. The runtime services are not expected t
 
 #### `/health` works but `/api/*` does not
 
-This indicates the proxy is up but API routing is wrong. Re-check `docker-compose.yml`, `docker/caddy/Caddyfile`, and rerun `./scripts/self-host/check.sh`.
+This indicates the proxy is up but API routing is wrong. Re-check `scripts/self-host/Caddyfile`, and rerun `./scripts/self-host/check.sh`.
 
 #### The web app starts but server-side data loads fail
 
@@ -249,7 +249,7 @@ docker compose up -d
 
 #### `/health` 正常，但 `/api/*` 不正常
 
-这通常意味着 `proxy` 已经起来了，但 API 路由有问题。请重新检查 `docker-compose.yml`、`docker/caddy/Caddyfile`，然后再次运行 `./scripts/self-host/check.sh`。
+这通常意味着 `proxy` 已经起来了，但 API 路由有问题。请重新检查 `scripts/self-host/Caddyfile`，然后再次运行 `./scripts/self-host/check.sh`。
 
 #### Web 能打开，但服务端数据加载失败
 

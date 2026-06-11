@@ -1,8 +1,6 @@
 # Site address.
 # - Native deployment: set MIKOSHI_TRACKER_SITE_ADDRESS to ":7080" so Caddy
 #   binds on a non-privileged port directly on the host.
-# - Containerised deployment: leave it unset (defaults to :80); the container
-#   publishes ${MIKOSHI_TRACKER_PUBLIC_PORT}:80.
 # - Public HTTPS: set to your real hostname (e.g. "habits.example.com") and
 #   Caddy provisions a Let's Encrypt certificate automatically.
 #   See docs/PUBLIC-DEPLOYMENT.md.
