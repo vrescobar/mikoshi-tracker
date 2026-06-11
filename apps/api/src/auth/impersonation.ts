@@ -2,29 +2,24 @@ import type { FastifyRequest } from "fastify";
 
 import type { PrismaClient } from "../generated/prisma/client";
 import { V1ApiError } from "../v1/errors";
+import { getActAsUserId } from "./act-as";
 import { resolveAdminOperator, type AdminOperator } from "./admin-key";
 import { requireAuthenticatedUser, type AuthenticatedUser } from "./session";
 
 /**
  * God-mode impersonation: a request that carries a valid admin credential plus
- * this header runs a normal `bearer` route AS the named user, so the entire
- * user-scoped API surface (entries, events/check-ins, circles-as-owner) becomes
- * usable for anyone without per-action admin endpoints. Every impersonated
- * mutation is attributed to the resolving operator in the admin audit log.
+ * the `x-act-as-user` header (see ./act-as.ts) runs a normal `bearer` route AS
+ * the named user, so the entire user-scoped API surface (entries,
+ * events/check-ins, circles-as-owner) becomes usable for anyone without
+ * per-action admin endpoints. Every impersonated mutation is attributed to the
+ * resolving operator in the admin audit log.
  */
-export const ACT_AS_HEADER = "x-act-as-user";
+export { ACT_AS_HEADER } from "./act-as";
 
 export interface ResolvedBearerPrincipal {
   user: AuthenticatedUser;
   /** Non-null when the caller is an admin acting as `user`; null for a normal user token. */
   impersonatedBy: AdminOperator | null;
-}
-
-function getActAsUserId(request: FastifyRequest): string | null {
-  const header = request.headers[ACT_AS_HEADER];
-  const value = Array.isArray(header) ? header[0] : header;
-  const trimmed = value?.trim();
-  return trimmed && trimmed.length > 0 ? trimmed : null;
 }
 
 /**

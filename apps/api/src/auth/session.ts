@@ -1,11 +1,12 @@
 import type { FastifyRequest } from "fastify";
 import { fromNodeHeaders } from "better-auth/node";
 
+import { getActAsUserId } from "./act-as";
 import { findUserByApiToken } from "./api-token";
 
 export class AuthSessionError extends Error {
   constructor(
-    public readonly statusCode: 401 | 403,
+    public readonly statusCode: 401 | 403 | 404,
     message: string,
   ) {
     super(message);
@@ -50,6 +51,12 @@ function getBearerToken(request: FastifyRequest) {
 }
 
 export async function getAuthenticatedUser(request: FastifyRequest): Promise<AuthenticatedUser | null> {
+  const actAsUserId = getActAsUserId(request);
+
+  if (actAsUserId) {
+    return impersonatedUser(request, actAsUserId);
+  }
+
   const bearerToken = getBearerToken(request);
 
   if (bearerToken) {
@@ -58,6 +65,44 @@ export async function getAuthenticatedUser(request: FastifyRequest): Promise<Aut
 
   const session = await getSession(request);
   return session?.user ?? null;
+}
+
+/**
+ * Legacy-route god-mode: `x-act-as-user` + a valid admin credential (root
+ * key, AdminToken, or admin session) runs the route as the target user. This
+ * is the single choke point every legacy user-scoped controller goes through
+ * (habits, today, entries, events, aggregations, stats, circles, attachments,
+ * skills), mirroring what resolveBearerOrImpersonation does for /api/v1.
+ * Mutations are attributed to the operator by the global audit hook in
+ * server.ts via `request.impersonation`.
+ */
+async function impersonatedUser(
+  request: FastifyRequest,
+  actAsUserId: string,
+): Promise<AuthenticatedUser> {
+  // Dynamic import: admin-key.ts statically imports this module (getSession),
+  // so a static import here would create a cycle.
+  const { resolveAdminOperator, AdminKeyError } = await import("./admin-key");
+
+  let operator;
+  try {
+    operator = await resolveAdminOperator(request);
+  } catch (error) {
+    if (error instanceof AdminKeyError) {
+      // Legacy controllers only understand AuthSessionError; an explicit
+      // impersonation attempt without a valid admin credential is a plain 401.
+      throw new AuthSessionError(401, "Authentication required");
+    }
+    throw error;
+  }
+
+  const target = await request.server.db.user.findUnique({ where: { id: actAsUserId } });
+  if (!target) {
+    throw new AuthSessionError(404, `Impersonation target user not found: ${actAsUserId}`);
+  }
+
+  request.impersonation = { operator, userId: target.id };
+  return target;
 }
 
 export async function requireAuthenticatedUser(request: FastifyRequest): Promise<AuthenticatedUser> {

@@ -4,8 +4,10 @@ import { AuthSessionError } from "../auth/session";
 import { isValidTimeZone } from "./timezone";
 
 export function sendAuthError(reply: FastifyReply, error: AuthSessionError): void {
+  const code =
+    error.statusCode === 401 ? "UNAUTHORIZED" : error.statusCode === 404 ? "NOT_FOUND" : "FORBIDDEN";
   reply.status(error.statusCode).send({
-    code: error.statusCode === 401 ? "UNAUTHORIZED" : "FORBIDDEN",
+    code,
     message: error.message,
   });
 }

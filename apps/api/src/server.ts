@@ -10,7 +10,10 @@ import {
   migrateLegacyPersonalApiTokens,
   resetPersonalApiToken,
 } from "./auth/api-token";
+import { getActAsUserId } from "./auth/act-as";
+import { AdminKeyError, resolveAdminOperator } from "./auth/admin-key";
 import { registerAuth } from "./auth/auth";
+import { recordAdminAction } from "./modules/admin/admin-audit.service";
 import {
   getRegistrationStatus,
   isUserAdmin,
@@ -119,6 +122,35 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerOpenApi(app);
   await registerV1(app);
 
+  // God-mode audit for LEGACY routes: every successful impersonated mutation
+  // outside /api/v1 (which audits itself per operation in v1/router.ts) is
+  // attributed to the resolving operator. Best-effort — an audit write must
+  // never turn an already-applied mutation into an error response.
+  const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+  app.addHook("onResponse", async (request, reply) => {
+    if (!request.impersonation) return;
+    if (!mutatingMethods.has(request.method)) return;
+    if (reply.statusCode >= 400) return;
+
+    const routePath = request.routeOptions.url ?? request.url;
+    if (routePath.startsWith("/api/v1")) return;
+
+    try {
+      await recordAdminAction(
+        { db: app.db },
+        {
+          operator: request.impersonation.operator,
+          action: `impersonate.legacy.${request.method} ${routePath}`,
+          targetType: "user",
+          targetId: request.impersonation.userId,
+          metadata: { method: request.method, path: request.url },
+        },
+      );
+    } catch (auditError) {
+      request.log.error({ err: auditError }, "legacy impersonation audit write failed");
+    }
+  });
+
   app.get("/health", async () => ({ ok: true }));
 
   app.get("/api/auth/registration", async () => getRegistrationStatus(app.db));
@@ -173,6 +205,36 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   app.get("/api/session", async (request, reply) => {
     try {
+      // God-mode: with `x-act-as-user` + a valid admin credential the session
+      // endpoint answers as the TARGET user (identity, isAdmin, timezone) plus
+      // an `impersonating` marker, so every user page renders the target with
+      // timezone-correct "today" bucketing and the UI can show a banner.
+      const actAsUserId = getActAsUserId(request);
+      if (actAsUserId) {
+        const operator = await resolveAdminOperator(request);
+        const target = await app.db.user.findUnique({
+          where: { id: actAsUserId },
+          select: { id: true, email: true, name: true, isAdmin: true, timezone: true },
+        });
+        if (!target) {
+          reply.status(404).send({
+            code: "NOT_FOUND",
+            message: `Impersonation target user not found: ${actAsUserId}`,
+          });
+          return await reply;
+        }
+        return {
+          user: {
+            id: target.id,
+            email: target.email,
+            name: target.name,
+            isAdmin: target.isAdmin,
+          },
+          timezone: target.timezone ?? "UTC",
+          impersonating: { operator: { type: operator.type, label: operator.label } },
+        };
+      }
+
       const session = await requireSession(request);
 
       const dbUser = await app.db.user.findUnique({
@@ -194,6 +256,13 @@ export async function createApp(options: CreateAppOptions = {}) {
     } catch (error) {
       if (error instanceof AuthSessionError) {
         sendAuthError(reply, error);
+        return reply;
+      }
+      if (error instanceof AdminKeyError) {
+        reply.status(error.statusCode).send({
+          code: error.statusCode === 401 ? "UNAUTHORIZED" : "SERVICE_UNAVAILABLE",
+          message: error.message,
+        });
         return reply;
       }
 

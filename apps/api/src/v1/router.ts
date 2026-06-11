@@ -2,24 +2,13 @@ import { randomUUID } from "node:crypto";
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 
-import { resolveAdminOperator, type AdminOperator } from "../auth/admin-key";
+import { resolveAdminOperator } from "../auth/admin-key";
+// The `request.impersonation` fastify augmentation lives in ../auth/act-as.ts.
 import { resolveBearerOrImpersonation } from "../auth/impersonation";
 import { requireCircleContext } from "../auth/circle-session";
 import { recordAdminAction } from "../modules/admin/admin-audit.service";
 import { mapV1Error } from "./errors";
 import { v1FullPath, type ApiV1Deps, type V1Principal, type V1RouteMeta } from "./match";
-
-/** Set on the request when an admin impersonates a user via `x-act-as-user`. */
-interface ImpersonationContext {
-  operator: AdminOperator;
-  userId: string;
-}
-
-declare module "fastify" {
-  interface FastifyRequest {
-    impersonation?: ImpersonationContext;
-  }
-}
 
 function parseWith<T>(schema: { parse: (value: unknown) => T } | undefined, value: unknown): T | undefined {
   return schema ? schema.parse(value) : undefined;
