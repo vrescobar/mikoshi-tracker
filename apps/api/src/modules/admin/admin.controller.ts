@@ -74,7 +74,7 @@ function serializeAdminCircle(
   };
 }
 
-function sendAdminError(reply: FastifyReply, error: unknown) {
+export function sendAdminError(reply: FastifyReply, error: unknown) {
   if (error instanceof AdminKeyError) {
     if (error.statusCode === 503) {
       reply.status(503).send({

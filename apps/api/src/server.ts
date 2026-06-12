@@ -23,6 +23,7 @@ import {
 } from "./auth/registration";
 import { AuthSessionError, assertOwnsUser, requireSession } from "./auth/session";
 import { registerAdminRoutes } from "./modules/admin/admin.routes";
+import { registerPlatformRoutes } from "./modules/platform/platform.routes";
 import { registerAggregationRoutes } from "./modules/aggregations/aggregation.routes";
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
 import { registerSkillRoutes } from "./modules/skills/skill.routes";
@@ -107,6 +108,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerMultipart(app);
   await registerAuth(app);
   await registerAdminRoutes(app);
+  await registerPlatformRoutes(app);
   await registerHabitRoutes(app);
   invalidateSchemaCache();
   await seedBuiltInEntryTypes(app.db);

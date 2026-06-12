@@ -18,7 +18,8 @@
     "./entries": "./src/entries.ts",
     "./events": "./src/events.ts",
     "./aggregations": "./src/aggregations.ts",
-    "./skills": "./src/skills.ts"
+    "./skills": "./src/skills.ts",
+    "./platform": "./src/platform.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"
