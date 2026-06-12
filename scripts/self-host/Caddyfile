@@ -22,6 +22,13 @@
 		reverse_proxy {$MIKOSHI_TRACKER_API_UPSTREAM:127.0.0.1:3001}
 	}
 
+	# Platform webhooks (mikoshi → tracker), e.g. POST /hooks/identity.
+	# HMAC-authenticated by the API itself; the public edge must 404 /hooks/*
+	# (vhost hardening, mikoshi-stack story 63) — this proxy is private-plane.
+	handle /hooks/* {
+		reverse_proxy {$MIKOSHI_TRACKER_API_UPSTREAM:127.0.0.1:3001}
+	}
+
 	# /admin/* is part of the web SPA now (session-gated operator console);
 	# it falls through to the static handler below.
 
