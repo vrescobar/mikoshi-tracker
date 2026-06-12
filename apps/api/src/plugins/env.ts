@@ -25,6 +25,13 @@ const rawEnvSchema = z.object({
   BETTER_AUTH_URL: optionalUrl,
   CORS_ORIGIN: optionalString,
   ATTACHMENTS_DIR: optionalString,
+  /**
+   * Base URL of the Mikoshi Platform API on the private plane (e.g.
+   * "http://127.0.0.1:7777/api/platform/v1"). Optional: when unset, roster
+   * pulls (story 51) and identity lookups are silently skipped — the push
+   * webhook and provision hints still work.
+   */
+  MIKOSHI_PLATFORM_API_URL: optionalUrl,
 });
 
 export type AppEnv = ReturnType<typeof createEnv>;
@@ -44,6 +51,7 @@ export function createEnv(source: NodeJS.ProcessEnv): {
   CORS_ORIGIN: string;
   corsOrigins: string[];
   ATTACHMENTS_DIR: string;
+  MIKOSHI_PLATFORM_API_URL: string | null;
 } {
   const parsed = rawEnvSchema.parse(source);
   const betterAuthUrl = parsed.BETTER_AUTH_URL ?? parsed.APP_BASE_URL;
@@ -68,6 +76,7 @@ export function createEnv(source: NodeJS.ProcessEnv): {
     // Defaults to a repo-relative folder for local dev; production sets an
     // absolute path on the persistent volume (see docker-compose.yml).
     ATTACHMENTS_DIR: parsed.ATTACHMENTS_DIR ?? resolve(process.cwd(), "data/attachments"),
+    MIKOSHI_PLATFORM_API_URL: parsed.MIKOSHI_PLATFORM_API_URL ?? null,
   };
 }
 

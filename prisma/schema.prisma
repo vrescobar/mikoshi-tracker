@@ -135,6 +135,11 @@ model Circle {
   id          String             @id @default(cuid())
   name        String
   ownerId     String
+  /// Mikoshi cohort backing this circle's roster (extensions-platform story
+  /// 51). When set, CircleMembership is a derived cache of the cohort: pulls
+  /// on provision/SSO and pushes via POST /api/platform/membership reconcile
+  /// it. NULL = legacy circle managed entirely in tracker.
+  cohortId    String?            @unique
   /// Contest lifecycle. "active" accepts check-ins; "closed" freezes them
   /// (results snapshotted); "archived" hides the contest from default views.
   status      String             @default("active")

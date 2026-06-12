@@ -23,7 +23,9 @@ function normalizeCookie(setCookie: string | string[] | undefined): string {
   return values.map((value) => value.split(";")[0]).join("; ");
 }
 
-export async function createTestContext(): Promise<TestContext> {
+export async function createTestContext(
+  envOverrides: Partial<NodeJS.ProcessEnv> = {},
+): Promise<TestContext> {
   const databasePath = join(TEST_DB_DIR, `mikoshi-tracker-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
   const databaseUrl = `file:${databasePath}`;
 
@@ -41,6 +43,7 @@ export async function createTestContext(): Promise<TestContext> {
       BETTER_AUTH_URL: "http://127.0.0.1:3001",
       CORS_ORIGIN: "http://localhost:3000",
       ATTACHMENTS_DIR: attachmentsDir,
+      ...envOverrides,
     },
   });
 

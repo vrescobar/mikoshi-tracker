@@ -44,5 +44,26 @@ export const platformProvisionResponseSchema = z.object({
   personalToken: nonEmptyString,
 });
 
+// ─── Membership push (cohorts = roster, story 51) ───────────────────────────
+
+export const platformMembershipInputSchema = z.object({
+  cohortId: nonEmptyString,
+  members: z.array(
+    z.object({
+      externalId: nonEmptyString,
+      displayName: z.string().optional(),
+    }),
+  ),
+});
+
+export const platformMembershipResponseSchema = z.object({
+  cohortId: nonEmptyString,
+  added: z.array(nonEmptyString),
+  removed: z.array(nonEmptyString),
+  skippedUnprovisioned: z.array(nonEmptyString),
+});
+
 export type PlatformProvisionInput = z.infer<typeof platformProvisionInputSchema>;
 export type PlatformProvisionResponse = z.infer<typeof platformProvisionResponseSchema>;
+export type PlatformMembershipInput = z.infer<typeof platformMembershipInputSchema>;
+export type PlatformMembershipResponse = z.infer<typeof platformMembershipResponseSchema>;
