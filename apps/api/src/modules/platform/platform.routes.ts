@@ -1,9 +1,15 @@
 import type { FastifyInstance } from "fastify";
 
-import { issueMagicLinkHandler } from "../admin/admin.controller";
+import { requireAdminKey } from "../../auth/admin-key";
+import { issueMagicLinkHandler, sendAdminError } from "../admin/admin.controller";
+import { sweepMergedIdentities } from "./identity-lifecycle";
 import { createMikoshiPlatformClient } from "./mikoshi-platform-client";
 import { pullAllCohortCircles } from "./membership-sync";
-import { platformMembershipHandler, platformProvisionHandler } from "./platform.controller";
+import {
+  identityWebhookHandler,
+  platformMembershipHandler,
+  platformProvisionHandler,
+} from "./platform.controller";
 
 /**
  * Extensions-platform contract namespace (stories 50–51). These routes are
@@ -24,11 +30,36 @@ export async function registerPlatformRoutes(app: FastifyInstance) {
 
   app.post("/api/platform/provision", platformProvisionHandler);
 
-  // Same handler as the admin alias, plus the SSO roster refresh: issuing a
-  // login link means a human is about to look at their circles, so pull the
-  // cohort rosters first. Best-effort and bounded (client timeout) — a down
-  // Mikoshi must never block a magic link.
+  // Same handler as the admin alias, plus two platform behaviours:
+  //  - lazy merge net (story 52): an unknown externalId may be the survivor
+  //    of a Mikoshi merge — sweep our stored ids before letting the handler
+  //    404. Gated by the admin credential FIRST so unauthenticated requests
+  //    can never trigger outbound sweeps (the handler re-checks, harmless).
+  //  - SSO roster refresh (story 51): issuing a login link means a human is
+  //    about to look at their circles, so pull the cohort rosters after.
+  // Both are best-effort and bounded (client timeout) — a down Mikoshi must
+  // never block a magic link.
   app.post("/api/platform/issue-magic-link", async (request, reply) => {
+    try {
+      await requireAdminKey(request);
+    } catch (error) {
+      return sendAdminError(reply, error);
+    }
+
+    if (app.mikoshiPlatform) {
+      const externalId = (request.body as { externalId?: unknown } | null)?.externalId;
+      if (typeof externalId === "string" && externalId.length > 0) {
+        const known = await app.db.user.findUnique({ where: { externalId } });
+        if (!known) {
+          try {
+            await sweepMergedIdentities(app.db, app.mikoshiPlatform);
+          } catch (error) {
+            request.log.error({ err: error }, "lazy identity sweep before SSO failed");
+          }
+        }
+      }
+    }
+
     const out = await issueMagicLinkHandler(request, reply);
     if (reply.statusCode === 201 && app.mikoshiPlatform) {
       try {
@@ -41,4 +72,9 @@ export async function registerPlatformRoutes(app: FastifyInstance) {
   });
 
   app.post("/api/platform/membership", platformMembershipHandler);
+
+  // Push leg of the identity lifecycle (story 52). Signature-authenticated —
+  // see identityWebhookHandler. Reachable only on the private plane; the
+  // public edge 404s /hooks/* via vhost hardening (story 63).
+  app.post("/hooks/identity", identityWebhookHandler);
 }

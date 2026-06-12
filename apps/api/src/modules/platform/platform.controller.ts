@@ -24,12 +24,20 @@ import {
   type PlatformProvisionInput,
 } from "@mikoshi-tracker/contracts/platform";
 
+import { z, ZodError } from "zod";
+
 import { requireAdminKey } from "../../auth/admin-key";
 import { resetPersonalApiToken } from "../../auth/api-token";
+import {
+  verifyWebhookSignature,
+  WEBHOOK_SIGNATURE_HEADER,
+  WEBHOOK_TIMESTAMP_HEADER,
+} from "../../auth/webhook-signature";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { Prisma } from "../../generated/prisma/client";
 import { addCircleMemberRecord } from "../circles/circle.repository";
 import { sendAdminError } from "../admin/admin.controller";
+import { reconcileMergedIdentity, sweepMergedIdentities } from "./identity-lifecycle";
 import { pullCircleRoster, reconcileCircleRoster } from "./membership-sync";
 
 /**
@@ -100,10 +108,21 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
     const input = platformProvisionInputSchema.parse(request.body);
     const db = request.server.db;
 
-    const existing = await db.user.findUnique({
+    let existing = await db.user.findUnique({
       where: { externalId: input.externalId },
       select: { id: true, name: true },
     });
+
+    // Lazy merge net (story 52): an unknown externalId may be the SURVIVOR of
+    // a Mikoshi merge whose orphan we still hold. Sweep our stored ids before
+    // creating a fresh row — re-keying beats duplicating the human.
+    if (!existing && request.server.mikoshiPlatform) {
+      await sweepMergedIdentities(db, request.server.mikoshiPlatform);
+      existing = await db.user.findUnique({
+        where: { externalId: input.externalId },
+        select: { id: true, name: true },
+      });
+    }
 
     if (existing) {
       const data: { name?: string; timezone?: string } = {};
@@ -190,5 +209,65 @@ export async function platformMembershipHandler(request: FastifyRequest, reply: 
     return { cohortId: input.cohortId, ...result };
   } catch (error) {
     return sendAdminError(reply, error);
+  }
+}
+
+const identityMergedEventSchema = z.object({
+  event: z.literal("identity.merged"),
+  orphanExternalId: z.string().trim().min(1),
+  survivorExternalId: z.string().trim().min(1),
+  mergedAt: z.string(),
+});
+
+/**
+ * Push leg of the identity lifecycle (story 52): Mikoshi best-effort POSTs
+ * `identity.merged` here, signed with the shared admin key. The signature IS
+ * the credential (no bearer): HMAC over `timestamp + "." + rawBody`, 5-min
+ * anti-replay window, verified on the raw bytes stashed by the JSON parser.
+ */
+export async function identityWebhookHandler(request: FastifyRequest, reply: FastifyReply) {
+  const adminKey = process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
+  if (!adminKey) {
+    return reply.status(503).send({
+      code: "SERVICE_UNAVAILABLE",
+      message: "Identity webhook is disabled (MIKOSHI_TRACKER_ADMIN_API_KEY not set)",
+    });
+  }
+
+  const timestamp = request.headers[WEBHOOK_TIMESTAMP_HEADER];
+  const signature = request.headers[WEBHOOK_SIGNATURE_HEADER];
+  const valid =
+    typeof timestamp === "string" &&
+    typeof signature === "string" &&
+    typeof request.rawBody === "string" &&
+    verifyWebhookSignature({
+      adminKey,
+      timestamp,
+      rawBody: request.rawBody,
+      signature,
+    });
+  if (!valid) {
+    return reply.status(401).send({
+      code: "UNAUTHORIZED",
+      message: "Invalid webhook signature",
+    });
+  }
+
+  try {
+    const event = identityMergedEventSchema.parse(request.body);
+    const action = await reconcileMergedIdentity(request.server.db, {
+      orphanExternalId: event.orphanExternalId,
+      survivorExternalId: event.survivorExternalId,
+    });
+    return { ok: true, action };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        code: "BAD_REQUEST",
+        message: "Invalid identity event payload",
+        issues: error.flatten(),
+      });
+    }
+    throw error;
   }
 }

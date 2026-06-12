@@ -52,6 +52,13 @@ type CreateAppOptions = {
   prisma?: PrismaClient;
 };
 
+declare module "fastify" {
+  interface FastifyRequest {
+    /** Raw JSON body as received — set by the application/json parser. */
+    rawBody?: string;
+  }
+}
+
 function buildAuthProxyRequest(request: FastifyRequest) {
   const url = new URL(request.url, `http://${request.headers.host ?? "localhost"}`);
   const headers = new Headers();
@@ -91,6 +98,10 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.removeContentTypeParser("application/json");
   app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
     const rawBody = typeof body === "string" ? body : body.toString("utf8");
+
+    // Signed-webhook verification (e.g. POST /hooks/identity) must run over
+    // the raw bytes, never a re-serialized object — stash them per request.
+    request.rawBody = rawBody;
 
     if (rawBody.trim().length === 0) {
       done(null, {});
