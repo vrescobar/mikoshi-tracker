@@ -4,16 +4,26 @@
 # mikoshi/src/extensions/manifest.ts — un campo desconocido rompe la
 # instalación, no se ignora.
 #
-# La admin key registrada en mikoshi para este slug es la
-# MIKOSHI_TRACKER_ADMIN_API_KEY ya existente (se conserva durante la
-# migración R1 — no rotar). `skills: []` a propósito: las 3 skills
-# `mikoshi-tracker*` viven hoy en el repo de mikoshi y se migran (o se
-# retiran sus prefijos del interceptor legacy) en la story 54.
+# secrets.admin nombra el secreto en el catálogo de mikoshi
+# (mikoshi.lowercase → mikoshi_tracker_admin_key), que es la key YA
+# EXISTENTE del flujo legacy — se conserva, no se rota. El proceso de
+# tracker lee el MISMO valor de su propio .env como
+# MIKOSHI_TRACKER_ADMIN_API_KEY; el nombre del manifiesto apunta al
+# catálogo de mikoshi, no al env de tracker (caso especial documentado
+# de la migración R1).
+#
+# Las skills (fuente de verdad aquí desde la story 54) se importan a
+# mikoshi/skills/ vía ext-install; mikoshi-tracker-shared es la lib
+# compartida que las otras importan como carpeta hermana.
 slug: tracker
 name: Mikoshi Tracker
 upstream: http://127.0.0.1:7080
 healthcheck: /health
-skills: []
+skills:
+  - mikoshi/skills/mikoshi-tracker
+  - mikoshi/skills/mikoshi-tracker-circle
+  - mikoshi/skills/mikoshi-tracker-food
+  - mikoshi/skills/mikoshi-tracker-shared
 endpoints:
   provision: /api/platform/provision
   issueMagicLink: /api/platform/issue-magic-link
@@ -24,5 +34,5 @@ capabilities:
   identityEvents: true
 consent: dm-approval
 secrets:
-  admin: MIKOSHI_TRACKER_ADMIN_API_KEY
+  admin: MIKOSHI_TRACKER_ADMIN_KEY
   personalToken: MIKOSHI_TRACKER_PERSONAL_TOKEN

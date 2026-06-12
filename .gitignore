@@ -33,6 +33,9 @@ skills-lock.json
 # external skill workspaces; first-party module/test directories under
 # apps/* and packages/* are part of the source tree.
 !apps/api/src/modules/skills/
+# The proxy skills this extension PUBLISHES to Mikoshi (story 54) are
+# source of truth here, not an external workspace.
+!mikoshi/skills/
 !apps/api/src/modules/skills/**
 !apps/api/test/skills/
 !apps/api/test/skills/**
