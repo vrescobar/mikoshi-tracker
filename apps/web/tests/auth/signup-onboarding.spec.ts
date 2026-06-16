@@ -13,15 +13,9 @@ test("signed-in user can reach dashboard after creating the first habit", async 
   await createFirstHabit(page, { name: "Morning walk", startDate });
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByTestId("dashboard-overview")).toBeVisible();
-  await expect(page.getByTestId("today-dashboard")).toBeVisible();
-  // Scope the section headings to their regions: Phase 12 added a food panel to
-  // the dashboard, so a bare "Today" heading is no longer unique.
-  await expect(
-    page.getByTestId("today-dashboard").getByRole("heading", { name: "Today" }),
-  ).toBeVisible();
-  await expect(
-    page.getByTestId("dashboard-overview").getByRole("heading", { name: "Overview" }),
-  ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Morning walk" })).toBeVisible();
+  // The redesigned dashboard renders a TodayBoard (greeting + progress) followed
+  // by the "Today's habits" card, where each scheduled habit is a toggle button
+  // labelled with the habit name.
+  await expect(page.getByRole("heading", { name: "Today's habits" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Morning walk" })).toBeVisible();
 });

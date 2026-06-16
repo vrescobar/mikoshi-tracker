@@ -27,9 +27,9 @@ test("protected shell shows utility access and active desktop navigation", async
   const apiAccessLink = utilityNav.getByRole("link", { name: "API Access" });
   await apiAccessLink.focus();
   await apiAccessLink.press("Enter");
-  await expect(page).toHaveURL(/\/api-access$/);
-  await expect(utilityNav.getByRole("link", { name: "API Access" })).toBeFocused();
-  await expect(utilityNav.getByRole("link", { name: "API Access" })).toHaveAttribute("aria-current", "page");
+  // /api-access now redirects to the tabbed Settings page on the API tab.
+  await expect(page).toHaveURL(/\/settings\?tab=api$/);
+  await expect(page.getByTestId("settings-index-page")).toBeVisible();
 });
 
 test.describe("mobile shell", () => {
@@ -62,7 +62,8 @@ test.describe("mobile shell", () => {
     const mobileApiAccessLink = page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" });
     await mobileApiAccessLink.focus();
     await mobileApiAccessLink.press("Enter");
-    await expect(page).toHaveURL(/\/api-access$/);
-    await expect(page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" })).toBeFocused();
+    // /api-access now redirects to the tabbed Settings page on the API tab.
+    await expect(page).toHaveURL(/\/settings\?tab=api$/);
+    await expect(page.getByTestId("settings-index-page")).toBeVisible();
   });
 });

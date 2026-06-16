@@ -22,9 +22,24 @@ type FoodPageProps = {
 };
 
 const CHART_COPY = {
-  en: { send: "Send chart to WhatsApp", sending: "Sending…", sent: "Chart sent to WhatsApp.", failed: "Couldn't send the chart." },
-  "zh-CN": { send: "发送图表到 WhatsApp", sending: "发送中…", sent: "图表已发送到 WhatsApp。", failed: "无法发送图表。" },
-  es: { send: "Enviar gráfica por WhatsApp", sending: "Enviando…", sent: "Gráfica enviada por WhatsApp.", failed: "No se pudo enviar la gráfica." },
+  en: {
+    send: "Send chart to WhatsApp",
+    sending: "Sending…",
+    sent: "Chart sent to WhatsApp.",
+    failed: "Couldn't send the chart.",
+  },
+  "zh-CN": {
+    send: "发送图表到 WhatsApp",
+    sending: "发送中…",
+    sent: "图表已发送到 WhatsApp。",
+    failed: "无法发送图表。",
+  },
+  es: {
+    send: "Enviar gráfica por WhatsApp",
+    sending: "Enviando…",
+    sent: "Gráfica enviada por WhatsApp.",
+    failed: "No se pudo enviar la gráfica.",
+  },
 };
 
 // Resolve "today" in the user's timezone (matching how the API buckets dateKey).

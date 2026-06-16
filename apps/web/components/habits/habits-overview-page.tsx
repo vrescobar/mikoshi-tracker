@@ -109,7 +109,9 @@ const COPY: Record<"en" | "zh-CN" | "es", OverviewCopy> = {
       weekdayStreak: (n) => `${n} días laborables seguidos`,
       periodStreak: (n, unit) => `racha de ${n} ${unit === "week" ? "semanas" : "meses"}`,
       keepAlive: (r, unit) =>
-        r <= 0 ? "" : `${r} más esta${unit === "week" ? " semana" : ""}${unit === "month" ? " mes" : ""} mantiene tu racha`,
+        r <= 0
+          ? ""
+          : `${r} más esta${unit === "week" ? " semana" : ""}${unit === "month" ? " mes" : ""} mantiene tu racha`,
       periodProgress: (done, target, unit) => `${done}/${target} esta ${unit === "week" ? "semana" : "mes"}`,
     },
   },
@@ -166,12 +168,8 @@ export function HabitsOverviewPage({ rows, embedded = false }: HabitsOverviewPag
         <div className={styles.list} data-testid="habits-overview-list">
           {rows.map(({ habit, detail }) => {
             const points = detail?.trends.last7Days ?? [];
-            const periodCompleted = detail
-              ? countPeriodCompletions(points, habit.frequencyType)
-              : 0;
-            const descriptor = detail
-              ? describeStreak(habit, detail.stats, periodCompleted, copy.streak)
-              : null;
+            const periodCompleted = detail ? countPeriodCompletions(points, habit.frequencyType) : 0;
+            const descriptor = detail ? describeStreak(habit, detail.stats, periodCompleted, copy.streak) : null;
 
             return (
               <Surface key={habit.id} variant="panel" padding="md" className={styles.row} data-testid="habit-row">
@@ -186,7 +184,11 @@ export function HabitsOverviewPage({ rows, embedded = false }: HabitsOverviewPag
                 {descriptor ? <StreakBadge descriptor={descriptor} /> : null}
 
                 {points.length > 0 ? (
-                  <HabitWeekStrip points={points} statusLabels={copy.status} ariaLabel={`${habit.name}: ${copy.title}`} />
+                  <HabitWeekStrip
+                    points={points}
+                    statusLabels={copy.status}
+                    ariaLabel={`${habit.name}: ${copy.title}`}
+                  />
                 ) : null}
               </Surface>
             );

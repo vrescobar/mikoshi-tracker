@@ -78,13 +78,13 @@ function renderPage(props: {
   const members = props.members ?? [];
   return render(
     <MemoryRouter>
-    <LocaleProvider initialLocale="en">
-      <CircleDetailPage
-        initialDetail={{ circle, members, mySharedHabits: props.mySharedHabits ?? [] }}
-        currentUserId={props.currentUserId ?? "user-1"}
-        initialHabits={props.initialHabits ?? []}
-      />
-    </LocaleProvider>
+      <LocaleProvider initialLocale="en">
+        <CircleDetailPage
+          initialDetail={{ circle, members, mySharedHabits: props.mySharedHabits ?? [] }}
+          currentUserId={props.currentUserId ?? "user-1"}
+          initialHabits={props.initialHabits ?? []}
+        />
+      </LocaleProvider>
     </MemoryRouter>,
   );
 }

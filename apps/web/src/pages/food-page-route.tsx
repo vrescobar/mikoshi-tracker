@@ -28,12 +28,7 @@ export default function FoodPageRoute() {
   return (
     <PageBoundary state={state}>
       {(data) => (
-        <DietPage
-          initialEvents={data.events}
-          dateKey={today}
-          timeZone={timezone}
-          initialRepeats={data.repeats}
-        />
+        <DietPage initialEvents={data.events} dateKey={today} timeZone={timezone} initialRepeats={data.repeats} />
       )}
     </PageBoundary>
   );

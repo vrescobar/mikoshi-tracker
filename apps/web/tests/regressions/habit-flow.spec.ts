@@ -70,35 +70,26 @@ test("habit regression: sign up, create habit, complete, undo, view stats overvi
   );
   expect(habitId).toBeTruthy();
 
-  // (3) Navigate to the dashboard and verify today panel shows the habit as pending.
+  // (3) Navigate to the dashboard and verify the "Today's habits" card shows the
+  //     habit as a pending toggle (aria-pressed=false).
   await page.goto("/dashboard");
-  await expect(page.getByTestId("today-dashboard")).toBeVisible();
-  const habitCard = page.getByTestId(`today-item-${habitId}`);
-  await expect(habitCard).toBeVisible();
-  await expect(habitCard).toContainText("Morning run");
+  await expect(page.getByRole("heading", { name: "Today's habits" })).toBeVisible();
+  const habitToggle = page.getByRole("button", { name: "Morning run" });
+  await expect(habitToggle).toBeVisible();
+  await expect(habitToggle).toHaveAttribute("aria-pressed", "false");
 
-  const completeButton = habitCard.getByRole("button", { name: /complete/i });
-  await expect(completeButton).toBeVisible();
+  // (4) Complete the habit by toggling it on.
+  await habitToggle.click();
+  await expect(habitToggle).toHaveAttribute("aria-pressed", "true");
 
-  // (4) Complete the habit via the today UI.
-  await completeButton.click();
+  // (5) Undo the check-in by toggling it back off.
+  await habitToggle.click();
+  await expect(habitToggle).toHaveAttribute("aria-pressed", "false");
 
-  // The card should now show a completed state and expose an Undo button.
-  await expect(habitCard.getByRole("button", { name: /undo/i })).toBeVisible();
-
-  // Verify counts updated.
-  await expect(page.getByText(/^1 completed$/)).toBeVisible();
-
-  // (5) Undo the check-in via the today UI.
-  await habitCard.getByRole("button", { name: /undo/i }).click();
-
-  // The card should return to pending state.
-  await expect(habitCard.getByRole("button", { name: /complete/i })).toBeVisible();
-  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
-
-  // (6) View the stats overview panel — proves the overview renders after a check-in cycle.
-  await expect(page.getByTestId("dashboard-overview")).toBeVisible();
-  await expect(page.getByTestId("overview-metrics")).toBeVisible();
+  // (6) The TodayBoard above the habits card surfaces the overview-driven stats
+  //     (the redesign folded the old overview panel into the today board).
+  await expect(page.getByText("Today's progress")).toBeVisible();
+  await expect(page.getByText("Statistics")).toBeVisible();
 
   // Verify the stats API contract is intact: active habit count should be at least 1.
   const overview = await page.evaluate(async () => {

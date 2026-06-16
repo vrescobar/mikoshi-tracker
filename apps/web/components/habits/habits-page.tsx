@@ -19,12 +19,25 @@ type TabId = "overview" | "activity" | "archived";
 const TAB_IDS: TabId[] = ["overview", "activity", "archived"];
 const HABIT_SLUGS = "habit_boolean,habit_quantity";
 
-const COPY: Record<SupportedLocale, { title: string; description: string; tabs: Record<TabId, string>; archivedEmpty: { title: string; description: string }; restore: string; restoring: string }> = {
+const COPY: Record<
+  SupportedLocale,
+  {
+    title: string;
+    description: string;
+    tabs: Record<TabId, string>;
+    archivedEmpty: { title: string; description: string };
+    restore: string;
+    restoring: string;
+  }
+> = {
   en: {
     title: "Habits",
     description: "Every habit, your week at a glance, and the full activity log.",
     tabs: { overview: "Overview", activity: "All activity", archived: "Archived" },
-    archivedEmpty: { title: "Nothing archived", description: "Habits you archive will rest here — you can restore them any time." },
+    archivedEmpty: {
+      title: "Nothing archived",
+      description: "Habits you archive will rest here — you can restore them any time.",
+    },
     restore: "Restore",
     restoring: "Restoring…",
   },
@@ -40,7 +53,10 @@ const COPY: Record<SupportedLocale, { title: string; description: string; tabs: 
     title: "Hábitos",
     description: "Cada hábito, tu semana de un vistazo y el registro completo de actividad.",
     tabs: { overview: "Resumen", activity: "Toda la actividad", archived: "Archivados" },
-    archivedEmpty: { title: "Nada archivado", description: "Los hábitos que archives descansarán aquí — puedes restaurarlos cuando quieras." },
+    archivedEmpty: {
+      title: "Nada archivado",
+      description: "Los hábitos que archives descansarán aquí — puedes restaurarlos cuando quieras.",
+    },
     restore: "Restaurar",
     restoring: "Restaurando…",
   },

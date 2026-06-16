@@ -190,7 +190,12 @@ export function HabitDetailPage({ detail: initialDetail }: { detail: HabitDetail
           </div>
           {habit.description ? <p className={styles.description}>{habit.description}</p> : null}
         </div>
-        <Button type="button" variant={habit.isActive ? "secondary" : "primary"} onClick={() => void toggleArchive()} disabled={pending}>
+        <Button
+          type="button"
+          variant={habit.isActive ? "secondary" : "primary"}
+          onClick={() => void toggleArchive()}
+          disabled={pending}
+        >
           {pending ? copy.pending : habit.isActive ? copy.archive : copy.restore}
         </Button>
       </header>
@@ -200,10 +205,34 @@ export function HabitDetailPage({ detail: initialDetail }: { detail: HabitDetail
       <section className={styles.statsCard}>
         <span className={styles.cardLabel}>{copy.statsTitle}</span>
         <div className={styles.statsGrid}>
-          <Stat icon="flame" color="var(--cat-streak)" soft="var(--cat-streak-soft)" value={detail.stats.currentStreak} label={copy.currentStreak} />
-          <Stat icon="trophy" color="var(--cat-mind)" soft="var(--cat-mind-soft)" value={detail.stats.longestStreak} label={copy.longestStreak} />
-          <Stat icon="check" color="var(--cat-water)" soft="var(--cat-water-soft)" value={detail.stats.totalCompletions} label={copy.totalCompletions} />
-          <Stat icon="trend" color="var(--cat-rest)" soft="var(--cat-rest-soft)" value={detail.stats.interruptionCount} label={copy.interruptions} />
+          <Stat
+            icon="flame"
+            color="var(--cat-streak)"
+            soft="var(--cat-streak-soft)"
+            value={detail.stats.currentStreak}
+            label={copy.currentStreak}
+          />
+          <Stat
+            icon="trophy"
+            color="var(--cat-mind)"
+            soft="var(--cat-mind-soft)"
+            value={detail.stats.longestStreak}
+            label={copy.longestStreak}
+          />
+          <Stat
+            icon="check"
+            color="var(--cat-water)"
+            soft="var(--cat-water-soft)"
+            value={detail.stats.totalCompletions}
+            label={copy.totalCompletions}
+          />
+          <Stat
+            icon="trend"
+            color="var(--cat-rest)"
+            soft="var(--cat-rest-soft)"
+            value={detail.stats.interruptionCount}
+            label={copy.interruptions}
+          />
         </div>
       </section>
 
@@ -212,7 +241,11 @@ export function HabitDetailPage({ detail: initialDetail }: { detail: HabitDetail
           <h2 className={styles.blockTitle}>{copy.heatmapTitle}</h2>
           <p className={styles.blockHint}>{copy.heatmapHint}</p>
         </div>
-        <HabitMonthHeatmap points={detail.trends.last30Days} statusLabels={copy.status} ariaLabel={`${habit.name}: ${copy.heatmapTitle}`} />
+        <HabitMonthHeatmap
+          points={detail.trends.last30Days}
+          statusLabels={copy.status}
+          ariaLabel={`${habit.name}: ${copy.heatmapTitle}`}
+        />
       </Surface>
 
       <div className={styles.twoCol}>

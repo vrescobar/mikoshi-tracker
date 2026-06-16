@@ -21,21 +21,6 @@ async function createHabitViaApi(page: import("@playwright/test").Page, payload:
   }, payload);
 }
 
-async function listHabitIds(page: import("@playwright/test").Page) {
-  return page.evaluate(async () => {
-    const response = await fetch("http://127.0.0.1:3001/api/habits", {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-
-    const result = (await response.json()) as { items: Array<{ id: string; name: string }> };
-    return Object.fromEntries(result.items.map((item) => [item.name, item.id]));
-  });
-}
-
 test("dashboard shows the no-entries panel for a brand-new user with food panel visible", async ({
   page,
 }) => {
@@ -49,10 +34,10 @@ test("dashboard shows the no-entries panel for a brand-new user with food panel 
   // surfaces beside the empty state.
   await expect(page).toHaveURL(/\/dashboard$/);
 
+  await expect(page.getByTestId("dashboard-primary-state")).toBeVisible();
   await expect(page.getByText("Nothing tracked yet")).toBeVisible();
   await expect(page.getByRole("button", { name: "Create first habit" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Log a meal" })).toBeVisible();
-  await expect(page.getByTestId("dashboard-food-today")).toBeVisible();
 });
 
 test("dashboard shows the habits-empty panel when only food is present", async ({ page }) => {
@@ -77,24 +62,28 @@ test("dashboard shows the habits-empty panel when only food is present", async (
 
   await page.goto("/dashboard");
 
+  await expect(page.getByTestId("dashboard-primary-state")).toBeVisible();
   await expect(page.getByText("No active habits right now")).toBeVisible();
-  await expect(page.getByTestId("dashboard-food-today")).toBeVisible();
 });
 
-test("dashboard distinguishes nothing due today from all done", async ({ page }) => {
+test("dashboard's today habits card reflects scheduling and completion", async ({ page }) => {
   const email = `dashboard-states-${Date.now()}@example.com`;
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   await signUpInBrowser(page, email, "Dashboard States User");
+  // A habit scheduled to start tomorrow is not due today, so the "Today's habits"
+  // card shows the empty message rather than a toggle.
   await createFirstHabit(page, {
     name: "Tomorrow walk",
     startDate: tomorrow,
   });
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("Nothing due today")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Today's habits" })).toBeVisible();
+  await expect(page.getByText("Nothing scheduled for today.")).toBeVisible();
 
+  // Add a habit that is due today; it now appears as a toggle button.
   await createHabitViaApi(page, {
     name: "Today walk",
     kind: "boolean",
@@ -104,18 +93,15 @@ test("dashboard distinguishes nothing due today from all done", async ({ page })
     },
   });
 
-  const habitIds = await listHabitIds(page);
   await page.goto("/dashboard");
-  await page.getByTestId("locale-switch-button").click();
 
-  await expect(page.getByRole("heading", { name: "今天" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "概览" })).toBeVisible();
-  await expect(page.getByText(/^1 个待完成$/)).toBeVisible();
-  await expect(page.getByText(/^0 个已完成$/)).toBeVisible();
+  const todayToggle = page.getByRole("button", { name: "Today walk" });
+  await expect(todayToggle).toBeVisible();
+  await expect(todayToggle).toHaveAttribute("aria-pressed", "false");
 
-  await page.getByTestId(`today-item-${habitIds["Today walk"]}`).getByRole("button", { name: "完成" }).click();
-
-  await expect(page.getByText("今天已全部完成")).toBeVisible();
+  // Completing the habit flips the toggle on and lights up the progress ring.
+  await todayToggle.click();
+  await expect(todayToggle).toHaveAttribute("aria-pressed", "true");
 });
 
 test("dashboard keeps recoverable load errors inside the route shell", async ({ page }) => {

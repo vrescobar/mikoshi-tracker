@@ -20,27 +20,29 @@ export type SettingsData = {
 
 type TabId = "preferences" | "skills" | "api";
 
-const COPY: Record<SupportedLocale, { eyebrow: string; title: string; description: string; tabs: Record<TabId, string> }> =
-  {
-    en: {
-      eyebrow: "Settings",
-      title: "Settings",
-      description: "Tune your tracker, inspect skills, and manage agent access.",
-      tabs: { preferences: "Preferences", skills: "Skills", api: "API access" },
-    },
-    "zh-CN": {
-      eyebrow: "设置",
-      title: "设置",
-      description: "调整你的追踪器、查看技能并管理代理访问。",
-      tabs: { preferences: "偏好", skills: "技能", api: "API 访问" },
-    },
-    es: {
-      eyebrow: "Ajustes",
-      title: "Ajustes",
-      description: "Ajusta tu tracker, revisa las skills y gestiona el acceso de agentes.",
-      tabs: { preferences: "Preferencias", skills: "Skills", api: "Acceso API" },
-    },
-  };
+const COPY: Record<
+  SupportedLocale,
+  { eyebrow: string; title: string; description: string; tabs: Record<TabId, string> }
+> = {
+  en: {
+    eyebrow: "Settings",
+    title: "Settings",
+    description: "Tune your tracker, inspect skills, and manage agent access.",
+    tabs: { preferences: "Preferences", skills: "Skills", api: "API access" },
+  },
+  "zh-CN": {
+    eyebrow: "设置",
+    title: "设置",
+    description: "调整你的追踪器、查看技能并管理代理访问。",
+    tabs: { preferences: "偏好", skills: "技能", api: "API 访问" },
+  },
+  es: {
+    eyebrow: "Ajustes",
+    title: "Ajustes",
+    description: "Ajusta tu tracker, revisa las skills y gestiona el acceso de agentes.",
+    tabs: { preferences: "Preferencias", skills: "Skills", api: "Acceso API" },
+  },
+};
 
 const TAB_IDS: TabId[] = ["preferences", "skills", "api"];
 

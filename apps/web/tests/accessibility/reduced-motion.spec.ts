@@ -31,22 +31,26 @@ test("reduced-motion mode flattens shell transition timing", async ({ page }) =>
   expect(parseDurationSeconds(navTransitionDuration)).toBeLessThanOrEqual(0.00001);
 });
 
-test("reduced-motion mode flattens dashboard charts and inline feedback motion", async ({ page, request, context }) => {
+test("reduced-motion mode flattens dashboard progress motion and inline feedback motion", async ({ page, request, context }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
 
   const dashboardEmail = `reduced-motion-dashboard-${Date.now()}@example.com`;
   await signUpAndCreateFirstHabit(page, dashboardEmail, "Reduced Motion Dashboard User");
 
-  const overviewChart = page.getByTestId("overview-trend-chart");
-  await expect(overviewChart).toBeVisible();
-
-  const firstBar = overviewChart.locator('div[style*="height:"]').first();
-  const chartBarTransitionDuration = await firstBar.evaluate((node) => getComputedStyle(node).transitionDuration);
-  expect(parseDurationSeconds(chartBarTransitionDuration)).toBeLessThanOrEqual(0.00001);
+  // The rebuilt TodayBoard replaced the bar chart with an SVG ProgressRing whose
+  // animated arc (the second <circle>, carrying the stroke-dashoffset transition)
+  // must also flatten under reduced motion.
+  const progressArc = page.locator("svg circle").nth(1);
+  await expect(progressArc).toBeVisible();
+  const arcTransitionDuration = await progressArc.evaluate((node) => getComputedStyle(node).transitionDuration);
+  expect(parseDurationSeconds(arcTransitionDuration)).toBeLessThanOrEqual(0.00001);
 
   const apiEmail = `reduced-motion-api-${Date.now()}@example.com`;
   await signUpThroughApi(request, context, apiEmail, "Reduced Motion API User");
+  // /api-access redirects to the API tab of the tabbed Settings page, which still
+  // hosts the API access panel and its inline token feedback.
   await page.goto("/api-access");
+  await expect(page).toHaveURL(/\/settings\?tab=api$/);
 
   const generateTokenButton = page.getByRole("button", { name: "Generate token" });
   await generateTokenButton.click();

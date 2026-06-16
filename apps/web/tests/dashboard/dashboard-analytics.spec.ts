@@ -21,22 +21,7 @@ async function createHabitViaApi(page: import("@playwright/test").Page, payload:
   }, payload);
 }
 
-async function listHabitIds(page: import("@playwright/test").Page) {
-  return page.evaluate(async () => {
-    const response = await fetch("http://127.0.0.1:3001/api/habits", {
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      throw new Error(await response.text());
-    }
-
-    const result = (await response.json()) as { items: Array<{ id: string; name: string }> };
-    return Object.fromEntries(result.items.map((item) => [item.name, item.id]));
-  });
-}
-
-test("dashboard analytics stays above today and refreshes after today actions", async ({ page }) => {
+test("today board statistics sit above the habits card and refresh after today actions", async ({ page }) => {
   const email = `dashboard-analytics-${Date.now()}@example.com`;
   const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
@@ -57,62 +42,43 @@ test("dashboard analytics stays above today and refreshes after today actions", 
     },
   });
 
-  const habitIds = await listHabitIds(page);
-
   await page.goto("/dashboard");
 
-  await expect(page.getByTestId("today-dashboard")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "7-day completion rate" })).toBeVisible();
-  await expect(
-    page.getByTestId("overview-trend-chart").locator("[data-testid='completion-rate-chart-plot'] > div"),
-  ).toHaveCount(7);
-  const todayBox = await page.getByTestId("today-dashboard").boundingBox();
-  const overviewBox = await page.getByTestId("dashboard-overview").boundingBox();
-  expect(todayBox).not.toBeNull();
-  expect(overviewBox).not.toBeNull();
-  expect((todayBox?.y ?? 0) < (overviewBox?.y ?? 0)).toBeTruthy();
-  await expect(page.getByTestId("overview-metric-today-completed")).toContainText("0");
-  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("Morning walk");
-  const idleBarHeight = await page
-    .getByTestId("overview-trend-chart")
-    .locator("[data-testid='completion-rate-chart-plot'] > div > div")
-    .last()
-    .evaluate((node) => Number.parseFloat(getComputedStyle(node).height));
-  expect(idleBarHeight).toBeLessThanOrEqual(2);
+  // The redesigned dashboard folds the old analytics overview into the TodayBoard:
+  // a progress ring plus a "Statistics" card with weekly average, habits
+  // completed, and best streak tiles.
+  await expect(page.getByText("Today's progress")).toBeVisible();
+  await expect(page.getByText("0/2 habits")).toBeVisible();
+  const statsCard = page.getByText("Statistics");
+  await expect(statsCard).toBeVisible();
+  await expect(page.getByText("Weekly average")).toBeVisible();
+  await expect(page.getByText("Habits completed")).toBeVisible();
+  await expect(page.getByText("Best streak", { exact: true })).toBeVisible();
 
-  await page.getByTestId(`today-item-${habitIds["Morning walk"]}`).getByRole("button", { name: "Complete" }).click();
+  // The TodayBoard renders above the "Today's habits" card.
+  const boardBox = await page.getByText("Today's progress").boundingBox();
+  const habitsBox = await page.getByRole("heading", { name: "Today's habits" }).boundingBox();
+  expect(boardBox).not.toBeNull();
+  expect(habitsBox).not.toBeNull();
+  expect((boardBox?.y ?? 0) < (habitsBox?.y ?? 0)).toBeTruthy();
 
-  await expect(page.getByText(/^1 pending$/)).toBeVisible();
-  await expect(page.getByText(/^1 completed$/)).toBeVisible();
-  await expect(page.getByTestId("overview-metric-today-completed")).toContainText("1");
-  await expect(page.getByTestId("overview-metric-today-completed")).toContainText("50% of due habits");
-  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("Morning walk");
-  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText("50%");
-  await expect(page.getByTestId(`overview-ranking-item-${habitIds["Morning walk"]}`)).toContainText(
-    "1/2 recent due days",
-  );
+  // Completing a due habit refreshes the overview-driven statistics: the
+  // "Habits completed" tile (weekly completed count) ticks up from 0 to 1.
+  // The value span immediately precedes its label span within the stat tile.
+  const habitsCompletedValue = page
+    .getByText("Habits completed")
+    .locator("xpath=preceding-sibling::span[1]");
+  await expect(habitsCompletedValue).toHaveText("0");
 
-  const firstBarStyles = await page
-    .getByTestId("overview-trend-chart")
-    .locator("[data-testid='completion-rate-chart-plot'] > div > div")
-    .first()
-    .evaluate((node) => {
-      const styles = getComputedStyle(node);
+  await page.getByRole("button", { name: "Morning walk" }).click();
 
-      return {
-        bottomLeft: styles.borderBottomLeftRadius,
-        bottomRight: styles.borderBottomRightRadius,
-      };
-    });
-
-  expect(firstBarStyles.bottomLeft).toBe("0px");
-  expect(firstBarStyles.bottomRight).toBe("0px");
+  await expect(habitsCompletedValue).toHaveText("1");
 });
 
 test.describe("mobile dashboard", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test("mobile dashboard keeps today above overview while compressing analytics into support content", async ({
+  test("mobile dashboard keeps the today board (with statistics) above the habits card", async ({
     page,
   }) => {
     const email = `dashboard-mobile-${Date.now()}@example.com`;
@@ -138,28 +104,15 @@ test.describe("mobile dashboard", () => {
     await page.goto("/dashboard");
 
     await expect(page.getByTestId("app-shell-mobile-nav")).toBeVisible();
-    await expect(page.getByTestId("overview-metrics")).toBeVisible();
-    await expect(
-      page.getByTestId("overview-trend-chart").locator("[data-testid='completion-rate-chart-plot'] > div"),
-    ).toHaveCount(7);
+    await expect(page.getByText("Today's progress")).toBeVisible();
+    await expect(page.getByText("Statistics")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Today's habits" })).toBeVisible();
 
-    const todayBox = await page.getByTestId("today-dashboard").boundingBox();
-    const overviewBox = await page.getByTestId("dashboard-overview").boundingBox();
+    const boardBox = await page.getByText("Today's progress").boundingBox();
+    const habitsBox = await page.getByRole("heading", { name: "Today's habits" }).boundingBox();
 
-    expect(overviewBox).not.toBeNull();
-    expect(todayBox).not.toBeNull();
-    expect((todayBox?.y ?? 0) < (overviewBox?.y ?? 0)).toBeTruthy();
-    expect((overviewBox?.height ?? 0) < (todayBox?.height ?? Number.POSITIVE_INFINITY)).toBeTruthy();
-
-    const chartFits = await page.getByTestId("overview-trend-chart").evaluate((element) => {
-      const plot = element.querySelector("[data-testid='completion-rate-chart-plot']");
-      if (!(plot instanceof HTMLElement) || !(element instanceof HTMLElement)) {
-        return false;
-      }
-
-      return plot.scrollWidth <= element.clientWidth;
-    });
-
-    expect(chartFits).toBeTruthy();
+    expect(boardBox).not.toBeNull();
+    expect(habitsBox).not.toBeNull();
+    expect((boardBox?.y ?? 0) < (habitsBox?.y ?? 0)).toBeTruthy();
   });
 });

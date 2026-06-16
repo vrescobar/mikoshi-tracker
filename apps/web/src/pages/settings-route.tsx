@@ -1,8 +1,5 @@
 import { SettingsPage, type SettingsData } from "../../components/settings/settings-page";
-import {
-  getAdminRegistrationSettings,
-  getApiAccessToken,
-} from "../../lib/auth-client";
+import { getAdminRegistrationSettings, getApiAccessToken } from "../../lib/auth-client";
 import { getDietPreferences } from "../../lib/diet-client";
 import { listEntryTypes } from "../../lib/entries-client";
 import { getSkillHealth } from "../../lib/skills-client";
@@ -28,11 +25,7 @@ export default function SettingsRoute() {
     return { preferences, skills, tokenState, registrationState };
   }, [user.id, user.isAdmin]);
 
-  return (
-    <PageBoundary state={state}>
-      {(data) => <SettingsPage data={data} isAdmin={user.isAdmin} />}
-    </PageBoundary>
-  );
+  return <PageBoundary state={state}>{(data) => <SettingsPage data={data} isAdmin={user.isAdmin} />}</PageBoundary>;
 }
 
 async function loadSkills() {

@@ -85,7 +85,7 @@ describe("HabitDetailPage", () => {
     expect(screen.getByText("5")).toBeInTheDocument(); // current streak
     expect(screen.getByText("12")).toBeInTheDocument(); // longest streak
     const heatmap = screen.getByTestId("habit-month-heatmap");
-    expect(heatmap.querySelectorAll('[data-status]').length).toBe(30);
+    expect(heatmap.querySelectorAll("[data-status]").length).toBe(30);
   });
 
   it("archives an active habit and flips to the restore action", async () => {

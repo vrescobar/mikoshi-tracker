@@ -58,13 +58,15 @@ test("archiving the last active habit keeps dashboard in place and restore makes
 
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
+  // The active habit surfaces as a toggle in the "Today's habits" card.
+  await expect(page.getByRole("button", { name: "Morning walk" })).toBeVisible();
 
   // Archive the only active habit — the dashboard keeps its protected shell and
   // surfaces guidance instead of redirecting away.
   await setHabitArchived(page, habitId, true);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page.getByTestId("dashboard-primary-state")).toBeVisible();
   await expect(page.getByText("No active habits right now")).toBeVisible();
   await expect(page.getByRole("button", { name: "Review archived habits" })).toBeVisible();
 
@@ -72,5 +74,5 @@ test("archiving the last active habit keeps dashboard in place and restore makes
   await setHabitArchived(page, habitId, false);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByTestId("today-unified-strip").getByText(/pending/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Morning walk" })).toBeVisible();
 });

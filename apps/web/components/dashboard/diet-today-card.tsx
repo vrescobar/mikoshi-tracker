@@ -13,9 +13,33 @@ type DietTodayCardProps = {
 };
 
 const COPY = {
-  en: { title: "Diet today", meals: (n: number) => `${n} ${n === 1 ? "meal" : "meals"}`, of: "of", kcal: "kcal", left: "kcal left", over: "kcal over", open: "Open diet" },
-  "zh-CN": { title: "今日饮食", meals: (n: number) => `${n} 餐`, of: "/", kcal: "千卡", left: "千卡剩余", over: "千卡超出", open: "打开饮食" },
-  es: { title: "Comida de hoy", meals: (n: number) => `${n} ${n === 1 ? "comida" : "comidas"}`, of: "de", kcal: "kcal", left: "kcal restantes", over: "kcal de más", open: "Abrir comida" },
+  en: {
+    title: "Diet today",
+    meals: (n: number) => `${n} ${n === 1 ? "meal" : "meals"}`,
+    of: "of",
+    kcal: "kcal",
+    left: "kcal left",
+    over: "kcal over",
+    open: "Open diet",
+  },
+  "zh-CN": {
+    title: "今日饮食",
+    meals: (n: number) => `${n} 餐`,
+    of: "/",
+    kcal: "千卡",
+    left: "千卡剩余",
+    over: "千卡超出",
+    open: "打开饮食",
+  },
+  es: {
+    title: "Comida de hoy",
+    meals: (n: number) => `${n} ${n === 1 ? "comida" : "comidas"}`,
+    of: "de",
+    kcal: "kcal",
+    left: "kcal restantes",
+    over: "kcal de más",
+    open: "Abrir comida",
+  },
 };
 
 /**

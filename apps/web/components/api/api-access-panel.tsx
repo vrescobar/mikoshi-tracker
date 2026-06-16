@@ -172,115 +172,111 @@ export function ApiAccessPanel({
         <PageHeader eyebrow={copy.page.eyebrow} title={copy.page.title} description={copy.page.description} />
       )}
 
-          {feedback ? (
-            <InlineStatus tone={feedback.tone} title={feedback.title} testId="api-access-feedback">
-              {feedback.message}
-            </InlineStatus>
-          ) : null}
+      {feedback ? (
+        <InlineStatus tone={feedback.tone} title={feedback.title} testId="api-access-feedback">
+          {feedback.message}
+        </InlineStatus>
+      ) : null}
 
-          <Surface variant="soft" className={styles.tokenSurface} padding="md">
-            <Field label={copy.page.tokenLabel} htmlFor="api-access-token" description={tokenDescription}>
-              <Input id="api-access-token" aria-label={copy.page.tokenLabel} readOnly value={tokenValue} />
-            </Field>
+      <Surface variant="soft" className={styles.tokenSurface} padding="md">
+        <Field label={copy.page.tokenLabel} htmlFor="api-access-token" description={tokenDescription}>
+          <Input id="api-access-token" aria-label={copy.page.tokenLabel} readOnly value={tokenValue} />
+        </Field>
 
-            {hasFreshToken ? (
-              <div className={styles.guidance}>
-                <p className={styles.guidanceTitle}>{copy.page.guidanceTitle}</p>
-                {copy.page.guidanceLines.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            ) : hasStoredToken ? (
-              <StatePanel title={copy.page.storedStateTitle} description={copy.page.storedStateDescription} compact>
-                {formattedLastRotatedAt ? (
-                  <p className={styles.metaRow}>
-                    <span className={styles.metaLabel}>{copy.page.lastRotatedLabel}</span>
-                    <span className={styles.metaValue}>{formattedLastRotatedAt}</span>
-                  </p>
-                ) : null}
-              </StatePanel>
-            ) : (
-              <StatePanel title={copy.page.emptyStateTitle} description={copy.page.emptyStateDescription} compact />
-            )}
+        {hasFreshToken ? (
+          <div className={styles.guidance}>
+            <p className={styles.guidanceTitle}>{copy.page.guidanceTitle}</p>
+            {copy.page.guidanceLines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
+        ) : hasStoredToken ? (
+          <StatePanel title={copy.page.storedStateTitle} description={copy.page.storedStateDescription} compact>
+            {formattedLastRotatedAt ? (
+              <p className={styles.metaRow}>
+                <span className={styles.metaLabel}>{copy.page.lastRotatedLabel}</span>
+                <span className={styles.metaValue}>{formattedLastRotatedAt}</span>
+              </p>
+            ) : null}
+          </StatePanel>
+        ) : (
+          <StatePanel title={copy.page.emptyStateTitle} description={copy.page.emptyStateDescription} compact />
+        )}
 
-            <div className={styles.actions}>
-              <Button type="button" onClick={(event) => handleRotateToken(event.currentTarget)} disabled={isPending}>
-                {tokenState.hasToken ? copy.page.actions.rotate : copy.page.actions.generate}
+        <div className={styles.actions}>
+          <Button type="button" onClick={(event) => handleRotateToken(event.currentTarget)} disabled={isPending}>
+            {tokenState.hasToken ? copy.page.actions.rotate : copy.page.actions.generate}
+          </Button>
+          {hasFreshToken ? (
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setIsTokenRevealed((current) => !current)}
+                disabled={isPending}
+              >
+                {isTokenRevealed ? copy.page.actions.hide : copy.page.actions.reveal}
               </Button>
-              {hasFreshToken ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setIsTokenRevealed((current) => !current)}
-                    disabled={isPending}
-                  >
-                    {isTokenRevealed ? copy.page.actions.hide : copy.page.actions.reveal}
-                  </Button>
-                  <Button type="button" variant="secondary" onClick={() => void copyToken()} disabled={isPending}>
-                    {copy.page.actions.copy}
-                  </Button>
-                </>
-              ) : null}
-              {isPending ? <DisabledHint>{copy.page.disabledHint}</DisabledHint> : null}
-            </div>
-          </Surface>
-
-          <Surface variant="soft" className={styles.quickstart} padding="md">
-            <div className={styles.quickstartCopy}>
-              <span className={styles.kicker}>{copy.page.quickstart.eyebrow}</span>
-              <h2>{copy.page.quickstart.title}</h2>
-              <p>{copy.page.quickstart.description}</p>
-            </div>
-
-            <pre className={styles.codeBlock}>
-              <code>{`Authorization: Bearer <your token>\nGET /api/today`}</code>
-            </pre>
-
-            <div className={styles.links}>
-              <a href={createApiUrl(tokenState.docsPath)} className={styles.link}>
-                {copy.page.quickstart.docsLink}
-              </a>
-              <a href={createApiUrl(tokenState.specPath)} className={`${styles.link} ${styles.secondaryLink}`}>
-                {copy.page.quickstart.specLink}
-              </a>
-            </div>
-          </Surface>
-
-          {registrationState ? (
-            <Surface variant="soft" className={styles.registrationSurface} padding="md">
-              <div className={styles.quickstartCopy}>
-                <span className={styles.kicker}>{copy.page.registration.eyebrow}</span>
-                <h2>{copy.page.registration.title}</h2>
-                <p>{copy.page.registration.description}</p>
-              </div>
-
-              <StatePanel
-                title={
-                  registrationState.registrationEnabled
-                    ? copy.page.registration.enabled
-                    : copy.page.registration.disabled
-                }
-                compact
-              />
-
-              <div className={styles.actions}>
-                <Button
-                  type="button"
-                  variant={registrationState.registrationEnabled ? "danger" : "secondary"}
-                  onClick={(event) =>
-                    void refreshRegistration(!registrationState.registrationEnabled, event.currentTarget)
-                  }
-                  disabled={isPending}
-                >
-                  {registrationState.registrationEnabled
-                    ? copy.page.registration.disableAction
-                    : copy.page.registration.enableAction}
-                </Button>
-                {isPending ? <DisabledHint>{copy.page.registration.pendingHint}</DisabledHint> : null}
-              </div>
-            </Surface>
+              <Button type="button" variant="secondary" onClick={() => void copyToken()} disabled={isPending}>
+                {copy.page.actions.copy}
+              </Button>
+            </>
           ) : null}
+          {isPending ? <DisabledHint>{copy.page.disabledHint}</DisabledHint> : null}
+        </div>
+      </Surface>
+
+      <Surface variant="soft" className={styles.quickstart} padding="md">
+        <div className={styles.quickstartCopy}>
+          <span className={styles.kicker}>{copy.page.quickstart.eyebrow}</span>
+          <h2>{copy.page.quickstart.title}</h2>
+          <p>{copy.page.quickstart.description}</p>
+        </div>
+
+        <pre className={styles.codeBlock}>
+          <code>{`Authorization: Bearer <your token>\nGET /api/today`}</code>
+        </pre>
+
+        <div className={styles.links}>
+          <a href={createApiUrl(tokenState.docsPath)} className={styles.link}>
+            {copy.page.quickstart.docsLink}
+          </a>
+          <a href={createApiUrl(tokenState.specPath)} className={`${styles.link} ${styles.secondaryLink}`}>
+            {copy.page.quickstart.specLink}
+          </a>
+        </div>
+      </Surface>
+
+      {registrationState ? (
+        <Surface variant="soft" className={styles.registrationSurface} padding="md">
+          <div className={styles.quickstartCopy}>
+            <span className={styles.kicker}>{copy.page.registration.eyebrow}</span>
+            <h2>{copy.page.registration.title}</h2>
+            <p>{copy.page.registration.description}</p>
+          </div>
+
+          <StatePanel
+            title={
+              registrationState.registrationEnabled ? copy.page.registration.enabled : copy.page.registration.disabled
+            }
+            compact
+          />
+
+          <div className={styles.actions}>
+            <Button
+              type="button"
+              variant={registrationState.registrationEnabled ? "danger" : "secondary"}
+              onClick={(event) => void refreshRegistration(!registrationState.registrationEnabled, event.currentTarget)}
+              disabled={isPending}
+            >
+              {registrationState.registrationEnabled
+                ? copy.page.registration.disableAction
+                : copy.page.registration.enableAction}
+            </Button>
+            {isPending ? <DisabledHint>{copy.page.registration.pendingHint}</DisabledHint> : null}
+          </div>
+        </Surface>
+      ) : null}
     </>
   );
 

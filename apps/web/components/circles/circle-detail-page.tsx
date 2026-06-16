@@ -37,11 +37,12 @@ function sortMembersForLeaderboard(members: CircleMember[]): CircleMember[] {
   });
 }
 
-const TAB_LABELS: Record<"en" | "zh-CN" | "es", { board: string; members: string; shares: string; settings: string }> = {
-  en: { board: "Board", members: "Members", shares: "My shares", settings: "Settings" },
-  "zh-CN": { board: "看板", members: "成员", shares: "我的分享", settings: "设置" },
-  es: { board: "Tablero", members: "Miembros", shares: "Mis hábitos", settings: "Ajustes" },
-};
+const TAB_LABELS: Record<"en" | "zh-CN" | "es", { board: string; members: string; shares: string; settings: string }> =
+  {
+    en: { board: "Board", members: "Members", shares: "My shares", settings: "Settings" },
+    "zh-CN": { board: "看板", members: "成员", shares: "我的分享", settings: "设置" },
+    es: { board: "Tablero", members: "Miembros", shares: "Mis hábitos", settings: "Ajustes" },
+  };
 
 export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }: CircleDetailPageProps) {
   const { locale } = useLocale();
@@ -134,9 +135,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
             <Badge tone={isOwner ? "info" : "neutral"}>
               {isOwner ? copy.detail.members.ownerRole : copy.detail.members.memberRole}
             </Badge>
-            <span className={styles.memberCount}>
-              {copy.detail.summary.membersCount(members.length)}
-            </span>
+            <span className={styles.memberCount}>{copy.detail.summary.membersCount(members.length)}</span>
           </div>
 
           <Tabs items={tabItems} active={activeTab} onChange={selectTab} ariaLabel={circle.name} variant="underline" />
@@ -165,9 +164,7 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
                         ) : null}
                       </span>
                       <Badge tone={member.role === "owner" ? "info" : "neutral"}>
-                        {member.role === "owner"
-                          ? copy.detail.members.ownerRole
-                          : copy.detail.members.memberRole}
+                        {member.role === "owner" ? copy.detail.members.ownerRole : copy.detail.members.memberRole}
                       </Badge>
                     </div>
                     <span className={styles.rankingMeta}>{copy.detail.leaderboard.statsNote}</span>
@@ -183,77 +180,77 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
 
       {activeTab === "members" ? (
         <TabPanel id="members">
-        <section className={styles.panel} data-testid="circle-members-panel">
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>{copy.detail.members.title}</h2>
-            <p className={styles.panelDesc}>{copy.detail.members.description}</p>
-          </div>
+          <section className={styles.panel} data-testid="circle-members-panel">
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>{copy.detail.members.title}</h2>
+              <p className={styles.panelDesc}>{copy.detail.members.description}</p>
+            </div>
 
-          <div className={styles.memberList}>
-            {members.length > 0 ? (
-              members.map((member) => (
-                <MemberCard
-                  key={member.membershipId}
-                  member={member}
-                  isCurrentUser={member.userId === currentUserId}
-                  copy={copy}
-                  locale={locale}
-                />
-              ))
-            ) : (
-              <p className={styles.emptyText}>{copy.detail.members.emptyState}</p>
-            )}
-          </div>
-        </section>
+            <div className={styles.memberList}>
+              {members.length > 0 ? (
+                members.map((member) => (
+                  <MemberCard
+                    key={member.membershipId}
+                    member={member}
+                    isCurrentUser={member.userId === currentUserId}
+                    copy={copy}
+                    locale={locale}
+                  />
+                ))
+              ) : (
+                <p className={styles.emptyText}>{copy.detail.members.emptyState}</p>
+              )}
+            </div>
+          </section>
         </TabPanel>
       ) : null}
 
       {activeTab === "shares" ? (
         <TabPanel id="shares">
-      <section className={styles.panel} data-testid="circle-habit-shares-panel">
-        <div className={styles.panelHeader}>
-          <h2 className={styles.panelTitle}>{copy.detail.habitShares.title}</h2>
-          <p className={styles.panelDesc}>{copy.detail.habitShares.description}</p>
-          <p className={styles.panelDesc}>{copy.detail.habitShares.unshareNote}</p>
-        </div>
+          <section className={styles.panel} data-testid="circle-habit-shares-panel">
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>{copy.detail.habitShares.title}</h2>
+              <p className={styles.panelDesc}>{copy.detail.habitShares.description}</p>
+              <p className={styles.panelDesc}>{copy.detail.habitShares.unshareNote}</p>
+            </div>
 
-        {shareError ? (
-          <Notice tone="danger" title={copy.detail.habitShares.errorTitle}>
-            {shareError}
-          </Notice>
-        ) : null}
+            {shareError ? (
+              <Notice tone="danger" title={copy.detail.habitShares.errorTitle}>
+                {shareError}
+              </Notice>
+            ) : null}
 
-        {initialHabits.length > 0 ? (
-          <div className={styles.habitList}>
-            {initialHabits.map((habit) => {
-              const isShared = sharedHabitIds.has(habit.id);
-              const isPending = pendingHabitIds.has(habit.id);
-              return (
-                <div key={habit.id} className={styles.habitRow}>
-                  <span className={styles.habitName}>{habit.name}</span>
-                  <button
-                    type="button"
-                    className={styles.toggleBtn}
-                    data-shared={String(isShared)}
-                    disabled={isPending}
-                    onClick={() => void handleToggle(habit.id)}
-                    aria-pressed={isShared}
-                    aria-label={`${habit.name}: ${isShared ? copy.detail.habitShares.sharedLabel : copy.detail.habitShares.shareLabel}`}
-                  >
-                    {isPending
-                      ? copy.detail.habitShares.pendingLabel
-                      : isShared
-                        ? copy.detail.habitShares.sharedLabel
-                        : copy.detail.habitShares.shareLabel}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <p className={styles.emptyText}>{copy.detail.habitShares.emptyState}</p>
-        )}
-      </section>
+            {initialHabits.length > 0 ? (
+              <div className={styles.habitList}>
+                {initialHabits.map((habit) => {
+                  const isShared = sharedHabitIds.has(habit.id);
+                  const isPending = pendingHabitIds.has(habit.id);
+                  return (
+                    <div key={habit.id} className={styles.habitRow}>
+                      <span className={styles.habitName}>{habit.name}</span>
+                      <button
+                        type="button"
+                        className={styles.toggleBtn}
+                        data-shared={String(isShared)}
+                        disabled={isPending}
+                        onClick={() => void handleToggle(habit.id)}
+                        aria-pressed={isShared}
+                        aria-label={`${habit.name}: ${isShared ? copy.detail.habitShares.sharedLabel : copy.detail.habitShares.shareLabel}`}
+                      >
+                        {isPending
+                          ? copy.detail.habitShares.pendingLabel
+                          : isShared
+                            ? copy.detail.habitShares.sharedLabel
+                            : copy.detail.habitShares.shareLabel}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className={styles.emptyText}>{copy.detail.habitShares.emptyState}</p>
+            )}
+          </section>
         </TabPanel>
       ) : null}
 
@@ -287,9 +284,7 @@ function MemberCard({
       <div className={styles.memberCardHeader}>
         <span className={styles.memberName}>
           {member.displayName}
-          {isCurrentUser ? (
-            <span className={styles.youBadge}>{copy.detail.members.youBadge}</span>
-          ) : null}
+          {isCurrentUser ? <span className={styles.youBadge}>{copy.detail.members.youBadge}</span> : null}
         </span>
         <Badge tone={member.role === "owner" ? "info" : "neutral"}>
           {member.role === "owner" ? copy.detail.members.ownerRole : copy.detail.members.memberRole}

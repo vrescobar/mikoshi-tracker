@@ -18,7 +18,9 @@
   background: var(--color-surface, #fff);
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .card:hover,
@@ -186,7 +188,9 @@
   font-weight: var(--weight-medium);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .segment[data-selected="true"] {
