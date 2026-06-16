@@ -3,6 +3,11 @@
   gap: 1.25rem;
 }
 
+.embeddedBody {
+  display: grid;
+  gap: 1.25rem;
+}
+
 .tokenSurface {
   display: grid;
   gap: 1rem;

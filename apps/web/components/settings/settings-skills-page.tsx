@@ -9,6 +9,8 @@ import styles from "./settings-pages.module.css";
 
 type Props = {
   entries: Array<{ entryTypeName: string; health: SkillHealthSnapshot }>;
+  /** When rendered inside the Settings tabs, drop the standalone hero header. */
+  embedded?: boolean;
 };
 
 function resolveTone(health: SkillHealthSnapshot): "enrolled" | "not-enrolled" | "unreachable" {
@@ -16,7 +18,7 @@ function resolveTone(health: SkillHealthSnapshot): "enrolled" | "not-enrolled" |
   return health.enrolled ? "enrolled" : "not-enrolled";
 }
 
-export function SettingsSkillsPage({ entries }: Props) {
+export function SettingsSkillsPage({ entries, embedded = false }: Props) {
   const { locale } = useLocale();
   const copy = getSettingsCopy(locale).skills;
 
@@ -28,14 +30,18 @@ export function SettingsSkillsPage({ entries }: Props) {
 
   return (
     <div className={styles.stack} data-testid="settings-skills-page">
-      <Surface variant="hero">
-        <PageFrame>
-          <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
-          <Link to={routes.settings} className={styles.backLink} data-testid="settings-skills-back">
-            {copy.backLink}
-          </Link>
-        </PageFrame>
-      </Surface>
+      {embedded ? (
+        <p className={styles.embeddedIntro}>{copy.description}</p>
+      ) : (
+        <Surface variant="hero">
+          <PageFrame>
+            <PageHeader eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+            <Link to={routes.settings} className={styles.backLink} data-testid="settings-skills-back">
+              {copy.backLink}
+            </Link>
+          </PageFrame>
+        </Surface>
+      )}
 
       {entries.length === 0 ? (
         <p className={styles.empty} data-testid="settings-skills-empty">

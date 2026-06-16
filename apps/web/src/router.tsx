@@ -16,8 +16,6 @@ const CirclesRoute = lazy(() => import("./pages/circles-route"));
 const CircleDetailRoute = lazy(() => import("./pages/circle-detail-route"));
 const HabitsOverviewRoute = lazy(() => import("./pages/habits-overview-route"));
 const SettingsRoute = lazy(() => import("./pages/settings-route"));
-const SettingsSkillsRoute = lazy(() => import("./pages/settings-skills-route"));
-const ApiAccessRoute = lazy(() => import("./pages/api-access-route"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
 // Admin views are named exports (ported verbatim from the retired admin SPA).
@@ -55,8 +53,9 @@ export const routeConfig = [
       { path: "/circles", element: page(<CirclesRoute />) },
       { path: "/circles/:circleId", element: page(<CircleDetailRoute />) },
       { path: "/settings", element: page(<SettingsRoute />) },
-      { path: "/settings/skills", element: page(<SettingsSkillsRoute />) },
-      { path: "/api-access", element: page(<ApiAccessRoute />) },
+      // Skills + API access are now tabs under Settings; preserve the old URLs.
+      { path: "/settings/skills", element: <Navigate to="/settings?tab=skills" replace /> },
+      { path: "/api-access", element: <Navigate to="/settings?tab=api" replace /> },
       // Operator console — gated on the session's isAdmin flag.
       {
         path: "/admin",

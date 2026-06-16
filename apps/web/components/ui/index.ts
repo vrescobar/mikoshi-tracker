@@ -7,3 +7,5 @@ export { OverlayPanel } from "./overlay";
 export { Badge, Notice, PageFrame, PageHeader, Section, Surface } from "./primitives";
 export { SourceChip } from "./source-chip";
 export { DisabledHint, InlineStatus, SkeletonBlock, StatePanel } from "./state";
+export { Tabs, TabPanel, type TabItem } from "./tabs";
+export { Toggle } from "./toggle";

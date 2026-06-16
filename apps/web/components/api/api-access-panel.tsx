@@ -40,9 +40,12 @@ function fallbackCopyText(value: string) {
 export function ApiAccessPanel({
   initialTokenState,
   initialRegistrationState = null,
+  embedded = false,
 }: {
   initialTokenState: ApiAccessTokenResponse;
   initialRegistrationState?: { registrationEnabled: boolean } | null;
+  /** When rendered inside the Settings tabs, drop the standalone hero header. */
+  embedded?: boolean;
 }) {
   const { locale } = useLocale();
   const copy = getApiAccessCopy(locale);
@@ -163,11 +166,11 @@ export function ApiAccessPanel({
     }
   }
 
-  return (
-    <section className={styles.panel} data-testid="api-access-panel">
-      <Surface variant="hero">
-        <PageFrame>
-          <PageHeader eyebrow={copy.page.eyebrow} title={copy.page.title} description={copy.page.description} />
+  const inner = (
+    <>
+      {embedded ? null : (
+        <PageHeader eyebrow={copy.page.eyebrow} title={copy.page.title} description={copy.page.description} />
+      )}
 
           {feedback ? (
             <InlineStatus tone={feedback.tone} title={feedback.title} testId="api-access-feedback">
@@ -278,8 +281,18 @@ export function ApiAccessPanel({
               </div>
             </Surface>
           ) : null}
-        </PageFrame>
-      </Surface>
+    </>
+  );
+
+  return (
+    <section className={styles.panel} data-testid="api-access-panel">
+      {embedded ? (
+        <div className={styles.embeddedBody}>{inner}</div>
+      ) : (
+        <Surface variant="hero">
+          <PageFrame>{inner}</PageFrame>
+        </Surface>
+      )}
     </section>
   );
 }

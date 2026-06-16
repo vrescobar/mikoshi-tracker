@@ -1,0 +1,90 @@
+.tablist {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Segmented pill group — used for in-card tab switches. */
+.segmented {
+  padding: 0.3rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segmented::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease);
+}
+
+.segmented .tab {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill);
+}
+
+.segmented .tab[data-selected="true"] {
+  background: var(--color-surface);
+  color: var(--color-heading);
+  box-shadow: var(--shadow-soft);
+}
+
+.segmented .tab:hover:not([data-selected="true"]) {
+  color: var(--color-text);
+}
+
+/* Underline tabs — used for full-page section navigation. */
+.underline {
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.underline::-webkit-scrollbar {
+  display: none;
+}
+
+.underline .tab {
+  padding: 0.7rem 0.25rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+}
+
+.underline .tab[data-selected="true"] {
+  color: var(--color-heading);
+  border-bottom-color: var(--color-accent);
+}
+
+.underline .tab:hover:not([data-selected="true"]) {
+  color: var(--color-text);
+}
+
+.tabIcon {
+  display: inline-grid;
+  place-items: center;
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

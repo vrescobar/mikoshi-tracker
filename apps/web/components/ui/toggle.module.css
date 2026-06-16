@@ -1,0 +1,73 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  cursor: pointer;
+}
+
+.row[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.copy {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.label {
+  font-weight: var(--weight-medium);
+  color: var(--color-heading);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.track {
+  display: block;
+  width: 2.6rem;
+  height: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-neutral-soft);
+  transition: background 0.18s ease;
+}
+
+.thumb {
+  display: block;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0.175rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.18s ease;
+}
+
+.switch[data-checked="true"] .track {
+  background: var(--color-accent);
+}
+
+.switch[data-checked="true"] .thumb {
+  transform: translateX(1.1rem);
+}
+
+.input:focus-visible + .track {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

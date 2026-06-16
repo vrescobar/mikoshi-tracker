@@ -132,3 +132,75 @@
   color: var(--color-text-muted);
   margin: 0;
 }
+
+.embeddedIntro {
+  margin: 0 0 0.25rem;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Preferences tab */
+.prefStack {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.prefCard {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.prefHead {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.prefTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.prefDescription {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.segmented {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.segment {
+  border: none;
+  background: transparent;
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.segment[data-selected="true"] {
+  background: var(--color-surface);
+  color: var(--color-heading);
+  box-shadow: var(--shadow-soft);
+}
+
+.segment:hover:not([data-selected="true"]) {
+  color: var(--color-text);
+}
+
+.offlineNote {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+}
