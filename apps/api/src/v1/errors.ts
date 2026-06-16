@@ -65,6 +65,8 @@ export const DOMAIN_ERROR_TABLE: Record<string, { status: number; code: ErrorCod
   AttachmentTooLargeError: { status: 413, code: "ATTACHMENT_TOO_LARGE" },
   UnsupportedMediaTypeError: { status: 415, code: "UNSUPPORTED_MEDIA_TYPE" },
   MissingUploadError: { status: 400, code: "BAD_REQUEST" },
+  // food
+  FoodSourceEventNotFoundError: { status: 404, code: "NOT_FOUND" },
   // skills
   SkillNotRegisteredError: { status: 404, code: "NOT_FOUND" },
   SkillRunnerError: { status: 502, code: "RUNNER_ERROR" },

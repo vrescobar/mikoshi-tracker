@@ -20,7 +20,8 @@
     "./aggregations": "./src/aggregations.ts",
     "./skills": "./src/skills.ts",
     "./platform": "./src/platform.ts",
-    "./diet": "./src/diet.ts"
+    "./diet": "./src/diet.ts",
+    "./food": "./src/food.ts"
   },
   "dependencies": {
     "zod": "^4.4.3"
