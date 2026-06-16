@@ -93,6 +93,8 @@ export interface FoodEditInput {
   fiber_g?: number;
   meal_slot?: string;
   notes?: string;
+  /** New time for the meal (ISO 8601). Moves it to a different moment/day. */
+  occurred_at?: string;
 }
 
 export interface FoodDeleteInput {
@@ -106,6 +108,10 @@ export interface FoodEnvelope {
   input: Record<string, unknown>;
   workspaceDir?: string;
   caller?: CallerInfo;
+  /** ISO timestamp of the inbound WhatsApp message (trusted, set by Mikoshi).
+   *  Used as the meal time when the user doesn't state one — so "apúntalo" stamps
+   *  the moment the message was sent, not whenever the skill happens to run. */
+  messageTimestamp?: string;
 }
 
 export interface FoodEnv extends FoodApiEnv, LlmProxyEnv {
@@ -679,23 +685,24 @@ async function handleFoodEdit(input: FoodEditInput, env: FoodApiEnv): Promise<Fo
     return { status: "failed", error: "Se requiere `event_id`." };
   }
 
+  const { occurred_at, ...fields } = rest;
   const patch: Partial<FoodPayload> = {};
-  if (rest.name !== undefined) patch.name = rest.name;
-  if (rest.kcal !== undefined) patch.kcal = rest.kcal;
-  if (rest.protein_g !== undefined) patch.protein_g = rest.protein_g;
-  if (rest.carbs_g !== undefined) patch.carbs_g = rest.carbs_g;
-  if (rest.fat_g !== undefined) patch.fat_g = rest.fat_g;
-  if (rest.fiber_g !== undefined) patch.fiber_g = rest.fiber_g;
-  if (rest.meal_slot !== undefined) patch.mealSlot = rest.meal_slot;
-  if (rest.notes !== undefined) patch.notes = rest.notes;
+  if (fields.name !== undefined) patch.name = fields.name;
+  if (fields.kcal !== undefined) patch.kcal = fields.kcal;
+  if (fields.protein_g !== undefined) patch.protein_g = fields.protein_g;
+  if (fields.carbs_g !== undefined) patch.carbs_g = fields.carbs_g;
+  if (fields.fat_g !== undefined) patch.fat_g = fields.fat_g;
+  if (fields.fiber_g !== undefined) patch.fiber_g = fields.fiber_g;
+  if (fields.meal_slot !== undefined) patch.mealSlot = fields.meal_slot;
+  if (fields.notes !== undefined) patch.notes = fields.notes;
 
-  if (Object.keys(patch).length === 0) {
+  if (Object.keys(patch).length === 0 && !occurred_at) {
     return { status: "failed", error: "No se proporcionaron campos a editar." };
   }
 
   let event: FoodEventItem;
   try {
-    event = await patchFoodEvent(env, event_id, patch);
+    event = await patchFoodEvent(env, event_id, patch, occurred_at);
   } catch (err) {
     return { status: "failed", error: err instanceof Error ? err.message : "API error" };
   }
@@ -781,6 +788,12 @@ export async function runFoodSkill(
   try {
     if (tool === "food_log_from_input") {
       const logInput = input as FoodLogInput;
+      // Meal time = the message time by default. When the user didn't state an
+      // explicit time, stamp the moment they sent the message (forwarded by the
+      // kernel) instead of the skill's wall clock. The user can change it later.
+      if (!logInput.occurred_at && envelope.messageTimestamp) {
+        logInput.occurred_at = envelope.messageTimestamp;
+      }
       // Bridge the kernel media contract: if the user sent a photo over
       // WhatsApp (attachment_ref → workspace file) and no inline base64 was
       // given, load the pre-copied file so OCR/vision + photo-attach can run.

@@ -248,14 +248,20 @@ export async function patchFoodEvent(
   env: FoodApiEnv,
   eventId: string,
   patch: Partial<FoodPayload>,
+  occurredAt?: string,
 ): Promise<FoodEventItem> {
   const { MIKOSHI_TRACKER_PERSONAL_TOKEN: token, MIKOSHI_TRACKER_API_URL: apiBase } = env;
+  // Send `payload` only when there are field changes; `occurredAt` moves the
+  // meal in time (the server recomputes the day). One of them must be present.
+  const body: { payload?: Partial<FoodPayload>; occurredAt?: string } = {};
+  if (Object.keys(patch).length > 0) body.payload = patch;
+  if (occurredAt) body.occurredAt = occurredAt;
   const data = (await apiFetch(
     `${apiBase}/events/${encodeURIComponent(eventId)}`,
     {
       method: "PATCH",
       headers: authHeaders(token),
-      body: JSON.stringify({ payload: patch }),
+      body: JSON.stringify(body),
     },
     "patchFoodEvent",
   )) as { item?: FoodEventItem } & Partial<FoodEventItem>;

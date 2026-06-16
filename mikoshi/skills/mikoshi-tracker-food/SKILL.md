@@ -135,6 +135,9 @@ metadata:
             notes:
               type: string
               description: "Nuevas notas"
+            occurred_at:
+              type: string
+              description: "Nueva hora de la comida en ISO 8601 (mueve el registro a otro momento/día). Úsalo cuando el usuario quiera corregir la hora; tienes la hora actual en tu contexto para resolver 'ayer a las 9', 'hace dos horas', etc."
           required:
             - event_id
         risk: external-write
@@ -201,13 +204,17 @@ información que se le envía.
 - "Foto del plato de pasta." → `{ input: "pasta carbonara", attachment_ref: "att_1" }`
 - "Quiero registrar manualmente: 350 kcal, 20g proteína, 40g carbos, 10g grasa." → `{ manual: true, name: "Comida", kcal: 350, protein_g: 20, carbs_g: 40, fat_g: 10 }`
 
-**Hora: asume "ahora", no preguntes.** Si el usuario no dice cuándo comió, **no
-preguntes la hora** — omite `occurred_at` y el registro queda con la hora actual.
-Al confirmar el registro, menciona de pasada que puede cambiarla si era otra
-("lo apunté como ahora; dime si era otra hora"). Solo usa `occurred_at` cuando el
-usuario indique explícitamente otro momento ("esta mañana", "ayer a las 9").
-**No** fuerces `meal_slot`: déjalo vacío salvo que el usuario nombre la franja
-("para desayunar", "en la cena"); el servidor la deduce de la hora del registro.
+**Hora: es la del mensaje, nunca preguntes.** Si el usuario no dice cuándo comió,
+**omite `occurred_at`**: el registro se sella automáticamente con la **hora a la
+que el usuario mandó el mensaje** (Mikoshi te la pasa; no necesitas calcularla ni
+mirar ningún reloj — y nunca digas que "no ves la hora"). No hace falta avisar de
+nada; si acaso, menciona de pasada que puede cambiarla luego. Solo pon
+`occurred_at` cuando el usuario indique **explícitamente** otro momento ("esta
+mañana", "ayer a las 9"); para eso tienes la hora actual en tu contexto, así que
+puedes resolver "hace dos horas" tú mismo. **No** fuerces `meal_slot`: déjalo
+vacío salvo que el usuario nombre la franja ("para desayunar", "en la cena"); el
+servidor la deduce de la hora del registro. Si el usuario quiere corregir la hora
+después, usa `food_edit_event` con `occurred_at`.
 
 **Si el usuario manda una foto del plato o la etiqueta**, pasa su handle en
 `attachment_ref` (att_1, att_2…). El skill lee la imagen del adjunto, la usa para

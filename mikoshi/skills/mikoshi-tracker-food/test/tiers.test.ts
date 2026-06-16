@@ -312,6 +312,35 @@ describe("manual path", () => {
     expect(typeof (createCall!.body as { occurredAt?: unknown }).occurredAt).toBe("string");
   });
 
+  test("stamps occurredAt = the message timestamp when the user gives no time", async () => {
+    const messageTimestamp = "2026-06-16T21:40:15.000Z";
+    await runFoodSkill(
+      {
+        tool: "food_log_from_input",
+        input: { manual: true, name: "Albaricoques", kcal: 48, protein_g: 1.4, carbs_g: 11, fat_g: 0.4 },
+        messageTimestamp,
+      },
+      makeEnv(),
+    );
+    const createCall = requestLog.find((r) => r.method === "POST" && r.path.endsWith("/events"));
+    expect((createCall!.body as { occurredAt?: string }).occurredAt).toBe(messageTimestamp);
+  });
+
+  test("an explicit occurred_at still wins over the message timestamp", async () => {
+    const messageTimestamp = "2026-06-16T21:40:15.000Z";
+    const explicit = "2026-06-16T09:00:00.000Z";
+    await runFoodSkill(
+      {
+        tool: "food_log_from_input",
+        input: { manual: true, name: "Desayuno", kcal: 300, protein_g: 10, carbs_g: 40, fat_g: 8, occurred_at: explicit },
+        messageTimestamp,
+      },
+      makeEnv(),
+    );
+    const createCall = requestLog.find((r) => r.method === "POST" && r.path.endsWith("/events"));
+    expect((createCall!.body as { occurredAt?: string }).occurredAt).toBe(explicit);
+  });
+
   test("unwraps the { item } response so the photo attaches to the real event id", async () => {
     // The REST endpoint wraps the created event as { item: {...} }.
     trackerResponseOverride = (_req, pathname) => {
@@ -636,6 +665,29 @@ describe("food_edit_event", () => {
       makeEnv(),
     );
     expect(result.status).toBe("failed");
+  });
+
+  test("edits only the time (occurred_at) without touching the payload", async () => {
+    let patchBody: Record<string, unknown> | undefined;
+    trackerResponseOverride = (req, pathname) => {
+      if (pathname.startsWith("/events/")) {
+        return Response.json({
+          id: "evt-time", occurredAt: "2026-06-15T09:00:00.000Z", dateKey: "2026-06-15",
+          payload: { name: "Tortilla", kcal: 250, protein_g: 12, carbs_g: 20, fat_g: 10, source: "manual", confidence: 1 },
+          createdAt: "2026-06-15T09:00:00.000Z",
+        });
+      }
+      return null;
+    };
+    const result = await runFoodSkill(
+      makeEnvelope("food_edit_event", { event_id: "evt-time", occurred_at: "2026-06-15T09:00:00.000Z" }),
+      makeEnv(),
+    );
+    expect(result.status).toBe("succeeded");
+    const patchCall = requestLog.find((r) => r.method === "PATCH" && r.path.startsWith("/events/"));
+    patchBody = patchCall!.body as Record<string, unknown>;
+    expect(patchBody.occurredAt).toBe("2026-06-15T09:00:00.000Z");
+    expect(patchBody.payload).toBeUndefined(); // time-only edit: no payload sent
   });
 
   test("fails when event_id is missing", async () => {
