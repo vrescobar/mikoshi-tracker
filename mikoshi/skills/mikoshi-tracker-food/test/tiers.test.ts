@@ -161,6 +161,12 @@ function makeEnv(overrides: Partial<{ brave: boolean }> = {}): Parameters<typeof
     MIKOSHI_TRACKER_PERSONAL_TOKEN: PERSONAL_TOKEN,
     MIKOSHI_TRACKER_API_URL: mockBaseUrl,
     MIKOSHI_LLM_PROXY_TOKEN: PROXY_TOKEN,
+    // Point the proxy at a non-loopback host so the global.fetch interceptor
+    // (which passes 127.0.0.1 straight through to the tracker mock) catches it
+    // and serves the queued LLM responses. Without this the default
+    // 127.0.0.1:7777 proxy URL leaks to the real network and every tier-0
+    // classification call dies — which silently failed all tier-pipeline tests.
+    MIKOSHI_LLM_PROXY_URL: "http://proxy.mock.test/api/v1/internal/skill-llm",
     ...(overrides.brave !== false ? { BRAVE_SEARCH_API_KEY: BRAVE_KEY } : {}),
   };
 }
@@ -229,6 +235,60 @@ describe("manual path", () => {
     );
     expect(result.status).toBe("failed");
     expect((result as { status: "failed"; error: string }).error).toMatch(/manual/i);
+  });
+
+  test("attaches the photo to the meal when an image is provided", async () => {
+    trackerResponseOverride = (_req, pathname) => {
+      if (pathname === "/attachments/event") {
+        return Response.json({ attachment: { id: "att-1", url: "/api/attachments/att-1/file" } }, { status: 201 });
+      }
+      return null;
+    };
+
+    const result = await runFoodSkill(
+      makeEnvelope("food_log_from_input", {
+        manual: true,
+        name: "Tostada con aguacate",
+        kcal: 220,
+        protein_g: 6,
+        carbs_g: 24,
+        fat_g: 12,
+        image_base64: "ZmFrZWltYWdl",
+      }),
+      makeEnv(),
+    );
+
+    expect(result.status).toBe("succeeded");
+    if (result.status !== "succeeded") return;
+    expect((result.output as Record<string, unknown>).photo_attached).toBe(true);
+    // The photo was POSTed to the event-pinned attachment endpoint.
+    expect(requestLog.some((r) => r.method === "POST" && r.path === "/attachments/event")).toBe(true);
+  });
+
+  test("a failed photo upload is non-fatal (the meal is still logged)", async () => {
+    trackerResponseOverride = (_req, pathname) => {
+      if (pathname === "/attachments/event") return new Response("boom", { status: 500 });
+      return null;
+    };
+
+    const result = await runFoodSkill(
+      makeEnvelope("food_log_from_input", {
+        manual: true,
+        name: "Café con leche",
+        kcal: 90,
+        protein_g: 5,
+        carbs_g: 8,
+        fat_g: 4,
+        image_base64: "ZmFrZWltYWdl",
+      }),
+      makeEnv(),
+    );
+
+    expect(result.status).toBe("succeeded");
+    if (result.status !== "succeeded") return;
+    const out = result.output as Record<string, unknown>;
+    expect(out.action).toBe("logged");
+    expect(out.photo_attached).toBe(false);
   });
 });
 

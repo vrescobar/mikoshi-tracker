@@ -259,6 +259,35 @@ export async function patchFoodEvent(
   return data;
 }
 
+interface AttachmentUploadResponse {
+  attachment: { id: string; url: string; mimeType: string; size: number };
+}
+
+/**
+ * Uploads a meal photo and pins it to a food event, so the picture the user
+ * sent over WhatsApp shows up next to the meal in the tracker. Best-effort by
+ * design: the caller treats a failure here as non-fatal (the meal is already
+ * logged). `data` is raw base64 (a data-URL prefix is tolerated server-side).
+ */
+export async function uploadFoodPhoto(
+  env: FoodApiEnv,
+  eventId: string,
+  data: string,
+  originalName?: string | null,
+): Promise<AttachmentUploadResponse["attachment"]> {
+  const { MIKOSHI_TRACKER_PERSONAL_TOKEN: token, MIKOSHI_TRACKER_API_URL: apiBase } = env;
+  const res = (await apiFetch(
+    `${apiBase}/attachments/event`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ eventId, data, originalName: originalName ?? "meal.jpg" }),
+    },
+    "uploadFoodPhoto",
+  )) as AttachmentUploadResponse;
+  return res.attachment;
+}
+
 /**
  * Soft-deletes a food event (creates a DELETE mutation; row stays for audit).
  */

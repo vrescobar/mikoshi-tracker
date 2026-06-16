@@ -201,9 +201,26 @@ información que se le envía.
 - "Foto del plato de pasta." → `{ input: "pasta carbonara", image_base64: "..." }`
 - "Quiero registrar manualmente: 350 kcal, 20g proteína, 40g carbos, 10g grasa." → `{ manual: true, name: "Comida", kcal: 350, protein_g: 20, carbs_g: 40, fat_g: 10 }`
 
-**Flujo de confirmación:** Si el skill devuelve `action: "pending_confirmation"`, presenta la
-propuesta al usuario y espera su respuesta. Cuando confirme (con "sí" o con valores
-corregidos), llama de nuevo con `manual: true` y los valores acordados.
+**Hora: asume "ahora", no preguntes.** Si el usuario no dice cuándo comió, **no
+preguntes la hora** — omite `occurred_at` y el registro queda con la hora actual.
+Al confirmar el registro, menciona de pasada que puede cambiarla si era otra
+("lo apunté como ahora; dime si era otra hora"). Solo usa `occurred_at` cuando el
+usuario indique explícitamente otro momento ("esta mañana", "ayer a las 9").
+**No** fuerces `meal_slot`: déjalo vacío salvo que el usuario nombre la franja
+("para desayunar", "en la cena"); el servidor la deduce de la hora del registro.
+
+**Si el usuario manda una foto del plato o la etiqueta**, pásala en
+`image_base64`: además de analizarla, la foto se **adjunta automáticamente** a la
+comida y se ve en el tracker (la respuesta trae `photo_attached: true`).
+
+**Flujo de confirmación (no pierdas comidas):** Si el skill devuelve
+`action: "pending_confirmation"`, presenta la propuesta y espera respuesta. En
+cuanto el usuario acepte —"sí", "vale", "ok", un emoji 👍, o valores corregidos—
+**llama de nuevo inmediatamente** con `manual: true` y los valores acordados
+(name, kcal, protein_g, carbs_g, fat_g, y `meal_slot`/`notes` si los dio). Una
+propuesta confirmada que no vuelves a registrar = comida perdida; no la dejes a
+medias. Si la respuesta es ambigua, pregunta una vez; si es claramente "no",
+descártala.
 
 ### `food_query_range`
 
@@ -219,6 +236,13 @@ corregidos), llama de nuevo con `manual: true` y los valores acordados.
 
 - "Corrígelo a 400 kcal, me equivoqué." → `{ event_id: "...", kcal: 400 }`
 - "El nombre está mal, era pollo al horno." → `{ event_id: "...", name: "Pollo al horno" }`
+
+**Corregir ≠ volver a registrar.** Cuando el usuario corrige una comida que
+**acabas de registrar**, edita ese mismo evento con `food_edit_event` usando el
+`event_id` que devolvió el `action: "logged"` anterior. **Nunca** vuelvas a
+llamar a `food_log_from_input` para una corrección: eso crea un duplicado y
+falsea el conteo del día. Si ya hubiera un duplicado, bórralo con
+`food_delete_event`.
 
 ### `food_delete_event`
 

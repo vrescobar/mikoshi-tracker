@@ -18,6 +18,7 @@ import {
   queryFoodEvents,
   patchFoodEvent,
   deleteFoodEvent,
+  uploadFoodPhoto,
   type FoodApiEnv,
   type FoodPayload,
   type FoodEventItem,
@@ -161,7 +162,12 @@ Classification guide:
 - "label": the image shows a nutrition/ingredient label
 - "package": the user is describing a commercial packaged product by name
 - "dish": the user is describing a cooked dish, restaurant meal, or homemade food
-- "text_only": the user described food in text with no usable image`;
+- "text_only": the user described food in text with no usable image
+
+meal_slot rule: set it ONLY if the user explicitly names the meal or its time
+(e.g. "para desayunar", "en la cena", "a media tarde"). If they do NOT, return
+null — the server fills the slot from the actual time the meal was logged, which
+is far more reliable than guessing from the text. Never default to "breakfast".`;
 
   const raw = await callTextProxy(env, prompt, 256);
 
@@ -373,6 +379,21 @@ async function runTierPipeline(
 // Tool handlers
 // ---------------------------------------------------------------------------
 
+/**
+ * Pins the user's photo to the just-logged meal. Best-effort: a meal is already
+ * persisted by the time we get here, so a failed upload must never fail the log
+ * — we just report whether the picture made it.
+ */
+async function attachPhotoIfPresent(env: FoodEnv, eventId: string, input: FoodLogInput): Promise<boolean> {
+  if (!input.image_base64) return false;
+  try {
+    await uploadFoodPhoto(env, eventId, input.image_base64, "meal");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function handleFoodLog(
   input: FoodLogInput,
   env: FoodEnv,
@@ -420,6 +441,8 @@ async function handleFoodLog(
       return { status: "failed", error: err instanceof Error ? err.message : "API error" };
     }
 
+    const photoAttached = await attachPhotoIfPresent(env, event.id, input);
+
     return {
       status: "succeeded",
       output: {
@@ -431,6 +454,7 @@ async function handleFoodLog(
         carbs_g: payload.carbs_g,
         fat_g: payload.fat_g,
         meal_slot: payload.mealSlot,
+        photo_attached: photoAttached,
         confidence: 1.0,
         source: "manual" as FoodMealSource,
         tier: 0,
@@ -515,6 +539,8 @@ async function handleFoodLog(
     return { status: "failed", error: err instanceof Error ? err.message : "API error" };
   }
 
+  const photoAttached = await attachPhotoIfPresent(env, event.id, input);
+
   return {
     status: "succeeded",
     output: {
@@ -526,6 +552,7 @@ async function handleFoodLog(
       carbs_g: payload.carbs_g,
       fat_g: payload.fat_g,
       meal_slot: payload.mealSlot,
+      photo_attached: photoAttached,
       confidence: payload.confidence,
       source,
       tier,
