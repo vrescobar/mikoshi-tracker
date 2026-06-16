@@ -139,6 +139,30 @@ describe("toolInventory", () => {
           "name": "food_log_image",
           "route": "POST /skills/run",
         },
+        {
+          "name": "food_search",
+          "route": "GET /v1/food/search",
+        },
+        {
+          "name": "food_relog",
+          "route": "POST /v1/food/relog",
+        },
+        {
+          "name": "diet_get_goal",
+          "route": "GET /v1/diet/goal",
+        },
+        {
+          "name": "diet_set_goal",
+          "route": "POST /v1/diet/goal",
+        },
+        {
+          "name": "diet_get_preferences",
+          "route": "GET /v1/diet/preferences",
+        },
+        {
+          "name": "diet_set_preferences",
+          "route": "POST /v1/diet/preferences",
+        },
       ]
     `);
   });

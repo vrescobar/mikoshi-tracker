@@ -2,6 +2,7 @@ import type { z } from "zod";
 
 import { aggregationsTools } from "./aggregations.js";
 import { attachmentsTools } from "./attachments.js";
+import { dietTools } from "./diet.js";
 import { entriesTools } from "./entries.js";
 import { entryTypesTools } from "./entry-types.js";
 import { eventsTools } from "./events.js";
@@ -37,6 +38,7 @@ export const toolInventory: InventoryTool[] = [
   ...eventsTools,
   ...aggregationsTools,
   ...foodTools,
+  ...dietTools,
 ];
 
 export const EXPECTED_TOOL_NAMES = toolInventory.map((tool) => tool.name);

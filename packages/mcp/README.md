@@ -161,6 +161,12 @@ All tools use the authenticated MikoshiTracker API behind the scenes and return 
 | `aggregations_query` | `GET /aggregations` | Run a declarative aggregation over entry events, supporting sum, count, completion-rate, streak, and missing-days broken down by day, week, month, or total. |
 | `food_log_text` | `POST /skills/run` | Log a meal from a free-text description (e.g. 'tuna salad with two slices of bread') via the Mikoshi food skill. Returns the skill's stdout: 'auto_posted' carries the saved event, 'pending_confirmation' carries an editable proposal, 'needs_enrolment' means the skill is not configured yet. |
 | `food_log_image` | `POST /skills/run` | Log a meal from a base64-encoded photo via the Mikoshi food skill. Same response shape as food_log_text. |
+| `food_search` | `GET /v1/food/search` | Fuzzy-search the user's saved food items/recipes and previously-logged meals by name or alias. Returns ranked results (saved items first, then recent/frequent meals) with macros and the eventId to re-log from. Use before food_relog to resolve a vague request like 'log my usual oatmeal'. |
+| `food_relog` | `POST /v1/food/relog` | Re-log a previous meal or saved item (by its eventId from food_search) as a new meal today. Optionally scale by portionScale and set mealSlot. Copies the source macros and links provenance back to the original. |
+| `diet_get_goal` | `GET /v1/diet/goal` | Get the user's active diet goal (daily kcal + macro/per-meal targets, objective), or null if none is set. |
+| `diet_set_goal` | `POST /v1/diet/goal` | Set the user's diet goal. Appends a dated revision (history is preserved). At minimum provide kcalTarget; macro targets, per-meal-slot kcal, and objective (lose/maintain/gain) are optional. |
+| `diet_get_preferences` | `GET /v1/diet/preferences` | Get the user's dietary preferences (diet style, allergies, dislikes, default meal slot, units). |
+| `diet_set_preferences` | `POST /v1/diet/preferences` | Replace the user's dietary preferences. Used by the food skill to tune estimation (allergy warnings, default slot, units). |
 
 ## AI Guidance
 

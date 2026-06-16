@@ -2,10 +2,11 @@ import type { MikoshiTrackerApiClient } from "../client/api-client.js";
 
 import { createAggregationsReadOperations } from "./aggregations.js";
 import { createAttachmentReadOperations, createAttachmentWriteOperations } from "./attachments.js";
+import { createDietReadOperations, createDietWriteOperations } from "./diet.js";
 import { createEntriesReadOperations, createEntriesWriteOperations } from "./entries.js";
 import { createEntryTypesReadOperations } from "./entry-types.js";
 import { createEventsReadOperations, createEventsWriteOperations } from "./events.js";
-import { createFoodWriteOperations } from "./food.js";
+import { createFoodReadOperations, createFoodWriteOperations } from "./food.js";
 import { createHabitsReadOperations, createHabitsWriteOperations } from "./habits.js";
 import type { ToolOperation } from "./operation-types.js";
 import { createStatsReadOperations } from "./stats.js";
@@ -26,6 +27,9 @@ export function createToolOperations(options: { client: MikoshiTrackerApiClient 
     ...createEventsReadOperations(options.client),
     ...createEventsWriteOperations(options.client),
     ...createAggregationsReadOperations(options.client),
+    ...createFoodReadOperations(options.client),
     ...createFoodWriteOperations(options.client),
+    ...createDietReadOperations(options.client),
+    ...createDietWriteOperations(options.client),
   };
 }
