@@ -162,23 +162,23 @@ function PhotoSection({
         <p className={styles.muted}>{copy.noPhoto}</p>
       ) : (
         <div className={styles.photoGrid}>
-          {images.map((img) => (
-            <a
-              key={img.id}
-              href={attachmentFileUrl(img.id)}
-              target="_blank"
-              rel="noreferrer"
-              className={styles.photoLink}
-            >
-              <img
-                src={attachmentFileUrl(img.id)}
-                alt={img.originalName ?? ""}
-                className={styles.photo}
-                width={img.width ?? undefined}
-                height={img.height ?? undefined}
-              />
-            </a>
-          ))}
+          {images.map((img) => {
+            // Append a content version so a previously-cached response (the file
+            // endpoint is served `immutable`) can't pin a stale/empty body to the
+            // bare URL — the cache key changes when the bytes do.
+            const src = `${attachmentFileUrl(img.id)}?v=${img.size}`;
+            return (
+              <a key={img.id} href={src} target="_blank" rel="noreferrer" className={styles.photoLink}>
+                <img
+                  src={src}
+                  alt={img.originalName ?? ""}
+                  className={styles.photo}
+                  width={img.width ?? undefined}
+                  height={img.height ?? undefined}
+                />
+              </a>
+            );
+          })}
         </div>
       )}
     </div>
