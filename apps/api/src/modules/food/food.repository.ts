@@ -99,3 +99,69 @@ export async function searchFoodItemRows(
     LIMIT ?`;
   return db.$queryRawUnsafe<RawFoodSearchRow[]>(sql, params.userId, params.like, params.like, params.limit);
 }
+
+export type RawFoodDayRow = {
+  eventId: string;
+  occurredAt: number | string | Date;
+  dateKey: string;
+  payload: string;
+  source: string | null;
+};
+
+/**
+ * The day's non-deleted food_meal events for a user, oldest-first, each tagged
+ * with the source of its latest mutation (WEB/AI/SYSTEM/CIRCLE) so the GUI can
+ * show provenance without an extra detail round-trip.
+ */
+export async function listFoodDayRows(
+  db: PrismaClient,
+  params: { userId: string; dateKey: string },
+): Promise<RawFoodDayRow[]> {
+  const sql = `
+    SELECT
+      ee.id as eventId,
+      ee.occurredAt as occurredAt,
+      ee.dateKey as dateKey,
+      ee.payload as payload,
+      (SELECT em.source FROM EventMutation em
+        WHERE em.eventId = ee.id
+        ORDER BY em.createdAt DESC, em.id DESC
+        LIMIT 1) as source
+    FROM EntryEvent ee
+    JOIN Entry e ON ee.entryId = e.id
+    JOIN EntryType et ON e.entryTypeId = et.id
+    WHERE ee.userId = ?
+      AND et.slug = 'food_meal'
+      AND ee.dateKey = ?
+      AND ${NOT_DELETED}
+    ORDER BY ee.occurredAt ASC, ee.id ASC`;
+  return db.$queryRawUnsafe<RawFoodDayRow[]>(sql, params.userId, params.dateKey);
+}
+
+export type RawFoodDayAttachment = {
+  eventId: string;
+  id: string;
+  width: number | null;
+  height: number | null;
+};
+
+/**
+ * Photo attachments for the given events, scoped to the owner. Attachments hang
+ * off EventMutations; we gather them across all of an event's mutations so a
+ * photo survives a later edit (which would add a newer, photo-less mutation).
+ */
+export async function listFoodDayAttachments(
+  db: PrismaClient,
+  params: { userId: string; eventIds: string[] },
+): Promise<RawFoodDayAttachment[]> {
+  if (params.eventIds.length === 0) return [];
+  const placeholders = params.eventIds.map(() => "?").join(",");
+  const sql = `
+    SELECT em.eventId as eventId, a.id as id, a.width as width, a.height as height
+    FROM Attachment a
+    JOIN EventMutation em ON em.id = a.eventMutationId
+    WHERE a.userId = ?
+      AND em.eventId IN (${placeholders})
+    ORDER BY a.createdAt ASC, a.id ASC`;
+  return db.$queryRawUnsafe<RawFoodDayAttachment[]>(sql, params.userId, ...params.eventIds);
+}

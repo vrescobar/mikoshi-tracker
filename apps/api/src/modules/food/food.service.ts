@@ -1,13 +1,26 @@
 import type {
+  FoodDayMeal,
+  FoodDayResponse,
+  FoodMealAttachment,
+  FoodMealProvenance,
   FoodRelogInput,
   FoodRelogResponse,
   FoodSearchResult,
 } from "@mikoshi-tracker/contracts/food";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import { normalizeUserTimeZone } from "../../shared/timezone";
 import { createEntry } from "../entries/entry.service";
 import { persistEvent } from "../events/event.service";
-import { type RawFoodSearchRow, searchFoodItemRows, searchFoodMealRows } from "./food.repository";
+import { resolveHabitDay } from "../today/today-clock";
+import { computeNutrition } from "../today/today.service";
+import {
+  listFoodDayAttachments,
+  listFoodDayRows,
+  type RawFoodSearchRow,
+  searchFoodItemRows,
+  searchFoodMealRows,
+} from "./food.repository";
 
 export const FOOD_MEAL_SLUG = "food_meal";
 
@@ -114,6 +127,60 @@ export async function relogFood(
     kcal,
     mealSlot: params.input.mealSlot ?? null,
   };
+}
+
+/**
+ * Diet "Today" read-model: the day's meals enriched with provenance + photo
+ * thumbnails, plus the shared nutrition roll-up. One round-trip for the
+ * redesigned Today tab. `date` defaults to the user's wall-clock today.
+ */
+export async function getFoodDay(
+  deps: FoodServiceDeps,
+  params: { userId: string; date?: string; timestamp: Date | number | string; timeZone?: string | null },
+): Promise<FoodDayResponse> {
+  let dateKey = params.date;
+  if (!dateKey) {
+    const user = await deps.db.user.findUnique({
+      where: { id: params.userId },
+      select: { timezone: true },
+    });
+    const tz = normalizeUserTimeZone(params.timeZone ?? user?.timezone ?? null);
+    // Food is an event-log type: wall-clock date (cutoffHour 0), so a 01:00
+    // snack belongs to that calendar day rather than the previous one.
+    dateKey = resolveHabitDay({ timestamp: params.timestamp, timeZone: tz, cutoffHour: 0 }).todayKey;
+  }
+
+  const [rows, nutrition] = await Promise.all([
+    listFoodDayRows(deps.db, { userId: params.userId, dateKey }),
+    computeNutrition(deps, params.userId, dateKey),
+  ]);
+
+  const attachments = await listFoodDayAttachments(deps.db, {
+    userId: params.userId,
+    eventIds: rows.map((r) => r.eventId),
+  });
+  const byEvent = new Map<string, FoodMealAttachment[]>();
+  for (const a of attachments) {
+    const list = byEvent.get(a.eventId) ?? [];
+    list.push({ id: a.id, url: `/api/attachments/${a.id}/file`, width: a.width, height: a.height });
+    byEvent.set(a.eventId, list);
+  }
+
+  const meals: FoodDayMeal[] = rows.map((r) => ({
+    eventId: r.eventId,
+    occurredAt: toIso(r.occurredAt),
+    dateKey: r.dateKey,
+    payload: (parseRecord(r.payload) ?? {}) as FoodDayMeal["payload"],
+    source: normalizeProvenance(r.source),
+    attachments: byEvent.get(r.eventId) ?? [],
+  }));
+
+  return { date: dateKey, meals, nutrition };
+}
+
+function normalizeProvenance(value: string | null): FoodMealProvenance | null {
+  if (value === "WEB" || value === "AI" || value === "SYSTEM" || value === "CIRCLE") return value;
+  return null;
 }
 
 async function ensureFoodMealEntry(

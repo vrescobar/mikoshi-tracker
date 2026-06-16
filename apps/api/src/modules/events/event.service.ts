@@ -11,6 +11,7 @@ import { NothingToUndoError } from "../../shared/errors";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { resolveHabitDay } from "../today/today-clock";
 import { getCompiledSchema } from "../entry-types/schema-cache";
+import { FOOD_MEAL_SLUG, inferMealSlotFromOccurredAt, shouldInferMealSlot } from "../food/meal-slot";
 
 import {
   type EntryWithTypeAndUser,
@@ -206,6 +207,18 @@ export async function persistEvent(
 ): Promise<EntryEventDetail> {
   const entry = await requireEntry(deps, { entryId: params.entryId, userId: params.userId });
   const validatedPayload = await validatePayload(deps, entry.entryTypeId, params.payload);
+  // food_meal: fill an absent/"other" mealSlot from the wall-clock hour so meals
+  // bucket sensibly (no more "everything is breakfast"). Explicit slots are kept.
+  if (
+    entry.entryType.slug === FOOD_MEAL_SLUG &&
+    validatedPayload !== null &&
+    typeof validatedPayload === "object"
+  ) {
+    const p = validatedPayload as Record<string, unknown>;
+    if (shouldInferMealSlot(p.mealSlot)) {
+      p.mealSlot = inferMealSlotFromOccurredAt(params.occurredAt, entry.user.timezone);
+    }
+  }
   const payloadStr = JSON.stringify(validatedPayload);
   const { value, completed } = extractProjections(validatedPayload);
   // Habits use a 4-hour night cutoff so late-night completions bucket to the previous day.

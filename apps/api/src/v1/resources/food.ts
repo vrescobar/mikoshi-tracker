@@ -1,23 +1,46 @@
 import { z } from "zod";
 
 import {
+  foodDayQuerySchema,
+  foodDayResponseSchema,
   foodRelogInputSchema,
   foodRelogResponseSchema,
   foodSearchQuerySchema,
   foodSearchResponseSchema,
 } from "@mikoshi-tracker/contracts/food";
 
-import { getRequestTimestamp } from "../../shared/controller-helpers";
-import { relogFood, searchFoods } from "../../modules/food/food.service";
+import { getRequestTimestamp, getRequestTimeZoneOverride } from "../../shared/controller-helpers";
+import { getFoodDay, relogFood, searchFoods } from "../../modules/food/food.service";
 import { registerSchema } from "../apiMeta";
 import { envelope, requireUserId } from "../context";
 import type { ApiV1Deps, V1RouteMeta } from "../match";
 
 const FoodSearchResponse = registerSchema("FoodSearchResponse", foodSearchResponseSchema);
 const FoodRelogResponse = registerSchema("FoodRelogResponse", foodRelogResponseSchema);
+const FoodDayResponse = registerSchema("FoodDayResponse", foodDayResponseSchema);
 
 export function foodV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
   return [
+    {
+      method: "GET",
+      resource: "food",
+      path: "/food/day",
+      operationId: "foodDay",
+      summary: "The day's meals with provenance + photos, plus the nutrition roll-up",
+      auth: "bearer",
+      mutating: false,
+      querySchema: foodDayQuerySchema,
+      outputSchema: envelope(FoodDayResponse),
+      handler: (ctx) => {
+        const query = ctx.query as z.infer<typeof foodDayQuerySchema>;
+        return getFoodDay(ctx.deps, {
+          userId: requireUserId(ctx),
+          date: query.date,
+          timestamp: getRequestTimestamp(ctx.request),
+          timeZone: getRequestTimeZoneOverride(ctx.request),
+        });
+      },
+    },
     {
       method: "GET",
       resource: "food",

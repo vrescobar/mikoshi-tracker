@@ -23,7 +23,7 @@ const FOOD_MEAL_SLUG = "food_meal";
  * single day. Returns null for users who don't log food, leaving the habit-only
  * experience untouched.
  */
-async function computeNutrition(
+export async function computeNutrition(
   deps: TodayServiceDeps,
   userId: string,
   todayKey: string,
