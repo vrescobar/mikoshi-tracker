@@ -1,12 +1,12 @@
 import type { CircleDetailResponse, CircleMember } from "@mikoshi-tracker/contracts/circles";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { useState } from "react";
 
 import { shareHabit, unshareHabit } from "../../lib/circles-client";
 import { getCirclesCopy } from "../../lib/i18n/circles";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
-import { Badge, Notice, PageFrame, PageHeader, Surface } from "../ui";
+import { Badge, Notice, PageFrame, PageHeader, Surface, TabPanel, Tabs, type TabItem } from "../ui";
 import { CircleOwnerPanel } from "./circle-owner-panel";
 import styles from "./circle-detail-page.module.css";
 
@@ -37,11 +37,41 @@ function sortMembersForLeaderboard(members: CircleMember[]): CircleMember[] {
   });
 }
 
+const TAB_LABELS: Record<"en" | "zh-CN" | "es", { board: string; members: string; shares: string; settings: string }> = {
+  en: { board: "Board", members: "Members", shares: "My shares", settings: "Settings" },
+  "zh-CN": { board: "看板", members: "成员", shares: "我的分享", settings: "设置" },
+  es: { board: "Tablero", members: "Miembros", shares: "Mis hábitos", settings: "Ajustes" },
+};
+
 export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }: CircleDetailPageProps) {
   const { locale } = useLocale();
   const copy = getCirclesCopy(locale);
+  const tabCopy = TAB_LABELS[locale];
   const { circle } = initialDetail;
   const isOwner = circle.ownerId === currentUserId;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabOrder = isOwner ? ["board", "members", "shares", "settings"] : ["board", "members", "shares"];
+  const requestedTab = searchParams.get("tab") ?? "";
+  const activeTab = tabOrder.includes(requestedTab) ? requestedTab : "board";
+
+  function selectTab(id: string) {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("tab", id);
+        return next;
+      },
+      { replace: true },
+    );
+  }
+
+  const tabItems: TabItem[] = [
+    { id: "board", label: tabCopy.board, icon: "trophy" },
+    { id: "members", label: tabCopy.members, icon: "circles" },
+    { id: "shares", label: tabCopy.shares, icon: "flame" },
+    ...(isOwner ? [{ id: "settings", label: tabCopy.settings, icon: "settings" as const }] : []),
+  ];
 
   const [members, setMembers] = useState<CircleMember[]>(initialDetail.members);
   const rankedMembers = sortMembersForLeaderboard(members);
@@ -108,10 +138,51 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
               {copy.detail.summary.membersCount(members.length)}
             </span>
           </div>
+
+          <Tabs items={tabItems} active={activeTab} onChange={selectTab} ariaLabel={circle.name} variant="underline" />
         </PageFrame>
       </Surface>
 
-      <div className={styles.contentGrid}>
+      {activeTab === "board" ? (
+        <TabPanel id="board">
+          <section className={styles.panel} data-testid="circle-leaderboard-panel">
+            <div className={styles.panelHeader}>
+              <h2 className={styles.panelTitle}>{copy.detail.leaderboard.title}</h2>
+              <p className={styles.panelDesc}>{copy.detail.leaderboard.description}</p>
+            </div>
+
+            <div className={styles.rankingItems}>
+              {rankedMembers.length > 0 ? (
+                rankedMembers.map((member, index) => (
+                  <div key={member.membershipId} className={styles.rankingItem}>
+                    <div className={styles.rankingTop}>
+                      <span className={styles.rankingName}>
+                        <strong>
+                          {index + 1}.&nbsp;{member.displayName}
+                        </strong>
+                        {member.userId === currentUserId ? (
+                          <span className={styles.youBadge}>{copy.detail.members.youBadge}</span>
+                        ) : null}
+                      </span>
+                      <Badge tone={member.role === "owner" ? "info" : "neutral"}>
+                        {member.role === "owner"
+                          ? copy.detail.members.ownerRole
+                          : copy.detail.members.memberRole}
+                      </Badge>
+                    </div>
+                    <span className={styles.rankingMeta}>{copy.detail.leaderboard.statsNote}</span>
+                  </div>
+                ))
+              ) : (
+                <p className={styles.emptyText}>{copy.detail.leaderboard.emptyState}</p>
+              )}
+            </div>
+          </section>
+        </TabPanel>
+      ) : null}
+
+      {activeTab === "members" ? (
+        <TabPanel id="members">
         <section className={styles.panel} data-testid="circle-members-panel">
           <div className={styles.panelHeader}>
             <h2 className={styles.panelTitle}>{copy.detail.members.title}</h2>
@@ -134,42 +205,11 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
             )}
           </div>
         </section>
+        </TabPanel>
+      ) : null}
 
-        <section className={styles.panel} data-testid="circle-leaderboard-panel">
-          <div className={styles.panelHeader}>
-            <h2 className={styles.panelTitle}>{copy.detail.leaderboard.title}</h2>
-            <p className={styles.panelDesc}>{copy.detail.leaderboard.description}</p>
-          </div>
-
-          <div className={styles.rankingItems}>
-            {rankedMembers.length > 0 ? (
-              rankedMembers.map((member, index) => (
-                <div key={member.membershipId} className={styles.rankingItem}>
-                  <div className={styles.rankingTop}>
-                    <span className={styles.rankingName}>
-                      <strong>
-                        {index + 1}.&nbsp;{member.displayName}
-                      </strong>
-                      {member.userId === currentUserId ? (
-                        <span className={styles.youBadge}>{copy.detail.members.youBadge}</span>
-                      ) : null}
-                    </span>
-                    <Badge tone={member.role === "owner" ? "info" : "neutral"}>
-                      {member.role === "owner"
-                        ? copy.detail.members.ownerRole
-                        : copy.detail.members.memberRole}
-                    </Badge>
-                  </div>
-                  <span className={styles.rankingMeta}>{copy.detail.leaderboard.statsNote}</span>
-                </div>
-              ))
-            ) : (
-              <p className={styles.emptyText}>{copy.detail.leaderboard.emptyState}</p>
-            )}
-          </div>
-        </section>
-      </div>
-
+      {activeTab === "shares" ? (
+        <TabPanel id="shares">
       <section className={styles.panel} data-testid="circle-habit-shares-panel">
         <div className={styles.panelHeader}>
           <h2 className={styles.panelTitle}>{copy.detail.habitShares.title}</h2>
@@ -214,14 +254,18 @@ export function CircleDetailPage({ initialDetail, currentUserId, initialHabits }
           <p className={styles.emptyText}>{copy.detail.habitShares.emptyState}</p>
         )}
       </section>
+        </TabPanel>
+      ) : null}
 
-      {isOwner ? (
-        <CircleOwnerPanel
-          circleId={circle.id}
-          currentUserId={currentUserId}
-          members={members}
-          onMembersChange={setMembers}
-        />
+      {isOwner && activeTab === "settings" ? (
+        <TabPanel id="settings">
+          <CircleOwnerPanel
+            circleId={circle.id}
+            currentUserId={currentUserId}
+            members={members}
+            onMembersChange={setMembers}
+          />
+        </TabPanel>
       ) : null}
     </div>
   );

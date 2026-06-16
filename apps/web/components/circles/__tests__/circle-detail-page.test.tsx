@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -89,6 +89,11 @@ function renderPage(props: {
   );
 }
 
+/** The detail page is tabbed; activate a tab by its accessible name. */
+function openTab(name: RegExp) {
+  fireEvent.click(screen.getByRole("tab", { name }));
+}
+
 describe("CircleDetailPage — members panel", () => {
   it("renders owner with Owner badge and member with Member badge", () => {
     const members = [
@@ -96,6 +101,7 @@ describe("CircleDetailPage — members panel", () => {
       makeMember({ membershipId: "m2", userId: "user-2", displayName: "Bob", role: "member" }),
     ];
     renderPage({ members, currentUserId: "user-other" });
+    openTab(/members/i);
 
     const panel = screen.getByTestId("circle-members-panel");
     expect(within(panel).getByText("Alice")).toBeInTheDocument();
@@ -110,6 +116,7 @@ describe("CircleDetailPage — members panel", () => {
       makeMember({ membershipId: "m2", userId: "user-other", displayName: "Bob", role: "member" }),
     ];
     renderPage({ members, currentUserId: "user-me" });
+    openTab(/members/i);
 
     const panel = screen.getByTestId("circle-members-panel");
     expect(within(panel).getAllByText("you")).toHaveLength(1);
@@ -122,6 +129,7 @@ describe("CircleDetailPage — members panel", () => {
 describe("CircleDetailPage — empty state", () => {
   it("shows members empty state when members is empty", () => {
     renderPage({ members: [] });
+    openTab(/members/i);
     expect(screen.getByText("No members yet.")).toBeInTheDocument();
   });
 
@@ -154,6 +162,7 @@ describe("CircleDetailPage — leaderboard ordering", () => {
 describe("CircleDetailPage — habit share panel", () => {
   it("shows empty state when no habits are provided", () => {
     renderPage({ initialHabits: [] });
+    openTab(/my shares/i);
     const panel = screen.getByTestId("circle-habit-shares-panel");
     expect(within(panel).getByText("You have no active habits to share.")).toBeInTheDocument();
   });
@@ -164,6 +173,7 @@ describe("CircleDetailPage — habit share panel", () => {
       { id: "h2", name: "Read 30 min" },
     ];
     renderPage({ initialHabits: habits });
+    openTab(/my shares/i);
     const panel = screen.getByTestId("circle-habit-shares-panel");
     expect(within(panel).getByText("Morning run")).toBeInTheDocument();
     expect(within(panel).getByText("Read 30 min")).toBeInTheDocument();
@@ -178,6 +188,7 @@ describe("CircleDetailPage — habit share panel", () => {
       initialHabits: habits,
       mySharedHabits: [{ habitId: "h1", name: "Morning run" }],
     });
+    openTab(/my shares/i);
     const panel = screen.getByTestId("circle-habit-shares-panel");
     const buttons = within(panel).getAllByRole("button");
     const sharedBtn = buttons.find((b) => b.getAttribute("aria-pressed") === "true");
@@ -189,6 +200,7 @@ describe("CircleDetailPage — habit share panel", () => {
     const user = userEvent.setup();
     const habits = [{ id: "h1", name: "Morning run" }];
     renderPage({ initialHabits: habits, mySharedHabits: [] });
+    openTab(/my shares/i);
     const panel = screen.getByTestId("circle-habit-shares-panel");
     const btn = within(panel).getByRole("button", { name: "Morning run: Share" });
     await user.click(btn);
@@ -200,6 +212,7 @@ describe("CircleDetailPage — habit share panel", () => {
     const user = userEvent.setup();
     const habits = [{ id: "h1", name: "Morning run" }];
     renderPage({ initialHabits: habits, mySharedHabits: [] });
+    openTab(/my shares/i);
     const panel = screen.getByTestId("circle-habit-shares-panel");
     const btn = within(panel).getByRole("button", { name: "Morning run: Share" });
     await user.click(btn);
