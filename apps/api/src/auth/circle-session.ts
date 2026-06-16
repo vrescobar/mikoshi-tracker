@@ -12,6 +12,14 @@ export class CircleAuthError extends Error {
   constructor(
     public readonly statusCode: 401 | 403 | 404,
     message: string,
+    /**
+     * Código de respuesta explícito. Sin él, el statusCode decide
+     * (401→UNAUTHORIZED, else FORBIDDEN). Se usa para distinguir los fallos de
+     * ASERCIÓN DE ACTOR (ACTOR_REQUIRED/ACTOR_INVALID) del rechazo del TOKEN del
+     * círculo: ambos son 401/403, pero la causa y el arreglo son distintos, y
+     * colapsarlos en "token caducado" despista (ver incidente bikini 2026-06-16).
+     */
+    public readonly code?: string,
   ) {
     super(message);
     this.name = "CircleAuthError";

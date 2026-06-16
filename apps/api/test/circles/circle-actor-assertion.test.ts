@@ -83,6 +83,9 @@ describe("AUTH-3 actor assertion (circle writes)", () => {
       headers: actorHeaders("ext-owner", circle.id, token, { sig: "sha256=deadbeef" }),
     });
     expect(res.statusCode).toBe(403);
+    // El código distingue el fallo de ACTOR del rechazo del token del círculo:
+    // colapsarlos en "token caducado" fue lo que despistó en el incidente bikini.
+    expect(res.json().code).toBe("ACTOR_INVALID");
   });
 
   it("cross-member por un NO-owner → 403 (bob escribe sobre el owner)", async () => {
@@ -163,5 +166,20 @@ describe("AUTH-3 actor assertion (circle writes)", () => {
       headers: { authorization: `Bearer ${token}` },
     });
     expect(res.statusCode).toBe(403);
+    expect(res.json().code).toBe("ACTOR_REQUIRED");
+  });
+
+  it("código distingue ACTOR vs TOKEN: token de círculo inválido → UNAUTHORIZED, no ACTOR_*", async () => {
+    context = await createTestContext();
+    const { circle, ownerId, ownerHabit } = await setup(context);
+    process.env.MIKOSHI_TRACKER_REQUIRE_ACTOR = "1";
+    // Token de círculo basura: el fallo es del TOKEN, no de la aserción de actor.
+    const res = await context.app.inject({
+      method: "POST",
+      url: complete(circle.id, ownerId, ownerHabit.id),
+      headers: { authorization: "Bearer not-a-real-circle-token" },
+    });
+    expect(res.statusCode).toBe(401);
+    expect(res.json().code).toBe("UNAUTHORIZED");
   });
 });

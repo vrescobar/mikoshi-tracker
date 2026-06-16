@@ -59,7 +59,7 @@ import {
 
 function sendCircleAuthError(reply: FastifyReply, error: CircleAuthError) {
   reply.status(error.statusCode).send({
-    code: error.statusCode === 401 ? "UNAUTHORIZED" : "FORBIDDEN",
+    code: error.code ?? (error.statusCode === 401 ? "UNAUTHORIZED" : "FORBIDDEN"),
     message: error.message,
   });
 }
@@ -119,11 +119,24 @@ async function enforceCircleActor(
 ): Promise<void> {
   const actor = resolveCircleActor(request, context);
   if (actor.status === "invalid") {
-    throw new CircleAuthError(403, "Invalid actor assertion");
+    // Cabeceras de actor presentes pero firma/timestamp/círculo no validan. NO es
+    // el token del círculo: es la aserción firmada por el kernel. Código propio
+    // para que el cliente no lo traduzca como "token caducado".
+    throw new CircleAuthError(
+      403,
+      "Actor assertion present but invalid — the kernel must sign circle writes with the shared admin key",
+      "ACTOR_INVALID",
+    );
   }
   if (actor.status === "absent") {
     if (actorEnforcementRequired()) {
-      throw new CircleAuthError(403, "Actor assertion required");
+      // Fase B: la escritura DEBE venir firmada y no vino. Tampoco es el token
+      // del círculo — falta la aserción de actor (admin key en el kernel).
+      throw new CircleAuthError(
+        403,
+        "Actor assertion required — this circle write must be signed by the kernel with the shared admin key (mikoshi_tracker_admin_key)",
+        "ACTOR_REQUIRED",
+      );
     }
     request.log.warn(
       { circleId: context.circle.id, targetUserId },
