@@ -1,8 +1,10 @@
 import type { HabitDetail } from "@mikoshi-tracker/contracts/habits";
+import { Link } from "react-router";
 
 import type { HabitRecord } from "../../lib/auth-client";
+import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
-import { PageFrame, PageHeader, StatePanel, Surface } from "../ui";
+import { Icon, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
 import { HabitWeekStrip } from "./HabitWeekStrip";
 import { StreakBadge } from "./StreakBadge";
 import { countPeriodCompletions, describeStreak, type StreakCopy } from "./streak";
@@ -12,6 +14,8 @@ export type HabitOverviewRow = { habit: HabitRecord; detail: HabitDetail | null 
 
 type HabitsOverviewPageProps = {
   rows: HabitOverviewRow[];
+  /** When rendered inside the Habits tabs, the shell owns the page header. */
+  embedded?: boolean;
 };
 
 type StatusLabels = Record<"completed" | "pending" | "missed" | "not_due", string>;
@@ -134,7 +138,7 @@ function isOnTrack(row: HabitOverviewRow): boolean {
   return !detail.trends.last7Days.some((p) => p.status === "missed");
 }
 
-export function HabitsOverviewPage({ rows }: HabitsOverviewPageProps) {
+export function HabitsOverviewPage({ rows, embedded = false }: HabitsOverviewPageProps) {
   const { locale } = useLocale();
   const copy = COPY[locale];
 
@@ -142,11 +146,13 @@ export function HabitsOverviewPage({ rows }: HabitsOverviewPageProps) {
 
   return (
     <PageFrame>
-      <PageHeader
-        eyebrow={copy.eyebrow}
-        title={copy.title}
-        description={rows.length > 0 ? copy.onTrack(onTrackCount, rows.length) : copy.description}
-      />
+      {embedded ? null : (
+        <PageHeader
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+          description={rows.length > 0 ? copy.onTrack(onTrackCount, rows.length) : copy.description}
+        />
+      )}
 
       {rows.length === 0 ? (
         <StatePanel
@@ -170,7 +176,10 @@ export function HabitsOverviewPage({ rows }: HabitsOverviewPageProps) {
             return (
               <Surface key={habit.id} variant="panel" padding="md" className={styles.row} data-testid="habit-row">
                 <div className={styles.meta}>
-                  <h2 className={styles.name}>{habit.name}</h2>
+                  <Link to={routes.habitDetail(habit.id)} className={styles.name}>
+                    {habit.name}
+                    <Icon name="trend" size="0.9rem" />
+                  </Link>
                   <span className={styles.frequency}>{frequencyLabel(habit, copy)}</span>
                 </div>
 

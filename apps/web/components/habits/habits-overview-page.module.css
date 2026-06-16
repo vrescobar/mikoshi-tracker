@@ -17,10 +17,31 @@
 }
 
 .name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: var(--text-lg);
+  font-weight: var(--weight-display);
+  color: var(--color-heading);
+  text-decoration: none;
+  width: fit-content;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.name :global(svg) {
+  color: var(--color-text-soft);
+  flex-shrink: 0;
+}
+
+.name:hover {
+  color: var(--color-accent-strong);
+}
+
+.name:hover :global(svg) {
+  color: var(--color-accent-strong);
 }
 
 .frequency {

@@ -15,6 +15,7 @@ const WeightPageRoute = lazy(() => import("./pages/weight-page-route"));
 const CirclesRoute = lazy(() => import("./pages/circles-route"));
 const CircleDetailRoute = lazy(() => import("./pages/circle-detail-route"));
 const HabitsOverviewRoute = lazy(() => import("./pages/habits-overview-route"));
+const HabitDetailRoute = lazy(() => import("./pages/habit-detail-route"));
 const SettingsRoute = lazy(() => import("./pages/settings-route"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
@@ -72,11 +73,12 @@ export const routeConfig = [
           { path: "tokens", element: page(<TokensView />) },
         ],
       },
-      // Habits overview: weekly compliance grid + frequency-aware streaks.
+      // Habits: tabbed Overview / All activity / Archived.
       { path: "/habits", element: page(<HabitsOverviewRoute />) },
-      // Remaining legacy habit routes — preserved redirects from the Next pages.
+      // The legacy "new habit" route still forwards to the entries view.
       { path: "/habits/new", element: <Navigate to={routes.habitEntries} replace /> },
-      { path: "/habits/:habitId", element: <Navigate to={routes.habitEntries} replace /> },
+      // Habit detail: 30-day heatmap, streak stats, history, and settings.
+      { path: "/habits/:habitId", element: page(<HabitDetailRoute />) },
       { path: "*", element: page(<NotFoundPage />) },
     ],
   },

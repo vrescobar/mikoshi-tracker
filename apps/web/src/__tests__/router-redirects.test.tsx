@@ -24,9 +24,9 @@ vi.mock("../../lib/auth-client", async (importOriginal) => {
 const TARGET = "/entries?entryTypeSlug=habit_boolean,habit_quantity";
 
 describe("habits routes — redirect to entries", () => {
-  // /habits itself now renders the Habits overview page; only the legacy
-  // new/detail sub-routes still forward to the entries view.
-  for (const path of ["/habits/new", "/habits/some-id"]) {
+  // /habits renders the tabbed Habits hub and /habits/:id renders the habit
+  // detail page; only the legacy "new habit" route still forwards to entries.
+  for (const path of ["/habits/new"]) {
     it(`${path} redirects to ${TARGET}`, async () => {
       const router = createMemoryRouter(routeConfig, { initialEntries: [path] });
       render(
