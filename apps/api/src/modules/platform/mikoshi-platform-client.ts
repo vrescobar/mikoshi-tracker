@@ -123,6 +123,36 @@ export class MikoshiPlatformClient {
     return null;
   }
 
+  /**
+   * `POST /cron` — register a scheduled webhook back to the extension. Requires
+   * the cronWebhooks capability grant (fail-closed upstream otherwise). Returns
+   * the schedule id, or null on failure. `target` is the tracker path the kernel
+   * will POST to on schedule (e.g. "/hooks/cron/weekly-report").
+   */
+  async scheduleCron(params: { target: string; schedule: string }): Promise<string | null> {
+    const body = await this.post("/cron", { target: params.target, schedule: params.schedule });
+    if (body && typeof body === "object" && "id" in body && typeof (body).id === "string") {
+      return (body as { id: string }).id;
+    }
+    return null;
+  }
+
+  /** `DELETE /cron/:id` — remove a scheduled webhook. Best-effort. */
+  async deleteCron(id: string): Promise<boolean> {
+    const adminKey = this.getAdminKey();
+    if (!adminKey) return false;
+    try {
+      const response = await fetch(`${this.baseUrl}/cron/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+        headers: { authorization: `Bearer ${adminKey}` },
+        signal: AbortSignal.timeout(this.timeoutMs),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
   private async get(path: string): Promise<unknown> {
     const adminKey = this.getAdminKey();
     if (!adminKey) return null;

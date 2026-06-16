@@ -34,7 +34,12 @@ endpoints:
   backup: /api/platform/backup
 capabilities:
   groupAccess: true
-  cronWebhooks: false
+  # Scheduled weekly nutrition reports (Epic E): the kernel POSTs
+  # /hooks/cron/weekly-report on a schedule. Enabling this WIDENS the
+  # extension's authority — re-run `ext-install` so the kernel grants the
+  # capability before any schedule is created, and keep the per-user opt-in
+  # (diet_prefs.weeklyReportOptIn, default off) under the dm-approval consent.
+  cronWebhooks: true
   identityEvents: true
 consent: dm-approval
 secrets:

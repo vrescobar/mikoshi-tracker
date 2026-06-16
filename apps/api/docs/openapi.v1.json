@@ -2414,6 +2414,16 @@
                     "type": "null"
                   }
                 ]
+              },
+              "weeklyReportOptIn": {
+                "anyOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "additionalProperties": false
@@ -14154,6 +14164,16 @@
                                   "type": "null"
                                 }
                               ]
+                            },
+                            "weeklyReportOptIn": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
                             }
                           },
                           "additionalProperties": false
@@ -14282,6 +14302,16 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "weeklyReportOptIn": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
                   }
                 }
               }
@@ -14368,6 +14398,16 @@
                                     "metric",
                                     "imperial"
                                   ]
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "weeklyReportOptIn": {
+                              "anyOf": [
+                                {
+                                  "type": "boolean"
                                 },
                                 {
                                   "type": "null"

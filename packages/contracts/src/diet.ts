@@ -56,6 +56,8 @@ export const dietPreferencesSchema = z.object({
   dislikes: z.array(z.string()).nullable().optional(),
   defaultMealSlot: dietMealSlotSchema.nullable().optional(),
   units: z.enum(["metric", "imperial"]).nullable().optional(),
+  /** Opt-in for the scheduled weekly WhatsApp report (default off). */
+  weeklyReportOptIn: z.boolean().nullable().optional(),
 });
 
 export const dietPreferencesResponseSchema = z.object({

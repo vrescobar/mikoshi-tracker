@@ -290,6 +290,9 @@ const DIET_PREFS_CONFIG_SCHEMA = JSON.stringify({
       nullable: true,
     },
     units: { type: "string", enum: ["metric", "imperial"], nullable: true },
+    // Epic E: per-user opt-in for the scheduled weekly WhatsApp report. Default
+    // off — proactive outbound requires explicit consent (dm-approval).
+    weeklyReportOptIn: { type: "boolean", nullable: true },
   },
   additionalProperties: false,
 });

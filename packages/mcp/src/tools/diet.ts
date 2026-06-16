@@ -38,6 +38,7 @@ const dietPreferencesSchema = z.object({
   dislikes: z.array(z.string()).nullable().optional(),
   defaultMealSlot: z.enum(["breakfast", "lunch", "snack", "dinner", "other"]).nullable().optional(),
   units: z.enum(["metric", "imperial"]).nullable().optional(),
+  weeklyReportOptIn: z.boolean().nullable().optional(),
 });
 const dietPreferencesDataSchema = z.object({ preferences: dietPreferencesSchema });
 
