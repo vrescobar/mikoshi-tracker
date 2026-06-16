@@ -104,3 +104,7 @@ async function main(): Promise<void> {
 }
 
 await main();
+
+// Mark this file as a module so the top-level `await` above is valid under
+// `tsc` (the runner is otherwise self-contained, with no imports/exports).
+export {};
