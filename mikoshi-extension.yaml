@@ -23,6 +23,7 @@ skills:
   - mikoshi/skills/mikoshi-tracker
   - mikoshi/skills/mikoshi-tracker-circle
   - mikoshi/skills/mikoshi-tracker-food
+  - mikoshi/skills/mikoshi-tracker-report
   - mikoshi/skills/mikoshi-tracker-shared
 endpoints:
   provision: /api/platform/provision

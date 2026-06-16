@@ -167,6 +167,7 @@ All tools use the authenticated MikoshiTracker API behind the scenes and return 
 | `diet_set_goal` | `POST /v1/diet/goal` | Set the user's diet goal. Appends a dated revision (history is preserved). At minimum provide kcalTarget; macro targets, per-meal-slot kcal, and objective (lose/maintain/gain) are optional. |
 | `diet_get_preferences` | `GET /v1/diet/preferences` | Get the user's dietary preferences (diet style, allergies, dislikes, default meal slot, units). |
 | `diet_set_preferences` | `POST /v1/diet/preferences` | Replace the user's dietary preferences. Used by the food skill to tune estimation (allergy warnings, default slot, units). |
+| `report_send_chart` | `POST /v1/reports/chart` | Render a nutrition chart (kcal-trend or macro-donut) over the chosen range and send it as an image to the user's own WhatsApp DM. Use when the user asks to be sent / shown a chart of their calories or macros. Delivers to the caller only. |
 
 ## AI Guidance
 

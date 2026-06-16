@@ -14,6 +14,7 @@ import { skillsV1Routes } from "./resources/skills";
 import { adminV1Routes } from "./resources/admin";
 import { dietV1Routes } from "./resources/diet";
 import { foodV1Routes } from "./resources/food";
+import { reportsV1Routes } from "./resources/reports";
 import type { ApiV1Deps, V1RouteMeta } from "./match";
 
 export { generateV1OpenApi } from "./openapi";
@@ -39,6 +40,7 @@ export function buildV1RouteTable(deps: ApiV1Deps): V1RouteMeta[] {
     ...adminV1Routes(deps),
     ...dietV1Routes(deps),
     ...foodV1Routes(deps),
+    ...reportsV1Routes(deps),
   ];
 }
 

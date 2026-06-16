@@ -26,6 +26,7 @@ import { registerAdminRoutes } from "./modules/admin/admin.routes";
 import { registerPlatformRoutes } from "./modules/platform/platform.routes";
 import { registerAggregationRoutes } from "./modules/aggregations/aggregation.routes";
 import { registerAttachmentRoutes } from "./modules/attachments/attachment.routes";
+import { registerChartRoutes } from "./modules/charts/chart.routes";
 import { registerSkillRoutes } from "./modules/skills/skill.routes";
 import { registerCircleRoutes } from "./modules/circles/circle.routes";
 import { registerEntryRoutes } from "./modules/entries/entry.routes";
@@ -131,6 +132,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerTodayRoutes(app);
   await registerCircleRoutes(app);
   await registerAttachmentRoutes(app);
+  await registerChartRoutes(app);
   await registerSkillRoutes(app);
   await registerOpenApi(app);
   await registerV1(app);

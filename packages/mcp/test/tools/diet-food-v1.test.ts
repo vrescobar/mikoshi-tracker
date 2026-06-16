@@ -77,4 +77,20 @@ describe("diet + food v1 tools", () => {
     expect(fetchImpl.mock.calls[0]?.[0]).toBe("https://habit.example.com/api/v1/diet/goal");
     expect(result.structuredContent.goal).toBeNull();
   });
+
+  it("report_send_chart POSTs to /v1/reports/chart and reports delivery", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(createJsonResponse({ ok: true, data: { delivered: true } }));
+    const tool = getRegisteredTool("report_send_chart", fetchImpl);
+
+    const result = (await tool.handler({ kind: "kcal-trend", range: "30d" })) as unknown as {
+      structuredContent: { delivered: boolean };
+    };
+
+    const call = fetchImpl.mock.calls[0];
+    expect(call?.[0]).toBe("https://habit.example.com/api/v1/reports/chart");
+    expect((call?.[1] as RequestInit | undefined)?.method).toBe("POST");
+    expect(result.structuredContent.delivered).toBe(true);
+  });
 });

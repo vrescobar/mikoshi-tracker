@@ -9,6 +9,7 @@ import { createEventsReadOperations, createEventsWriteOperations } from "./event
 import { createFoodReadOperations, createFoodWriteOperations } from "./food.js";
 import { createHabitsReadOperations, createHabitsWriteOperations } from "./habits.js";
 import type { ToolOperation } from "./operation-types.js";
+import { createReportWriteOperations } from "./reports.js";
 import { createStatsReadOperations } from "./stats.js";
 import { createTodayReadOperations, createTodayWriteOperations } from "./today.js";
 
@@ -31,5 +32,6 @@ export function createToolOperations(options: { client: MikoshiTrackerApiClient 
     ...createFoodWriteOperations(options.client),
     ...createDietReadOperations(options.client),
     ...createDietWriteOperations(options.client),
+    ...createReportWriteOperations(options.client),
   };
 }

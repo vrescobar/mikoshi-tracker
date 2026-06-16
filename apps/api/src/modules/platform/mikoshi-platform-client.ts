@@ -66,6 +66,63 @@ export class MikoshiPlatformClient {
     return body as Record<string, unknown>;
   }
 
+  /**
+   * `POST /notify` in image mode — deliver a chart PNG to a user's WhatsApp DM.
+   * `imageBase64` is the raw PNG bytes base64-encoded. Best-effort: returns
+   * false when the platform is unreachable or rejects, so a failed report
+   * delivery never throws into a user-facing flow.
+   */
+  async notifyImage(params: {
+    externalId: string;
+    imageBase64: string;
+    caption?: string;
+  }): Promise<boolean> {
+    const body = await this.post("/notify", {
+      externalId: params.externalId,
+      format: "image",
+      imageBase64: params.imageBase64,
+      ...(params.caption ? { caption: params.caption } : {}),
+    });
+    return body !== null;
+  }
+
+  /** `POST /notify` in text/audio mode. Best-effort (returns false on failure). */
+  async notifyText(params: {
+    externalId: string;
+    prompt: string;
+    format?: "text" | "audio";
+  }): Promise<boolean> {
+    const body = await this.post("/notify", {
+      externalId: params.externalId,
+      format: params.format ?? "text",
+      prompt: params.prompt,
+    });
+    return body !== null;
+  }
+
+  /**
+   * `POST /ai/complete` — the platform inference gateway. Used for short chart
+   * captions / NL summaries. Returns the completion text, or null when the
+   * gateway is unavailable (callers fall back to a templated caption).
+   */
+  async aiComplete(params: {
+    tier?: string;
+    system?: string;
+    messages: Array<{ role: string; content: string }>;
+    maxTokens?: number;
+  }): Promise<string | null> {
+    const body = await this.post("/ai/complete", {
+      tier: params.tier ?? "cheap",
+      ...(params.system ? { system: params.system } : {}),
+      messages: params.messages,
+      ...(params.maxTokens ? { maxTokens: params.maxTokens } : {}),
+    });
+    if (body && typeof body === "object" && "text" in body && typeof (body).text === "string") {
+      return (body as { text: string }).text;
+    }
+    return null;
+  }
+
   private async get(path: string): Promise<unknown> {
     const adminKey = this.getAdminKey();
     if (!adminKey) return null;
@@ -76,6 +133,23 @@ export class MikoshiPlatformClient {
       });
       if (!response.ok) return null;
       return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  private async post(path: string, payload: unknown): Promise<unknown> {
+    const adminKey = this.getAdminKey();
+    if (!adminKey) return null;
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${adminKey}`, "content-type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(this.timeoutMs),
+      });
+      if (!response.ok) return null;
+      return await response.json().catch(() => ({}));
     } catch {
       return null;
     }

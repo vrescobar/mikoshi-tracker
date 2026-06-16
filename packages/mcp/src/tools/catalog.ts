@@ -8,6 +8,7 @@ import { entryTypesTools } from "./entry-types.js";
 import { eventsTools } from "./events.js";
 import { foodTools } from "./food.js";
 import { habitsTools } from "./habits.js";
+import { reportTools } from "./reports.js";
 import { statsTools } from "./stats.js";
 import { todayTools } from "./today.js";
 
@@ -39,6 +40,7 @@ export const toolInventory: InventoryTool[] = [
   ...aggregationsTools,
   ...foodTools,
   ...dietTools,
+  ...reportTools,
 ];
 
 export const EXPECTED_TOOL_NAMES = toolInventory.map((tool) => tool.name);

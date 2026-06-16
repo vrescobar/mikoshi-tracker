@@ -42,6 +42,9 @@
       "name": "food"
     },
     {
+      "name": "reports"
+    },
+    {
       "name": "skills"
     },
     {
@@ -2566,6 +2569,27 @@
           "name",
           "kcal",
           "mealSlot"
+        ],
+        "additionalProperties": false
+      },
+      "SendChartResponse": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "delivered": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "no_identity",
+              "platform_unavailable",
+              "delivery_failed"
+            ]
+          }
+        },
+        "required": [
+          "delivered"
         ],
         "additionalProperties": false
       },
@@ -14694,6 +14718,120 @@
                         "name",
                         "kcal",
                         "mealSlot"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Client error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reports/chart": {
+      "post": {
+        "operationId": "reportsSendChart",
+        "summary": "Render a nutrition chart and deliver it to the caller's WhatsApp",
+        "tags": [
+          "reports"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "kcal-trend",
+                      "macro-donut"
+                    ]
+                  },
+                  "range": {
+                    "type": "string",
+                    "enum": [
+                      "7d",
+                      "30d",
+                      "90d"
+                    ]
+                  },
+                  "caption": {
+                    "type": "string",
+                    "maxLength": 280
+                  }
+                },
+                "required": [
+                  "kind"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "delivered": {
+                          "type": "boolean"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "enum": [
+                            "no_identity",
+                            "platform_unavailable",
+                            "delivery_failed"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "delivered"
                       ],
                       "additionalProperties": false
                     }

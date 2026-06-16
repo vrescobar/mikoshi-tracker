@@ -163,6 +163,10 @@ describe("toolInventory", () => {
           "name": "diet_set_preferences",
           "route": "POST /v1/diet/preferences",
         },
+        {
+          "name": "report_send_chart",
+          "route": "POST /v1/reports/chart",
+        },
       ]
     `);
   });
