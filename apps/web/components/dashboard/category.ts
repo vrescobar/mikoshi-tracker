@@ -25,7 +25,7 @@ const ROTATION: HabitCategory[] = [
 
 const KEYWORDS: Array<[RegExp, HabitCategory]> = [
   [/agua|water|beber|hidrat|drink/i, CATEGORIES.water],
-  [/gym|ejercici|exercise|correr|run|walk|camin|deporte|sport|workout|entren|pasos|steps/i, CATEGORIES.move],
+  [/gym|ejercici|exercise|correr|run|walk|camin|deporte|sport|workout|entren|pasos|steps|kettle|pesa|lift|fuerza|cardio|bici|bike|nad/i, CATEGORIES.move],
   [/medita|meditat|mindful|calm|respir|breath|yoga|gratit/i, CATEGORIES.mind],
   [/dorm|sleep|descans|rest|cama|bed/i, CATEGORIES.rest],
   [/leer|read|libro|book|lectur|estud|study/i, CATEGORIES.read],

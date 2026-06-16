@@ -9,11 +9,8 @@ import { useLocale } from "../locale";
 import { Button, SkeletonBlock, StatePanel } from "../ui";
 import { routes } from "../../lib/navigation";
 import { useSession } from "../../src/auth/session";
-import { TodayDashboard } from "../today/today-dashboard";
-import { DashboardFoodSection } from "./dashboard-food-section";
-import { OverviewSection } from "./overview-section";
+import { HabitsTodayCard } from "./habits-today-card";
 import { TodayBoard } from "./today-board";
-import { WeightTodayPanel } from "./weight-today-panel";
 import styles from "./dashboard-shell.module.css";
 
 export function DashboardShell({
@@ -21,11 +18,6 @@ export function DashboardShell({
   initialLoadError = null,
   initialOverview,
   initialSummary,
-  initialFoodTodayAggregations = null,
-  foodEntryId = null,
-  dailyKcalTarget = null,
-  latestWeightKg = null,
-  latestWeightDate = null,
 }: {
   emptyState?: "no-entries" | "habits-empty" | "archived-only" | null;
   initialLoadError?: string | null;
@@ -133,12 +125,6 @@ export function DashboardShell({
             </div>
           }
         />
-        <DashboardFoodSection
-          aggregations={initialFoodTodayAggregations}
-          foodEntryId={foodEntryId}
-          dailyKcalTarget={dailyKcalTarget}
-        />
-        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -157,12 +143,6 @@ export function DashboardShell({
             </Button>
           }
         />
-        <DashboardFoodSection
-          aggregations={initialFoodTodayAggregations}
-          foodEntryId={foodEntryId}
-          dailyKcalTarget={dailyKcalTarget}
-        />
-        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -186,12 +166,6 @@ export function DashboardShell({
             </div>
           }
         />
-        <DashboardFoodSection
-          aggregations={initialFoodTodayAggregations}
-          foodEntryId={foodEntryId}
-          dailyKcalTarget={dailyKcalTarget}
-        />
-        <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
       </div>
     );
   }
@@ -233,14 +207,7 @@ export function DashboardShell({
   return (
     <div className={styles.stack}>
       <TodayBoard summary={summary} overview={overview} userName={user.name} />
-      <TodayDashboard initialSummary={summary} onActionSettled={refreshOverview} />
-      <DashboardFoodSection
-          aggregations={initialFoodTodayAggregations}
-          foodEntryId={foodEntryId}
-          dailyKcalTarget={dailyKcalTarget}
-        />
-      <WeightTodayPanel latestWeightKg={latestWeightKg} latestDate={latestWeightDate} />
-      <OverviewSection overview={overview} isRefreshing={isRefreshingOverview} />
+      <HabitsTodayCard initialSummary={summary} onChanged={refreshOverview} />
     </div>
   );
 }

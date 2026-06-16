@@ -120,12 +120,13 @@ export function TodayBoard({ summary, overview, userName }: TodayBoardProps) {
   const weeklyAvgPct = Math.round(overview.metrics.weeklyCompletionRate * 100);
 
   const today = new Date().toLocaleDateString(copy.weekdayFmt, { weekday: "long", day: "numeric", month: "long" });
+  const firstName = userName.trim().split(/\s+/)[0] ?? "";
 
   return (
     <div className={styles.board}>
       <header className={styles.greeting}>
         <div>
-          <h1 className={styles.hello}>{copy.greeting(userName)}</h1>
+          <h1 className={styles.hello}>{copy.greeting(firstName)}</h1>
           <p className={styles.date}>{capitalize(today)}</p>
         </div>
         <span className={styles.bell} aria-hidden="true">
