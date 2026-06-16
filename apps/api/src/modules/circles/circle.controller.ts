@@ -12,11 +12,18 @@ import {
   shareHabitInputSchema,
   updateCircleMemberInputSchema,
 } from "@mikoshi-tracker/contracts/circles";
-import { CircleAuthError, requireCircleContext } from "../../auth/circle-session";
+import {
+  CircleAuthError,
+  actorEnforcementRequired,
+  requireCircleContext,
+  resolveCircleActor,
+  type CircleContext,
+} from "../../auth/circle-session";
 import { AuthSessionError, requireAuthenticatedUser } from "../../auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../shared/controller-helpers";
 import {
   addCircleMember,
+  assertCircleSelfOrOwner,
   CircleBackdateRangeError,
   circleCompleteHabit,
   CircleClosedError,
@@ -66,7 +73,7 @@ function sendCircleWriteError(reply: FastifyReply, error: unknown) {
     reply.status(404).send({ code: "NOT_FOUND", message: error.message });
     return reply;
   }
-  if (error instanceof CircleHabitNotSharedError) {
+  if (error instanceof CircleHabitNotSharedError || error instanceof CircleForbiddenError) {
     reply.status(403).send({ code: "FORBIDDEN", message: error.message });
     return reply;
   }
@@ -95,6 +102,40 @@ function sendCircleWriteError(reply: FastifyReply, error: unknown) {
     return reply;
   }
   throw error;
+}
+
+/**
+ * AUTH-3 — enforcement de actor server-side en una escritura de círculo. Rollout
+ * en 2 fases:
+ *  - Fase A (default): una aserción FORJADA/expirada → 403 siempre; AUSENTE →
+ *    log `circle.actor.absent` y procede (paridad legacy, cero rotura).
+ *  - Fase B (MIKOSHI_TRACKER_REQUIRE_ACTOR=1): la ausencia también → 403.
+ * Una aserción VÁLIDA siempre se enforce self-or-owner.
+ */
+async function enforceCircleActor(
+  request: FastifyRequest,
+  context: CircleContext,
+  targetUserId: string,
+): Promise<void> {
+  const actor = resolveCircleActor(request, context);
+  if (actor.status === "invalid") {
+    throw new CircleAuthError(403, "Invalid actor assertion");
+  }
+  if (actor.status === "absent") {
+    if (actorEnforcementRequired()) {
+      throw new CircleAuthError(403, "Actor assertion required");
+    }
+    request.log.warn(
+      { circleId: context.circle.id, targetUserId },
+      "circle.actor.absent",
+    );
+    return;
+  }
+  await assertCircleSelfOrOwner(
+    { db: request.server.db },
+    { circleId: context.circle.id, targetUserId, actorExternalId: actor.actorExternalId },
+  );
+  request.log.info({ circleId: context.circle.id }, "circle.actor.present");
 }
 
 // ─── Circle-token-authenticated handlers ─────────────────────────────────────
@@ -154,7 +195,8 @@ export async function circleCompleteHabitHandler(request: FastifyRequest, reply:
       userId: string;
       habitId: string;
     };
-    await requireCircleContext(request, circleId);
+    const ctx = await requireCircleContext(request, circleId);
+    await enforceCircleActor(request, ctx, userId);
     const { date } = circleCompleteInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
     return await circleCompleteHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
@@ -170,7 +212,8 @@ export async function circleSetHabitTotalHandler(request: FastifyRequest, reply:
       userId: string;
       habitId: string;
     };
-    await requireCircleContext(request, circleId);
+    const ctx = await requireCircleContext(request, circleId);
+    await enforceCircleActor(request, ctx, userId);
     const { total, date } = circleSetTotalInputSchema.parse(request.body);
     const timestamp = getRequestTimestamp(request);
     return await circleSetHabitTotal(
@@ -189,7 +232,8 @@ export async function circleUndoHabitHandler(request: FastifyRequest, reply: Fas
       userId: string;
       habitId: string;
     };
-    await requireCircleContext(request, circleId);
+    const ctx = await requireCircleContext(request, circleId);
+    await enforceCircleActor(request, ctx, userId);
     const { date } = circleUndoInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
     return await circleUndoHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
@@ -201,7 +245,8 @@ export async function circleUndoHabitHandler(request: FastifyRequest, reply: Fas
 export async function setCircleMemberNameHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
     const { circleId, userId } = request.params as { circleId: string; userId: string };
-    await requireCircleContext(request, circleId);
+    const ctx = await requireCircleContext(request, circleId);
+    await enforceCircleActor(request, ctx, userId);
     const { name } = setCircleMemberNameInputSchema.parse(request.body);
     return await setCircleMemberName({ db: request.server.db }, { circleId, userId, name });
   } catch (error) {

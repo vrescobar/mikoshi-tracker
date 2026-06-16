@@ -1,6 +1,12 @@
 import type { FastifyRequest } from "fastify";
 
 import { findCircleByToken } from "./circle-token";
+import {
+  ACTOR_HEADER,
+  ACTOR_SIGNATURE_HEADER,
+  ACTOR_TIMESTAMP_HEADER,
+  verifyActorAssertion,
+} from "./actor-assertion";
 
 export class CircleAuthError extends Error {
   constructor(
@@ -57,4 +63,54 @@ export async function requireCircleContext(
     circle: result.circle,
     tokenId: result.tokenId,
   };
+}
+
+/** Resultado de resolver la aserción de actor firmada de una request de círculo. */
+export type CircleActorResolution =
+  | { status: "absent" }
+  | { status: "invalid" }
+  | { status: "valid"; actorExternalId: string };
+
+function headerString(value: string | string[] | undefined): string | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+/**
+ * AUTH-3: verifica la aserción de actor firmada (si viene) contra la admin key
+ * y el circleId del contexto. NO lanza — devuelve el veredicto para que el
+ * controller decida (rollout en 2 fases: Fase A tolera la ausencia, Fase B no).
+ *  - absent:  la request no trae cabeceras de actor (camino legacy).
+ *  - invalid: trae cabeceras pero la firma/timestamp/círculo no validan (forjada).
+ *  - valid:   actor verificado; `actorExternalId` es de confianza server-side.
+ */
+export function resolveCircleActor(
+  request: FastifyRequest,
+  context: CircleContext,
+  nowMs?: number,
+): CircleActorResolution {
+  const actor = headerString(request.headers[ACTOR_HEADER]);
+  const timestamp = headerString(request.headers[ACTOR_TIMESTAMP_HEADER]);
+  const signature = headerString(request.headers[ACTOR_SIGNATURE_HEADER]);
+
+  if (!actor && !timestamp && !signature) return { status: "absent" };
+  if (!actor || !timestamp || !signature) return { status: "invalid" };
+
+  const adminKey = process.env.MIKOSHI_TRACKER_ADMIN_API_KEY;
+  if (!adminKey) return { status: "invalid" };
+
+  const ok = verifyActorAssertion({
+    adminKey,
+    timestamp,
+    actorExternalId: actor,
+    circleId: context.circle.id,
+    signature,
+    ...(nowMs !== undefined ? { nowMs } : {}),
+  });
+  return ok ? { status: "valid", actorExternalId: actor } : { status: "invalid" };
+}
+
+/** ¿Está activado el enforcement duro (Fase B)? Por defecto NO (Fase A). */
+export function actorEnforcementRequired(): boolean {
+  return process.env.MIKOSHI_TRACKER_REQUIRE_ACTOR === "1";
 }

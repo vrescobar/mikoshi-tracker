@@ -131,6 +131,20 @@ export async function findCircleMembershipByUserId(
   });
 }
 
+/**
+ * AUTH-3: la membresía del ACTOR dentro de un círculo, por su externalId (el
+ * identityId del kernel). Da userId + role para enforce "self-or-owner" en el
+ * servidor. findFirst (no findUnique) porque externalId es nullable.
+ */
+export async function findCircleMembershipByExternalId(
+  db: PrismaClient,
+  params: { circleId: string; externalId: string },
+) {
+  return db.circleMembership.findFirst({
+    where: { circleId: params.circleId, externalId: params.externalId },
+  });
+}
+
 export async function findCircleMembershipById(
   db: PrismaClient,
   params: { circleId: string; membershipId: string },

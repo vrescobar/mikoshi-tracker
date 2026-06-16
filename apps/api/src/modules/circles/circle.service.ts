@@ -18,6 +18,7 @@ import {
   createCircleHabitShareRecord,
   createCircleRecord,
   findCircleHabitShare,
+  findCircleMembershipByExternalId,
   findCircleMembershipById,
   findCircleMembershipByUserId,
   findCircleRecord,
@@ -623,6 +624,31 @@ async function assertCircleOwner(
   const membership = await findCircleMembershipByUserId(db, { circleId, userId });
   if (membership?.role !== "owner") {
     throw new CircleForbiddenError("Only the circle owner can perform this action");
+  }
+}
+
+/**
+ * AUTH-3 — enforcement server-side de actor en escrituras de círculo: el actor
+ * (verificado por aserción firmada del kernel) solo puede escribir como sí mismo
+ * o, si es el owner del círculo, sobre otros miembros. Sustituye al chequeo
+ * client-side del runner como límite real de aislamiento cross-user.
+ */
+export async function assertCircleSelfOrOwner(
+  { db }: CircleServiceDependencies,
+  params: { circleId: string; targetUserId: string; actorExternalId: string },
+): Promise<void> {
+  const actor = await findCircleMembershipByExternalId(db, {
+    circleId: params.circleId,
+    externalId: params.actorExternalId,
+  });
+  if (!actor) {
+    // El actor no es miembro de este círculo: fail-closed.
+    throw new CircleForbiddenError("Actor is not a member of this circle");
+  }
+  const selfOK = actor.userId === params.targetUserId;
+  const ownerOK = actor.role === "owner";
+  if (!selfOK && !ownerOK) {
+    throw new CircleForbiddenError("Actor may only write to their own habits");
   }
 }
 
