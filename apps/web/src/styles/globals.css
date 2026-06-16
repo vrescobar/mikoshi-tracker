@@ -26,6 +26,14 @@
   --color-accent-soft: #dbe8ee;
   --color-accent-ink: #f7fbfd;
 
+  /* Secondary accent reserved for nutrition surfaces ONLY (kcal/macro rings,
+     diet charts). Muted clay — a calm sibling of --color-warning, never used
+     for habits/system chrome. Keeps the palette to two restrained accents. */
+  --color-accent-diet: #a8743f;
+  --color-accent-diet-strong: #855a2e;
+  --color-accent-diet-soft: #f1e4d6;
+  --color-accent-diet-ink: #fdfaf6;
+
   --color-success: #2f6957;
   --color-success-soft: #dcece4;
   --color-warning: #8f5f2b;
@@ -58,6 +66,35 @@
 
   --line-body: 1.6;
   --line-title: 1.1;
+
+  /* Modular type scale (~1.22 ratio). Formalizes the previously ad-hoc per-
+     module sizes so headings, body, and chart labels share one rhythm. */
+  --text-xs: 0.78rem;
+  --text-sm: 0.9rem;
+  --text-base: 1rem;
+  --text-lg: 1.18rem;
+  --text-xl: 1.45rem;
+  --text-2xl: 1.85rem;
+  --text-3xl: 2.35rem;
+  --text-4xl: 3rem;
+
+  --weight-regular: 450;
+  --weight-medium: 550;
+  --weight-display: 650;
+
+  --tracking-tight: -0.03em;
+  --tracking-normal: 0;
+
+  /* Tabular, lining numerals for rings, streak counts, and chart axes so digits
+     stay aligned as values change. Apply via `font-variant-numeric`. */
+  --font-numeric: tabular-nums lining-nums;
+}
+
+/* Utility: opt elements (streak badges, goal rings, leaderboards) into tabular
+   numerals without repeating the declaration in every module. */
+.tnum,
+[data-tnum] {
+  font-variant-numeric: var(--font-numeric);
 }
 
 *,

@@ -56,7 +56,7 @@ test.describe("locale foundation", () => {
 
       await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
       await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "今天" })).toBeVisible();
-      await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "条目" })).toBeVisible();
+      await expect(page.getByTestId("app-shell-primary-nav").getByRole("link", { name: "习惯" })).toBeVisible();
       await expect(page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" })).toBeVisible();
       await expect(page.getByRole("button", { name: "退出登录" })).toBeVisible();
     });

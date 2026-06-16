@@ -21,21 +21,24 @@ export const routes = {
 
 export function getPrimaryAppNavigation(labels: {
   dashboard: string;
-  entries: string;
+  habits: string;
   circles: string;
   food: string;
+  settings: string;
 }) {
+  // Five-item, question-first primary nav: Today (what's now/done), Habits (is
+  // my system healthy), Diet (am I on track), Circles (what are others doing),
+  // Settings (configure everything). The generic entries list moves to a tab
+  // under Habits; /habits currently redirects to the entries view until the
+  // dedicated overview page lands.
   return [
     {
       href: routes.dashboard,
       label: labels.dashboard,
     },
-    // Phase 13 G-NAV-1: surface the generic entries list directly instead of
-    // the legacy "Habits" item. /habits keeps a server-side redirect to
-    // /entries?... for old URLs.
     {
-      href: routes.entries,
-      label: labels.entries,
+      href: routes.habits,
+      label: labels.habits,
     },
     {
       href: routes.food,
@@ -45,18 +48,20 @@ export function getPrimaryAppNavigation(labels: {
       href: routes.circles,
       label: labels.circles,
     },
-  ] as const;
-}
-
-export function getUtilityAppNavigation(
-  labels: { apiAccess: string; settings: string; admin: string },
-  options: { isAdmin?: boolean } = {},
-) {
-  return [
     {
       href: routes.settings,
       label: labels.settings,
     },
+  ] as const;
+}
+
+export function getUtilityAppNavigation(
+  labels: { apiAccess: string; admin: string },
+  options: { isAdmin?: boolean } = {},
+) {
+  // API access stays a quick utility link until the Settings tabs absorb it;
+  // Admin is appended only for operators (route itself is isAdmin-gated).
+  return [
     {
       href: routes.apiAccess,
       label: labels.apiAccess,

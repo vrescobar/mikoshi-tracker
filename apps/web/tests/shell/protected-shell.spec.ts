@@ -17,12 +17,12 @@ test("protected shell shows utility access and active desktop navigation", async
   await expect(apiAccessEntry).toHaveAttribute("data-accented", "true");
   await expect(apiAccessEntry).not.toHaveAttribute("aria-current", "page");
 
-  const entriesLink = primaryNav.getByRole("link", { name: "Entries" });
-  await entriesLink.focus();
-  await entriesLink.press("Enter");
-  await expect(page).toHaveURL(/\/entries/);
-  await expect(primaryNav.getByRole("link", { name: "Entries" })).toBeFocused();
-  await expect(primaryNav.getByRole("link", { name: "Entries" })).toHaveAttribute("aria-current", "page");
+  const circlesLink = primaryNav.getByRole("link", { name: "Circles" });
+  await circlesLink.focus();
+  await circlesLink.press("Enter");
+  await expect(page).toHaveURL(/\/circles/);
+  await expect(primaryNav.getByRole("link", { name: "Circles" })).toBeFocused();
+  await expect(primaryNav.getByRole("link", { name: "Circles" })).toHaveAttribute("aria-current", "page");
 
   const apiAccessLink = utilityNav.getByRole("link", { name: "API Access" });
   await apiAccessLink.focus();
@@ -50,14 +50,14 @@ test.describe("mobile shell", () => {
     await expect(page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" })).toBeVisible();
     await expect(mobileNav.getByRole("link", { name: "今天" })).toHaveAttribute("aria-current", "page");
 
-    const mobileEntriesLink = mobileNav.getByRole("link", { name: "条目" });
-    await mobileEntriesLink.focus();
-    await mobileEntriesLink.press("Enter");
-    await expect(page).toHaveURL(/\/entries/);
-    await expect(mobileEntriesLink.locator("span").last()).toBeVisible();
-    await expect(mobileEntriesLink.locator("span").last()).toHaveText("条目");
-    await expect(mobileNav.getByRole("link", { name: "条目" })).toBeFocused();
-    await expect(mobileNav.getByRole("link", { name: "条目" })).toHaveAttribute("aria-current", "page");
+    const mobileCirclesLink = mobileNav.getByRole("link", { name: "圈子" });
+    await mobileCirclesLink.focus();
+    await mobileCirclesLink.press("Enter");
+    await expect(page).toHaveURL(/\/circles/);
+    await expect(mobileCirclesLink.locator("span").last()).toBeVisible();
+    await expect(mobileCirclesLink.locator("span").last()).toHaveText("圈子");
+    await expect(mobileNav.getByRole("link", { name: "圈子" })).toBeFocused();
+    await expect(mobileNav.getByRole("link", { name: "圈子" })).toHaveAttribute("aria-current", "page");
 
     const mobileApiAccessLink = page.getByTestId("app-shell-utility-nav").getByRole("link", { name: "API 访问" });
     await mobileApiAccessLink.focus();
