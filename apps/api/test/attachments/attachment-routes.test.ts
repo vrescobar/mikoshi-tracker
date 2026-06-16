@@ -290,6 +290,11 @@ describe("attachment routes", () => {
     });
     expect(download.statusCode).toBe(200);
     expect(download.headers["content-type"]).toBe("image/jpeg");
+    // The full file bytes must actually come back — a prior bug streamed the file
+    // with a manual Content-Length and sent an EMPTY body (broken full-size image).
+    const storedRow = await context.app.db.attachment.findUniqueOrThrow({ where: { id: attachmentId } });
+    expect(download.rawPayload.length).toBeGreaterThan(0);
+    expect(download.rawPayload.length).toBe(storedRow.size);
 
     // Simulate the backing file vanishing from disk.
     const row = await context.app.db.attachment.findUniqueOrThrow({ where: { id: attachmentId } });

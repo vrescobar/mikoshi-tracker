@@ -28,7 +28,6 @@ import {
   uploadAttachments,
   type AttachmentDependencies,
 } from "./attachment.service";
-import { openFileStream } from "./attachment.storage";
 
 function dependencies(request: FastifyRequest): AttachmentDependencies {
   return {
@@ -242,17 +241,16 @@ export async function downloadAttachmentHandler(request: FastifyRequest, reply: 
 
     reply.header("Cache-Control", "private, max-age=31536000, immutable");
 
-    if (wantsResize) {
-      const { readFile } = await import("node:fs/promises");
-      const resized = await renderResized(await readFile(absolutePath), requestedWidth);
-      reply.type(attachment.mimeType);
-      reply.send(resized);
-      return;
-    }
-
+    const { readFile } = await import("node:fs/promises");
+    const bytes = await readFile(absolutePath);
+    // Send the (bounded, already-downscaled) image as a Buffer so Fastify sets a
+    // correct Content-Length. The previous raw path streamed the file with a
+    // manually-set Content-Length and sent an EMPTY body — the full-size image
+    // showed as broken; thumbnails worked only because the ?w resize path
+    // re-encodes to a Buffer.
+    const payload = wantsResize ? await renderResized(bytes, requestedWidth) : bytes;
     reply.type(attachment.mimeType);
-    reply.header("Content-Length", attachment.size);
-    reply.send(openFileStream(absolutePath));
+    reply.send(payload);
   } catch (error) {
     if (error instanceof AuthSessionError) {
       sendAuthError(reply, error);
