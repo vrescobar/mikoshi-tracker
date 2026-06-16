@@ -5,7 +5,20 @@ vi.mock("../../locale", () => ({ useLocale: () => ({ locale: "en" }) }));
 vi.mock("../../ui", () => ({}));
 vi.mock("../../../lib/navigation", () => ({ routes: {} }));
 vi.mock("../../../lib/i18n/food", () => ({
-  getFoodCopy: () => ({ detail: { edit: {}, mealSlots: {}, fields: {}, sources: {}, mutations: { types: {}, sources: {} }, photo: {}, deleteSection: {}, header: {}, backToFood: "" }, page: { card: {} } }),
+  getFoodCopy: () => ({
+    detail: {
+      edit: {},
+      mealSlots: {},
+      fields: {},
+      sources: {},
+      mutations: { types: {}, sources: {} },
+      photo: {},
+      deleteSection: {},
+      header: {},
+      backToFood: "",
+    },
+    page: { card: {} },
+  }),
 }));
 vi.mock("../../../lib/auth-client", () => ({
   attachmentFileUrl: (id: string) => `/api/attachments/${id}/file`,
@@ -21,7 +34,13 @@ vi.mock("../../../lib/food-client", () => ({
 import type { EntryEventDetail, EventMutationRecord } from "@mikoshi-tracker/contracts/events";
 import type { FoodPayload } from "../../../lib/food-client";
 
-import { type EditState, editStateToPayload, isDeleted, validateEditState } from "../food-detail-page";
+import {
+  type EditState,
+  editStateToPayload,
+  isDeleted,
+  payloadToEditState,
+  validateEditState,
+} from "../food-detail-page";
 
 const basePayload: FoodPayload = {
   name: "Test Meal",
@@ -39,6 +58,30 @@ const basePayload: FoodPayload = {
   sources: null,
   notes: "Tasty",
 };
+
+describe("payloadToEditState — skill payloads with omitted optional macros", () => {
+  it("maps omitted (undefined) optional fields to empty strings, never 'undefined'", () => {
+    // A real skill-logged payload omits sugar_g/portion_g entirely.
+    const skillPayload = {
+      name: "2 albaricoques",
+      kcal: 48,
+      protein_g: 1.4,
+      carbs_g: 11.1,
+      fat_g: 0.4,
+      fiber_g: 2,
+      mealSlot: "snack",
+      source: "manual",
+      confidence: 1,
+      notes: null,
+    } as unknown as FoodPayload;
+
+    const state = payloadToEditState(skillPayload);
+    expect(state.sugar_g).toBe("");
+    expect(state.portion_g).toBe("");
+    expect(state.fiber_g).toBe("2");
+    expect(state.name).toBe("2 albaricoques");
+  });
+});
 
 const baseEditState: EditState = {
   name: "Test Meal",
@@ -162,15 +205,21 @@ describe("validateEditState", () => {
   });
 
   it("returns validationMacro when protein_g is negative", () => {
-    expect(validateEditState({ ...baseEditState, protein_g: "-5" }, mockEditCopy)).toBe("Macro values must be 0 or higher.");
+    expect(validateEditState({ ...baseEditState, protein_g: "-5" }, mockEditCopy)).toBe(
+      "Macro values must be 0 or higher.",
+    );
   });
 
   it("returns validationMacro when carbs_g is NaN", () => {
-    expect(validateEditState({ ...baseEditState, carbs_g: "bad" }, mockEditCopy)).toBe("Macro values must be 0 or higher.");
+    expect(validateEditState({ ...baseEditState, carbs_g: "bad" }, mockEditCopy)).toBe(
+      "Macro values must be 0 or higher.",
+    );
   });
 
   it("returns validationMacro when fat_g is negative", () => {
-    expect(validateEditState({ ...baseEditState, fat_g: "-0.1" }, mockEditCopy)).toBe("Macro values must be 0 or higher.");
+    expect(validateEditState({ ...baseEditState, fat_g: "-0.1" }, mockEditCopy)).toBe(
+      "Macro values must be 0 or higher.",
+    );
   });
 
   it("accepts 0 as a valid kcal value", () => {

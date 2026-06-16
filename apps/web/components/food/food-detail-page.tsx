@@ -46,7 +46,7 @@ export type EditState = {
   notes: string;
 };
 
-function payloadToEditState(p: FoodPayload): EditState {
+export function payloadToEditState(p: FoodPayload): EditState {
   return {
     name: p.name,
     kcal: String(p.kcal),
