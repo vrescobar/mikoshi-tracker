@@ -1,8 +1,41 @@
-# Open design issue — Mikoshi never delivers the photo to the food skill
+# RESOLVED — the food skill now receives photos via the kernel media contract
 
-**Status:** open · architectural · needs a Mikoshi-side rework
+**Status:** ✅ resolved 2026-06-16 (same day it was found) · contract now enforced
 **Found:** 2026-06-16 (debugging "I send a meal photo on WhatsApp but it never shows")
 **Scope:** `mikoshi-tracker-food` skill ⇄ Mikoshi kernel media contract
+
+## Resolution (TL;DR)
+
+The kernel **already** implements a media contract — `attachment_ref` (opaque
+handle `att_N`) → `SkillToolExecutor` resolves + pre-copies the file into the
+per-call workspace → the runner reads it by name. The food skill was simply
+written to a *different*, non-existent contract (`image_base64`). The fix is
+skill-side only; **no kernel change was needed**:
+
+1. **Manifest** — `food_log_from_input` now declares `attachment_ref` (string)
+   instead of `image_base64`. The model passes the chat handle; the kernel does
+   the rest.
+2. **Runner** — `lib/tiers.ts::resolveWorkspaceImage()` reads the pre-copied file
+   from `MIKOSHI_WORKSPACE_DIR` (via `input.inputs[0].name`), base64-encodes it
+   once, and feeds it to BOTH the tier pipeline (OCR/vision) AND
+   `uploadFoodPhoto()`. `image_base64` is still accepted in-code for direct
+   callers (web "add food", tests) — additive, not a parallel model-facing API.
+3. **Enforcement** — `skillSchema.ts` now rejects any skill tool that declares a
+   base64-media param (`image_base64`, `photo_base64`, …) at load time, pointing
+   authors back to `docs/design/skills.md` → "Receiving an image / file in your
+   skill". So this class of mistake cannot ship again.
+4. **Docs/directive** — `docs/design/skills.md` documents the REQUIRED contract
+   for all future media-handling extensions, with `skills/remarkable` and this
+   skill as reference implementations.
+
+Verified end-to-end: a kernel-shaped envelope (`workspaceDir` + pre-copied
+`inputs[]`) → `photo_attached: true` + an `Attachment` row linked to the meal;
+the vision tier runs on the delivered bytes. Resending an old WhatsApp photo
+message now flows through the same path and attaches correctly.
+
+---
+
+## Original report (kept for the record)
 
 ## Symptom
 

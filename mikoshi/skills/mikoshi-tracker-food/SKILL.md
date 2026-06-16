@@ -33,12 +33,12 @@ metadata:
             input:
               type: string
               description: "Texto que describe la comida (p.ej. 'comí arroz con pollo', 'foto del plato')"
-            image_base64:
+            attachment_ref:
               type: string
-              description: "Imagen en base64 (para OCR de etiqueta nutricional o análisis visual)"
+              description: "Handle de la foto adjunta (att_1, att_2…) que el usuario mandó por WhatsApp. Pásalo cuando haya una imagen del plato o la etiqueta: el skill la usa para OCR/visión y la adjunta a la comida. NO intentes poner la imagen en base64; pasa solo el handle."
             image_mime_type:
               type: string
-              description: "MIME type de la imagen, p.ej. image/jpeg (por defecto image/jpeg)"
+              description: "MIME type de la imagen, p.ej. image/jpeg (opcional; se deduce del adjunto)"
             manual:
               type: boolean
               description: "Si true, registra directamente con los valores proporcionados sin ejecutar el pipeline"
@@ -197,8 +197,8 @@ información que se le envía.
 Úsala cuando el usuario quiera registrar lo que comió:
 
 - "Comí una manzana." → `{ input: "manzana" }`
-- "Aquí la foto de mi etiqueta." → `{ input: "etiqueta de avena", image_base64: "...", image_mime_type: "image/jpeg" }`
-- "Foto del plato de pasta." → `{ input: "pasta carbonara", image_base64: "..." }`
+- "Aquí la foto de mi etiqueta." → `{ input: "etiqueta de avena", attachment_ref: "att_1" }`
+- "Foto del plato de pasta." → `{ input: "pasta carbonara", attachment_ref: "att_1" }`
 - "Quiero registrar manualmente: 350 kcal, 20g proteína, 40g carbos, 10g grasa." → `{ manual: true, name: "Comida", kcal: 350, protein_g: 20, carbs_g: 40, fat_g: 10 }`
 
 **Hora: asume "ahora", no preguntes.** Si el usuario no dice cuándo comió, **no
@@ -209,9 +209,13 @@ usuario indique explícitamente otro momento ("esta mañana", "ayer a las 9").
 **No** fuerces `meal_slot`: déjalo vacío salvo que el usuario nombre la franja
 ("para desayunar", "en la cena"); el servidor la deduce de la hora del registro.
 
-**Si el usuario manda una foto del plato o la etiqueta**, pásala en
-`image_base64`: además de analizarla, la foto se **adjunta automáticamente** a la
-comida y se ve en el tracker (la respuesta trae `photo_attached: true`).
+**Si el usuario manda una foto del plato o la etiqueta**, pasa su handle en
+`attachment_ref` (att_1, att_2…). El skill lee la imagen del adjunto, la usa para
+OCR/visión y, además, la **adjunta automáticamente** a la comida para que se vea
+en el tracker (la respuesta trae `photo_attached: true`). Tú **nunca** manejas los
+bytes de la imagen: solo pasas el handle del adjunto; Mikoshi entrega el fichero
+al skill. Si el usuario manda foto pero no texto, pasa igualmente `attachment_ref`
+y un `input` breve si lo intuyes ("foto del plato").
 
 **Flujo de confirmación (no pierdas comidas):** Si el skill devuelve
 `action: "pending_confirmation"`, presenta la propuesta y espera respuesta. En

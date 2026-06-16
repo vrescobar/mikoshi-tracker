@@ -12,6 +12,8 @@
  * run.ts is a thin stdin/stdout shim around runFoodSkill().
  */
 
+import { readFileSync, existsSync } from "node:fs";
+import { join } from "node:path";
 import {
   ensureFoodEntry,
   postFoodEvent,
@@ -48,10 +50,18 @@ export interface CallerInfo {
 export interface FoodLogInput {
   /** Free-text description of the food */
   input?: string;
-  /** Base64-encoded image */
+  /**
+   * Opaque handle (att_1, att_2, …) of a photo the user sent over WhatsApp.
+   * The kernel resolves it into a workspace file (see resolveWorkspaceImage);
+   * the model never has the raw bytes, so this is how a chat photo reaches us.
+   */
+  attachment_ref?: string;
+  /** Base64-encoded image (direct callers: web "add food", tests). */
   image_base64?: string;
   /** MIME type of the image, e.g. "image/jpeg" */
   image_mime_type?: string;
+  /** Original filename for the attached photo (defaults to "meal.jpg"). */
+  image_filename?: string;
   /** If true, register directly with the provided nutritional values */
   manual?: boolean;
   /** Manual/confirmed payload fields */
@@ -123,6 +133,69 @@ async function callTextProxy(
 }
 
 const safeParseJson = safeParseJsonObject;
+
+// ---------------------------------------------------------------------------
+// Media delivery — Mikoshi's kernel contract
+// ---------------------------------------------------------------------------
+// Mikoshi never hands a skill raw image bytes. When the user sends a photo over
+// WhatsApp, the model only sees an opaque handle (att_1, att_2, …) which it
+// passes in `attachment_ref`. SkillToolExecutor resolves that handle into
+// `input.inputs[].{ name, mediaFileId }` and PRE-COPIES the file into the
+// per-call workspace as `<name>`. So the bytes arrive on disk, not in the JSON.
+// We read the pre-copied file here and base64-encode it once, feeding the same
+// bytes to the tier pipeline (OCR/vision) AND to the photo-attach step.
+// See DESIGN-ISSUE-media-delivery.md and docs/design/skills.md in the kernel.
+
+const MIME_BY_EXT: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+};
+
+function mimeFromName(name: string): string {
+  const dot = name.lastIndexOf(".");
+  const ext = dot >= 0 ? name.slice(dot).toLowerCase() : "";
+  return MIME_BY_EXT[ext] ?? "image/jpeg";
+}
+
+interface WorkspaceImage {
+  base64: string;
+  mimeType: string;
+  name: string;
+}
+
+/**
+ * Resolves a photo the kernel pre-copied into the call workspace from an
+ * `attachment_ref`. Mirrors the reMarkable skill's pattern: read
+ * `input.inputs[0].name` and load it from `workspaceDir`. Best-effort — returns
+ * null if no workspace, no inputs, or the file can't be read, so a missing photo
+ * never breaks logging the meal.
+ */
+export function resolveWorkspaceImage(envelope: FoodEnvelope): WorkspaceImage | null {
+  const { workspaceDir, input } = envelope;
+  if (!workspaceDir) return null;
+  const inputs = input["inputs"];
+  if (!Array.isArray(inputs)) return null;
+  const first = inputs.find(
+    (i): i is Record<string, unknown> =>
+      i !== null && typeof i === "object" && typeof (i as Record<string, unknown>)["name"] === "string",
+  );
+  if (!first) return null;
+  const name = first["name"] as string;
+  const filePath = join(workspaceDir, name);
+  if (!existsSync(filePath)) return null;
+  try {
+    const base64 = readFileSync(filePath).toString("base64");
+    if (!base64) return null;
+    return { base64, mimeType: mimeFromName(name), name };
+  } catch {
+    return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Tier 0 — classification
@@ -387,7 +460,7 @@ async function runTierPipeline(
 async function attachPhotoIfPresent(env: FoodEnv, eventId: string, input: FoodLogInput): Promise<boolean> {
   if (!input.image_base64) return false;
   try {
-    await uploadFoodPhoto(env, eventId, input.image_base64, "meal");
+    await uploadFoodPhoto(env, eventId, input.image_base64, input.image_filename ?? "meal.jpg");
     return true;
   } catch {
     return false;
@@ -473,7 +546,7 @@ async function handleFoodLog(
   if (!textInput && !hasImage) {
     return {
       status: "failed",
-      error: "Se requiere texto de entrada (`input`) o imagen (`image_base64`), o usa `manual: true`.",
+      error: "Se requiere texto de entrada (`input`) o una foto (`attachment_ref`), o usa `manual: true`.",
     };
   }
 
@@ -707,7 +780,19 @@ export async function runFoodSkill(
 
   try {
     if (tool === "food_log_from_input") {
-      return await handleFoodLog(input as FoodLogInput, fullEnv);
+      const logInput = input as FoodLogInput;
+      // Bridge the kernel media contract: if the user sent a photo over
+      // WhatsApp (attachment_ref → workspace file) and no inline base64 was
+      // given, load the pre-copied file so OCR/vision + photo-attach can run.
+      if (!logInput.image_base64) {
+        const img = resolveWorkspaceImage(envelope);
+        if (img) {
+          logInput.image_base64 = img.base64;
+          logInput.image_mime_type = logInput.image_mime_type ?? img.mimeType;
+          logInput.image_filename = logInput.image_filename ?? img.name;
+        }
+      }
+      return await handleFoodLog(logInput, fullEnv);
     }
     if (tool === "food_query_range") {
       return await handleFoodQuery(input as unknown as FoodQueryInput, foodApiEnv);

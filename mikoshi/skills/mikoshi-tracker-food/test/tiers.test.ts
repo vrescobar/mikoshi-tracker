@@ -6,7 +6,10 @@
  *  - Replacing global.fetch to intercept Claude and Brave API calls
  */
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from "bun:test";
-import { runFoodSkill, type FoodEnvelope } from "../lib/tiers.js";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { runFoodSkill, resolveWorkspaceImage, type FoodEnvelope } from "../lib/tiers.js";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -682,6 +685,113 @@ describe("unknown tool", () => {
     const result = await runFoodSkill(makeEnvelope("food_unknown_tool", {}), makeEnv());
     expect(result.status).toBe("failed");
     expect((result as { status: "failed"; error: string }).error).toMatch(/desconocida/i);
+  });
+});
+
+// ─── Kernel media delivery (attachment_ref → workspace file) ──────────────────
+
+describe("workspace image (kernel media contract)", () => {
+  // Simulate what SkillToolExecutor does: resolve attachment_ref → inputs[] and
+  // pre-copy the bytes into the per-call workspace as <name>. The skill never
+  // sees raw bytes in the JSON — only the on-disk file + the inputs[] handle.
+  function seedWorkspace(fileName: string, bytes: Buffer): { workspaceDir: string } {
+    const workspaceDir = mkdtempSync(join(tmpdir(), "food-ws-"));
+    writeFileSync(join(workspaceDir, fileName), bytes);
+    return { workspaceDir };
+  }
+
+  test("resolveWorkspaceImage reads the pre-copied file and sniffs the mime", () => {
+    const { workspaceDir } = seedWorkspace("attachment_att_1.png", Buffer.from("PNGDATA"));
+    const envelope: FoodEnvelope = {
+      tool: "food_log_from_input",
+      input: { input: "tostada", inputs: [{ name: "attachment_att_1.png", mediaFileId: "mf-1" }] },
+      workspaceDir,
+    };
+    const img = resolveWorkspaceImage(envelope);
+    expect(img).not.toBeNull();
+    expect(img!.mimeType).toBe("image/png");
+    expect(img!.name).toBe("attachment_att_1.png");
+    expect(Buffer.from(img!.base64, "base64").toString()).toBe("PNGDATA");
+  });
+
+  test("resolveWorkspaceImage returns null when no workspace / no inputs", () => {
+    expect(resolveWorkspaceImage({ tool: "food_log_from_input", input: {} })).toBeNull();
+    const { workspaceDir } = seedWorkspace("x.jpg", Buffer.from("x"));
+    // inputs present but the named file is absent → null (best-effort, never throws)
+    expect(
+      resolveWorkspaceImage({
+        tool: "food_log_from_input",
+        input: { inputs: [{ name: "missing.jpg", mediaFileId: "mf" }] },
+        workspaceDir,
+      }),
+    ).toBeNull();
+  });
+
+  test("a WhatsApp photo (attachment_ref → workspace file) is attached to the meal", async () => {
+    trackerResponseOverride = (_req, pathname) => {
+      if (pathname === "/attachments/event") {
+        return Response.json({ attachment: { id: "att-ws", url: "/api/attachments/att-ws/file" } }, { status: 201 });
+      }
+      return null;
+    };
+    const { workspaceDir } = seedWorkspace("attachment_att_1.jpg", Buffer.from("realjpegbytes"));
+
+    // Manual log + a workspace-delivered photo, no inline base64 anywhere.
+    const result = await runFoodSkill(
+      {
+        tool: "food_log_from_input",
+        input: {
+          manual: true,
+          name: "Albaricoques",
+          kcal: 48,
+          protein_g: 1.4,
+          carbs_g: 11,
+          fat_g: 0.4,
+          inputs: [{ name: "attachment_att_1.jpg", mediaFileId: "mf-1" }],
+        },
+        workspaceDir,
+      },
+      makeEnv(),
+    );
+
+    expect(result.status).toBe("succeeded");
+    if (result.status !== "succeeded") return;
+    expect((result.output as Record<string, unknown>).photo_attached).toBe(true);
+    const attachCall = requestLog.find((r) => r.method === "POST" && r.path === "/attachments/event");
+    expect(attachCall).toBeTruthy();
+    // The real bytes from the workspace file (not an empty string) were uploaded,
+    // tagged with the original filename.
+    const attachBody = attachCall!.body as { data?: string; originalName?: string };
+    expect(Buffer.from(attachBody.data ?? "", "base64").toString()).toBe("realjpegbytes");
+    expect(attachBody.originalName).toBe("attachment_att_1.jpg");
+  });
+
+  test("a workspace photo turns on the vision tier for a dish (hasImage=true)", async () => {
+    const { workspaceDir } = seedWorkspace("attachment_att_1.jpg", Buffer.from("dishphoto"));
+    // Tier 0 → dish, Tier 2 empty history (no Claude call), Tier 3 skipped (no Brave),
+    // Tier 4 vision runs ONLY because the workspace image made hasImage=true.
+    fetchQueue.push(
+      claudeText({ classification: "dish", food_name: "Paella", meal_slot: null, notes: null }),
+    );
+    fetchQueue.push(
+      claudeText({ name: "Paella", description: "rice", kcal: 380, protein_g: 22, carbs_g: 50, fat_g: 9, confidence: 0.45 }),
+    );
+
+    const result = await runFoodSkill(
+      {
+        tool: "food_log_from_input",
+        input: { input: "paella", inputs: [{ name: "attachment_att_1.jpg", mediaFileId: "mf-1" }] },
+        workspaceDir,
+      },
+      makeEnv({ brave: false }),
+    );
+
+    expect(result.status).toBe("succeeded");
+    if (result.status !== "succeeded") return;
+    const out = result.output as Record<string, unknown>;
+    expect(out.action).toBe("pending_confirmation");
+    expect(out.tier).toBe(4); // vision tier reached → proves the image was delivered
+    expect(fetchQueue).toHaveLength(0);
   });
 });
 
