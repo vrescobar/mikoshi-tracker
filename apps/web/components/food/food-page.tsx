@@ -1,14 +1,14 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
 import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
-import { Link } from "react-router";
 import { useEffect, useState } from "react";
 
+import { sendChartToWhatsApp } from "../../lib/diet-client";
 import { listFoodEvents } from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
-import { routes } from "../../lib/navigation";
 import { ProposalDialog } from "../ai/ProposalDialog";
 import { useLocale } from "../locale";
-import { Button, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
+import { Button, Icon, InlineStatus, StatePanel } from "../ui";
+import { FoodSearchBox } from "./food-search-box";
 import { FoodSummaryCard } from "./food-summary-card";
 import { FoodEventCard } from "./FoodEventCard";
 import { RepeatsPanel } from "./RepeatsPanel";
@@ -19,6 +19,12 @@ type FoodPageProps = {
   dateKey: string;
   timeZone?: string;
   initialRepeats?: AggregationResponse | null;
+};
+
+const CHART_COPY = {
+  en: { send: "Send chart to WhatsApp", sending: "Sending…", sent: "Chart sent to WhatsApp.", failed: "Couldn't send the chart." },
+  "zh-CN": { send: "发送图表到 WhatsApp", sending: "发送中…", sent: "图表已发送到 WhatsApp。", failed: "无法发送图表。" },
+  es: { send: "Enviar gráfica por WhatsApp", sending: "Enviando…", sent: "Gráfica enviada por WhatsApp.", failed: "No se pudo enviar la gráfica." },
 };
 
 // Resolve "today" in the user's timezone (matching how the API buckets dateKey).
@@ -33,110 +39,87 @@ function todayDateKey(timeZone?: string) {
   }).format(new Date());
 }
 
-export function FoodPage({
-  initialEvents,
-  dateKey,
-  timeZone,
-  initialRepeats = null,
-}: FoodPageProps) {
+export function FoodPage({ initialEvents, dateKey, timeZone, initialRepeats = null }: FoodPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale);
+  const chartCopy = CHART_COPY[locale];
   const [events, setEvents] = useState(initialEvents);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [chartStatus, setChartStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const resolvedDateKey = todayDateKey(timeZone);
 
   useEffect(() => {
-    const clientToday = todayDateKey(timeZone);
-    if (clientToday !== dateKey) {
+    if (resolvedDateKey !== dateKey) {
       setLoading(true);
-      void listFoodEvents(clientToday, clientToday).then((result) => {
+      void listFoodEvents(resolvedDateKey, resolvedDateKey).then((result) => {
         setEvents(result.items);
         setLoading(false);
       });
     }
-  }, [dateKey, timeZone]);
+  }, [dateKey, resolvedDateKey]);
+
+  async function refetchToday() {
+    const result = await listFoodEvents(resolvedDateKey, resolvedDateKey).catch(() => null);
+    if (result) setEvents(result.items);
+  }
+
+  async function sendChart() {
+    setChartStatus("sending");
+    try {
+      const result = await sendChartToWhatsApp("macro-donut", "7d");
+      setChartStatus(result.delivered ? "sent" : "error");
+    } catch {
+      setChartStatus("error");
+    }
+  }
 
   const sorted = [...events].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
 
   return (
     <div className={styles.stack} data-testid="food-page">
-      <Surface variant="hero">
-        <PageFrame>
-          <PageHeader
-            eyebrow={copy.page.header.eyebrow}
-            title={copy.page.header.title}
-            description={copy.page.header.description}
-          />
+      <div className={styles.toolbar}>
+        <Button type="button" size="lg" onClick={() => setDialogOpen(true)}>
+          <Icon name="plus" size="1.05rem" strokeWidth={2.4} />
+          {copy.page.toolbar.addFood}
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => void sendChart()} disabled={chartStatus === "sending"}>
+          {chartStatus === "sending" ? chartCopy.sending : chartCopy.send}
+        </Button>
+      </div>
 
-          <div className={styles.toolbar}>
-            <Surface variant="soft" padding="md" className={styles.toolbarPanel}>
-              <div className={styles.toolbarTop}>
-                <div className={styles.toolbarIntro}>
-                  <span className={styles.toolbarLabel}>{copy.page.toolbar.dateLabel}</span>
-                </div>
-                <div className={styles.toolbarActions}>
-                  <Link to={routes.foodInsights} className={styles.insightsLink}>
-                    Insights →
-                  </Link>
-                  <Button
-                    type="button"
-                    size="lg"
-                    onClick={() => setDialogOpen(true)}
-                  >
-                    {copy.page.toolbar.addFood}
-                  </Button>
-                </div>
-              </div>
-            </Surface>
-          </div>
-        </PageFrame>
-      </Surface>
+      {chartStatus === "sent" ? <InlineStatus tone="success" title={chartCopy.sent} /> : null}
+      {chartStatus === "error" ? <InlineStatus tone="danger" title={chartCopy.failed} /> : null}
+
+      {events.length > 0 ? <FoodSummaryCard events={events} /> : null}
+
+      <FoodSearchBox onLogged={() => void refetchToday()} />
+
+      <RepeatsPanel
+        aggregations={initialRepeats}
+        copy={{
+          title: copy.page.repeats.title,
+          description: copy.page.repeats.description,
+          empty: copy.page.repeats.empty,
+          logAgain: copy.page.repeats.logAgain,
+          logging: copy.page.repeats.logging,
+          errorTitle: copy.page.repeats.errorTitle,
+          countLabel: (count) => `${count}×`,
+        }}
+        onLogged={(event) => {
+          setEvents((prev) => [...prev, event]);
+        }}
+      />
 
       {events.length > 0 ? (
-        <div className={styles.body}>
-          <FoodSummaryCard events={events} />
-
-          <RepeatsPanel
-            aggregations={initialRepeats}
-            copy={{
-              title: copy.page.repeats.title,
-              description: copy.page.repeats.description,
-              empty: copy.page.repeats.empty,
-              logAgain: copy.page.repeats.logAgain,
-              logging: copy.page.repeats.logging,
-              errorTitle: copy.page.repeats.errorTitle,
-              countLabel: (count) => `${count}×`,
-            }}
-            onLogged={(event) => {
-              setEvents((prev) => [...prev, event]);
-            }}
-          />
-
-          <div className={styles.list} aria-busy={loading}>
-            {sorted.map((ev) => (
-              <FoodEventCard key={ev.id} event={ev} />
-            ))}
-          </div>
+        <div className={styles.list} aria-busy={loading}>
+          {sorted.map((ev) => (
+            <FoodEventCard key={ev.id} event={ev} />
+          ))}
         </div>
       ) : (
-        <div className={styles.body}>
-          <RepeatsPanel
-            aggregations={initialRepeats}
-            copy={{
-              title: copy.page.repeats.title,
-              description: copy.page.repeats.description,
-              empty: copy.page.repeats.empty,
-              logAgain: copy.page.repeats.logAgain,
-              logging: copy.page.repeats.logging,
-              errorTitle: copy.page.repeats.errorTitle,
-              countLabel: (count) => `${count}×`,
-            }}
-            onLogged={(event) => {
-              setEvents((prev) => [...prev, event]);
-            }}
-          />
-          <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
-        </div>
+        <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
       )}
 
       <ProposalDialog

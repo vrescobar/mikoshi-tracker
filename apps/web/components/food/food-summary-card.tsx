@@ -67,6 +67,10 @@ export function FoodSummaryCard({ events }: FoodSummaryCardProps) {
   const ringLabel = target ? `${Math.round((totals.kcal / target) * 100)}%` : String(Math.round(totals.kcal));
   const ringSub = target ? `${Math.round(totals.kcal)} ${copy.of} ${target}` : "kcal";
   const remaining = target ? Math.round(target - totals.kcal) : null;
+  // On-track (within the goal) reads as the calm system green; over budget or
+  // goal-less falls back to the diet coral so "over" is unmistakable.
+  const onTrack = target != null && totals.kcal <= target;
+  const ringColor = onTrack ? "var(--color-accent)" : "var(--color-accent-diet)";
 
   return (
     <div className={styles.wrap}>
@@ -78,7 +82,7 @@ export function FoodSummaryCard({ events }: FoodSummaryCardProps) {
           </span>
         </div>
         <div className={styles.ringRow}>
-          <ProgressRing value={ringValue} label={ringLabel} sublabel={ringSub} color="var(--color-accent-diet)" />
+          <ProgressRing value={ringValue} label={ringLabel} sublabel={ringSub} color={ringColor} />
           {remaining !== null ? (
             <p className={styles.remaining}>
               <span className={styles.remainingValue}>{Math.abs(remaining)}</span>

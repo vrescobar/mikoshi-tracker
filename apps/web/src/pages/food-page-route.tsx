@@ -1,4 +1,4 @@
-import { FoodPage } from "../../components/food/food-page";
+import { DietPage } from "../../components/food/diet-page";
 import { shiftDays, todayKeyInTimeZone } from "../../lib/dates";
 import { getRepeatedFoodMeals, listFoodEvents } from "../../lib/food-client";
 import { useSession } from "../auth/session";
@@ -28,7 +28,7 @@ export default function FoodPageRoute() {
   return (
     <PageBoundary state={state}>
       {(data) => (
-        <FoodPage
+        <DietPage
           initialEvents={data.events}
           dateKey={today}
           timeZone={timezone}
