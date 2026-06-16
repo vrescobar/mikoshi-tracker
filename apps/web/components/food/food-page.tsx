@@ -1,24 +1,25 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
-import type { EntryEventDetail, EntryEventRecord } from "@mikoshi-tracker/contracts/events";
+import type { FoodDayMeal, FoodDayResponse } from "@mikoshi-tracker/contracts/food";
+import type { TodayMealSlot } from "@mikoshi-tracker/contracts/today";
 import { useEffect, useState } from "react";
 
-import { sendChartToWhatsApp } from "../../lib/diet-client";
-import { listFoodEvents } from "../../lib/food-client";
+import { shiftDays, todayKeyInTimeZone } from "../../lib/dates";
+import { sendChartToWhatsApp, getFoodDay } from "../../lib/diet-client";
+import { getFoodAggregations } from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { ProposalDialog } from "../ai/ProposalDialog";
 import { useLocale } from "../locale";
-import { Button, Icon, InlineStatus, StatePanel } from "../ui";
-import { FoodSearchBox } from "./food-search-box";
-import { FoodSummaryCard } from "./food-summary-card";
-import { FoodEventCard } from "./FoodEventCard";
-import { RepeatsPanel } from "./RepeatsPanel";
+import { Button, Icon, InlineStatus, StatePanel, Surface } from "../ui";
+import { DietMealCard } from "./diet-meal-card";
+import { DietProgressCard } from "./diet-progress-card";
+import { KcalTrend } from "./KcalTrend";
 import styles from "./food-page.module.css";
 
 type FoodPageProps = {
-  initialEvents: EntryEventRecord[];
+  initialDay: FoodDayResponse;
+  initialTrend: AggregationResponse | null;
   dateKey: string;
   timeZone?: string;
-  initialRepeats?: AggregationResponse | null;
 };
 
 const CHART_COPY = {
@@ -42,55 +43,64 @@ const CHART_COPY = {
   },
 };
 
-// Resolve "today" in the user's timezone (matching how the API buckets dateKey).
-// A naive UTC date would disagree with the server's dateKey near midnight and trigger
-// a spurious refetch for the wrong day, hiding events that exist for the real today.
-function todayDateKey(timeZone?: string) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timeZone && timeZone.length > 0 ? timeZone : undefined,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+// Render order for meal-slot groups in the day view.
+const SLOT_ORDER: TodayMealSlot[] = ["breakfast", "lunch", "snack", "dinner", "other"];
+
+function groupBySlot(meals: FoodDayMeal[]): Array<{ slot: TodayMealSlot; meals: FoodDayMeal[] }> {
+  const bySlot = new Map<TodayMealSlot, FoodDayMeal[]>();
+  for (const meal of meals) {
+    const slot = (meal.payload.mealSlot ?? "other") as TodayMealSlot;
+    const list = bySlot.get(slot) ?? [];
+    list.push(meal);
+    bySlot.set(slot, list);
+  }
+  return SLOT_ORDER.filter((s) => bySlot.has(s)).map((slot) => ({ slot, meals: bySlot.get(slot)! }));
 }
 
-export function FoodPage({ initialEvents, dateKey, timeZone, initialRepeats = null }: FoodPageProps) {
+export function FoodPage({ initialDay, initialTrend, dateKey, timeZone }: FoodPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale);
+  const t = copy.today;
   const chartCopy = CHART_COPY[locale];
-  const [events, setEvents] = useState(initialEvents);
-  const [loading, setLoading] = useState(false);
+
+  const [day, setDay] = useState(initialDay);
+  const [trend, setTrend] = useState(initialTrend);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [chartStatus, setChartStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const resolvedDateKey = todayDateKey(timeZone);
+  const resolvedDateKey = todayKeyInTimeZone(timeZone);
 
-  useEffect(() => {
-    if (resolvedDateKey !== dateKey) {
-      setLoading(true);
-      void listFoodEvents(resolvedDateKey, resolvedDateKey).then((result) => {
-        setEvents(result.items);
-        setLoading(false);
-      });
-    }
-  }, [dateKey, resolvedDateKey]);
-
-  async function refetchToday() {
-    const result = await listFoodEvents(resolvedDateKey, resolvedDateKey).catch(() => null);
-    if (result) setEvents(result.items);
+  async function reload() {
+    const from7 = shiftDays(resolvedDateKey, -6);
+    const [nextDay, nextTrend] = await Promise.all([
+      getFoodDay(resolvedDateKey).catch(() => null),
+      getFoodAggregations(from7, resolvedDateKey, "day").catch(() => null),
+    ]);
+    if (nextDay) setDay(nextDay);
+    if (nextTrend) setTrend(nextTrend);
   }
+
+  // If the client's real "today" differs from what the loader resolved (timezone
+  // skew near midnight), refetch the correct day.
+  useEffect(() => {
+    if (resolvedDateKey !== dateKey) void reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateKey, resolvedDateKey]);
 
   async function sendChart() {
     setChartStatus("sending");
     try {
-      const result = await sendChartToWhatsApp("macro-donut", "7d");
+      const result = await sendChartToWhatsApp("kcal-trend", "7d");
       setChartStatus(result.delivered ? "sent" : "error");
     } catch {
       setChartStatus("error");
     }
   }
 
-  const sorted = [...events].sort((a, b) => new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime());
+  const nutrition = day.nutrition;
+  const target = nutrition?.kcalTarget ?? null;
+  const groups = groupBySlot(day.meals);
+  const hasMeals = day.meals.length > 0;
 
   return (
     <div className={styles.stack} data-testid="food-page">
@@ -107,43 +117,49 @@ export function FoodPage({ initialEvents, dateKey, timeZone, initialRepeats = nu
       {chartStatus === "sent" ? <InlineStatus tone="success" title={chartCopy.sent} /> : null}
       {chartStatus === "error" ? <InlineStatus tone="danger" title={chartCopy.failed} /> : null}
 
-      {events.length > 0 ? <FoodSummaryCard events={events} /> : null}
-
-      <FoodSearchBox onLogged={() => void refetchToday()} />
-
-      <RepeatsPanel
-        aggregations={initialRepeats}
-        copy={{
-          title: copy.page.repeats.title,
-          description: copy.page.repeats.description,
-          empty: copy.page.repeats.empty,
-          logAgain: copy.page.repeats.logAgain,
-          logging: copy.page.repeats.logging,
-          errorTitle: copy.page.repeats.errorTitle,
-          countLabel: (count) => `${count}×`,
-        }}
-        onLogged={(event) => {
-          setEvents((prev) => [...prev, event]);
-        }}
-      />
-
-      {events.length > 0 ? (
-        <div className={styles.list} aria-busy={loading}>
-          {sorted.map((ev) => (
-            <FoodEventCard key={ev.id} event={ev} />
-          ))}
+      {/* 1 — Summary trend (last 7 days, with the goal line) */}
+      <Surface variant="panel" padding="md" className={styles.trendCard}>
+        <div className={styles.trendHead}>
+          <span className={styles.trendTitle}>{t.trendTitle}</span>
+          {target != null ? (
+            <span className={styles.trendGoal}>
+              {t.goalLineLabel} {target}
+            </span>
+          ) : null}
         </div>
+        <KcalTrend
+          buckets={trend?.buckets ?? []}
+          label={t.trendTitle}
+          emptyLabel={t.trendEmpty}
+          target={target}
+          targetLabel={target != null ? `${t.goalLineLabel} ${target}` : undefined}
+        />
+      </Surface>
+
+      {/* 2 — Macros vs goals */}
+      {nutrition ? <DietProgressCard nutrition={nutrition} mealCount={nutrition.mealCount} /> : null}
+
+      {/* 3 — Today's meals, grouped by slot */}
+      {hasMeals ? (
+        <section className={styles.meals} aria-label={t.mealsTitle}>
+          <h2 className={styles.mealsTitle}>{t.mealsTitle}</h2>
+          {groups.map((group) => (
+            <div key={group.slot} className={styles.slotGroup}>
+              <h3 className={styles.slotHeading}>{copy.detail.mealSlots[group.slot]}</h3>
+              <div className={styles.slotMeals}>
+                {group.meals.map((meal) => (
+                  <DietMealCard key={meal.eventId} meal={meal} onChanged={() => void reload()} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <p className={styles.hint}>{t.changeTimeHint}</p>
+        </section>
       ) : (
         <StatePanel title={copy.page.emptyState.title} description={copy.page.emptyState.description} />
       )}
 
-      <ProposalDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onCreated={(event: EntryEventDetail) => {
-          setEvents((prev) => [...prev, event]);
-        }}
-      />
+      <ProposalDialog open={dialogOpen} onOpenChange={setDialogOpen} onCreated={() => void reload()} />
     </div>
   );
 }

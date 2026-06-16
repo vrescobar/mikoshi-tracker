@@ -6,6 +6,10 @@ type Props = {
   buckets: AggregationBucket[];
   label: string;
   emptyLabel: string;
+  /** Optional daily kcal goal — drawn as a dashed reference line. */
+  target?: number | null;
+  /** Optional label for the target line (e.g. "Goal 2200"). */
+  targetLabel?: string;
 };
 
 const VIEW_W = 600;
@@ -15,7 +19,14 @@ const PAD_Y = 12;
 
 type Point = { x: number; y: number; kcal: number; date: string };
 
-function buildPoints(buckets: AggregationBucket[]): Point[] {
+const INNER_W = VIEW_W - PAD_X * 2;
+const INNER_H = VIEW_H - PAD_Y * 2;
+
+function yFor(kcal: number, maxKcal: number): number {
+  return PAD_Y + INNER_H - (kcal / maxKcal) * INNER_H;
+}
+
+function buildPoints(buckets: AggregationBucket[], maxKcal: number): Point[] {
   const datePoints = buckets.filter((b) => b.key.kind === "date");
   if (datePoints.length === 0) return [];
 
@@ -24,31 +35,26 @@ function buildPoints(buckets: AggregationBucket[]): Point[] {
     kcal: typeof b.sum.kcal === "number" ? b.sum.kcal : 0,
   }));
 
-  const maxKcal = Math.max(1, ...series.map((s) => s.kcal));
-
-  const innerW = VIEW_W - PAD_X * 2;
-  const innerH = VIEW_H - PAD_Y * 2;
-
   if (series.length === 1) {
-    return [
-      {
-        x: PAD_X + innerW / 2,
-        y: PAD_Y + innerH - (series[0].kcal / maxKcal) * innerH,
-        kcal: series[0].kcal,
-        date: series[0].date,
-      },
-    ];
+    return [{ x: PAD_X + INNER_W / 2, y: yFor(series[0].kcal, maxKcal), kcal: series[0].kcal, date: series[0].date }];
   }
 
-  return series.map((s, i) => {
-    const x = PAD_X + (i / (series.length - 1)) * innerW;
-    const y = PAD_Y + innerH - (s.kcal / maxKcal) * innerH;
-    return { x, y, kcal: s.kcal, date: s.date };
-  });
+  return series.map((s, i) => ({
+    x: PAD_X + (i / (series.length - 1)) * INNER_W,
+    y: yFor(s.kcal, maxKcal),
+    kcal: s.kcal,
+    date: s.date,
+  }));
 }
 
-export function KcalTrend({ buckets, label, emptyLabel }: Props) {
-  const points = buildPoints(buckets);
+export function KcalTrend({ buckets, label, emptyLabel, target, targetLabel }: Props) {
+  const seriesMax = Math.max(
+    1,
+    ...buckets.filter((b) => b.key.kind === "date").map((b) => (typeof b.sum.kcal === "number" ? b.sum.kcal : 0)),
+  );
+  // Keep the goal line on-canvas with a little headroom above whichever is taller.
+  const maxKcal = target && target > 0 ? Math.max(seriesMax, target) * 1.08 : seriesMax;
+  const points = buildPoints(buckets, maxKcal);
 
   if (points.length === 0 || points.every((p) => p.kcal === 0)) {
     return (
@@ -58,19 +64,37 @@ export function KcalTrend({ buckets, label, emptyLabel }: Props) {
     );
   }
 
-  const path = points
-    .map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
-    .join(" ");
+  const path = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ");
+  const targetY = target && target > 0 ? yFor(target, maxKcal) : null;
 
   return (
     <div className={styles.wrap} data-testid="kcal-trend">
-      <svg
-        width="100%"
-        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-        preserveAspectRatio="none"
-        role="img"
-        aria-label={label}
-      >
+      <svg width="100%" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="none" role="img" aria-label={label}>
+        {targetY !== null ? (
+          <g data-testid="kcal-trend-target">
+            <line
+              x1={PAD_X}
+              y1={targetY}
+              x2={VIEW_W - PAD_X}
+              y2={targetY}
+              stroke="var(--color-accent-diet, #ef7a5a)"
+              strokeWidth={1.5}
+              strokeDasharray="5 5"
+              opacity={0.75}
+            />
+            {targetLabel ? (
+              <text
+                x={VIEW_W - PAD_X}
+                y={Math.max(targetY - 4, 10)}
+                textAnchor="end"
+                fontSize={11}
+                fill="var(--color-accent-diet, #ef7a5a)"
+              >
+                {targetLabel}
+              </text>
+            ) : null}
+          </g>
+        ) : null}
         <path
           d={path}
           fill="none"

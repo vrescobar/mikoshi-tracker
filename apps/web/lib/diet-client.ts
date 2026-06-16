@@ -1,5 +1,10 @@
 import type { DietGoalInput, DietGoalRecord, DietPreferences } from "@mikoshi-tracker/contracts/diet";
-import type { FoodRelogInput, FoodRelogResponse, FoodSearchResult } from "@mikoshi-tracker/contracts/food";
+import type {
+  FoodDayResponse,
+  FoodRelogInput,
+  FoodRelogResponse,
+  FoodSearchResult,
+} from "@mikoshi-tracker/contracts/food";
 
 import { getV1, postV1 } from "./v1";
 
@@ -27,6 +32,15 @@ export async function getDietPreferences(): Promise<DietPreferences> {
 export async function setDietPreferences(input: DietPreferences): Promise<DietPreferences> {
   const { preferences } = await postV1<{ preferences: DietPreferences }>("/diet/preferences", input);
   return preferences;
+}
+
+/**
+ * The day's meals (with provenance + photo thumbnails) and the nutrition
+ * roll-up in one round-trip — powers the redesigned Diet "Today" tab. Omitting
+ * `date` returns the user's wall-clock today.
+ */
+export async function getFoodDay(date?: string): Promise<FoodDayResponse> {
+  return getV1<FoodDayResponse>("/food/day", date ? { date } : undefined);
 }
 
 export async function searchFoods(q: string, limit = 8): Promise<FoodSearchResult[]> {

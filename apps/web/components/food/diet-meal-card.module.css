@@ -1,0 +1,140 @@
+.card {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.thumb {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-surface-sunken, rgba(0, 0, 0, 0.05));
+}
+
+.body {
+  display: grid;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.headRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.time {
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+  font-variant-numeric: var(--font-numeric);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+
+.macros {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.kcal {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-variant-numeric: var(--font-numeric);
+  color: var(--color-heading);
+}
+
+.macro {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+  font-variant-numeric: var(--font-numeric);
+}
+
+.notes {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.linkBtn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.confirmText {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.editForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.field {
+  display: grid;
+  gap: 0.2rem;
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+}
+
+.input {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.12));
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-heading);
+}
+
+@media (max-width: 620px) {
+  .card {
+    flex-direction: row;
+  }
+}

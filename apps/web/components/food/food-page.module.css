@@ -72,6 +72,67 @@
   gap: 0.85rem;
 }
 
+.trendCard {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.trendHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.trendTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.trendGoal {
+  font-size: var(--text-sm);
+  color: var(--color-accent-diet, #ef7a5a);
+  font-variant-numeric: var(--font-numeric);
+}
+
+.meals {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.mealsTitle {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-display);
+  font-family: var(--font-display);
+  color: var(--color-heading);
+}
+
+.slotGroup {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.slotHeading {
+  margin: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-soft);
+}
+
+.slotMeals {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+}
+
 @media (max-width: 720px) {
   .toolbarTop {
     grid-template-columns: 1fr;

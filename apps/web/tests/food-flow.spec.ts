@@ -4,12 +4,7 @@ import { expect, test, type APIRequestContext, type BrowserContext } from "@play
 const TINY_PNG_BASE64 =
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
-async function signUpThroughApi(
-  request: APIRequestContext,
-  context: BrowserContext,
-  email: string,
-  name: string,
-) {
+async function signUpThroughApi(request: APIRequestContext, context: BrowserContext, email: string, name: string) {
   const response = await request.post("http://127.0.0.1:3001/api/auth/sign-up/email", {
     data: { email, password: "password123", name },
   });
@@ -33,11 +28,7 @@ async function signUpThroughApi(
   await context.addCookies(cookies);
 }
 
-test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
-  page,
-  request,
-  context,
-}) => {
+test("E2E food flow: create, edit, view insights, delete, audit trail", async ({ page, request, context }) => {
   // Allow extra time: 8-step flow with multiple page navigations.
   test.slow();
 
@@ -105,10 +96,9 @@ test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
   const eventId = await page.evaluate(
     async ({ aId, todayStr }: { aId: string; todayStr: string }) => {
       // Reuse an existing food_meal Entry or create one.
-      const listRes = await fetch(
-        "http://127.0.0.1:3001/api/entries?entryTypeSlug=food_meal&isActive=true",
-        { credentials: "include" },
-      );
+      const listRes = await fetch("http://127.0.0.1:3001/api/entries?entryTypeSlug=food_meal&isActive=true", {
+        credentials: "include",
+      });
       if (!listRes.ok) throw new Error(`List entries failed: ${await listRes.text()}`);
       const { items } = (await listRes.json()) as { items: { id: string }[] };
 
@@ -132,35 +122,32 @@ test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
         entryId = item.id;
       }
 
-      const eventRes = await fetch(
-        `http://127.0.0.1:3001/api/entries/${encodeURIComponent(entryId)}/events`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            occurredAt: new Date().toISOString(),
-            payload: {
-              name: "Test meal",
-              kcal: 500,
-              protein_g: 30,
-              carbs_g: 40,
-              fat_g: 15,
-              fiber_g: null,
-              sugar_g: null,
-              portion_g: null,
-              mealSlot: "lunch",
-              source: "manual",
-              confidence: 1.0,
-              similarToEventId: null,
-              sources: null,
-              notes: null,
-            },
-            attachmentIds: [aId],
-            source: "WEB",
-          }),
-        },
-      );
+      const eventRes = await fetch(`http://127.0.0.1:3001/api/entries/${encodeURIComponent(entryId)}/events`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          occurredAt: new Date().toISOString(),
+          payload: {
+            name: "Test meal",
+            kcal: 500,
+            protein_g: 30,
+            carbs_g: 40,
+            fat_g: 15,
+            fiber_g: null,
+            sugar_g: null,
+            portion_g: null,
+            mealSlot: "lunch",
+            source: "manual",
+            confidence: 1.0,
+            similarToEventId: null,
+            sources: null,
+            notes: null,
+          },
+          attachmentIds: [aId],
+          source: "WEB",
+        }),
+      });
       if (!eventRes.ok) throw new Error(`Create event failed: ${await eventRes.text()}`);
       const { item } = (await eventRes.json()) as { item: { id: string } };
       return item.id;
@@ -169,10 +156,10 @@ test("E2E food flow: create, edit, view insights, delete, audit trail", async ({
   );
   expect(eventId).toBeTruthy();
 
-  // (4) Visit /food and see the timeline card.
+  // (4) Visit /food and see the meal card on the Today tab.
   await page.goto("/food");
   await expect(page.getByTestId("food-page")).toBeVisible();
-  await expect(page.getByTestId("food-event-card")).toBeVisible();
+  await expect(page.getByTestId("food-meal-card").first()).toBeVisible();
 
   // (5) Edit kcal in /food/[eventId].
   await page.goto(`/food/${eventId}`);

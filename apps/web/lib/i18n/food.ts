@@ -37,6 +37,37 @@ export type FoodCopy = {
       errorTitle: string;
     };
   };
+  today: {
+    trendTitle: string;
+    trendEmpty: string;
+    goalLineLabel: string;
+    goalsTitle: string;
+    remaining: string;
+    over: string;
+    of: string;
+    left: string;
+    noTargetTitle: string;
+    noTargetBody: string;
+    setGoal: string;
+    mealsTitle: string;
+    edit: string;
+    delete: string;
+    confirmDelete: string;
+    cancel: string;
+    save: string;
+    saving: string;
+    deleting: string;
+    deleteError: string;
+    saveError: string;
+    changeTimeHint: string;
+  };
+  explore: {
+    title: string;
+    description: string;
+    searchTitle: string;
+    favoritesTitle: string;
+    historyTitle: string;
+  };
   detail: {
     backToFood: string;
     header: {
@@ -241,6 +272,37 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         errorTitle: "Could not log meal",
       },
     },
+    today: {
+      trendTitle: "Last 7 days",
+      trendEmpty: "No meals logged this week yet.",
+      goalLineLabel: "Goal",
+      goalsTitle: "Today vs your goal",
+      remaining: "kcal left",
+      over: "kcal over",
+      of: "of",
+      left: "left",
+      noTargetTitle: "No daily goal yet",
+      noTargetBody: "Set a calorie and macro target to track today against it.",
+      setGoal: "Set a goal",
+      mealsTitle: "Today's meals",
+      edit: "Edit",
+      delete: "Delete",
+      confirmDelete: "Delete this meal?",
+      cancel: "Cancel",
+      save: "Save",
+      saving: "Saving…",
+      deleting: "Deleting…",
+      deleteError: "Couldn't delete the meal.",
+      saveError: "Couldn't save the changes.",
+      changeTimeHint: "Logged at the time shown — edit a meal to adjust it.",
+    },
+    explore: {
+      title: "Explore",
+      description: "Search your foods, re-log favourites, and review your history.",
+      searchTitle: "Search & re-log",
+      favoritesTitle: "Favourites",
+      historyTitle: "History & trends",
+    },
     detail: {
       backToFood: "← Back to food",
       header: {
@@ -444,6 +506,37 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         errorTitle: "无法记录餐食",
       },
     },
+    today: {
+      trendTitle: "最近 7 天",
+      trendEmpty: "本周还没有记录餐食。",
+      goalLineLabel: "目标",
+      goalsTitle: "今日 vs 目标",
+      remaining: "千卡剩余",
+      over: "千卡超出",
+      of: "/",
+      left: "剩余",
+      noTargetTitle: "尚未设定每日目标",
+      noTargetBody: "设定热量和宏量目标，即可对照今天的进度。",
+      setGoal: "设定目标",
+      mealsTitle: "今日餐食",
+      edit: "编辑",
+      delete: "删除",
+      confirmDelete: "删除这餐？",
+      cancel: "取消",
+      save: "保存",
+      saving: "保存中…",
+      deleting: "删除中…",
+      deleteError: "无法删除该餐食。",
+      saveError: "无法保存更改。",
+      changeTimeHint: "按显示的时间记录——编辑餐食即可调整。",
+    },
+    explore: {
+      title: "探索",
+      description: "搜索食物、重新记录常用项并查看历史。",
+      searchTitle: "搜索与重记",
+      favoritesTitle: "常用",
+      historyTitle: "历史与趋势",
+    },
     detail: {
       backToFood: "← 返回饮食",
       header: {
@@ -646,6 +739,37 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         errorTitle: "No se pudo registrar la comida",
       },
     },
+    today: {
+      trendTitle: "Últimos 7 días",
+      trendEmpty: "Aún no hay comidas esta semana.",
+      goalLineLabel: "Objetivo",
+      goalsTitle: "Hoy vs tu objetivo",
+      remaining: "kcal restantes",
+      over: "kcal de más",
+      of: "de",
+      left: "restantes",
+      noTargetTitle: "Aún no hay objetivo diario",
+      noTargetBody: "Fija un objetivo de calorías y macros para seguir el día con respecto a él.",
+      setGoal: "Fijar objetivo",
+      mealsTitle: "Comidas de hoy",
+      edit: "Editar",
+      delete: "Eliminar",
+      confirmDelete: "¿Eliminar esta comida?",
+      cancel: "Cancelar",
+      save: "Guardar",
+      saving: "Guardando…",
+      deleting: "Eliminando…",
+      deleteError: "No se pudo eliminar la comida.",
+      saveError: "No se pudieron guardar los cambios.",
+      changeTimeHint: "Registrada a la hora mostrada — edita la comida para ajustarla.",
+    },
+    explore: {
+      title: "Explorar",
+      description: "Busca tus alimentos, vuelve a registrar favoritos y revisa tu historial.",
+      searchTitle: "Buscar y volver a registrar",
+      favoritesTitle: "Favoritos",
+      historyTitle: "Historial y tendencias",
+    },
     detail: {
       backToFood: "← Volver a comida",
       header: {
@@ -731,7 +855,8 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
     },
     dialog: {
       title: "Añadir comida",
-      description: "Registra una comida manualmente. Se añadirá a tu registro de comida y actualizará los totales nutricionales de hoy.",
+      description:
+        "Registra una comida manualmente. Se añadirá a tu registro de comida y actualizará los totales nutricionales de hoy.",
       submitLabel: "Añadir",
       submittingLabel: "Añadiendo…",
       cancelLabel: "Cancelar",

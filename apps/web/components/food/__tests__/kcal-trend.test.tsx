@@ -33,16 +33,24 @@ describe("KcalTrend", () => {
   });
 
   it("renders a line + one circle per date bucket when data is present", () => {
-    const buckets = [
-      dateBucket("2026-05-01", 1500),
-      dateBucket("2026-05-02", 2000),
-      dateBucket("2026-05-03", 1800),
-    ];
+    const buckets = [dateBucket("2026-05-01", 1500), dateBucket("2026-05-02", 2000), dateBucket("2026-05-03", 1800)];
     render(<KcalTrend buckets={buckets} label="Trend" emptyLabel="empty" />);
 
     expect(screen.getByTestId("kcal-trend")).toBeInTheDocument();
     expect(screen.getByTestId("kcal-trend-line")).toBeInTheDocument();
     expect(screen.getAllByTestId("kcal-trend-point")).toHaveLength(3);
+  });
+
+  it("draws the goal reference line when a target is given", () => {
+    const buckets = [dateBucket("2026-05-01", 1500), dateBucket("2026-05-02", 2000)];
+    render(<KcalTrend buckets={buckets} label="Trend" emptyLabel="empty" target={2200} targetLabel="Goal 2200" />);
+    expect(screen.getByTestId("kcal-trend-target")).toBeInTheDocument();
+  });
+
+  it("omits the goal line when no target is given", () => {
+    const buckets = [dateBucket("2026-05-01", 1500), dateBucket("2026-05-02", 2000)];
+    render(<KcalTrend buckets={buckets} label="Trend" emptyLabel="empty" />);
+    expect(screen.queryByTestId("kcal-trend-target")).not.toBeInTheDocument();
   });
 
   it("ignores non-date buckets (skips payload-grouped entries)", () => {

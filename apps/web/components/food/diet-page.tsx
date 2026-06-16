@@ -1,5 +1,5 @@
 import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregations";
-import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
+import type { FoodDayResponse } from "@mikoshi-tracker/contracts/food";
 import { Suspense, lazy } from "react";
 import { useSearchParams } from "react-router";
 
@@ -10,37 +10,37 @@ import { DietGoalPanel } from "./diet-goal-panel";
 import { FoodPage } from "./food-page";
 import styles from "./diet-page.module.css";
 
-// Trends/Body reuse the existing route pages (each owns its own data loading);
-// lazy so their charts/recharts bundles only load when those tabs open.
-const FoodInsightsRoute = lazy(() => import("../../src/pages/food-insights-route"));
+// Explore/Body reuse route pages (each owns its own data loading); lazy so their
+// charts/recharts bundles only load when those tabs open.
+const FoodExploreRoute = lazy(() => import("../../src/pages/food-explore-route"));
 const WeightPageRoute = lazy(() => import("../../src/pages/weight-page-route"));
 
 type DietPageProps = {
-  initialEvents: EntryEventRecord[];
+  day: FoodDayResponse;
+  trend: AggregationResponse | null;
   dateKey: string;
   timeZone?: string;
-  initialRepeats?: AggregationResponse | null;
 };
 
-type TabId = "today" | "trends" | "body" | "goal";
+type TabId = "today" | "explore" | "body" | "goal";
 
-const TAB_IDS: TabId[] = ["today", "trends", "body", "goal"];
+const TAB_IDS: TabId[] = ["today", "explore", "body", "goal"];
 
 const COPY: Record<SupportedLocale, { title: string; description: string; tabs: Record<TabId, string> }> = {
   en: {
     title: "Diet",
-    description: "Today's meals, trends, body weight, and your daily goal.",
-    tabs: { today: "Today", trends: "Trends", body: "Body", goal: "Goal" },
+    description: "Today's meals, exploration, body weight, and your daily goal.",
+    tabs: { today: "Today", explore: "Explore", body: "Body", goal: "Goal" },
   },
   "zh-CN": {
     title: "饮食",
-    description: "今日餐食、趋势、体重和每日目标。",
-    tabs: { today: "今日", trends: "趋势", body: "身体", goal: "目标" },
+    description: "今日餐食、探索、体重和每日目标。",
+    tabs: { today: "今日", explore: "探索", body: "身体", goal: "目标" },
   },
   es: {
     title: "Comida",
-    description: "Comidas de hoy, tendencias, peso corporal y tu objetivo diario.",
-    tabs: { today: "Hoy", trends: "Tendencias", body: "Cuerpo", goal: "Objetivo" },
+    description: "Comidas de hoy, exploración, peso corporal y tu objetivo diario.",
+    tabs: { today: "Hoy", explore: "Explorar", body: "Cuerpo", goal: "Objetivo" },
   },
 };
 
@@ -65,7 +65,7 @@ export function DietPage(props: DietPageProps) {
 
   const items: TabItem[] = [
     { id: "today", label: copy.tabs.today, icon: "diet" },
-    { id: "trends", label: copy.tabs.trends, icon: "trend" },
+    { id: "explore", label: copy.tabs.explore, icon: "trend" },
     { id: "body", label: copy.tabs.body, icon: "trophy" },
     { id: "goal", label: copy.tabs.goal, icon: "sparkles" },
   ];
@@ -83,12 +83,17 @@ export function DietPage(props: DietPageProps) {
       <Suspense fallback={<SkeletonBlock height="12rem" />}>
         {active === "today" ? (
           <TabPanel id="today">
-            <FoodPage {...props} />
+            <FoodPage
+              initialDay={props.day}
+              initialTrend={props.trend}
+              dateKey={props.dateKey}
+              timeZone={props.timeZone}
+            />
           </TabPanel>
         ) : null}
-        {active === "trends" ? (
-          <TabPanel id="trends">
-            <FoodInsightsRoute />
+        {active === "explore" ? (
+          <TabPanel id="explore">
+            <FoodExploreRoute />
           </TabPanel>
         ) : null}
         {active === "body" ? (
