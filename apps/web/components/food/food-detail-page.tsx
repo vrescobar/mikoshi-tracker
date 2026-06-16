@@ -5,7 +5,13 @@ import { useState, useTransition } from "react";
 
 import { attachmentFileUrl } from "../../lib/auth-client";
 import type { FoodPayload } from "../../lib/food-client";
-import { deleteFoodEvent, getFoodEventDetail, isFoodPayload, undoFoodEvent, updateFoodEvent } from "../../lib/food-client";
+import {
+  deleteFoodEvent,
+  getFoodEventDetail,
+  isFoodPayload,
+  undoFoodEvent,
+  updateFoodEvent,
+} from "../../lib/food-client";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
 import { diffPayload } from "../../lib/payload-diff";
@@ -47,9 +53,12 @@ function payloadToEditState(p: FoodPayload): EditState {
     protein_g: String(p.protein_g),
     carbs_g: String(p.carbs_g),
     fat_g: String(p.fat_g),
-    fiber_g: p.fiber_g !== null ? String(p.fiber_g) : "",
-    sugar_g: p.sugar_g !== null ? String(p.sugar_g) : "",
-    portion_g: p.portion_g !== null ? String(p.portion_g) : "",
+    // Skill-logged payloads omit optional macros entirely (undefined, not null),
+    // so use loose `!= null` to treat both the same and avoid "undefined" leaking
+    // into the edit field.
+    fiber_g: p.fiber_g != null ? String(p.fiber_g) : "",
+    sugar_g: p.sugar_g != null ? String(p.sugar_g) : "",
+    portion_g: p.portion_g != null ? String(p.portion_g) : "",
     mealSlot: p.mealSlot ?? "",
     notes: p.notes ?? "",
   };
@@ -71,7 +80,10 @@ export function editStateToPayload(state: EditState, original: FoodPayload): Foo
   };
 }
 
-export function validateEditState(state: EditState, copy: ReturnType<typeof getFoodCopy>["detail"]["edit"]): string | null {
+export function validateEditState(
+  state: EditState,
+  copy: ReturnType<typeof getFoodCopy>["detail"]["edit"],
+): string | null {
   if (!state.name.trim()) return copy.validationName;
   const kcal = parseFloat(state.kcal);
   if (isNaN(kcal) || kcal < 0) return copy.validationKcal;
@@ -94,7 +106,13 @@ function formatDiffValue(value: unknown, removedLabel: string): string {
   return JSON.stringify(value);
 }
 
-function MutationRow({ mutation, copy }: { mutation: EventMutationRecord; copy: ReturnType<typeof getFoodCopy>["detail"]["mutations"] }) {
+function MutationRow({
+  mutation,
+  copy,
+}: {
+  mutation: EventMutationRecord;
+  copy: ReturnType<typeof getFoodCopy>["detail"]["mutations"];
+}) {
   const isDelete = mutation.type === "DELETE";
   // For CREATE/DELETE/UNDO/UPDATE, the diff is from previousPayload to nextPayload
   // as stored on the mutation row. UNDO mutations carry the swap (next = the
@@ -128,7 +146,13 @@ function MutationRow({ mutation, copy }: { mutation: EventMutationRecord; copy: 
   );
 }
 
-function PhotoSection({ attachments, copy }: { attachments: AttachmentMetadata[]; copy: ReturnType<typeof getFoodCopy>["detail"]["photo"] }) {
+function PhotoSection({
+  attachments,
+  copy,
+}: {
+  attachments: AttachmentMetadata[];
+  copy: ReturnType<typeof getFoodCopy>["detail"]["photo"];
+}) {
   const images = attachments.filter((a) => a.kind === "image");
 
   return (
@@ -139,7 +163,13 @@ function PhotoSection({ attachments, copy }: { attachments: AttachmentMetadata[]
       ) : (
         <div className={styles.photoGrid}>
           {images.map((img) => (
-            <a key={img.id} href={attachmentFileUrl(img.id)} target="_blank" rel="noreferrer" className={styles.photoLink}>
+            <a
+              key={img.id}
+              href={attachmentFileUrl(img.id)}
+              target="_blank"
+              rel="noreferrer"
+              className={styles.photoLink}
+            >
               <img
                 src={attachmentFileUrl(img.id)}
                 alt={img.originalName ?? ""}
@@ -401,16 +431,16 @@ export function FoodDetailPage({ initialEvent }: FoodDetailPageProps) {
                   <span className={styles.factBigValue}>{Math.round(payload.kcal)}</span>
                   <span className={styles.factBigLabel}>{copy.fields.kcal}</span>
                 </div>
-                <Fact label={copy.fields.protein_g} value={`${payload.protein_g.toFixed(1)}g`} />
-                <Fact label={copy.fields.carbs_g} value={`${payload.carbs_g.toFixed(1)}g`} />
-                <Fact label={copy.fields.fat_g} value={`${payload.fat_g.toFixed(1)}g`} />
-                {payload.fiber_g !== null ? (
+                <Fact label={copy.fields.protein_g} value={`${(payload.protein_g ?? 0).toFixed(1)}g`} />
+                <Fact label={copy.fields.carbs_g} value={`${(payload.carbs_g ?? 0).toFixed(1)}g`} />
+                <Fact label={copy.fields.fat_g} value={`${(payload.fat_g ?? 0).toFixed(1)}g`} />
+                {payload.fiber_g != null ? (
                   <Fact label={copy.fields.fiber_g} value={`${payload.fiber_g.toFixed(1)}g`} />
                 ) : null}
-                {payload.sugar_g !== null ? (
+                {payload.sugar_g != null ? (
                   <Fact label={copy.fields.sugar_g} value={`${payload.sugar_g.toFixed(1)}g`} />
                 ) : null}
-                {payload.portion_g !== null ? (
+                {payload.portion_g != null ? (
                   <Fact label={copy.fields.portion_g} value={`${payload.portion_g.toFixed(0)}g`} />
                 ) : null}
                 {payload.mealSlot ? (
