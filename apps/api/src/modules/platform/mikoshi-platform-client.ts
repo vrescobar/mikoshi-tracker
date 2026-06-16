@@ -9,6 +9,11 @@
  * never take user-facing flows (magic links, provisioning) down with them.
  */
 import type { FastifyInstance } from "fastify";
+import {
+  signWebhookPayload,
+  WEBHOOK_SIGNATURE_HEADER,
+  WEBHOOK_TIMESTAMP_HEADER,
+} from "../../auth/webhook-signature";
 
 export interface CohortRosterMember {
   externalId: string;
@@ -144,7 +149,7 @@ export class MikoshiPlatformClient {
     try {
       const response = await fetch(`${this.baseUrl}/cron/${encodeURIComponent(id)}`, {
         method: "DELETE",
-        headers: { authorization: `Bearer ${adminKey}` },
+        headers: { authorization: `Bearer ${adminKey}`, ...this.signedHeaders(adminKey, "") },
         signal: AbortSignal.timeout(this.timeoutMs),
       });
       return response.ok;
@@ -153,12 +158,28 @@ export class MikoshiPlatformClient {
     }
   }
 
+  /**
+   * SEC-2: firma HMAC de la llamada saliente al kernel sobre `${ts}.${rawBody}`,
+   * byte-compatible con `verifyInboundSignature` del kernel (mismo esquema que
+   * los webhooks entrantes). El kernel firma con el rawBody EXACTO; para GET el
+   * kernel usa rawBody="" así que aquí firmamos "" en GET/DELETE. Si el kernel
+   * está en modo `off` ignora estas cabeceras (paridad); en `accept`/`require`
+   * las verifica. Sin admin key no se añaden (el caller ya devuelve null antes).
+   */
+  private signedHeaders(adminKey: string, rawBody: string): Record<string, string> {
+    const timestamp = String(Date.now());
+    return {
+      [WEBHOOK_TIMESTAMP_HEADER]: timestamp,
+      [WEBHOOK_SIGNATURE_HEADER]: signWebhookPayload(adminKey, timestamp, rawBody),
+    };
+  }
+
   private async get(path: string): Promise<unknown> {
     const adminKey = this.getAdminKey();
     if (!adminKey) return null;
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {
-        headers: { authorization: `Bearer ${adminKey}` },
+        headers: { authorization: `Bearer ${adminKey}`, ...this.signedHeaders(adminKey, "") },
         signal: AbortSignal.timeout(this.timeoutMs),
       });
       if (!response.ok) return null;
@@ -172,10 +193,15 @@ export class MikoshiPlatformClient {
     const adminKey = this.getAdminKey();
     if (!adminKey) return null;
     try {
+      const rawBody = JSON.stringify(payload);
       const response = await fetch(`${this.baseUrl}${path}`, {
         method: "POST",
-        headers: { authorization: `Bearer ${adminKey}`, "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        headers: {
+          authorization: `Bearer ${adminKey}`,
+          "content-type": "application/json",
+          ...this.signedHeaders(adminKey, rawBody),
+        },
+        body: rawBody,
         signal: AbortSignal.timeout(this.timeoutMs),
       });
       if (!response.ok) return null;
