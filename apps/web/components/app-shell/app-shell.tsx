@@ -1,11 +1,10 @@
-import { Link } from "react-router";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
 import type { ReactNode } from "react";
 
 import { LocaleSwitch, useLocale } from "../locale";
 import { SignOutButton } from "../auth/sign-out-button";
-import { Surface, cn } from "../ui";
-import { getPrimaryAppNavigation, routes, getUtilityAppNavigation } from "../../lib/navigation";
+import { Icon, cn } from "../ui";
+import { getPrimaryAppNavigation, getUtilityAppNavigation, routes } from "../../lib/navigation";
 import styles from "./app-shell.module.css";
 
 type AppShellProps = {
@@ -16,86 +15,97 @@ type AppShellProps = {
 
 export function AppShell({ userEmail, isAdmin = false, children }: AppShellProps) {
   const { pathname } = useLocation();
-  const { locale, copy } = useLocale();
-  const primaryAppNavigation = getPrimaryAppNavigation(copy.shell.navigation);
-  const utilityAppNavigation = getUtilityAppNavigation(copy.shell.navigation, { isAdmin });
+  const { copy } = useLocale();
+  const primaryNav = getPrimaryAppNavigation(copy.shell.navigation);
+  const utilityNav = getUtilityAppNavigation(copy.shell.navigation, { isAdmin });
+  const initial = userEmail.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <main className={styles.shell} data-testid="app-shell">
-      <div className={styles.inner}>
-        <Surface variant="hero" padding="md" className={styles.headerSurface} data-testid="app-shell-header">
-          <div className={styles.utilityRow}>
-            <div className={styles.utilityMeta}>
-              <span className={styles.identity}>{userEmail}</span>
-              <nav aria-label="Utility" className={styles.utilityNav} data-testid="app-shell-utility-nav">
-                {utilityAppNavigation.map((item) => {
-                  const active = isRouteActive(pathname, item.href);
+    <div className={styles.shell} data-testid="app-shell">
+      {/* ─ Desktop sidebar ─ */}
+      <aside className={styles.sidebar} data-testid="app-shell-sidebar">
+        <Link to={routes.dashboard} className={styles.brand}>
+          <span className={styles.brandMark} aria-hidden="true">
+            <Icon name="habits" size="1.15rem" strokeWidth={2.2} />
+          </span>
+          <span className={styles.brandName}>MikoshiTracker</span>
+        </Link>
 
-                  return (
-                    <Link
-                      key={item.href}
-                      to={item.href}
-                      data-accented={item.href === routes.apiAccess ? "true" : undefined}
-                      className={cn(
-                        styles.utilityLink,
-                        item.href === routes.apiAccess && styles.utilityLinkAccent,
-                        active && styles.utilityLinkActive,
-                      )}
-                      aria-current={active ? "page" : undefined}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-
-            <div className={styles.utilityActions}>
-              <LocaleSwitch />
-              <SignOutButton label={copy.shell.signOut} />
-            </div>
-          </div>
-
-          <div className={styles.brandRow}>
-            <div className={styles.brand}>
-              <Link to={routes.dashboard} className={styles.brandMark}>
-                MikoshiTracker
+        <nav aria-label="Primary" className={styles.primaryNav} data-testid="app-shell-primary-nav">
+          {primaryNav.map((item) => {
+            const active = isRouteActive(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(styles.navLink, active && styles.navLinkActive)}
+                aria-current={active ? "page" : undefined}
+              >
+                <Icon name={item.icon} className={styles.navIcon} />
+                <span>{item.label}</span>
               </Link>
-              <p className={styles.brandCopy}>{copy.shell.brandCopy}</p>
-            </div>
+            );
+          })}
+        </nav>
 
-            <nav
-              aria-label="Primary"
-              className={cn(styles.primaryNav, styles.desktopPrimaryNav)}
-              data-testid="app-shell-primary-nav"
-            >
-              {primaryAppNavigation.map((item) => {
-                const active = isRouteActive(pathname, item.href);
+        <div className={styles.sidebarFooter}>
+          <nav aria-label="Utility" className={styles.utilityNav} data-testid="app-shell-utility-nav">
+            {utilityNav.map((item) => {
+              const active = isRouteActive(pathname, item.href);
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  data-accented={item.href === routes.apiAccess ? "true" : undefined}
+                  className={cn(styles.utilityLink, active && styles.navLinkActive)}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <Icon name={item.icon} className={styles.navIcon} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-                return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    className={cn(styles.navLink, active && styles.navLinkActive)}
-                    aria-current={active ? "page" : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
+          <div className={styles.account}>
+            <span className={styles.avatar} aria-hidden="true">
+              {initial}
+            </span>
+            <span className={styles.identity} title={userEmail}>
+              {userEmail}
+            </span>
           </div>
-        </Surface>
+          <div className={styles.accountActions}>
+            <LocaleSwitch />
+            <SignOutButton label={copy.shell.signOut} />
+          </div>
+        </div>
+      </aside>
+
+      {/* ─ Main column ─ */}
+      <div className={styles.main}>
+        <header className={styles.mobileBar} data-testid="app-shell-mobile-bar">
+          <Link to={routes.dashboard} className={styles.brand}>
+            <span className={styles.brandMark} aria-hidden="true">
+              <Icon name="habits" size="1.05rem" strokeWidth={2.2} />
+            </span>
+            <span className={styles.brandName}>Mikoshi</span>
+          </Link>
+          <div className={styles.accountActions}>
+            <LocaleSwitch />
+            <SignOutButton label={copy.shell.signOut} />
+          </div>
+        </header>
 
         <div className={styles.content} data-testid="app-shell-content">
           {children}
         </div>
       </div>
 
+      {/* ─ Mobile bottom tab bar ─ */}
       <nav aria-label="Primary mobile" className={styles.mobileNav} data-testid="app-shell-mobile-nav">
-        {primaryAppNavigation.map((item) => {
+        {primaryNav.map((item) => {
           const active = isRouteActive(pathname, item.href);
-
           return (
             <Link
               key={item.href}
@@ -103,24 +113,18 @@ export function AppShell({ userEmail, isAdmin = false, children }: AppShellProps
               className={cn(styles.mobileNavLink, active && styles.mobileNavLinkActive)}
               aria-current={active ? "page" : undefined}
             >
-              <span className={styles.mobileNavEyebrow}>{locale === "zh-CN" ? "前往" : "Go to"}</span>
+              <Icon name={item.icon} className={styles.mobileNavIcon} />
               <span className={styles.mobileNavLabel}>{item.label}</span>
             </Link>
           );
         })}
       </nav>
-    </main>
+    </div>
   );
 }
 
 function isRouteActive(pathname: string, href: string) {
-  // Nav hrefs may carry a query (e.g. the habits link targets
-  // `/entries?entryTypeSlug=...`); match on the path portion only.
   const target = href.split("?")[0];
-
-  if (target === routes.dashboard) {
-    return pathname === routes.dashboard;
-  }
-
+  if (target === routes.dashboard) return pathname === routes.dashboard;
   return pathname === target || pathname.startsWith(`${target}/`);
 }

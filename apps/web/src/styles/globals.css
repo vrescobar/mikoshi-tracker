@@ -1,58 +1,78 @@
 :root {
   color-scheme: light;
-  /* Self-hosted variable fonts loaded via @fontsource in src/main.tsx. */
-  --font-body: "Manrope Variable", system-ui, sans-serif;
-  --font-display: "Fraunces Variable", Georgia, serif;
+  /* Self-hosted variable fonts loaded via @fontsource in src/main.tsx.
+     Plus Jakarta Sans — friendly, rounded geometric sans — carries both display
+     and body for a warm, consumer-wellness feel (replaces the editorial serif). */
+  --font-body: "Plus Jakarta Sans Variable", "Manrope Variable", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Manrope Variable", system-ui, sans-serif;
 
-  --color-canvas: #edf1f2;
-  --color-canvas-strong: #e5ebec;
-  --color-surface: rgba(255, 255, 255, 0.84);
+  /* Luminous green-tinted canvas, solid white cards. */
+  --color-canvas: #eef3f0;
+  --color-canvas-strong: #e6ede9;
+  --color-surface: #ffffff;
   --color-surface-strong: #ffffff;
-  --color-surface-muted: #f5f8f8;
-  --color-surface-tint: #eef4f5;
-  --color-surface-accent: #e1ebee;
+  --color-surface-muted: #f3f8f5;
+  --color-surface-tint: #ecf6f1;
+  --color-surface-accent: #def0e7;
 
-  --color-text: #192127;
-  --color-text-muted: #5a6670;
-  --color-text-soft: #69757e;
-  --color-heading: #10181e;
+  --color-text: #233037;
+  --color-text-muted: #66757d;
+  --color-text-soft: #8a969d;
+  --color-heading: #152b22;
 
-  --color-border: rgba(100, 118, 128, 0.28);
-  --color-border-strong: rgba(65, 83, 94, 0.34);
-  --color-border-accent: rgba(36, 72, 89, 0.28);
+  --color-border: rgba(45, 92, 70, 0.13);
+  --color-border-strong: rgba(45, 92, 70, 0.22);
+  --color-border-accent: rgba(16, 185, 129, 0.3);
 
-  --color-accent: #2f5f73;
-  --color-accent-strong: #1c4051;
-  --color-accent-soft: #dbe8ee;
-  --color-accent-ink: #f7fbfd;
+  /* Primary — emerald green. */
+  --color-accent: #10b981;
+  --color-accent-strong: #059669;
+  --color-accent-soft: #d6f3e5;
+  --color-accent-ink: #ffffff;
 
-  /* Secondary accent reserved for nutrition surfaces ONLY (kcal/macro rings,
-     diet charts). Muted clay — a calm sibling of --color-warning, never used
-     for habits/system chrome. Keeps the palette to two restrained accents. */
-  --color-accent-diet: #a8743f;
-  --color-accent-diet-strong: #855a2e;
-  --color-accent-diet-soft: #f1e4d6;
-  --color-accent-diet-ink: #fdfaf6;
+  /* Diet / food surfaces — warm coral (kcal rings, food chips). */
+  --color-accent-diet: #ef6f53;
+  --color-accent-diet-strong: #d2543a;
+  --color-accent-diet-soft: #fce4dd;
+  --color-accent-diet-ink: #ffffff;
 
-  --color-success: #2f6957;
-  --color-success-soft: #dcece4;
-  --color-warning: #8f5f2b;
-  --color-warning-soft: #f5e7d7;
-  --color-danger: #8a3941;
-  --color-danger-soft: #f5dde0;
-  --color-info: #346079;
-  --color-info-soft: #dce7ef;
-  --color-neutral: #5b6871;
-  --color-neutral-soft: #e8edf0;
+  --color-success: #16a34a;
+  --color-success-soft: #d8f3e1;
+  --color-warning: #e08a17;
+  --color-warning-soft: #fdeccc;
+  --color-danger: #e5533d;
+  --color-danger-soft: #fbe1db;
+  --color-info: #3b86c9;
+  --color-info-soft: #e1eefb;
+  --color-neutral: #6b7a82;
+  --color-neutral-soft: #eef2f0;
 
-  --shadow-soft: 0 20px 60px rgba(18, 27, 33, 0.08);
-  --shadow-panel: 0 24px 80px rgba(17, 27, 34, 0.1);
-  --shadow-focus: 0 0 0 4px rgba(47, 95, 115, 0.18);
+  /* Per-category accent chips (habit icons, stat tiles). Each is a saturated
+     glyph color on a soft tinted background — the playful pastel layer that
+     gives the wellness look its warmth. */
+  --cat-water: #3b9ae1;
+  --cat-water-soft: #e3f1fc;
+  --cat-move: #f0883e;
+  --cat-move-soft: #fdecdb;
+  --cat-mind: #9b7ede;
+  --cat-mind-soft: #efe9fb;
+  --cat-rest: #2bb6a6;
+  --cat-rest-soft: #d8f4f0;
+  --cat-food: #ef6f53;
+  --cat-food-soft: #fce4dd;
+  --cat-streak: #f5a623;
+  --cat-streak-soft: #fdefd4;
 
-  --radius-sm: 0.85rem;
-  --radius-md: 1.15rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 1.9rem;
+  /* Soft, diffuse, low-opacity shadows — cards float gently, never harshly. */
+  --shadow-card: 0 2px 10px rgba(21, 43, 34, 0.04);
+  --shadow-soft: 0 6px 22px rgba(21, 43, 34, 0.05);
+  --shadow-panel: 0 12px 36px rgba(21, 43, 34, 0.07);
+  --shadow-focus: 0 0 0 4px rgba(16, 185, 129, 0.2);
+
+  --radius-sm: 0.7rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.35rem;
+  --radius-xl: 1.6rem;
   --radius-pill: 999px;
 
   --space-1: 0.35rem;
@@ -80,9 +100,9 @@
 
   --weight-regular: 450;
   --weight-medium: 550;
-  --weight-display: 650;
+  --weight-display: 700;
 
-  --tracking-tight: -0.03em;
+  --tracking-tight: -0.01em;
   --tracking-normal: 0;
 
   /* Tabular, lining numerals for rings, streak counts, and chart axes so digits
@@ -106,9 +126,9 @@
 html {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(223, 235, 239, 0.92), transparent 30%),
-    radial-gradient(circle at top right, rgba(228, 235, 238, 0.88), transparent 28%),
-    linear-gradient(180deg, #f6f9f8 0%, var(--color-canvas) 58%, var(--color-canvas-strong) 100%);
+    radial-gradient(120% 90% at 0% 0%, rgba(214, 243, 229, 0.55), transparent 42%),
+    radial-gradient(120% 90% at 100% 0%, rgba(225, 238, 251, 0.45), transparent 40%),
+    linear-gradient(180deg, #f4f8f5 0%, var(--color-canvas) 60%, var(--color-canvas-strong) 100%);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
@@ -128,10 +148,8 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.45), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(198, 214, 220, 0.22), transparent 26%);
-  opacity: 0.9;
+  background: radial-gradient(circle at bottom right, rgba(214, 243, 229, 0.3), transparent 30%);
+  opacity: 0.8;
 }
 
 main,
@@ -153,9 +171,9 @@ h6 {
   margin: 0;
   color: var(--color-heading);
   font-family: var(--font-display);
-  font-weight: 650;
+  font-weight: var(--weight-display);
   line-height: var(--line-title);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-tight);
 }
 
 p {
@@ -191,7 +209,7 @@ textarea {
 
 ::selection {
   color: var(--color-accent-ink);
-  background: rgba(47, 95, 115, 0.72);
+  background: rgba(16, 185, 129, 0.78);
 }
 
 :focus-visible {

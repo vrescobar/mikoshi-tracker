@@ -8,10 +8,11 @@ import { getOverviewStats, getTodaySummary } from "../../lib/auth-client";
 import { useLocale } from "../locale";
 import { Button, SkeletonBlock, StatePanel } from "../ui";
 import { routes } from "../../lib/navigation";
+import { useSession } from "../../src/auth/session";
 import { TodayDashboard } from "../today/today-dashboard";
 import { DashboardFoodSection } from "./dashboard-food-section";
 import { OverviewSection } from "./overview-section";
-import { TodayUnifiedStrip } from "./today-unified-strip";
+import { TodayBoard } from "./today-board";
 import { WeightTodayPanel } from "./weight-today-panel";
 import styles from "./dashboard-shell.module.css";
 
@@ -38,6 +39,7 @@ export function DashboardShell({
 }) {
   const navigate = useNavigate();
   const { copy } = useLocale();
+  const { user } = useSession();
   const [overview, setOverview] = useState(initialOverview);
   const [summary, setSummary] = useState(initialSummary);
   const [loadError, setLoadError] = useState<string | null>(initialLoadError);
@@ -230,11 +232,7 @@ export function DashboardShell({
 
   return (
     <div className={styles.stack}>
-      <TodayUnifiedStrip
-        summary={summary}
-        foodAggregations={initialFoodTodayAggregations}
-        dailyKcalTarget={dailyKcalTarget}
-      />
+      <TodayBoard summary={summary} overview={overview} userName={user.name} />
       <TodayDashboard initialSummary={summary} onActionSettled={refreshOverview} />
       <DashboardFoodSection
           aggregations={initialFoodTodayAggregations}

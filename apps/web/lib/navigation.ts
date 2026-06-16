@@ -32,26 +32,11 @@ export function getPrimaryAppNavigation(labels: {
   // under Habits; /habits currently redirects to the entries view until the
   // dedicated overview page lands.
   return [
-    {
-      href: routes.dashboard,
-      label: labels.dashboard,
-    },
-    {
-      href: routes.habits,
-      label: labels.habits,
-    },
-    {
-      href: routes.food,
-      label: labels.food,
-    },
-    {
-      href: routes.circles,
-      label: labels.circles,
-    },
-    {
-      href: routes.settings,
-      label: labels.settings,
-    },
+    { href: routes.dashboard, label: labels.dashboard, icon: "today" },
+    { href: routes.habits, label: labels.habits, icon: "habits" },
+    { href: routes.food, label: labels.food, icon: "diet" },
+    { href: routes.circles, label: labels.circles, icon: "circles" },
+    { href: routes.settings, label: labels.settings, icon: "settings" },
   ] as const;
 }
 
@@ -62,10 +47,7 @@ export function getUtilityAppNavigation(
   // API access stays a quick utility link until the Settings tabs absorb it;
   // Admin is appended only for operators (route itself is isAdmin-gated).
   return [
-    {
-      href: routes.apiAccess,
-      label: labels.apiAccess,
-    },
-    ...(options.isAdmin ? [{ href: routes.admin, label: labels.admin }] : []),
+    { href: routes.apiAccess, label: labels.apiAccess, icon: "key" as const },
+    ...(options.isAdmin ? [{ href: routes.admin, label: labels.admin, icon: "shield" as const }] : []),
   ];
 }

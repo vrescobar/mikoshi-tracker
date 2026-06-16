@@ -1,9 +1,8 @@
 .surface {
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: var(--radius-xl);
   background: var(--color-surface);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(18px);
 }
 
 .panel {
@@ -11,15 +10,13 @@
 }
 
 .hero {
-  background:
-    linear-gradient(140deg, rgba(255, 255, 255, 0.94) 0%, rgba(240, 246, 247, 0.92) 72%),
-    linear-gradient(120deg, rgba(219, 232, 238, 0.48) 0%, transparent 58%);
-  border-color: var(--color-border-accent);
-  box-shadow: var(--shadow-panel);
+  background: linear-gradient(150deg, var(--color-surface-accent) 0%, var(--color-surface) 58%);
+  box-shadow: var(--shadow-soft);
 }
 
 .soft {
-  background: rgba(245, 248, 248, 0.84);
+  background: var(--color-surface-muted);
+  box-shadow: none;
 }
 
 .paddingMd {
