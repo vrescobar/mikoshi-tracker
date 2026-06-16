@@ -9,6 +9,7 @@ import { useLocale } from "../locale";
 import { Button, SkeletonBlock, StatePanel } from "../ui";
 import { routes } from "../../lib/navigation";
 import { useSession } from "../../src/auth/session";
+import { DietTodayCard } from "./diet-today-card";
 import { HabitsTodayCard } from "./habits-today-card";
 import { TodayBoard } from "./today-board";
 import styles from "./dashboard-shell.module.css";
@@ -18,6 +19,8 @@ export function DashboardShell({
   initialLoadError = null,
   initialOverview,
   initialSummary,
+  initialFoodTodayAggregations = null,
+  dailyKcalTarget = null,
 }: {
   emptyState?: "no-entries" | "habits-empty" | "archived-only" | null;
   initialLoadError?: string | null;
@@ -204,9 +207,15 @@ export function DashboardShell({
     );
   }
 
+  const kcalToday = Math.round(initialFoodTodayAggregations?.total.sum.kcal ?? 0);
+  const mealCount = initialFoodTodayAggregations?.total.count ?? 0;
+  const kcalTarget = summary.nutrition?.kcalTarget ?? dailyKcalTarget ?? null;
+  const showDiet = mealCount > 0 || kcalTarget != null;
+
   return (
     <div className={styles.stack}>
       <TodayBoard summary={summary} overview={overview} userName={user.name} />
+      {showDiet ? <DietTodayCard kcalToday={kcalToday} mealCount={mealCount} kcalTarget={kcalTarget} /> : null}
       <HabitsTodayCard initialSummary={summary} onChanged={refreshOverview} />
     </div>
   );

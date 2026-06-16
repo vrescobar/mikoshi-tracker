@@ -1,0 +1,68 @@
+.card {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent-diet);
+  text-decoration: none;
+}
+
+.open:hover {
+  text-decoration: underline;
+}
+
+.body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.meta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.meals {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.remaining {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.remaining strong {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-xl);
+  font-variant-numeric: var(--font-numeric);
+  color: var(--color-heading);
+}
+
+@media (max-width: 620px) {
+  .body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+}
