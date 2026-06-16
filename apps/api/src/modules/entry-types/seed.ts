@@ -81,6 +81,10 @@ const FOOD_MEAL_PAYLOAD_SCHEMA = JSON.stringify({
     },
     confidence: { type: "number", minimum: 0, maximum: 1 },
     similarToEventId: { type: "string", nullable: true },
+    // Epic B: optional back-reference to the saved food_item this meal was
+    // logged from (one-tap re-log). Additive + optional, so existing food_meal
+    // events stay valid under the strict object.
+    fromFoodItemId: { type: "string", nullable: true },
     sources: { type: "array", items: { type: "string" }, nullable: true },
     notes: { type: "string", nullable: true },
   },
@@ -163,6 +167,138 @@ const TEMPTATION_AGGREGATIONS = JSON.stringify({
   groupBy: ["day", "week", "month"],
 });
 
+// ─── Diet goal (Epic B) ─────────────────────────────────────────────────────
+// History-aware event_log: each goal change is a dated event, so the engine
+// gives us a free audit trail of how a user's targets evolved. The ACTIVE goal
+// is simply the latest non-deleted event (resolved with a single query, not an
+// aggregation). Per-meal-slot targets are fixed fields because the JSON-Schema
+// → Zod compiler does not support arbitrary-keyed maps.
+const DIET_GOAL_PAYLOAD_SCHEMA = JSON.stringify({
+  type: "object",
+  required: ["kcalTarget"],
+  properties: {
+    kcalTarget: { type: "number", minimum: 1 },
+    proteinTargetG: { type: "number", minimum: 0, nullable: true },
+    carbsTargetG: { type: "number", minimum: 0, nullable: true },
+    fatTargetG: { type: "number", minimum: 0, nullable: true },
+    macroMode: { type: "string", enum: ["grams", "percent"], nullable: true },
+    proteinPct: { type: "number", minimum: 0, maximum: 100, nullable: true },
+    carbsPct: { type: "number", minimum: 0, maximum: 100, nullable: true },
+    fatPct: { type: "number", minimum: 0, maximum: 100, nullable: true },
+    breakfastKcal: { type: "number", minimum: 0, nullable: true },
+    lunchKcal: { type: "number", minimum: 0, nullable: true },
+    dinnerKcal: { type: "number", minimum: 0, nullable: true },
+    snackKcal: { type: "number", minimum: 0, nullable: true },
+    objective: { type: "string", enum: ["lose", "maintain", "gain"], nullable: true },
+    linkedWeightGoalKg: { type: "number", minimum: 1, nullable: true },
+    effectiveFrom: { type: "string", nullable: true },
+    source: { type: "string", enum: ["manual", "ai", "computed"], nullable: true },
+    confidence: { type: "number", minimum: 0, maximum: 1, nullable: true },
+    notes: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const DIET_GOAL_CONFIG_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {},
+  additionalProperties: false,
+});
+
+const DIET_GOAL_AGGREGATIONS = JSON.stringify({
+  metrics: ["count"],
+  sumFields: [],
+});
+
+// ─── Food item / recipe library (Epic B) ────────────────────────────────────
+// A reusable abstract food or recipe a user saves once and re-logs many times.
+// Uses event_log cadence — persistEvent treats it as an event log, so each
+// save is an event and edits keep the immutable audit trail. Macros are per
+// `defaultPortionG`.
+const FOOD_ITEM_PAYLOAD_SCHEMA = JSON.stringify({
+  type: "object",
+  required: ["name", "kcal", "protein_g", "carbs_g", "fat_g"],
+  properties: {
+    name: { type: "string", minLength: 1 },
+    aliases: { type: "array", items: { type: "string" }, nullable: true },
+    defaultPortionG: { type: "number", minimum: 0, nullable: true },
+    kcal: { type: "number", minimum: 0 },
+    protein_g: { type: "number", minimum: 0 },
+    carbs_g: { type: "number", minimum: 0 },
+    fat_g: { type: "number", minimum: 0 },
+    fiber_g: { type: "number", minimum: 0, nullable: true },
+    sugar_g: { type: "number", minimum: 0, nullable: true },
+    isRecipe: { type: "boolean", nullable: true },
+    ingredients: {
+      type: "array",
+      nullable: true,
+      items: {
+        type: "object",
+        required: ["foodItemEventId", "amountG"],
+        properties: {
+          foodItemEventId: { type: "string", minLength: 1 },
+          amountG: { type: "number", minimum: 0 },
+        },
+        additionalProperties: false,
+      },
+    },
+    source: {
+      type: "string",
+      enum: ["label", "web_lookup", "vision_only", "manual", "ai"],
+      nullable: true,
+    },
+    confidence: { type: "number", minimum: 0, maximum: 1, nullable: true },
+    sources: { type: "array", items: { type: "string" }, nullable: true },
+    notes: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const FOOD_ITEM_CONFIG_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {},
+  additionalProperties: false,
+});
+
+const FOOD_ITEM_AGGREGATIONS = JSON.stringify({
+  metrics: ["count"],
+  sumFields: [],
+});
+
+// ─── Diet preferences (Epic B) ──────────────────────────────────────────────
+// A per-user singleton: one diet_prefs Entry whose `config` holds the user's
+// dietary preferences. Edited through the existing PATCH /api/entries/:id path;
+// events are unused (the payload schema stays minimal). The food skill reads
+// these to tune estimation (default slot, allergy warnings, units).
+const DIET_PREFS_PAYLOAD_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {
+    note: { type: "string", nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const DIET_PREFS_CONFIG_SCHEMA = JSON.stringify({
+  type: "object",
+  properties: {
+    dietStyle: { type: "string", nullable: true },
+    allergies: { type: "array", items: { type: "string" }, nullable: true },
+    dislikes: { type: "array", items: { type: "string" }, nullable: true },
+    defaultMealSlot: {
+      type: "string",
+      enum: ["breakfast", "lunch", "snack", "dinner", "other"],
+      nullable: true,
+    },
+    units: { type: "string", enum: ["metric", "imperial"], nullable: true },
+  },
+  additionalProperties: false,
+});
+
+const DIET_PREFS_AGGREGATIONS = JSON.stringify({
+  metrics: [],
+  sumFields: [],
+});
+
 const BUILT_IN_ENTRY_TYPES: Array<{
   slug: string;
   displayName: string;
@@ -221,6 +357,39 @@ const BUILT_IN_ENTRY_TYPES: Array<{
     configSchema: TEMPTATION_CONFIG_SCHEMA,
     aggregations: TEMPTATION_AGGREGATIONS,
     skillSlug: null,
+    isBuiltIn: true,
+  },
+  {
+    slug: "diet_goal",
+    displayName: "entry_type.diet_goal",
+    cadence: "event_log",
+    payloadSchema: DIET_GOAL_PAYLOAD_SCHEMA,
+    configSchema: DIET_GOAL_CONFIG_SCHEMA,
+    aggregations: DIET_GOAL_AGGREGATIONS,
+    skillSlug: "mikoshi-tracker-food",
+    isBuiltIn: true,
+  },
+  {
+    slug: "food_item",
+    displayName: "entry_type.food_item",
+    // event_log (not a bespoke "library" cadence) so it stays within the
+    // recurring|event_log contract enum. persistEvent treats it as an event
+    // log; the reusable-library semantic is carried by the slug + food skill.
+    cadence: "event_log",
+    payloadSchema: FOOD_ITEM_PAYLOAD_SCHEMA,
+    configSchema: FOOD_ITEM_CONFIG_SCHEMA,
+    aggregations: FOOD_ITEM_AGGREGATIONS,
+    skillSlug: "mikoshi-tracker-food",
+    isBuiltIn: true,
+  },
+  {
+    slug: "diet_prefs",
+    displayName: "entry_type.diet_prefs",
+    cadence: "event_log",
+    payloadSchema: DIET_PREFS_PAYLOAD_SCHEMA,
+    configSchema: DIET_PREFS_CONFIG_SCHEMA,
+    aggregations: DIET_PREFS_AGGREGATIONS,
+    skillSlug: "mikoshi-tracker-food",
     isBuiltIn: true,
   },
 ];

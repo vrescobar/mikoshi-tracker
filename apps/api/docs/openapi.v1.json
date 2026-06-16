@@ -947,6 +947,93 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "proteinTargetG": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "carbsTargetG": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "fatTargetG": {
+                    "anyOf": [
+                      {
+                        "type": "number",
+                        "minimum": 0
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "objective": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": [
+                          "lose",
+                          "maintain",
+                          "gain"
+                        ]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bySlot": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "slot": {
+                          "type": "string",
+                          "enum": [
+                            "breakfast",
+                            "lunch",
+                            "snack",
+                            "dinner",
+                            "other"
+                          ]
+                        },
+                        "kcal": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "kcalTarget": {
+                          "anyOf": [
+                            {
+                              "type": "number",
+                              "exclusiveMinimum": 0
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "slot",
+                        "kcal",
+                        "kcalTarget"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "required": [
@@ -955,7 +1042,12 @@
                   "carbs_g",
                   "fat_g",
                   "mealCount",
-                  "kcalTarget"
+                  "kcalTarget",
+                  "proteinTargetG",
+                  "carbsTargetG",
+                  "fatTargetG",
+                  "objective",
+                  "bySlot"
                 ],
                 "additionalProperties": false
               },
@@ -5778,6 +5870,93 @@
                                           "type": "null"
                                         }
                                       ]
+                                    },
+                                    "proteinTargetG": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "carbsTargetG": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "fatTargetG": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number",
+                                          "minimum": 0
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "objective": {
+                                      "anyOf": [
+                                        {
+                                          "type": "string",
+                                          "enum": [
+                                            "lose",
+                                            "maintain",
+                                            "gain"
+                                          ]
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "bySlot": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "slot": {
+                                            "type": "string",
+                                            "enum": [
+                                              "breakfast",
+                                              "lunch",
+                                              "snack",
+                                              "dinner",
+                                              "other"
+                                            ]
+                                          },
+                                          "kcal": {
+                                            "type": "number",
+                                            "minimum": 0
+                                          },
+                                          "kcalTarget": {
+                                            "anyOf": [
+                                              {
+                                                "type": "number",
+                                                "exclusiveMinimum": 0
+                                              },
+                                              {
+                                                "type": "null"
+                                              }
+                                            ]
+                                          }
+                                        },
+                                        "required": [
+                                          "slot",
+                                          "kcal",
+                                          "kcalTarget"
+                                        ],
+                                        "additionalProperties": false
+                                      }
                                     }
                                   },
                                   "required": [
@@ -5786,7 +5965,12 @@
                                     "carbs_g",
                                     "fat_g",
                                     "mealCount",
-                                    "kcalTarget"
+                                    "kcalTarget",
+                                    "proteinTargetG",
+                                    "carbsTargetG",
+                                    "fatTargetG",
+                                    "objective",
+                                    "bySlot"
                                   ],
                                   "additionalProperties": false
                                 },

@@ -42,6 +42,15 @@ export const todayItemSchema = z.object({
  * who actually log food (have an active food_meal entry); null otherwise so the
  * habit-only experience is unchanged. Sums exclude soft-deleted events.
  */
+export const todayMealSlotSchema = z.enum(["breakfast", "lunch", "snack", "dinner", "other"]);
+
+/** Consumed-vs-target kcal for one meal slot, when the active goal sets slot targets. */
+export const todaySlotProgressSchema = z.object({
+  slot: todayMealSlotSchema,
+  kcal: z.number().nonnegative(),
+  kcalTarget: z.number().positive().nullable(),
+});
+
 export const todayNutritionSchema = z.object({
   kcal: z.number().nonnegative(),
   protein_g: z.number().nonnegative(),
@@ -49,6 +58,14 @@ export const todayNutritionSchema = z.object({
   fat_g: z.number().nonnegative(),
   mealCount: z.number().int().nonnegative(),
   kcalTarget: z.number().positive().nullable(),
+  /** Macro targets from the active diet_goal (grams). Null when unset. */
+  proteinTargetG: z.number().nonnegative().nullable(),
+  carbsTargetG: z.number().nonnegative().nullable(),
+  fatTargetG: z.number().nonnegative().nullable(),
+  /** Goal objective, surfaced for copy ("on track to maintain"). */
+  objective: z.enum(["lose", "maintain", "gain"]).nullable(),
+  /** Per-slot consumed vs target; empty when the goal sets no slot targets. */
+  bySlot: z.array(todaySlotProgressSchema),
 });
 
 export const todaySummarySchema = z.object({
@@ -99,6 +116,8 @@ export type TodayFrequencyType = z.infer<typeof todayFrequencyTypeSchema>;
 export type TodayWeekday = z.infer<typeof todayWeekdaySchema>;
 export type TodayProgress = z.infer<typeof todayProgressSchema>;
 export type TodayItem = z.infer<typeof todayItemSchema>;
+export type TodayMealSlot = z.infer<typeof todayMealSlotSchema>;
+export type TodaySlotProgress = z.infer<typeof todaySlotProgressSchema>;
 export type TodayNutrition = z.infer<typeof todayNutritionSchema>;
 export type TodaySummary = z.infer<typeof todaySummarySchema>;
 export type TodayAffectedHabit = z.infer<typeof todayAffectedHabitSchema>;

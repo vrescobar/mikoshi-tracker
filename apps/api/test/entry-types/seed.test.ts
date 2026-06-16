@@ -17,7 +17,7 @@ describe("seedBuiltInEntryTypes", () => {
     }
   });
 
-  it("inserts the five built-in entry type slugs", async () => {
+  it("inserts the built-in entry type slugs", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
 
     const types = await context!.app.db.entryType.findMany({
@@ -31,6 +31,9 @@ describe("seedBuiltInEntryTypes", () => {
     expect(slugs).toContain("habit_quantity");
     expect(slugs).toContain("weight_log");
     expect(slugs).toContain("temptation");
+    expect(slugs).toContain("diet_goal");
+    expect(slugs).toContain("food_item");
+    expect(slugs).toContain("diet_prefs");
   });
 
   it("stores payloadSchemas that parse as valid JSON Schema objects", async () => {
@@ -40,7 +43,7 @@ describe("seedBuiltInEntryTypes", () => {
       orderBy: { slug: "asc" },
     });
 
-    expect(types).toHaveLength(5);
+    expect(types).toHaveLength(8);
 
     for (const type of types) {
       const schema = JSON.parse(type.payloadSchema) as unknown;
@@ -62,12 +65,32 @@ describe("seedBuiltInEntryTypes", () => {
     expect(inactive).toHaveLength(0);
   });
 
-  it("is idempotent — calling twice leaves exactly 5 rows", async () => {
+  it("is idempotent — calling twice leaves exactly 8 rows", async () => {
     await seedBuiltInEntryTypes(context!.app.db);
     await seedBuiltInEntryTypes(context!.app.db);
 
     const count = await context!.app.db.entryType.count();
-    expect(count).toBe(5);
+    expect(count).toBe(8);
+  });
+
+  it("seeds diet_goal / food_item / diet_prefs as food-skill diet types", async () => {
+    await seedBuiltInEntryTypes(context!.app.db);
+
+    const [goal, item, prefs] = await Promise.all([
+      context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "diet_goal" } }),
+      context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "food_item" } }),
+      context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "diet_prefs" } }),
+    ]);
+
+    expect(goal.skillSlug).toBe("mikoshi-tracker-food");
+    expect(item.cadence).toBe("event_log");
+    expect(prefs.skillSlug).toBe("mikoshi-tracker-food");
+
+    const goalPayload = JSON.parse(goal.payloadSchema) as { required: string[] };
+    expect(goalPayload.required).toContain("kcalTarget");
+
+    const prefsConfig = JSON.parse(prefs.configSchema) as { properties: Record<string, unknown> };
+    expect(prefsConfig.properties).toHaveProperty("allergies");
   });
 
   it("seeds the temptation journal as an event_log type with a resistedValue sum field", async () => {

@@ -1,7 +1,8 @@
-import type { TodayNutrition, TodaySummary } from "@mikoshi-tracker/contracts/today";
+import type { TodayMealSlot, TodayNutrition, TodaySlotProgress, TodaySummary } from "@mikoshi-tracker/contracts/today";
 
 import type { PrismaClient } from "../../generated/prisma/client";
 import { computeAggregations } from "../aggregations/aggregation.service";
+import { resolveActiveDietGoal } from "../diet/diet.service";
 import {
   serializeContractFrequencyType,
   serializeContractHabitKind,
@@ -42,18 +43,35 @@ async function computeNutrition(
   });
   const sum = agg.total.sum;
 
-  let kcalTarget: number | null = null;
-  for (const entry of foodEntries) {
-    try {
-      const cfg = JSON.parse(entry.config) as { dailyKcalTarget?: unknown };
-      if (typeof cfg.dailyKcalTarget === "number" && cfg.dailyKcalTarget > 0) {
-        kcalTarget = cfg.dailyKcalTarget;
-        break;
+  // Prefer the history-aware diet_goal; fall back to the legacy
+  // food_meal.config.dailyKcalTarget so users who set a target before goals
+  // existed keep theirs.
+  const goal = await resolveActiveDietGoal(deps, userId);
+
+  let kcalTarget: number | null = goal?.kcalTarget ?? null;
+  if (kcalTarget === null) {
+    for (const entry of foodEntries) {
+      try {
+        const cfg = JSON.parse(entry.config) as { dailyKcalTarget?: unknown };
+        if (typeof cfg.dailyKcalTarget === "number" && cfg.dailyKcalTarget > 0) {
+          kcalTarget = cfg.dailyKcalTarget;
+          break;
+        }
+      } catch {
+        // Malformed config is ignored; the target simply stays null.
       }
-    } catch {
-      // Malformed config is ignored; the target simply stays null.
     }
   }
+
+  const slotTargets: Record<TodayMealSlot, number | null> = {
+    breakfast: numericOrNull(goal?.breakfastKcal),
+    lunch: numericOrNull(goal?.lunchKcal),
+    dinner: numericOrNull(goal?.dinnerKcal),
+    snack: numericOrNull(goal?.snackKcal),
+    other: null,
+  };
+
+  const bySlot = await computeSlotProgress(deps, userId, todayKey, slotTargets);
 
   return {
     kcal: sum.kcal ?? 0,
@@ -62,7 +80,55 @@ async function computeNutrition(
     fat_g: sum.fat_g ?? 0,
     mealCount: agg.total.count,
     kcalTarget,
+    proteinTargetG: numericOrNull(goal?.proteinTargetG),
+    carbsTargetG: numericOrNull(goal?.carbsTargetG),
+    fatTargetG: numericOrNull(goal?.fatTargetG),
+    objective: goal?.objective ?? null,
+    bySlot,
   };
+}
+
+const MEAL_SLOTS: readonly TodayMealSlot[] = ["breakfast", "lunch", "dinner", "snack", "other"];
+
+function numericOrNull(value: number | null | undefined): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Per-slot consumed-vs-target kcal for today. Groups today's food events by the
+ * `mealSlot` payload field and pairs each slot's consumption with its goal
+ * target. Emits a row only for slots that have either consumption or a target,
+ * so the dashboard stays quiet for users who don't track per slot.
+ */
+async function computeSlotProgress(
+  deps: TodayServiceDeps,
+  userId: string,
+  todayKey: string,
+  slotTargets: Record<TodayMealSlot, number | null>,
+): Promise<TodaySlotProgress[]> {
+  const grouped = await computeAggregations(deps, {
+    userId,
+    entryTypeSlug: FOOD_MEAL_SLUG,
+    from: todayKey,
+    to: todayKey,
+    groupBy: "none",
+    groupByPayload: "mealSlot",
+  });
+
+  const consumed = new Map<string, number>();
+  for (const bucket of grouped.buckets) {
+    const slot = bucket.key.kind === "payload" ? String(bucket.key.value) : "";
+    consumed.set(slot, (consumed.get(slot) ?? 0) + (bucket.sum.kcal ?? 0));
+  }
+
+  const rows: TodaySlotProgress[] = [];
+  for (const slot of MEAL_SLOTS) {
+    const kcal = consumed.get(slot) ?? 0;
+    const kcalTarget = slotTargets[slot];
+    if (kcal === 0 && kcalTarget === null) continue;
+    rows.push({ slot, kcal, kcalTarget });
+  }
+  return rows;
 }
 
 type PeriodCounter = {
