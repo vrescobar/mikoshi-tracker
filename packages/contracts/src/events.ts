@@ -79,9 +79,12 @@ export const updateEventInputSchema = z
   .strictObject({
     payload: z.unknown().optional(),
     note: z.string().trim().min(1).nullable().optional(),
+    /** Move the event to a different moment. The server recomputes the day
+     *  bucket (dateKey) from the new time. Lets a user fix "lo comí ayer". */
+    occurredAt: isoDateTimeSchema.optional(),
   })
-  .refine((v) => v.payload !== undefined || v.note !== undefined, {
-    message: "At least one of payload or note must be provided",
+  .refine((v) => v.payload !== undefined || v.note !== undefined || v.occurredAt !== undefined, {
+    message: "At least one of payload, note, or occurredAt must be provided",
   });
 
 // ─── Response schemas ─────────────────────────────────────────────────────────

@@ -123,22 +123,21 @@ export async function updateEventRecord(
   db: PrismaClient,
   params: {
     eventId: string;
-    payload: string;
-    value: number | null;
-    completed: boolean | null;
+    payload?: string;
+    value?: number | null;
+    completed?: boolean | null;
+    occurredAt?: Date;
+    dateKey?: string;
   },
 ): Promise<EventWithMutations> {
-  const data: Prisma.EntryEventUpdateInput = { payload: params.payload };
-  if (params.value !== null) {
-    data.value = params.value;
-  } else {
-    data.value = undefined;
+  const data: Prisma.EntryEventUpdateInput = {};
+  if (params.payload !== undefined) data.payload = params.payload;
+  if (params.value !== undefined) data.value = params.value === null ? undefined : params.value;
+  if (params.completed !== undefined) {
+    data.completed = params.completed === null ? undefined : params.completed;
   }
-  if (params.completed !== null) {
-    data.completed = params.completed;
-  } else {
-    data.completed = undefined;
-  }
+  if (params.occurredAt !== undefined) data.occurredAt = params.occurredAt;
+  if (params.dateKey !== undefined) data.dateKey = params.dateKey;
 
   return db.entryEvent.update({
     where: { id: params.eventId },

@@ -351,18 +351,32 @@ export async function updateEvent(
   let newValue: number | null = event.value !== null && event.value !== undefined ? Number(event.value) : null;
   let newCompleted: boolean | null = event.completed ?? null;
 
+  // Moving the event in time recomputes its day bucket (dateKey) from the new
+  // moment, using the same cutoff rule as creation — so an edited time lands the
+  // meal on the right day.
+  let newOccurredAt: Date | undefined;
+  let newDateKey = event.dateKey;
+  if (patch.occurredAt !== undefined) {
+    newOccurredAt = new Date(patch.occurredAt);
+    const cutoffHour = entry.entryType.cadence === "recurring" ? 4 : 0;
+    newDateKey = resolveDateKey(entry.user.timezone, newOccurredAt, cutoffHour);
+  }
+
   if (patch.payload !== undefined) {
     const validated = await validatePayload(deps, entry.entryTypeId, patch.payload);
     newPayloadStr = JSON.stringify(validated);
     const projections = extractProjections(validated);
     newValue = projections.value;
     newCompleted = projections.completed;
+  }
 
+  if (patch.payload !== undefined || newOccurredAt !== undefined) {
     await updateEventRecord(deps.db, {
       eventId: event.id,
-      payload: newPayloadStr,
-      value: newValue,
-      completed: newCompleted,
+      ...(patch.payload !== undefined
+        ? { payload: newPayloadStr, value: newValue, completed: newCompleted }
+        : {}),
+      ...(newOccurredAt !== undefined ? { occurredAt: newOccurredAt, dateKey: newDateKey } : {}),
     });
   }
 
@@ -370,7 +384,7 @@ export async function updateEvent(
     entryId: event.entryId,
     eventId: event.id,
     userId: params.userId,
-    dateKey: event.dateKey,
+    dateKey: newDateKey,
     type: "UPDATE",
     source: "WEB",
     note: patch.note ?? null,

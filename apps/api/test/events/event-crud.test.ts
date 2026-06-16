@@ -122,6 +122,36 @@ describe("events CRUD", () => {
     expect(doubleDelete.json()).toMatchObject({ code: "EVENT_DELETED" });
   });
 
+  it("edits a meal's time (occurredAt) and recomputes its day bucket", async () => {
+    const { cookie } = await signUp(context!.app);
+    const entryId = await createFoodEntry(context!, cookie);
+
+    const createResponse = await context!.app.inject({
+      method: "POST",
+      url: `/api/entries/${entryId}/events`,
+      headers: { cookie },
+      payload: { occurredAt: "2026-05-21T08:00:00.000Z", payload: FOOD_PAYLOAD },
+    });
+    const eventId = (createResponse.json() as { item: { id: string; dateKey: string } }).item.id;
+
+    // Move it to the previous day, no payload change. The default user timezone
+    // is Asia/Shanghai (UTC+8), so 2026-05-19T20:00Z = 2026-05-20 04:00 local.
+    const moved = await context!.app.inject({
+      method: "PATCH",
+      url: `/api/events/${eventId}`,
+      headers: { cookie },
+      payload: { occurredAt: "2026-05-19T20:00:00.000Z" },
+    });
+    expect(moved.statusCode).toBe(200);
+    const item = (moved.json() as {
+      item: { occurredAt: string; dateKey: string; payload: { kcal: number }; mutations: Array<{ type: string }> };
+    }).item;
+    expect(item.occurredAt).toBe("2026-05-19T20:00:00.000Z");
+    expect(item.dateKey).toBe("2026-05-20"); // recomputed from the new time (local day)
+    expect(item.payload.kcal).toBe(FOOD_PAYLOAD.kcal); // payload untouched
+    expect(item.mutations.map((m) => m.type)).toEqual(["CREATE", "UPDATE"]);
+  });
+
   it("returns 404 when posting to a missing entry and reading a missing event", async () => {
     const { cookie } = await signUp(context!.app);
 
