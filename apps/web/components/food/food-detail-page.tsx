@@ -98,9 +98,10 @@ export function isDeleted(event: EntryEventDetail): boolean {
   return sorted[0]?.type === "DELETE";
 }
 
-function formatDiffValue(value: unknown, removedLabel: string): string {
-  if (value === undefined) return removedLabel;
-  if (value === null) return "null";
+function formatDiffValue(value: unknown): string {
+  // An absent value (field not present, or explicitly null) reads as a neutral
+  // dash — never "eliminado". Direction is conveyed by the before → after arrow.
+  if (value === undefined || value === null) return "—";
   if (typeof value === "string") return value;
   if (typeof value === "number" || typeof value === "boolean") return String(value);
   return JSON.stringify(value);
@@ -132,9 +133,17 @@ function MutationRow({
             <li key={entry.field} className={styles.mutationDiffItem}>
               <span className={styles.mutationDiffField}>{entry.field}</span>
               <span className={styles.mutationDiffValue}>
-                {formatDiffValue(entry.before, copy.diff.removed)}
-                <span aria-hidden="true"> → </span>
-                {formatDiffValue(entry.after, copy.diff.removed)}
+                {entry.before !== undefined ? (
+                  <>
+                    {formatDiffValue(entry.before)}
+                    <span aria-hidden="true"> → </span>
+                    {formatDiffValue(entry.after)}
+                  </>
+                ) : (
+                  // Field was set by this mutation (e.g. CREATE) — show the value,
+                  // not a "— → value" diff that reads like something was removed.
+                  formatDiffValue(entry.after)
+                )}
               </span>
             </li>
           ))}
@@ -463,7 +472,21 @@ export function FoodDetailPage({ initialEvent }: FoodDetailPageProps) {
           ) : null}
         </div>
 
-        {/* Delete section */}
+        {/* Audit trail */}
+        <div className={styles.section}>
+          <h2 className={styles.sectionTitle}>{copy.mutations.title}</h2>
+          {sortedMutations.length === 0 ? (
+            <p className={styles.muted}>{copy.mutations.emptyState}</p>
+          ) : (
+            <div className={styles.mutationList}>
+              {sortedMutations.map((m) => (
+                <MutationRow key={m.id} mutation={m} copy={copy.mutations} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Delete section — kept at the very bottom (destructive action last) */}
         {!deleted ? (
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>{copy.deleteSection.title}</h2>
@@ -502,20 +525,6 @@ export function FoodDetailPage({ initialEvent }: FoodDetailPageProps) {
             </Button>
           </div>
         )}
-
-        {/* Audit trail */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>{copy.mutations.title}</h2>
-          {sortedMutations.length === 0 ? (
-            <p className={styles.muted}>{copy.mutations.emptyState}</p>
-          ) : (
-            <div className={styles.mutationList}>
-              {sortedMutations.map((m) => (
-                <MutationRow key={m.id} mutation={m} copy={copy.mutations} />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
