@@ -1,0 +1,36 @@
+.list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(12rem, 1.6fr) minmax(10rem, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.meta {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--text-lg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frequency {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+}

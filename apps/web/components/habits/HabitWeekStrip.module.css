@@ -1,0 +1,59 @@
+.strip {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.day {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: center;
+}
+
+.letter {
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cell {
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 0.55rem;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface-muted);
+  transition: transform 0.12s ease;
+}
+
+.cell:hover {
+  transform: translateY(-1px);
+}
+
+/* Completed — solid teal. */
+.cell[data-status="completed"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent-strong);
+}
+
+/* Today, not yet done — soft, inviting. */
+.cell[data-status="pending"] {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  border-style: dashed;
+}
+
+/* Missed — hollow with a quiet danger ring (never alarmist). */
+.cell[data-status="missed"] {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+  opacity: 0.65;
+}
+
+/* Not due (e.g. a weekday-only habit on the weekend) — faint placeholder. */
+.cell[data-status="not_due"] {
+  background: transparent;
+  border-style: dotted;
+  border-color: var(--color-border);
+  opacity: 0.5;
+}

@@ -14,6 +14,7 @@ const FoodDetailRoute = lazy(() => import("./pages/food-detail-route"));
 const WeightPageRoute = lazy(() => import("./pages/weight-page-route"));
 const CirclesRoute = lazy(() => import("./pages/circles-route"));
 const CircleDetailRoute = lazy(() => import("./pages/circle-detail-route"));
+const HabitsOverviewRoute = lazy(() => import("./pages/habits-overview-route"));
 const SettingsRoute = lazy(() => import("./pages/settings-route"));
 const SettingsSkillsRoute = lazy(() => import("./pages/settings-skills-route"));
 const ApiAccessRoute = lazy(() => import("./pages/api-access-route"));
@@ -72,8 +73,9 @@ export const routeConfig = [
           { path: "tokens", element: page(<TokensView />) },
         ],
       },
-      // Legacy habit routes — preserved redirects from the Next pages.
-      { path: "/habits", element: <Navigate to={routes.habitEntries} replace /> },
+      // Habits overview: weekly compliance grid + frequency-aware streaks.
+      { path: "/habits", element: page(<HabitsOverviewRoute />) },
+      // Remaining legacy habit routes — preserved redirects from the Next pages.
       { path: "/habits/new", element: <Navigate to={routes.habitEntries} replace /> },
       { path: "/habits/:habitId", element: <Navigate to={routes.habitEntries} replace /> },
       { path: "*", element: page(<NotFoundPage />) },
