@@ -1,0 +1,93 @@
+.wrap {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+}
+
+.mealCount {
+  font-size: var(--text-sm);
+  color: var(--color-text-soft);
+}
+
+.ringRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  justify-content: center;
+}
+
+.remaining {
+  display: grid;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.remainingValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-2xl);
+  font-variant-numeric: var(--font-numeric);
+  color: var(--color-heading);
+}
+
+.macros {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+.macroTile {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.macroDot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: var(--radius-pill);
+  margin-bottom: 0.15rem;
+}
+
+.macroValue {
+  font-family: var(--font-display);
+  font-weight: var(--weight-display);
+  font-size: var(--text-lg);
+  font-variant-numeric: var(--font-numeric);
+  color: var(--color-heading);
+}
+
+.macroLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-soft);
+}
+
+@media (max-width: 620px) {
+  .macros {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .ringRow {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+}

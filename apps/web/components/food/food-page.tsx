@@ -9,7 +9,7 @@ import { routes } from "../../lib/navigation";
 import { ProposalDialog } from "../ai/ProposalDialog";
 import { useLocale } from "../locale";
 import { Button, PageFrame, PageHeader, StatePanel, Surface } from "../ui";
-import { DayTotalsStrip } from "./DayTotalsStrip";
+import { FoodSummaryCard } from "./food-summary-card";
 import { FoodEventCard } from "./FoodEventCard";
 import { RepeatsPanel } from "./RepeatsPanel";
 import styles from "./food-page.module.css";
@@ -94,7 +94,7 @@ export function FoodPage({
 
       {events.length > 0 ? (
         <div className={styles.body}>
-          <DayTotalsStrip events={events} />
+          <FoodSummaryCard events={events} />
 
           <RepeatsPanel
             aggregations={initialRepeats}
