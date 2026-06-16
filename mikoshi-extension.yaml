@@ -28,6 +28,9 @@ endpoints:
   provision: /api/platform/provision
   issueMagicLink: /api/platform/issue-magic-link
   identityEvents: /hooks/identity
+  # Dump consistente (VACUUM INTO) ante un POST firmado por el kernel (HMAC).
+  # Lo consume ExtensionBackupPuller → data/ext-backups/tracker/.
+  backup: /api/platform/backup
 capabilities:
   groupAccess: true
   cronWebhooks: false

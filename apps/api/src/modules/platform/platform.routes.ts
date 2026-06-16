@@ -7,6 +7,7 @@ import { createMikoshiPlatformClient } from "./mikoshi-platform-client";
 import { pullAllCohortCircles } from "./membership-sync";
 import {
   identityWebhookHandler,
+  platformBackupHandler,
   platformMembershipHandler,
   platformProvisionHandler,
 } from "./platform.controller";
@@ -77,4 +78,9 @@ export async function registerPlatformRoutes(app: FastifyInstance) {
   // see identityWebhookHandler. Reachable only on the private plane; the
   // public edge 404s /hooks/* via vhost hardening (story 63).
   app.post("/hooks/identity", identityWebhookHandler);
+
+  // Snapshot-pull de respaldo (BKP-1). Como /hooks/identity, la firma HMAC ES
+  // la credencial (sin bearer): solo Mikoshi, que posee la admin key, puede
+  // disparar el dump. Plano privado únicamente.
+  app.post("/api/platform/backup", platformBackupHandler);
 }
