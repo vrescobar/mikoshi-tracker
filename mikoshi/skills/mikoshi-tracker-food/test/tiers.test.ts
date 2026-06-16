@@ -290,6 +290,60 @@ describe("manual path", () => {
     expect(out.action).toBe("logged");
     expect(out.photo_attached).toBe(false);
   });
+
+  test("always sends occurredAt (the events endpoint requires it)", async () => {
+    await runFoodSkill(
+      makeEnvelope("food_log_from_input", {
+        manual: true,
+        name: "Sin hora",
+        kcal: 100,
+        protein_g: 5,
+        carbs_g: 10,
+        fat_g: 3,
+        // no occurred_at provided
+      }),
+      makeEnv(),
+    );
+    const createCall = requestLog.find((r) => r.method === "POST" && r.path.endsWith("/events"));
+    expect(createCall).toBeTruthy();
+    expect(typeof (createCall!.body as { occurredAt?: unknown }).occurredAt).toBe("string");
+  });
+
+  test("unwraps the { item } response so the photo attaches to the real event id", async () => {
+    // The REST endpoint wraps the created event as { item: {...} }.
+    trackerResponseOverride = (_req, pathname) => {
+      if (pathname.startsWith("/entries/") && pathname.endsWith("/events")) {
+        return Response.json(
+          { item: { id: "evt-wrapped-123", occurredAt: "2026-05-22T12:00:00.000Z", dateKey: "2026-05-22", payload: {}, createdAt: "2026-05-22T12:00:00.000Z" } },
+          { status: 201 },
+        );
+      }
+      if (pathname === "/attachments/event") {
+        return Response.json({ attachment: { id: "att-1", url: "/api/attachments/att-1/file" } }, { status: 201 });
+      }
+      return null;
+    };
+
+    const result = await runFoodSkill(
+      makeEnvelope("food_log_from_input", {
+        manual: true,
+        name: "Wrapped",
+        kcal: 120,
+        protein_g: 6,
+        carbs_g: 12,
+        fat_g: 4,
+        image_base64: "ZmFrZWltYWdl",
+      }),
+      makeEnv(),
+    );
+
+    expect(result.status).toBe("succeeded");
+    if (result.status !== "succeeded") return;
+    expect((result.output as Record<string, unknown>).event_id).toBe("evt-wrapped-123");
+    expect((result.output as Record<string, unknown>).photo_attached).toBe(true);
+    const attachCall = requestLog.find((r) => r.method === "POST" && r.path === "/attachments/event");
+    expect((attachCall!.body as { eventId?: string }).eventId).toBe("evt-wrapped-123");
+  });
 });
 
 // ─── Tier 1: label OCR ────────────────────────────────────────────────────────

@@ -195,8 +195,9 @@ export async function postFoodEvent(
   const { MIKOSHI_TRACKER_PERSONAL_TOKEN: token, MIKOSHI_TRACKER_API_URL: apiBase } = env;
   validateFoodPayload(payload);
 
-  const body: CreateEventBody = { payload, source: "AI", note };
-  if (occurredAt) body.occurredAt = occurredAt;
+  // The events endpoint requires occurredAt; default to "now" so the skill can
+  // honour "assume the current time" without the model having to pass one.
+  const body: CreateEventBody = { payload, source: "AI", note, occurredAt: occurredAt ?? new Date().toISOString() };
 
   const data = (await apiFetch(
     `${apiBase}/entries/${encodeURIComponent(entryId)}/events`,
@@ -206,8 +207,10 @@ export async function postFoodEvent(
       body: JSON.stringify(body),
     },
     "postFoodEvent",
-  )) as FoodEventItem;
-  return data;
+  )) as { item?: FoodEventItem } & Partial<FoodEventItem>;
+  // The REST endpoint wraps the event as { item }. Unwrap it (tolerating an
+  // un-wrapped shape) so callers get a real event id — required to attach a photo.
+  return (data.item ?? (data as FoodEventItem)) as FoodEventItem;
 }
 
 interface EventListResponse {
@@ -255,8 +258,8 @@ export async function patchFoodEvent(
       body: JSON.stringify({ payload: patch }),
     },
     "patchFoodEvent",
-  )) as FoodEventItem;
-  return data;
+  )) as { item?: FoodEventItem } & Partial<FoodEventItem>;
+  return (data.item ?? (data as FoodEventItem)) as FoodEventItem;
 }
 
 interface AttachmentUploadResponse {
