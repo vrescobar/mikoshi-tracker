@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 
 // ─── Error classes ─────────────────────────────────────────────────────────────
 
@@ -49,17 +49,14 @@ export function getRunnerUrl(): string {
  * EntryTypes that declare a `skillSlug` qualify; this prevents callers from
  * driving arbitrary skills through the bridge.
  */
-export async function listAllowedSkillSlugs(db: PrismaClient): Promise<Set<string>> {
-  const rows = await db.entryType.findMany({
-    where: { skillSlug: { not: null } },
-    select: { skillSlug: true },
-  });
+export async function listAllowedSkillSlugs(db: Db): Promise<Set<string>> {
+  const rows = db.all<{ skillSlug: string | null }>(`SELECT "skillSlug" FROM "EntryType" WHERE "skillSlug" IS NOT NULL`);
   return new Set(rows.map((r) => r.skillSlug).filter((v): v is string => Boolean(v)));
 }
 
 /** Spawn the skill via HTTP, return its parsed JSON output. */
 export async function runSkill(
-  db: PrismaClient,
+  db: Db,
   params: { skillSlug: string; input: unknown; userId: string },
 ): Promise<unknown> {
   const { skillSlug, input, userId } = params;
@@ -102,7 +99,7 @@ export async function runSkill(
 
 /** Proxy GET <runner>/skills/<slug>/health and return its body. */
 export async function getSkillHealth(
-  db: PrismaClient,
+  db: Db,
   params: { skillSlug: string },
 ): Promise<unknown> {
   const { skillSlug } = params;

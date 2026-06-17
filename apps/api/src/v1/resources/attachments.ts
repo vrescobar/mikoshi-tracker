@@ -25,7 +25,7 @@ const deleteInputSchema = z.object({ id: nonEmpty });
 
 /** Attachment storage lives on disk; the dir comes from the server env, not deps. */
 function attachmentDeps(ctx: V1Context): AttachmentDependencies {
-  return { db: ctx.deps.db, attachmentsDir: ctx.request.server.env.ATTACHMENTS_DIR };
+  return { db: ctx.deps.sqlite, attachmentsDir: ctx.request.server.env.ATTACHMENTS_DIR };
 }
 
 /** Tolerate a data-URL prefix (data:image/png;base64,....). */

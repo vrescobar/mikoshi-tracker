@@ -5,7 +5,7 @@ import {
   type AttachmentMetadata,
 } from "@mikoshi-tracker/contracts/attachments";
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 
 import {
   AttachmentFileMissingError,
@@ -31,7 +31,7 @@ import {
 import { buildStorageKey, deleteFile, fileExists, resolveStoragePath, writeFileAtomic } from "./attachment.storage";
 
 export type AttachmentDependencies = {
-  db: PrismaClient;
+  db: Db;
   attachmentsDir: string;
 };
 

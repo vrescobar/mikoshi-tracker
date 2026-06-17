@@ -28,7 +28,7 @@ export function skillsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({ skills: z.array(z.string()) })),
       handler: async (ctx) => {
         requireUserId(ctx);
-        const slugs = await listAllowedSkillSlugs(ctx.deps.db);
+        const slugs = await listAllowedSkillSlugs(ctx.deps.sqlite);
         return { skills: [...slugs].sort() };
       },
     },
@@ -44,7 +44,7 @@ export function skillsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.unknown()),
       handler: (ctx) => {
         requireUserId(ctx);
-        return getSkillHealth(ctx.deps.db, { skillSlug: (ctx.params as { skillSlug: string }).skillSlug });
+        return getSkillHealth(ctx.deps.sqlite, { skillSlug: (ctx.params as { skillSlug: string }).skillSlug });
       },
     },
     {
@@ -59,7 +59,7 @@ export function skillsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.unknown()),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof runInputSchema>;
-        return runSkill(ctx.deps.db, {
+        return runSkill(ctx.deps.sqlite, {
           skillSlug: input.skillSlug,
           input: input.input,
           userId: requireUserId(ctx),

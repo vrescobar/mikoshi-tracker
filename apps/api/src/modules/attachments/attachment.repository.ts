@@ -1,6 +1,5 @@
-import type { Prisma, PrismaClient } from "../../generated/prisma/client";
-
-type DbClient = PrismaClient | Prisma.TransactionClient;
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
 
 export type PersistedAttachment = {
   id: string;
@@ -22,61 +21,86 @@ export type OwnedMutation = {
   userId: string;
 };
 
+type AttachmentRow = {
+  id: string;
+  eventMutationId: string | null;
+  userId: string;
+  kind: string;
+  storageKey: string;
+  originalName: string | null;
+  mimeType: string;
+  size: number;
+  width: number | null;
+  height: number | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function mapAttachment(row: AttachmentRow): PersistedAttachment {
+  return {
+    id: row.id,
+    eventMutationId: row.eventMutationId,
+    userId: row.userId,
+    kind: row.kind,
+    storageKey: row.storageKey,
+    originalName: row.originalName,
+    mimeType: row.mimeType,
+    size: row.size,
+    width: row.width,
+    height: row.height,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+  };
+}
+
 /** Resolve an EventMutation the caller owns, or null. */
 export async function findOwnedMutation(
-  db: DbClient,
+  db: Db,
   params: { userId: string; mutationId: string },
 ): Promise<OwnedMutation | null> {
-  const mutation = await db.eventMutation.findFirst({
-    where: { id: params.mutationId, userId: params.userId },
-    select: { id: true, userId: true },
-  });
-
-  return mutation ?? null;
+  return db.get<OwnedMutation>(
+    `SELECT "id", "userId" FROM "EventMutation" WHERE "id" = ? AND "userId" = ? LIMIT 1`,
+    [params.mutationId, params.userId],
+  );
 }
 
 /**
  * Resolve the most recent real check-in mutation (ignoring undo records) of an
- * entry the caller owns. Lets the web attach a photo to "today's entry" without
- * surfacing individual mutation ids in the UI. `habitId` is the Entry id.
+ * entry the caller owns. `habitId` is the Entry id.
  */
 export async function findLatestOwnedMutationForHabit(
-  db: DbClient,
+  db: Db,
   params: { userId: string; habitId: string },
 ): Promise<OwnedMutation | null> {
-  const mutation = await db.eventMutation.findFirst({
-    where: { entryId: params.habitId, userId: params.userId, type: { not: "UNDO" } },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: { id: true, userId: true },
-  });
-
-  return mutation ?? null;
+  return db.get<OwnedMutation>(
+    `SELECT "id", "userId" FROM "EventMutation"
+     WHERE "entryId" = ? AND "userId" = ? AND "type" != 'UNDO'
+     ORDER BY "createdAt" DESC, "id" DESC LIMIT 1`,
+    [params.habitId, params.userId],
+  );
 }
 
-/**
- * Resolve the most recent real mutation for a specific EntryEvent the caller
- * owns. The food quick-add flow uses this to anchor a photo to a freshly
- * created event without exposing mutation ids in the UI.
- */
+/** Resolve the most recent real mutation for a specific EntryEvent the caller owns. */
 export async function findLatestOwnedMutationForEvent(
-  db: DbClient,
+  db: Db,
   params: { userId: string; eventId: string },
 ): Promise<OwnedMutation | null> {
-  const mutation = await db.eventMutation.findFirst({
-    where: { eventId: params.eventId, userId: params.userId, type: { not: "UNDO" } },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: { id: true, userId: true },
-  });
-
-  return mutation ?? null;
+  return db.get<OwnedMutation>(
+    `SELECT "id", "userId" FROM "EventMutation"
+     WHERE "eventId" = ? AND "userId" = ? AND "type" != 'UNDO'
+     ORDER BY "createdAt" DESC, "id" DESC LIMIT 1`,
+    [params.eventId, params.userId],
+  );
 }
 
-export async function countAttachmentsForMutation(db: DbClient, mutationId: string): Promise<number> {
-  return db.attachment.count({ where: { eventMutationId: mutationId } });
+export async function countAttachmentsForMutation(db: Db, mutationId: string): Promise<number> {
+  return (
+    db.get<{ c: number }>(`SELECT COUNT(*) AS c FROM "Attachment" WHERE "eventMutationId" = ?`, [mutationId])?.c ?? 0
+  );
 }
 
 export async function createAttachment(
-  db: DbClient,
+  db: Db,
   data: {
     mutationId: string;
     userId: string;
@@ -89,40 +113,70 @@ export async function createAttachment(
     height: number | null;
   },
 ): Promise<PersistedAttachment> {
-  const { mutationId, ...rest } = data;
-  return db.attachment.create({ data: { ...rest, eventMutationId: mutationId } });
+  const id = newId();
+  const now = nowDb();
+  db.run(
+    `INSERT INTO "Attachment"
+       ("id", "eventMutationId", "userId", "kind", "storageKey", "originalName", "mimeType", "size", "width", "height", "createdAt", "updatedAt")
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      data.mutationId,
+      data.userId,
+      data.kind,
+      data.storageKey,
+      data.originalName,
+      data.mimeType,
+      data.size,
+      data.width,
+      data.height,
+      now,
+      now,
+    ],
+  );
+  const row = db.get<AttachmentRow>(`SELECT * FROM "Attachment" WHERE "id" = ?`, [id]);
+  if (!row) throw new Error(`Attachment not found after write: ${id}`);
+  return mapAttachment(row);
 }
 
 export async function listAttachmentsByMutation(
-  db: DbClient,
+  db: Db,
   params: { userId: string; mutationId: string },
 ): Promise<PersistedAttachment[]> {
-  return db.attachment.findMany({
-    where: { userId: params.userId, eventMutationId: params.mutationId },
-    orderBy: { createdAt: "asc" },
-  });
+  return db
+    .all<AttachmentRow>(
+      `SELECT * FROM "Attachment" WHERE "userId" = ? AND "eventMutationId" = ? ORDER BY "createdAt" ASC`,
+      [params.userId, params.mutationId],
+    )
+    .map(mapAttachment);
 }
 
 export async function listAttachmentsByHabit(
-  db: DbClient,
+  db: Db,
   params: { userId: string; habitId: string },
 ): Promise<PersistedAttachment[]> {
-  return db.attachment.findMany({
-    where: { userId: params.userId, eventMutation: { entryId: params.habitId } },
-    orderBy: { createdAt: "asc" },
-  });
+  return db
+    .all<AttachmentRow>(
+      `SELECT a.* FROM "Attachment" a
+       JOIN "EventMutation" em ON em."id" = a."eventMutationId"
+       WHERE a."userId" = ? AND em."entryId" = ? ORDER BY a."createdAt" ASC`,
+      [params.userId, params.habitId],
+    )
+    .map(mapAttachment);
 }
 
 /** Resolve an attachment the caller owns, or null. */
 export async function findOwnedAttachment(
-  db: DbClient,
+  db: Db,
   params: { userId: string; id: string },
 ): Promise<PersistedAttachment | null> {
-  return db.attachment.findFirst({
-    where: { id: params.id, userId: params.userId },
-  });
+  const row = db.get<AttachmentRow>(`SELECT * FROM "Attachment" WHERE "id" = ? AND "userId" = ? LIMIT 1`, [
+    params.id,
+    params.userId,
+  ]);
+  return row ? mapAttachment(row) : null;
 }
 
-export async function deleteAttachment(db: DbClient, id: string): Promise<void> {
-  await db.attachment.delete({ where: { id } });
+export async function deleteAttachment(db: Db, id: string): Promise<void> {
+  db.run(`DELETE FROM "Attachment" WHERE "id" = ?`, [id]);
 }

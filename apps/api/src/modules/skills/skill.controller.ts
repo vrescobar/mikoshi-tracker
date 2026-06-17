@@ -52,7 +52,7 @@ export async function runSkillHandler(request: FastifyRequest, reply: FastifyRep
   try {
     const user = await requireAuthenticatedUser(request);
     const input = skillRunInputSchema.parse(request.body);
-    const result = await runSkill(request.server.db, {
+    const result = await runSkill(request.server.sqlite, {
       skillSlug: input.skillSlug,
       input: input.input,
       userId: user.id,
@@ -71,7 +71,7 @@ export async function getSkillHealthHandler(request: FastifyRequest, reply: Fast
   try {
     await requireAuthenticatedUser(request);
     const { slug } = request.params as { slug: string };
-    const result = await getSkillHealth(request.server.db, { skillSlug: slug });
+    const result = await getSkillHealth(request.server.sqlite, { skillSlug: slug });
     return result;
   } catch (error) {
     if (error instanceof AuthSessionError) {

@@ -2,8 +2,12 @@ import { randomUUID } from "node:crypto";
 
 import { z } from "zod";
 
-/** Generate a primary-key id for a new row (Prisma previously used cuid). */
-export const newId = (): string => randomUUID();
+/**
+ * Generate a primary-key id for a new row. Prisma used cuid (lowercase
+ * alphanumeric, no hyphens); we emit hyphen-free lowercase hex so ids keep
+ * matching the same `^[a-z0-9]+$` shape callers/tests expect.
+ */
+export const newId = (): string => randomUUID().replace(/-/g, "");
 
 /**
  * Column coercions for raw SQLite rows read via bun:sqlite. Prisma's libSQL

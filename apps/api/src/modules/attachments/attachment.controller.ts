@@ -31,7 +31,7 @@ import {
 
 function dependencies(request: FastifyRequest): AttachmentDependencies {
   return {
-    db: request.server.db,
+    db: request.server.sqlite,
     attachmentsDir: request.server.env.ATTACHMENTS_DIR,
   };
 }
