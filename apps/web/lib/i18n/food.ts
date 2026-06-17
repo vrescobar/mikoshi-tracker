@@ -190,6 +190,25 @@ export type FoodCopy = {
       toLabel: string;
       applyLabel: string;
     };
+    controls: {
+      rangeLabel: string;
+      last7: string;
+      last30: string;
+      last90: string;
+      granularityLabel: string;
+      day: string;
+      week: string;
+      month: string;
+    };
+    dailyIntake: {
+      title: string;
+      description: string;
+      empty: string;
+      kcalLabel: string;
+      targetLabel: string;
+      averageLabel: string;
+      legend: { protein: string; carbs: string; fat: string };
+    };
     heatmap: {
       title: string;
       description: string;
@@ -207,11 +226,14 @@ export type FoodCopy = {
       totalDays: string;
       avgKcal: string;
       meals: string;
+      avgUnit: { day: string; week: string; month: string };
+      loggedUnit: { day: string; week: string; month: string };
     };
     macroPie: {
       title: string;
       description: string;
       empty: string;
+      caption: string;
       legend: { protein: string; carbs: string; fat: string };
     };
     kcalTrend: {
@@ -426,6 +448,25 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         toLabel: "To",
         applyLabel: "Apply",
       },
+      controls: {
+        rangeLabel: "Range",
+        last7: "7 days",
+        last30: "30 days",
+        last90: "90 days",
+        granularityLabel: "Group by",
+        day: "Day",
+        week: "Week",
+        month: "Month",
+      },
+      dailyIntake: {
+        title: "Daily intake",
+        description: "Calories per day, broken down by macros, against your goal and average.",
+        empty: "No data yet — log a meal to start your intake chart.",
+        kcalLabel: "kcal",
+        targetLabel: "Goal",
+        averageLabel: "Avg",
+        legend: { protein: "Protein", carbs: "Carbs", fat: "Fat" },
+      },
       heatmap: {
         title: "Calorie heatmap",
         description: "Each cell is one day. Colour intensity represents kcal logged.",
@@ -443,11 +484,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         totalDays: "Days logged",
         avgKcal: "Avg kcal / day",
         meals: "Total meals",
+        avgUnit: { day: "Avg kcal / day", week: "Avg kcal / week", month: "Avg kcal / month" },
+        loggedUnit: { day: "Days logged", week: "Weeks logged", month: "Months logged" },
       },
       macroPie: {
         title: "Macro distribution",
         description: "Protein / carbs / fat as a share of total kcal across the selected range.",
         empty: "Log a meal to see your macro distribution.",
+        caption: "kcal",
         legend: { protein: "Protein", carbs: "Carbs", fat: "Fat" },
       },
       kcalTrend: {
@@ -659,6 +703,25 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         toLabel: "结束日期",
         applyLabel: "应用",
       },
+      controls: {
+        rangeLabel: "范围",
+        last7: "7 天",
+        last30: "30 天",
+        last90: "90 天",
+        granularityLabel: "分组",
+        day: "天",
+        week: "周",
+        month: "月",
+      },
+      dailyIntake: {
+        title: "每日摄入",
+        description: "每日热量及营养素分解，对照你的目标与平均值。",
+        empty: "暂无数据 —— 记录一餐以开始摄入图表。",
+        kcalLabel: "千卡",
+        targetLabel: "目标",
+        averageLabel: "平均",
+        legend: { protein: "蛋白质", carbs: "碳水", fat: "脂肪" },
+      },
       heatmap: {
         title: "热量热力图",
         description: "每个格子代表一天，颜色深浅表示当天记录的热量。",
@@ -676,11 +739,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         totalDays: "已记录天数",
         avgKcal: "平均热量/天",
         meals: "总餐数",
+        avgUnit: { day: "平均热量/天", week: "平均热量/周", month: "平均热量/月" },
+        loggedUnit: { day: "已记录天数", week: "已记录周数", month: "已记录月数" },
       },
       macroPie: {
         title: "营养素分布",
         description: "选定范围内蛋白质、碳水、脂肪占总热量的比例。",
         empty: "记录一餐以查看营养素分布。",
+        caption: "千卡",
         legend: { protein: "蛋白质", carbs: "碳水", fat: "脂肪" },
       },
       kcalTrend: {
@@ -894,6 +960,25 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         toLabel: "Hasta",
         applyLabel: "Aplicar",
       },
+      controls: {
+        rangeLabel: "Rango",
+        last7: "7 días",
+        last30: "30 días",
+        last90: "90 días",
+        granularityLabel: "Agrupar por",
+        day: "Día",
+        week: "Semana",
+        month: "Mes",
+      },
+      dailyIntake: {
+        title: "Consumo diario",
+        description: "Calorías por día con desglose de macros, frente a tu objetivo y tu promedio.",
+        empty: "Sin datos todavía — registra una comida para empezar tu gráfico de consumo.",
+        kcalLabel: "kcal",
+        targetLabel: "Objetivo",
+        averageLabel: "Media",
+        legend: { protein: "Proteína", carbs: "Carbos", fat: "Grasa" },
+      },
       heatmap: {
         title: "Mapa de calor calórico",
         description: "Cada celda es un día. La intensidad del color representa las kcal registradas.",
@@ -911,11 +996,14 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         totalDays: "Días registrados",
         avgKcal: "Promedio kcal / día",
         meals: "Total de comidas",
+        avgUnit: { day: "Media kcal / día", week: "Media kcal / semana", month: "Media kcal / mes" },
+        loggedUnit: { day: "Días registrados", week: "Semanas registradas", month: "Meses registrados" },
       },
       macroPie: {
         title: "Distribución de macros",
         description: "Proteína / carbohidratos / grasa como porcentaje de las kcal del rango seleccionado.",
         empty: "Registra una comida para ver tu distribución de macros.",
+        caption: "kcal",
         legend: { protein: "Proteína", carbs: "Carbos", fat: "Grasa" },
       },
       kcalTrend: {

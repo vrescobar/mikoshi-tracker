@@ -5,13 +5,15 @@ import { useState, useTransition } from "react";
 
 import type { FoodPayload } from "../../lib/food-client";
 import { getFoodAggregations, isFoodPayload, listFoodEvents } from "../../lib/food-client";
+import { shiftDays } from "../../lib/dates";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
 import { useLocale } from "../locale";
 import { Button, Field, InlineStatus, Input, PageFrame, PageHeader, Surface } from "../ui";
-import { KcalTrend } from "./KcalTrend";
-import { MacroPie } from "./MacroPie";
 import { RangeHeatmap } from "./RangeHeatmap";
+import { DailyIntakeChart } from "./charts/DailyIntakeChart";
+import { MacroDonut } from "./charts/MacroDonut";
+import { bucketsToIntakeData, type FoodChartGranularity } from "./charts/food-chart-theme";
 import styles from "./food-insights-page.module.css";
 
 type FoodInsightsPageProps = {
@@ -19,6 +21,8 @@ type FoodInsightsPageProps = {
   initialEvents: EntryEventRecord[];
   initialFrom: string;
   initialTo: string;
+  /** Active daily kcal goal, used for the goal reference line. */
+  goalKcalTarget?: number | null;
 };
 
 function normalizeName(name: string) {
@@ -66,7 +70,21 @@ function formatDate(dateKey: string, localeStr: string) {
   );
 }
 
-export function FoodInsightsPage({ initialAggregations, initialEvents, initialFrom, initialTo }: FoodInsightsPageProps) {
+const PRESETS: { key: "last7" | "last30" | "last90"; days: number }[] = [
+  { key: "last7", days: 7 },
+  { key: "last30", days: 30 },
+  { key: "last90", days: 90 },
+];
+
+const GRANULARITIES: FoodChartGranularity[] = ["day", "week", "month"];
+
+export function FoodInsightsPage({
+  initialAggregations,
+  initialEvents,
+  initialFrom,
+  initialTo,
+  goalKcalTarget = null,
+}: FoodInsightsPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale).insights;
 
@@ -74,25 +92,26 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
   const [to, setTo] = useState(initialTo);
   const [draftFrom, setDraftFrom] = useState(initialFrom);
   const [draftTo, setDraftTo] = useState(initialTo);
+  const [granularity, setGranularity] = useState<FoodChartGranularity>("day");
   const [aggregations, setAggregations] = useState(initialAggregations);
   const [events, setEvents] = useState(initialEvents);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  function handleApply() {
-    if (!draftFrom || !draftTo || draftFrom > draftTo) return;
-    const newFrom = draftFrom;
-    const newTo = draftTo;
+  function load(newFrom: string, newTo: string, newGranularity: FoodChartGranularity) {
+    if (!newFrom || !newTo || newFrom > newTo) return;
     setError(null);
-
     startTransition(async () => {
       try {
         const [aggs, evs] = await Promise.all([
-          getFoodAggregations(newFrom, newTo),
+          getFoodAggregations(newFrom, newTo, newGranularity),
           listFoodEvents(newFrom, newTo).then((r) => r.items),
         ]);
         setFrom(newFrom);
         setTo(newTo);
+        setDraftFrom(newFrom);
+        setDraftTo(newTo);
+        setGranularity(newGranularity);
         setAggregations(aggs);
         setEvents(evs);
       } catch (err) {
@@ -101,13 +120,30 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
     });
   }
 
+  function handleApply() {
+    load(draftFrom, draftTo, granularity);
+  }
+
+  function applyPreset(days: number) {
+    load(shiftDays(to, -(days - 1)), to, granularity);
+  }
+
+  function applyGranularity(next: FoodChartGranularity) {
+    if (next === granularity) return;
+    load(from, to, next);
+  }
+
   const repeatedMeals = computeRepeatedMeals(events);
   const missingDays = aggregations ? getMissingDays(aggregations.buckets) : [];
 
+  const intakeData = aggregations ? bucketsToIntakeData(aggregations.buckets, granularity, locale) : [];
+  const loggedBuckets = intakeData.filter((d) => !d.missing && d.kcal > 0).length;
+
   const totalKcal = aggregations?.total.sum.kcal ?? 0;
   const totalCount = aggregations?.total.count ?? 0;
-  const daysLogged = aggregations ? aggregations.buckets.filter((b) => !b.missing && b.count > 0).length : 0;
-  const avgKcal = daysLogged > 0 ? totalKcal / daysLogged : 0;
+  const avgPerBucket = loggedBuckets > 0 ? totalKcal / loggedBuckets : 0;
+  // Goal line only makes sense per-day; weekly/monthly buckets sum many days.
+  const chartTarget = granularity === "day" ? goalKcalTarget : null;
 
   return (
     <div className={styles.stack} data-testid="food-insights-page">
@@ -118,13 +154,45 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
               ← {getFoodCopy(locale).detail.backToFood.replace("← ", "")}
             </Link>
           </div>
-          <PageHeader
-            eyebrow={copy.header.eyebrow}
-            title={copy.header.title}
-            description={copy.header.description}
-          />
+          <PageHeader eyebrow={copy.header.eyebrow} title={copy.header.title} description={copy.header.description} />
 
           <Surface variant="soft" padding="md" className={styles.rangePanel}>
+            <div className={styles.controlsRow}>
+              <div className={styles.controlGroup} role="group" aria-label={copy.controls.rangeLabel}>
+                <span className={styles.controlLabel}>{copy.controls.rangeLabel}</span>
+                <div className={styles.segmented} data-testid="food-range-presets">
+                  {PRESETS.map((p) => (
+                    <button
+                      key={p.key}
+                      type="button"
+                      className={styles.segment}
+                      onClick={() => applyPreset(p.days)}
+                      disabled={isPending}
+                    >
+                      {copy.controls[p.key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.controlGroup} role="group" aria-label={copy.controls.granularityLabel}>
+                <span className={styles.controlLabel}>{copy.controls.granularityLabel}</span>
+                <div className={styles.segmented} data-testid="food-granularity">
+                  {GRANULARITIES.map((g) => (
+                    <button
+                      key={g}
+                      type="button"
+                      className={`${styles.segment} ${granularity === g ? styles.segmentActive : ""}`}
+                      aria-pressed={granularity === g}
+                      onClick={() => applyGranularity(g)}
+                      disabled={isPending}
+                    >
+                      {copy.controls[g]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className={styles.rangeRow}>
               <Field label={copy.rangePicker.fromLabel} htmlFor="insights-from">
                 <Input
@@ -145,7 +213,11 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
                 />
               </Field>
               <div className={styles.applyCol}>
-                <Button type="button" onClick={handleApply} disabled={isPending || !draftFrom || !draftTo || draftFrom > draftTo}>
+                <Button
+                  type="button"
+                  onClick={handleApply}
+                  disabled={isPending || !draftFrom || !draftTo || draftFrom > draftTo}
+                >
                   {copy.rangePicker.applyLabel}
                 </Button>
               </div>
@@ -171,12 +243,12 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
                 <span className={styles.summaryLabel}>{copy.summary.totalKcal}</span>
               </div>
               <div className={styles.summaryFact}>
-                <span className={styles.summaryValue}>{Math.round(avgKcal)}</span>
-                <span className={styles.summaryLabel}>{copy.summary.avgKcal}</span>
+                <span className={styles.summaryValue}>{Math.round(avgPerBucket).toLocaleString()}</span>
+                <span className={styles.summaryLabel}>{copy.summary.avgUnit[granularity]}</span>
               </div>
               <div className={styles.summaryFact}>
-                <span className={styles.summaryValue}>{daysLogged}</span>
-                <span className={styles.summaryLabel}>{copy.summary.totalDays}</span>
+                <span className={styles.summaryValue}>{loggedBuckets}</span>
+                <span className={styles.summaryLabel}>{copy.summary.loggedUnit[granularity]}</span>
               </div>
               <div className={styles.summaryFact}>
                 <span className={styles.summaryValue}>{totalCount}</span>
@@ -186,31 +258,42 @@ export function FoodInsightsPage({ initialAggregations, initialEvents, initialFr
           </div>
         ) : null}
 
+        {/* Daily intake — stacked macro-kcal bars + goal/average lines */}
+        {aggregations ? (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.dailyIntake.title}</h2>
+            <p className={styles.muted}>{copy.dailyIntake.description}</p>
+            <DailyIntakeChart
+              data={intakeData}
+              target={chartTarget}
+              average={avgPerBucket > 0 ? avgPerBucket : null}
+              ariaLabel={copy.dailyIntake.title}
+              copy={{
+                empty: copy.dailyIntake.empty,
+                kcalLabel: copy.dailyIntake.kcalLabel,
+                legend: copy.dailyIntake.legend,
+                targetLabel: copy.dailyIntake.targetLabel,
+                averageLabel: copy.dailyIntake.averageLabel,
+              }}
+            />
+          </div>
+        ) : null}
+
         {/* Macro distribution */}
         {aggregations ? (
           <div className={styles.section}>
             <h2 className={styles.sectionTitle}>{copy.macroPie.title}</h2>
             <p className={styles.muted}>{copy.macroPie.description}</p>
-            <MacroPie
+            <MacroDonut
               proteinG={aggregations.total.sum.protein_g ?? 0}
               carbsG={aggregations.total.sum.carbs_g ?? 0}
               fatG={aggregations.total.sum.fat_g ?? 0}
-              label={copy.macroPie.title}
-              emptyLabel={copy.macroPie.empty}
-              legend={copy.macroPie.legend}
-            />
-          </div>
-        ) : null}
-
-        {/* Kcal trend */}
-        {aggregations ? (
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>{copy.kcalTrend.title}</h2>
-            <p className={styles.muted}>{copy.kcalTrend.description}</p>
-            <KcalTrend
-              buckets={aggregations.buckets}
-              label={copy.kcalTrend.label}
-              emptyLabel={copy.kcalTrend.empty}
+              ariaLabel={copy.macroPie.title}
+              copy={{
+                empty: copy.macroPie.empty,
+                caption: copy.macroPie.caption,
+                legend: copy.macroPie.legend,
+              }}
             />
           </div>
         ) : null}

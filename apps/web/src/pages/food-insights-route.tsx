@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router";
 
 import { FoodInsightsPage } from "../../components/food/food-insights-page";
 import { shiftDays, todayKeyInTimeZone } from "../../lib/dates";
+import { getDietGoal } from "../../lib/diet-client";
 import { getFoodAggregations, listFoodEvents } from "../../lib/food-client";
 import { useSession } from "../auth/session";
 import { PageBoundary } from "../lib/page-boundary";
@@ -23,14 +24,18 @@ export default function FoodInsightsRoute() {
   const state = usePageData<{
     aggregations: AggregationResponse | null;
     events: EntryEventRecord[];
+    goalKcalTarget: number | null;
   }>(async () => {
-    const [aggregationsResult, eventsResult] = await Promise.allSettled([
+    const [aggregationsResult, eventsResult, goalResult] = await Promise.allSettled([
       getFoodAggregations(from, to),
       listFoodEvents(from, to),
+      getDietGoal(),
     ]);
     return {
       aggregations: aggregationsResult.status === "fulfilled" ? aggregationsResult.value : null,
       events: eventsResult.status === "fulfilled" ? eventsResult.value.items : [],
+      goalKcalTarget:
+        goalResult.status === "fulfilled" ? (goalResult.value?.kcalTarget ?? null) : null,
     };
   }, [from, to]);
 
@@ -42,6 +47,7 @@ export default function FoodInsightsRoute() {
           initialEvents={data.events}
           initialFrom={from}
           initialTo={to}
+          goalKcalTarget={data.goalKcalTarget}
         />
       )}
     </PageBoundary>
