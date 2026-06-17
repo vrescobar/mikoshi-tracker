@@ -1,11 +1,10 @@
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import type { ChartKind } from "../charts/chart.service";
 import { DIET_PREFS_SLUG } from "../diet/diet.service";
 import type { MikoshiPlatformClient } from "../platform/mikoshi-platform-client";
 import { sendChartToWhatsApp } from "./report.service";
 
-type WeeklyReportDeps = { db: PrismaClient; sqlite: Db };
+type WeeklyReportDeps = { sqlite: Db };
 
 export type WeeklyReportSummary = { attempted: number; delivered: number };
 
@@ -27,16 +26,18 @@ export async function runWeeklyReports(
 ): Promise<WeeklyReportSummary> {
   if (!params.platform) return { attempted: 0, delivered: 0 };
 
-  const prefsEntries = await deps.db.entry.findMany({
-    where: { isActive: true, entryType: { slug: DIET_PREFS_SLUG } },
-    select: { userId: true, config: true, user: { select: { externalId: true } } },
-  });
+  const prefsEntries = deps.sqlite.all<{ userId: string; config: string; externalId: string | null }>(
+    `SELECT e."userId" AS "userId", e."config" AS "config", u."externalId" AS "externalId"
+     FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId" JOIN "User" u ON u."id" = e."userId"
+     WHERE e."isActive" = 1 AND et."slug" = ?`,
+    [DIET_PREFS_SLUG],
+  );
 
   let attempted = 0;
   let delivered = 0;
   for (const entry of prefsEntries) {
     if (!isOptedIn(entry.config)) continue;
-    if (!entry.user.externalId) continue;
+    if (!entry.externalId) continue;
     attempted += 1;
     const result = await sendChartToWhatsApp(deps, {
       userId: entry.userId,

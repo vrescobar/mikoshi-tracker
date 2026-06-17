@@ -1,9 +1,9 @@
 import sharp from "sharp";
 
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { computeAggregations } from "../aggregations/aggregation.service";
 import { resolveActiveDietGoal } from "../diet/diet.service";
+import { getUserById } from "../users/user.repository";
 import { addDays, resolveHabitDay } from "../today/today-clock";
 import { kcalTrendSvg, macroDonutSvg, type TrendPoint } from "./chart.svg";
 
@@ -22,7 +22,7 @@ export function parseRangeDays(range: string | undefined): number {
   return RANGE_DAYS[range ?? "7d"] ?? 7;
 }
 
-type ChartServiceDeps = { db: PrismaClient; sqlite: Db };
+type ChartServiceDeps = { sqlite: Db };
 
 /**
  * Render one of the supported charts as a PNG, scoped strictly to `userId`.
@@ -43,7 +43,7 @@ export async function buildChartSvg(
   deps: ChartServiceDeps,
   params: { userId: string; kind: ChartKind; range?: string; timestamp?: Date | number | string },
 ): Promise<string> {
-  const user = await deps.db.user.findUnique({ where: { id: params.userId }, select: { timezone: true } });
+  const user = getUserById(deps.sqlite, params.userId);
   const timeZone = user?.timezone ?? "UTC";
   const today = resolveHabitDay({ timestamp: params.timestamp ?? new Date(), timeZone }).todayKey;
   const days = parseRangeDays(params.range);

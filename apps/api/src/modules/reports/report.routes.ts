@@ -35,7 +35,7 @@ async function weeklyReportWebhookHandler(request: FastifyRequest, reply: Fastif
   }
 
   const summary = await runWeeklyReports(
-    { db: request.server.db, sqlite: request.server.sqlite },
+    { sqlite: request.server.sqlite },
     { platform: request.server.mikoshiPlatform },
   );
   return { ok: true, ...summary };

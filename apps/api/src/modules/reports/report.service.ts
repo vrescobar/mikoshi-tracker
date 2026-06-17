@@ -1,9 +1,9 @@
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { type ChartKind, renderChartPng } from "../charts/chart.service";
+import { getUserById } from "../users/user.repository";
 import type { MikoshiPlatformClient } from "../platform/mikoshi-platform-client";
 
-type ReportServiceDeps = { db: PrismaClient; sqlite: Db };
+type ReportServiceDeps = { sqlite: Db };
 
 export type SendChartResult = {
   delivered: boolean;
@@ -35,10 +35,7 @@ export async function sendChartToWhatsApp(
 ): Promise<SendChartResult> {
   if (!params.platform) return { delivered: false, reason: "platform_unavailable" };
 
-  const user = await deps.db.user.findUnique({
-    where: { id: params.userId },
-    select: { externalId: true },
-  });
+  const user = getUserById(deps.sqlite, params.userId);
   if (!user?.externalId) return { delivered: false, reason: "no_identity" };
 
   const png = await renderChartPng(deps, {
