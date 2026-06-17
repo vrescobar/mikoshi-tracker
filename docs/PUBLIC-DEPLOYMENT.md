@@ -4,6 +4,12 @@ This guide covers the hardening required before exposing MikoshiTracker
 **publicly on the internet**. It complements — does not replace —
 `docs/self-hosting.md`.
 
+> **Architecture note:** MikoshiTracker no longer ships a Caddy proxy — a single
+> Bun process serves the API and the SPA on one port. TLS is therefore
+> **external**: put a terminator you control in front of `PORT` (Tailscale
+> Serve, or a Caddy/nginx instance). The Caddy/Let's-Encrypt specifics below are
+> retained as one worked example of such a terminator, not a bundled component.
+
 ---
 
 ## Hardening for public internet exposure

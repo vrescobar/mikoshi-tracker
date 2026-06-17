@@ -53,7 +53,7 @@ isBuiltIn                               completed           previousPayload
 - `EventMutation` is **immutable** — undo works by replaying history, never by
   deleting rows. See [`GOAL.md` §G9.1](../../GOAL.md) invariant rules.
 
-Full Prisma definitions: [`GOAL.md` §G1](../../GOAL.md).
+Full schema: [`apps/api/migrations/0001_baseline.sql`](../../apps/api/migrations/0001_baseline.sql) (and `GOAL.md` §G1 for the model rationale).
 
 ## Engine layers
 
@@ -81,7 +81,7 @@ HTTP request
 ┌─────────────────┐    ┌──────────────────────────────┐
 │  Schema cache   │    │  Repository (entry.repository │
 │  (schema-cache) │    │  / event.repository)          │
-│  • In-memory    │    │  • Prisma queries             │
+│  • In-memory    │    │  • bun:sqlite (raw SQL + zod) │
 │    Map<id,      │    │  • persistEvent() upserts     │
 │    CompiledSchema>    │    EntryEvent and inserts     │
 │  • Cache miss:  │    │    EventMutation atomically   │

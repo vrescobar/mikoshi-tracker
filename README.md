@@ -24,18 +24,18 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 - **Trilingual UI** — English, Chinese, and Spanish with browser-language detection and manual switching
 - **Archive and restore** — shelve habits without losing history
 - **Admin controls** — first user becomes admin; toggle new-user registration on or off; system-key provisioning for bot-operated circles
-- **Lightweight native deployment** — SQLite database, systemd user units + Caddy, no containers or external services required
+- **Lightweight native deployment** — SQLite (`bun:sqlite`) and a single systemd user unit where one Bun process serves both the API and the built SPA; no ORM, no reverse proxy, no containers
 
 ## Tech Stack / 技术栈
 
 | Layer    | Technology                                  |
 | -------- | ------------------------------------------- |
-| API      | Fastify, Prisma, better-auth, Zod           |
+| API      | Fastify, better-auth, Zod                   |
 | Web      | Vite + React (SPA), React Router, CSS Modules, Radix UI |
-| Database | SQLite                                      |
-| Proxy    | Caddy                                       |
+| Database | SQLite via native `bun:sqlite` (raw SQL + zod row schemas; no ORM) |
+| Serving  | Single Bun process serves the API + built SPA (no reverse proxy) |
 | Runtime  | TypeScript, Bun (workspace), Node.js        |
-| Testing  | Vitest (API), Playwright (E2E)              |
+| Testing  | bun test (API), Vitest (web unit), Playwright (E2E) |
 
 ## Quick Start (native) / 快速开始
 
@@ -67,13 +67,10 @@ Prerequisites: Bun 1.3+, Node.js 20+
 # Install dependencies
 bun install
 
-# Generate Prisma client
-bun run prisma:generate
+# Create apps/api/.env (DATABASE_URL, BETTER_AUTH_SECRET, …) — the API
+# auto-applies SQL migrations from apps/api/migrations on boot.
 
-# Copy env and set BETTER_AUTH_SECRET
-cp .env.example .env
-
-# Start API and web in parallel
+# Start API and web in parallel (Vite proxies /api + /magic to the API)
 bun run dev
 ```
 
@@ -99,7 +96,7 @@ Key components:
 
 | Component | Location | Purpose |
 |---|---|---|
-| `EntryType` | `prisma/schema.prisma` | Declares slug, cadence, payload/config JSON Schemas, aggregations spec, optional `skillSlug` |
+| `EntryType` | `apps/api/migrations/0001_baseline.sql` | Declares slug, cadence, payload/config JSON Schemas, aggregations spec, optional `skillSlug` |
 | Schema cache | `apps/api/src/modules/entry-types/schema-cache.ts` | In-memory JSON Schema → Zod compiler; invalidated on type update |
 | Entries | `apps/api/src/modules/entries/` | CRUD for entries; `config` validated at write time |
 | Events | `apps/api/src/modules/events/` | Payload-validated event append; `EventMutation` immutable audit trail |
@@ -184,7 +181,9 @@ See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md)
 
 ```
 apps/
-  api/          Fastify API server
+  api/          Fastify API server (also serves the built SPA in production)
+    migrations/    Forward-only SQL migrations (0001_baseline.sql = full schema)
+    src/db/        bun:sqlite client, migration runner, zod row coercions
     src/modules/
       entry-types/   EntryType catalog + JSON Schema → Zod compiler + schema cache
       entries/       Generic entry CRUD (config validated at write time)
@@ -194,7 +193,7 @@ apps/
       today/         Legacy alias over events/ (preserves /api/today/* contract)
       circles/       Habit Circles — social leaderboard + circle-token auth
       admin/         System-key provisioning for bot-operated circles
-  web/          Vite + React SPA (served statically by Caddy)
+  web/          Vite + React SPA (built to dist/, served by the Bun API process)
     src/pages/
       entries        Generic entry list with EntryType dispatch
       food           Food log — timeline, event detail, insights heatmap
@@ -209,8 +208,7 @@ packages/
       circles.ts     Circle + membership + token contracts
   openclaw-plugin/ Native OpenClaw plugin package
   mcp/          MCP server package for generic AI hosts
-prisma/         Database schema and migrations
-scripts/self-host/ systemd units + Caddyfile
+scripts/self-host/ systemd unit + health check
 docs/
   architecture/ Architecture docs (generic-entries, performance)
   self-hosting.md, self-hosting-upgrades.md, PUBLIC-DEPLOYMENT.md

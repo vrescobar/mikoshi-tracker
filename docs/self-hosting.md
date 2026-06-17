@@ -1,32 +1,36 @@
 # Self-hosting / 自托管
 
-MikoshiTracker is deployed natively: a systemd user unit runs the API (Bun)
-and a native Caddy binary serves the static web build and proxies the API as
-the single public entrypoint. There is no container runtime involved.
+MikoshiTracker is deployed natively: a **single** systemd user unit runs one
+Bun process that serves both the API and the built Vite SPA on one port. There
+is no ORM (data access is native `bun:sqlite` + zod), no reverse proxy, and no
+container runtime. For public HTTPS, terminate TLS in front of the port
+(Tailscale Serve, or a Caddy/nginx you already run) — see PUBLIC-DEPLOYMENT.md.
 
-MikoshiTracker 采用原生部署：systemd 用户单元运行 API（Bun），原生 Caddy
-以静态文件方式提供 Web 构建并代理 API，作为唯一公网入口。不需要任何容器运行时。
+MikoshiTracker 采用原生部署：**单个** systemd 用户单元运行一个 Bun 进程，
+同一端口同时提供 API 和已构建的 Vite SPA。没有 ORM（数据访问使用原生
+`bun:sqlite` + zod）、没有反向代理、没有容器。公网 HTTPS 请在该端口前做 TLS 终结。
+
+> **Note:** earlier releases used a Caddy reverse proxy + Prisma ORM. Both were
+> removed; the deploy scripts (`scripts/`) are the source of truth. Some Chinese
+> sections below may still mention the old Caddy topology.
 
 ## English
 
 ### Topology
 
-- **Caddy proxy** (`mikoshi-tracker-proxy`) is the only published service. It
-  routes `/api/*`, `/health` and `/magic` to the API and serves the web app as
-  static files (Vite build with SPA fallback) for everything else.
-- **API** (`mikoshi-tracker-api`) serves auth, habit/entry APIs, today APIs,
-  stats, and OpenAPI on `127.0.0.1:3001`, running from TypeScript source under
-  Bun.
+- **One unit** (`mikoshi-tracker-api`) is the only service: a Bun process that
+  serves auth, habit/entry/today/stats/OpenAPI under `/api/*` plus `/magic`,
+  `/health`, and the static SPA (with index.html fallback) for everything else,
+  on the configured `PORT` (default 7080). It runs from TypeScript source under
+  Bun and applies SQL migrations from `apps/api/migrations` on boot.
 
 By default the stack stores data in `~/.local/share/mikoshi-tracker/` and
 serves the app at `http://localhost:7080`.
 
 ### Prerequisites
 
-- Bun 1.3+ (`curl -fsSL https://bun.sh/install | bash`)
-- Node.js 20+ in `PATH`
-- A Caddy binary at `~/.local/bin/caddy`
-  (download from https://github.com/caddyserver/caddy/releases)
+- Bun 1.3+ (`curl -fsSL https://bun.sh/install | bash`) — runs the API + builds the SPA
+- Node.js 20+ in `PATH` — dev tooling (vitest, playwright)
 - A systemd user session (`loginctl enable-linger $USER` for boot-time start)
 
 ### First install
@@ -45,12 +49,14 @@ The install script prints the runtime configuration it expects at
 
 ```bash
 NODE_ENV=production
+PORT=7080                             # Bun serves API + SPA on this port
 BETTER_AUTH_SECRET=<secret>          # openssl rand -hex 32
+BETTER_AUTH_URL=http://localhost:7080
 APP_BASE_URL=http://localhost:7080
+CORS_ORIGIN=http://localhost:7080
 DATABASE_URL=file:$HOME/.local/share/mikoshi-tracker/mikoshi-tracker.db
 ATTACHMENTS_DIR=$HOME/.local/share/mikoshi-tracker/attachments
 MIKOSHI_TRACKER_ADMIN_API_KEY=<key>  # openssl rand -hex 32, enables /api/admin/*
-MIKOSHI_TRACKER_SITE_ADDRESS=:7080   # port Caddy binds on
 ```
 
 Then build, migrate and start everything:
