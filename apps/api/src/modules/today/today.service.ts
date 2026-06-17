@@ -10,6 +10,7 @@ import {
   serializeContractWeekdays,
 } from "../../shared/habit-contract-mappers";
 import { HABIT_ENTRY_TYPE_SLUGS, mapEntryToHabit } from "../habits/habit-entry-adapter";
+import { getUserById } from "../users/user.repository";
 
 import { buildTodaySummary } from "./today-summary";
 import { resolveHabitDay } from "./today-clock";
@@ -29,10 +30,11 @@ export async function computeNutrition(
   userId: string,
   todayKey: string,
 ): Promise<TodayNutrition | null> {
-  const foodEntries = await deps.db.entry.findMany({
-    where: { userId, isActive: true, entryType: { slug: FOOD_MEAL_SLUG } },
-    select: { config: true },
-  });
+  const foodEntries = deps.sqlite.all<{ config: string }>(
+    `SELECT e."config" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" = ?`,
+    [userId, FOOD_MEAL_SLUG],
+  );
   if (foodEntries.length === 0) return null;
 
   const agg = await computeAggregations(deps, {
@@ -182,10 +184,7 @@ export async function getTodaySummary(
   deps: TodayServiceDeps,
   params: { userId: string; timestamp: Date | number | string; timeZone?: string },
 ): Promise<{ summary: TodaySummary }> {
-  const user = await deps.db.user.findUnique({
-    where: { id: params.userId },
-    select: { timezone: true },
-  });
+  const user = getUserById(deps.sqlite, params.userId);
 
   if (!user) {
     throw new Error("User not found");
@@ -199,41 +198,52 @@ export async function getTodaySummary(
   const rangeEnd = day.weekEndKey > day.monthEndKey ? day.weekEndKey : day.monthEndKey;
 
   // Habits are Entry rows of the two habit types; check-ins are their EntryEvents.
-  const habitSlugFilter = { entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } } };
-  const [habitEntries, dayStates, completedStates] = await Promise.all([
-    deps.db.entry.findMany({
-      where: {
-        userId: params.userId,
-        isActive: true,
-        ...habitSlugFilter,
-      },
-      include: {
-        entryType: { select: { slug: true } },
-        weekdays: true,
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
-    }),
-    deps.db.entryEvent.findMany({
-      where: {
-        userId: params.userId,
-        entry: habitSlugFilter,
-        dateKey: day.todayKey,
-      },
-    }),
-    deps.db.entryEvent.findMany({
-      where: {
-        userId: params.userId,
-        entry: habitSlugFilter,
-        completed: true,
-        dateKey: {
-          gte: rangeStart,
-          lte: rangeEnd,
-        },
-      },
-    }),
-  ]);
+  const slugPlaceholders = HABIT_ENTRY_TYPE_SLUGS.map(() => "?").join(", ");
+  const habitEntryRows = deps.sqlite.all<{
+    id: string;
+    userId: string;
+    name: string;
+    description: string | null;
+    category: string | null;
+    config: string;
+    startDate: string;
+    isActive: number;
+    createdAt: string;
+    updatedAt: string;
+    entryTypeSlug: string;
+  }>(
+    `SELECT e.*, et."slug" AS "entryTypeSlug" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" IN (${slugPlaceholders})
+     ORDER BY e."createdAt" ASC`,
+    [params.userId, ...HABIT_ENTRY_TYPE_SLUGS],
+  );
+  const habitEntries = habitEntryRows.map((row) => ({
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    config: row.config,
+    startDate: row.startDate,
+    isActive: row.isActive !== 0,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    entryType: { slug: row.entryTypeSlug },
+    weekdays: deps.sqlite.all<{ day: string }>(`SELECT "day" FROM "EntryWeekday" WHERE "entryId" = ?`, [row.id]),
+  }));
+
+  const habitEventBase = `FROM "EntryEvent" ee
+     WHERE ee."userId" = ? AND ee."entryId" IN (
+       SELECT e."id" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId" WHERE et."slug" IN (${slugPlaceholders})
+     )`;
+  const dayStates = deps.sqlite.all<{ entryId: string; dateKey: string; value: number | null; completed: number | null }>(
+    `SELECT ee."entryId", ee."dateKey", ee."value", ee."completed" ${habitEventBase} AND ee."dateKey" = ?`,
+    [params.userId, ...HABIT_ENTRY_TYPE_SLUGS, day.todayKey],
+  );
+  const completedStates = deps.sqlite.all<{ entryId: string; dateKey: string }>(
+    `SELECT ee."entryId", ee."dateKey" ${habitEventBase} AND ee."completed" = 1 AND ee."dateKey" >= ? AND ee."dateKey" <= ?`,
+    [params.userId, ...HABIT_ENTRY_TYPE_SLUGS, rangeStart, rangeEnd],
+  );
 
   const periodCounters = new Map<string, PeriodCounter>();
 
@@ -253,8 +263,8 @@ export async function getTodaySummary(
     dayStates: dayStates.map((state) => ({
       habitId: state.entryId,
       dateKey: state.dateKey,
-      value: state.value === null ? null : Number(state.value),
-      completed: state.completed ?? false,
+      value: state.value === null || state.value === undefined ? null : Number(state.value),
+      completed: state.completed === null || state.completed === undefined ? false : state.completed !== 0,
     })),
     periodProgress: Array.from(periodCounters.entries()).flatMap(([habitId, counts]) => [
       {

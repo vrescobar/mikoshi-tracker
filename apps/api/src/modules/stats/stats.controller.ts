@@ -10,7 +10,7 @@ export async function getOverviewStatsHandler(request: FastifyRequest, reply: Fa
     const user = await requireAuthenticatedUser(request);
     const overview = await getOverviewStats(
       {
-        db: request.server.db,
+        db: request.server.sqlite,
       },
       {
         userId: user.id,

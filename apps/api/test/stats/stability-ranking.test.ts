@@ -96,7 +96,7 @@ describe("stability ranking", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite,
       },
       {
         userId: body.user.id,

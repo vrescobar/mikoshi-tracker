@@ -12,7 +12,8 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.db,
+      sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -82,7 +83,7 @@ describe("overview stats summary", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -121,7 +122,7 @@ describe("overview stats summary", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -160,7 +161,7 @@ describe("overview stats summary", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite,
       },
       {
         userId: body.user.id,

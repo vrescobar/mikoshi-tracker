@@ -20,7 +20,7 @@ export function statsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       mutating: false,
       outputSchema: envelope(OverviewStats),
       handler: (ctx) =>
-        getOverviewStats(ctx.deps, {
+        getOverviewStats({ db: ctx.deps.sqlite }, {
           userId: requireUserId(ctx),
           timestamp: getRequestTimestamp(ctx.request),
           timeZone: getRequestTimeZoneOverride(ctx.request),

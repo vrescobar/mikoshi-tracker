@@ -8,7 +8,7 @@ import { addDays, compareDateKeys, getWeekBounds, resolveHabitDay } from "../tod
 import { buildDailySummaryForDate, buildHabitTrendSlice, calculateRecentCompletionRate } from "./stats.shared";
 
 type StatsServiceDependencies = {
-  db: import("../../generated/prisma/client").PrismaClient;
+  db: import("../../db/client").Db;
 };
 
 function sumCompletionRateWindow(
