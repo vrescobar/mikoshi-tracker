@@ -177,6 +177,7 @@ metadata:
       network: restricted-egress
       allowedHosts:
         - localhost:7080
+        - 100.71.187.4:3001
         - 127.0.0.1:7777
         - api.search.brave.com
     sampleInput:
