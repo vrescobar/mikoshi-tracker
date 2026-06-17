@@ -37,7 +37,6 @@ import {
   WEBHOOK_TIMESTAMP_HEADER,
 } from "../../auth/webhook-signature";
 import { normalizeUserTimeZone } from "../../shared/timezone";
-import { Prisma } from "../../generated/prisma/client";
 import { addCircleMemberRecord } from "../circles/circle.repository";
 import { getUserByExternalId } from "../users/user.repository";
 import { newId, nowDb } from "../../db/rows";

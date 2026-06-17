@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { ZodError } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-import { Prisma } from "../../generated/prisma/client";
 import { AdminKeyError, requireAdminKey } from "../../auth/admin-key";
 import { resetPersonalApiToken } from "../../auth/api-token";
 import {
@@ -478,16 +477,9 @@ export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: Fas
           externalId,
         });
         added.push(externalId);
-      } catch (createError) {
-        // Concurrent enrol race — treat as already-member.
-        if (
-          createError instanceof Prisma.PrismaClientKnownRequestError &&
-          createError.code === "P2002"
-        ) {
-          alreadyMembers.push(externalId);
-        } else {
-          throw createError;
-        }
+      } catch {
+        // Concurrent enrol race (UNIQUE constraint) — treat as already-member.
+        alreadyMembers.push(externalId);
       }
     }
 
@@ -621,19 +613,15 @@ export async function enrollMemberByExternalIdHandler(
       reply.status(201);
       return { membershipId: membership.id, userId: membership.userId, externalId: input.externalId };
     } catch (createError) {
-      // Concurrent enrol calls: both pass findCircleMembershipByUserId, second hits unique constraint.
-      if (
-        createError instanceof Prisma.PrismaClientKnownRequestError &&
-        createError.code === "P2002"
-      ) {
-        const race = await findCircleMembershipByUserId(request.server.sqlite, {
-          circleId,
-          userId: user.id,
-        });
-        if (race) {
-          reply.status(200);
-          return { membershipId: race.id, userId: race.userId, externalId: input.externalId };
-        }
+      // Concurrent enrol calls: both pass findCircleMembershipByUserId, second
+      // hits the UNIQUE constraint. Re-resolve idempotently.
+      const race = await findCircleMembershipByUserId(request.server.sqlite, {
+        circleId,
+        userId: user.id,
+      });
+      if (race) {
+        reply.status(200);
+        return { membershipId: race.id, userId: race.userId, externalId: input.externalId };
       }
       throw createError;
     }

@@ -6,7 +6,7 @@
     "dev": "bun --watch src/server.ts",
     "test": "bun test",
     "dump:openapi": "bun scripts/dump-v1-openapi.ts",
-    "prisma:generate": "prisma generate --config ../../prisma.config.ts --schema ../../prisma/schema.prisma",
+    "db:migrate": "bun scripts/migrate.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "start": "bun src/server.ts"
   },
@@ -16,8 +16,6 @@
     "@fastify/multipart": "^10.0.0",
     "@fastify/rate-limit": "^10.3.0",
     "@mikoshi-tracker/contracts": "workspace:*",
-    "@prisma/adapter-libsql": "^7.8.0",
-    "@prisma/client": "^7.8.0",
     "better-auth": "^1.6.11",
     "fastify": "^5.8.5",
     "file-type": "^22.0.1",

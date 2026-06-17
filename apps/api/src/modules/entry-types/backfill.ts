@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 
 /**
  * Backfill of the legacy Habit* tables into the generic Entry* engine
@@ -142,9 +142,9 @@ export const BACKFILL_STATEMENTS: string[] = [
 ];
 
 /** TS twin of the production migration; runs each statement in order. */
-export async function backfillHabitsToEntries(db: PrismaClient): Promise<void> {
+export async function backfillHabitsToEntries(db: Db): Promise<void> {
   for (const statement of BACKFILL_STATEMENTS) {
-    await db.$executeRawUnsafe(statement);
+    db.exec(statement);
   }
 }
 
@@ -153,8 +153,8 @@ export async function backfillHabitsToEntries(db: PrismaClient): Promise<void> {
  * legacy table diverges from its generic copy. Exposed for tests; the production
  * migration runs these statements inline as part of the backfill.
  */
-export async function verifyBackfill(db: PrismaClient): Promise<void> {
+export async function verifyBackfill(db: Db): Promise<void> {
   for (const statement of VERIFY_STATEMENTS) {
-    await db.$executeRawUnsafe(statement);
+    db.exec(statement);
   }
 }

@@ -10,7 +10,7 @@ import { buildV1RouteTable, generateV1OpenApi, type ApiV1Deps } from "../src/v1"
 const OUTPUT = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "openapi.v1.json");
 
 export function buildSpecJson(): string {
-  const spec = generateV1OpenApi(buildV1RouteTable({ db: {} as ApiV1Deps["db"], sqlite: {} as ApiV1Deps["sqlite"] }));
+  const spec = generateV1OpenApi(buildV1RouteTable({ sqlite: {} as ApiV1Deps["sqlite"] }));
   return `${JSON.stringify(spec, null, 2)}\n`;
 }
 

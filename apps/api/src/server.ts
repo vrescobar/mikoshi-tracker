@@ -2,7 +2,6 @@ import fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import { pathToFileURL } from "node:url";
 import { z } from "zod";
 
-import type { PrismaClient } from "./generated/prisma/client";
 import {
   API_DOCS_PATH,
   API_SPEC_PATH,
@@ -52,7 +51,6 @@ import { sendAuthError } from "./shared/controller-helpers";
 type CreateAppOptions = {
   env?: Partial<NodeJS.ProcessEnv>;
   logger?: boolean;
-  prisma?: PrismaClient;
 };
 
 declare module "fastify" {
@@ -115,7 +113,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   });
 
   await registerEnv(app, options.env);
-  await registerDb(app, options.prisma);
+  await registerDb(app);
   await migrateLegacyPersonalApiTokens(app.sqlite);
   await registerCors(app);
   await registerSecurity(app);

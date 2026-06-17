@@ -14,6 +14,7 @@ import {
   updateEntry,
 } from "../../modules/entries/entry.service";
 import { registerSchema } from "../apiMeta";
+import { listActiveEntryTypes } from "../../modules/entry-types/entry-type.repository";
 import { envelopeList, envelopeOne, requireUserId } from "../context";
 import { paginate, sortItems } from "../shared";
 import type { ApiV1Deps, V1RouteMeta } from "../match";
@@ -62,10 +63,7 @@ export function entryTypesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeList(EntryType),
       handler: async (ctx) => {
         requireUserId(ctx);
-        const rows = await ctx.deps.db.entryType.findMany({
-          where: { isActive: true },
-          orderBy: { createdAt: "asc" },
-        });
+        const rows = listActiveEntryTypes(ctx.deps.sqlite);
         const items = rows.map((et) => ({
           id: et.id,
           slug: et.slug,

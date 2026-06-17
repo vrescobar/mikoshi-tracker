@@ -144,7 +144,7 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("copies every legacy row with preserved IDs and matching counts", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
 
     expect(await ctx.app.db.entry.count()).toBe(await legacyCount(ctx, "Habit"));
     expect(await ctx.app.db.entryWeekday.count()).toBe(await legacyCount(ctx, "HabitWeekday"));
@@ -160,7 +160,7 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("maps kind→slug and frequencyType→UPPERCASE config", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
 
     const boolEntry = await ctx.app.db.entry.findUniqueOrThrow({
       where: { id: "h_bool" },
@@ -185,7 +185,7 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("builds JSON-boolean payloads and correct value/completed projections", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
 
     const boolEvent = await ctx.app.db.entryEvent.findUniqueOrThrow({ where: { id: "s_bool" } });
     expect(JSON.parse(boolEvent.payload)).toEqual({ completed: false });
@@ -199,7 +199,7 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("maps mutation types/sources and reconstructs payload deltas", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
 
     const m1 = await ctx.app.db.eventMutation.findUniqueOrThrow({ where: { id: "m1" } });
     expect(m1.type).toBe("CREATE");
@@ -224,8 +224,8 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("is idempotent — running twice inserts no duplicates", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
+    await backfillHabitsToEntries(ctx.app.sqlite);
 
     expect(await ctx.app.db.entry.count()).toBe(2);
     expect(await ctx.app.db.entryWeekday.count()).toBe(2);
@@ -235,9 +235,9 @@ describe("backfill Habit* -> Entry*", () => {
   });
 
   it("verify guard aborts when a copied row is missing", async () => {
-    await backfillHabitsToEntries(ctx.app.db);
+    await backfillHabitsToEntries(ctx.app.sqlite);
     // Corrupt the destination so counts diverge.
     await ctx.app.db.entryEvent.delete({ where: { id: "s_qty" } });
-    await expect(verifyBackfill(ctx.app.db)).rejects.toThrow();
+    await expect(verifyBackfill(ctx.app.sqlite)).rejects.toThrow();
   });
 });
