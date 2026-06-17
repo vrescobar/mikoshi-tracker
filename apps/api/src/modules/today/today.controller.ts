@@ -15,7 +15,7 @@ import { HabitInactiveError } from "../habits/habit.service";
 import { getTodaySummary } from "./today.service";
 
 async function buildTodayResponse(request: FastifyRequest, userId: string, timestamp: Date | number | string) {
-  return getTodaySummary({ db: request.server.db, sqlite: request.server.sqlite }, { userId, timestamp });
+  return getTodaySummary({ sqlite: request.server.sqlite }, { userId, timestamp });
 }
 
 function sendRequestError(reply: FastifyReply, error: unknown) {

@@ -1,6 +1,5 @@
 import type { TodayMealSlot, TodayNutrition, TodaySlotProgress, TodaySummary } from "@mikoshi-tracker/contracts/today";
 
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { computeAggregations } from "../aggregations/aggregation.service";
 import { resolveActiveDietGoal } from "../diet/diet.service";
@@ -15,7 +14,7 @@ import { getUserById } from "../users/user.repository";
 import { buildTodaySummary } from "./today-summary";
 import { resolveHabitDay } from "./today-clock";
 
-type TodayServiceDeps = { db: PrismaClient; sqlite: Db };
+type TodayServiceDeps = { sqlite: Db };
 
 const FOOD_MEAL_SLUG = "food_meal";
 

@@ -24,7 +24,7 @@ export function todayV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       mutating: false,
       outputSchema: envelope(todaySummaryResponseSchema),
       handler: (ctx) =>
-        getTodaySummary(ctx.deps, {
+        getTodaySummary({ sqlite: ctx.deps.sqlite }, {
           userId: requireUserId(ctx),
           timestamp: getRequestTimestamp(ctx.request),
           timeZone: getRequestTimeZoneOverride(ctx.request),

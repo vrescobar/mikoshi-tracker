@@ -8,10 +8,10 @@ import type {
   FoodSearchResult,
 } from "@mikoshi-tracker/contracts/food";
 
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { createEntry } from "../entries/entry.service";
+import { getUserById } from "../users/user.repository";
 import { persistEvent } from "../events/event.service";
 import { resolveHabitDay } from "../today/today-clock";
 import { computeNutrition } from "../today/today.service";
@@ -25,7 +25,7 @@ import {
 
 export const FOOD_MEAL_SLUG = "food_meal";
 
-type FoodServiceDeps = { db: PrismaClient; sqlite: Db };
+type FoodServiceDeps = { sqlite: Db };
 
 class FoodSourceEventNotFoundError extends Error {
   constructor() {
@@ -53,8 +53,8 @@ export async function searchFoods(
 
   const sources = parseSources(params.sources);
   const [meals, items] = await Promise.all([
-    sources.meals ? searchFoodMealRows(deps.db, { userId: params.userId, like, limit: limit * 2 }) : [],
-    sources.items ? searchFoodItemRows(deps.db, { userId: params.userId, like, limit: limit * 2 }) : [],
+    sources.meals ? searchFoodMealRows(deps.sqlite, { userId: params.userId, like, limit: limit * 2 }) : [],
+    sources.items ? searchFoodItemRows(deps.sqlite, { userId: params.userId, like, limit: limit * 2 }) : [],
   ]);
 
   const results = [
@@ -76,16 +76,18 @@ export async function relogFood(
   deps: FoodServiceDeps,
   params: { userId: string; input: FoodRelogInput; source?: string; timestamp: Date | number | string },
 ): Promise<FoodRelogResponse> {
-  const sourceEvent = await deps.db.entryEvent.findFirst({
-    where: { id: params.input.sourceEventId, userId: params.userId },
-    include: { entry: { include: { entryType: { select: { slug: true } } } } },
-  });
+  const sourceEvent = deps.sqlite.get<{ id: string; payload: string; slug: string }>(
+    `SELECT ee."id" AS "id", ee."payload" AS "payload", et."slug" AS "slug"
+     FROM "EntryEvent" ee JOIN "Entry" e ON e."id" = ee."entryId" JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE ee."id" = ? AND ee."userId" = ? LIMIT 1`,
+    [params.input.sourceEventId, params.userId],
+  );
   if (!sourceEvent) throw new FoodSourceEventNotFoundError();
 
   const sourcePayload = parseRecord(sourceEvent.payload);
   if (!sourcePayload) throw new FoodSourceEventNotFoundError();
 
-  const sourceSlug = sourceEvent.entry.entryType.slug;
+  const sourceSlug = sourceEvent.slug;
   const isItem = sourceSlug === "food_item";
   const scale = params.input.portionScale ?? 1;
 
@@ -141,10 +143,7 @@ export async function getFoodDay(
 ): Promise<FoodDayResponse> {
   let dateKey = params.date;
   if (!dateKey) {
-    const user = await deps.db.user.findUnique({
-      where: { id: params.userId },
-      select: { timezone: true },
-    });
+    const user = getUserById(deps.sqlite, params.userId);
     const tz = normalizeUserTimeZone(params.timeZone ?? user?.timezone ?? null);
     // Food is an event-log type: wall-clock date (cutoffHour 0), so a 01:00
     // snack belongs to that calendar day rather than the previous one.
@@ -152,11 +151,11 @@ export async function getFoodDay(
   }
 
   const [rows, nutrition] = await Promise.all([
-    listFoodDayRows(deps.db, { userId: params.userId, dateKey }),
+    listFoodDayRows(deps.sqlite, { userId: params.userId, dateKey }),
     computeNutrition(deps, params.userId, dateKey),
   ]);
 
-  const attachments = await listFoodDayAttachments(deps.db, {
+  const attachments = await listFoodDayAttachments(deps.sqlite, {
     userId: params.userId,
     eventIds: rows.map((r) => r.eventId),
   });
@@ -189,10 +188,11 @@ async function ensureFoodMealEntry(
   userId: string,
   timestamp: Date | number | string,
 ): Promise<string> {
-  const existing = await deps.db.entry.findFirst({
-    where: { userId, isActive: true, entryType: { slug: FOOD_MEAL_SLUG } },
-    select: { id: true },
-  });
+  const existing = deps.sqlite.get<{ id: string }>(
+    `SELECT e."id" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" = ? LIMIT 1`,
+    [userId, FOOD_MEAL_SLUG],
+  );
   if (existing) return existing.id;
 
   const created = await createEntry({ db: deps.sqlite }, {

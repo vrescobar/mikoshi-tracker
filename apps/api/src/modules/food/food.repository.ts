@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 
 export type RawFoodSearchRow = {
   eventId: string;
@@ -32,7 +32,7 @@ const NOT_DELETED = `
  * every other selected expression evaluate against that latest row.
  */
 export async function searchFoodMealRows(
-  db: PrismaClient,
+  db: Db,
   params: { userId: string; like: string; limit: number },
 ): Promise<RawFoodSearchRow[]> {
   const sql = `
@@ -59,7 +59,7 @@ export async function searchFoodMealRows(
     GROUP BY LOWER(json_extract(ee.payload, '$.name'))
     ORDER BY lastUsedAt DESC
     LIMIT ?`;
-  return db.$queryRawUnsafe<RawFoodSearchRow[]>(sql, params.userId, params.like, params.limit);
+  return db.all<RawFoodSearchRow>(sql, [params.userId, params.like, params.limit]);
 }
 
 /**
@@ -68,7 +68,7 @@ export async function searchFoodMealRows(
  * serialized aliases array (a coarse contains, good enough at single-user scale).
  */
 export async function searchFoodItemRows(
-  db: PrismaClient,
+  db: Db,
   params: { userId: string; like: string; limit: number },
 ): Promise<RawFoodSearchRow[]> {
   const sql = `
@@ -97,7 +97,7 @@ export async function searchFoodItemRows(
       AND ${NOT_DELETED}
     ORDER BY ee.occurredAt DESC
     LIMIT ?`;
-  return db.$queryRawUnsafe<RawFoodSearchRow[]>(sql, params.userId, params.like, params.like, params.limit);
+  return db.all<RawFoodSearchRow>(sql, [params.userId, params.like, params.like, params.limit]);
 }
 
 export type RawFoodDayRow = {
@@ -114,7 +114,7 @@ export type RawFoodDayRow = {
  * show provenance without an extra detail round-trip.
  */
 export async function listFoodDayRows(
-  db: PrismaClient,
+  db: Db,
   params: { userId: string; dateKey: string },
 ): Promise<RawFoodDayRow[]> {
   const sql = `
@@ -135,7 +135,7 @@ export async function listFoodDayRows(
       AND ee.dateKey = ?
       AND ${NOT_DELETED}
     ORDER BY ee.occurredAt ASC, ee.id ASC`;
-  return db.$queryRawUnsafe<RawFoodDayRow[]>(sql, params.userId, params.dateKey);
+  return db.all<RawFoodDayRow>(sql, [params.userId, params.dateKey]);
 }
 
 export type RawFoodDayAttachment = {
@@ -151,7 +151,7 @@ export type RawFoodDayAttachment = {
  * photo survives a later edit (which would add a newer, photo-less mutation).
  */
 export async function listFoodDayAttachments(
-  db: PrismaClient,
+  db: Db,
   params: { userId: string; eventIds: string[] },
 ): Promise<RawFoodDayAttachment[]> {
   if (params.eventIds.length === 0) return [];
@@ -163,5 +163,5 @@ export async function listFoodDayAttachments(
     WHERE a.userId = ?
       AND em.eventId IN (${placeholders})
     ORDER BY a.createdAt ASC, a.id ASC`;
-  return db.$queryRawUnsafe<RawFoodDayAttachment[]>(sql, params.userId, ...params.eventIds);
+  return db.all<RawFoodDayAttachment>(sql, [params.userId, ...params.eventIds]);
 }

@@ -1,6 +1,5 @@
 import type { DietGoalInput, DietGoalRecord, DietPreferences } from "@mikoshi-tracker/contracts/diet";
 
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { createEntry, updateEntry } from "../entries/entry.service";
 import { persistEvent } from "../events/event.service";
@@ -8,7 +7,7 @@ import { persistEvent } from "../events/event.service";
 export const DIET_GOAL_SLUG = "diet_goal";
 export const DIET_PREFS_SLUG = "diet_prefs";
 
-type DietServiceDeps = { db: PrismaClient; sqlite: Db };
+type DietServiceDeps = { sqlite: Db };
 
 /**
  * Resolve a user's ACTIVE diet goal: the most recent non-deleted event on their
@@ -20,27 +19,30 @@ export async function resolveActiveDietGoal(
   deps: DietServiceDeps,
   userId: string,
 ): Promise<DietGoalRecord | null> {
-  const entry = await deps.db.entry.findFirst({
-    where: { userId, isActive: true, entryType: { slug: DIET_GOAL_SLUG } },
-    select: { id: true },
-  });
+  const entry = deps.sqlite.get<{ id: string }>(
+    `SELECT e."id" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" = ? LIMIT 1`,
+    [userId, DIET_GOAL_SLUG],
+  );
   if (!entry) return null;
 
-  const events = await deps.db.entryEvent.findMany({
-    where: { entryId: entry.id, userId },
-    orderBy: [{ occurredAt: "desc" }, { createdAt: "desc" }],
-    include: { mutations: { orderBy: { createdAt: "desc" }, take: 1, select: { type: true } } },
-  });
+  const events = deps.sqlite.all<{ id: string; payload: string; updatedAt: string; latestMutationType: string | null }>(
+    `SELECT ee."id", ee."payload", ee."updatedAt",
+       (SELECT em."type" FROM "EventMutation" em WHERE em."eventId" = ee."id" ORDER BY em."createdAt" DESC, em."id" DESC LIMIT 1) AS "latestMutationType"
+     FROM "EntryEvent" ee WHERE ee."entryId" = ? AND ee."userId" = ?
+     ORDER BY ee."occurredAt" DESC, ee."createdAt" DESC`,
+    [entry.id, userId],
+  );
 
   for (const event of events) {
     // Skip soft-deleted revisions (latest mutation is a DELETE).
-    if (event.mutations[0]?.type === "DELETE") continue;
+    if (event.latestMutationType === "DELETE") continue;
     const payload = parseRecord(event.payload);
     if (!payload || typeof payload.kcalTarget !== "number") continue;
     return {
       ...(payload as unknown as DietGoalRecord),
       eventId: event.id,
-      updatedAt: event.updatedAt.toISOString(),
+      updatedAt: new Date(event.updatedAt).toISOString(),
     };
   }
 
@@ -56,10 +58,11 @@ export async function getDietPreferences(
   deps: DietServiceDeps,
   userId: string,
 ): Promise<DietPreferences> {
-  const entry = await deps.db.entry.findFirst({
-    where: { userId, isActive: true, entryType: { slug: DIET_PREFS_SLUG } },
-    select: { config: true },
-  });
+  const entry = deps.sqlite.get<{ config: string }>(
+    `SELECT e."config" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" = ? LIMIT 1`,
+    [userId, DIET_PREFS_SLUG],
+  );
   if (!entry) return {};
   const config = parseRecord(entry.config);
   return (config as DietPreferences | null) ?? {};
@@ -77,10 +80,11 @@ async function ensureDietEntry(
   name: string,
   timestamp: Date | number | string,
 ): Promise<string> {
-  const existing = await deps.db.entry.findFirst({
-    where: { userId, isActive: true, entryType: { slug } },
-    select: { id: true },
-  });
+  const existing = deps.sqlite.get<{ id: string }>(
+    `SELECT e."id" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     WHERE e."userId" = ? AND e."isActive" = 1 AND et."slug" = ? LIMIT 1`,
+    [userId, slug],
+  );
   if (existing) return existing.id;
 
   const created = await createEntry({ db: deps.sqlite }, {
