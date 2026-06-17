@@ -14,6 +14,11 @@ const apiProxy = {
 export default defineConfig({
   plugins: [react()],
   server: {
+    // Bind all interfaces so the dev server is reachable over the LAN /
+    // Tailscale (e.g. http://100.71.187.4:3000), not just localhost. The
+    // magic-link host is whatever you set in BETTER_AUTH_URL, so point that at
+    // the same address you open in the browser and the two will agree.
+    host: true,
     port: 3000,
     strictPort: true,
     proxy: apiProxy,
