@@ -1,13 +1,14 @@
 import type { DietGoalInput, DietGoalRecord, DietPreferences } from "@mikoshi-tracker/contracts/diet";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { createEntry, updateEntry } from "../entries/entry.service";
 import { persistEvent } from "../events/event.service";
 
 export const DIET_GOAL_SLUG = "diet_goal";
 export const DIET_PREFS_SLUG = "diet_prefs";
 
-type DietServiceDeps = { db: PrismaClient };
+type DietServiceDeps = { db: PrismaClient; sqlite: Db };
 
 /**
  * Resolve a user's ACTIVE diet goal: the most recent non-deleted event on their
@@ -82,7 +83,7 @@ async function ensureDietEntry(
   });
   if (existing) return existing.id;
 
-  const created = await createEntry(deps, {
+  const created = await createEntry({ db: deps.sqlite }, {
     userId,
     input: { entryTypeSlug: slug, name, config: {} },
     timestamp,
@@ -100,7 +101,7 @@ export async function setDietGoal(
   params: { userId: string; input: DietGoalInput; source?: string; timestamp: Date | number | string },
 ): Promise<DietGoalRecord> {
   const entryId = await ensureDietEntry(deps, params.userId, DIET_GOAL_SLUG, "Diet goal", params.timestamp);
-  await persistEvent(deps, {
+  await persistEvent({ db: deps.sqlite }, {
     entryId,
     userId: params.userId,
     occurredAt: new Date(params.timestamp),
@@ -125,7 +126,7 @@ export async function setDietPreferences(
   params: { userId: string; input: DietPreferences; timestamp: Date | number | string },
 ): Promise<DietPreferences> {
   const entryId = await ensureDietEntry(deps, params.userId, DIET_PREFS_SLUG, "Diet preferences", params.timestamp);
-  await updateEntry(deps, { userId: params.userId, entryId, input: { config: params.input } });
+  await updateEntry({ db: deps.sqlite }, { userId: params.userId, entryId, input: { config: params.input } });
   return getDietPreferences(deps, params.userId);
 }
 

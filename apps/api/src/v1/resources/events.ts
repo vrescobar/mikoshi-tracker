@@ -85,7 +85,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       querySchema: eventsListQuerySchema,
       outputSchema: envelope(eventsListResponseSchema),
       handler: (ctx) =>
-        listEvents(ctx.deps, { userId: requireUserId(ctx), filters: ctx.query }),
+        listEvents({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), filters: ctx.query }),
     },
     {
       method: "GET",
@@ -98,7 +98,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: eventIdInputSchema,
       outputSchema: envelopeOne(EntryEvent),
       handler: (ctx) =>
-        getEvent(ctx.deps, { userId: requireUserId(ctx), eventId: (ctx.params as { eventId: string }).eventId }),
+        getEvent({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), eventId: (ctx.params as { eventId: string }).eventId }),
     },
     {
       method: "POST",
@@ -113,7 +113,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeOne(EntryEvent),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof eventsCreateInputSchema>;
-        return persistEvent(ctx.deps, {
+        return persistEvent({ db: ctx.deps.sqlite }, {
           entryId: input.entryId,
           userId: requireUserId(ctx),
           occurredAt: new Date(input.occurredAt),
@@ -137,7 +137,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeOne(EntryEvent),
       handler: (ctx) => {
         const { eventId, ...patch } = ctx.input as z.infer<typeof eventsUpdateInputSchema>;
-        return updateEvent(ctx.deps, { userId: requireUserId(ctx), eventId, input: patch });
+        return updateEvent({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), eventId, input: patch });
       },
     },
     {
@@ -151,7 +151,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: eventIdInputSchema,
       outputSchema: envelope(eventDeleteResponseSchema),
       handler: (ctx) =>
-        deleteEvent(ctx.deps, { userId: requireUserId(ctx), eventId: (ctx.input as { eventId: string }).eventId }),
+        deleteEvent({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), eventId: (ctx.input as { eventId: string }).eventId }),
     },
     {
       method: "POST",
@@ -164,7 +164,7 @@ export function eventsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: eventIdInputSchema,
       outputSchema: envelopeOne(EntryEvent),
       handler: (ctx) =>
-        undoEvent(ctx.deps, { userId: requireUserId(ctx), eventId: (ctx.input as { eventId: string }).eventId }),
+        undoEvent({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), eventId: (ctx.input as { eventId: string }).eventId }),
     },
   ];
 }

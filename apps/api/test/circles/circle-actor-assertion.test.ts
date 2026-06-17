@@ -35,11 +35,11 @@ async function setup(context: TestContext) {
   const { token } = await createCircleToken(context.app.db, circle.id);
 
   const ownerHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     { userId: ownerId, input: { name: "Run", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
   const bobHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     { userId: bobId, input: { name: "Read", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
   await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: ownerHabit.id });

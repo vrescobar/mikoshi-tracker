@@ -77,7 +77,7 @@ export function buildHabitPayload(storedKind: string, value: number | null, comp
   return JSON.stringify({ completed });
 }
 
-type EntryRowForHabit = {
+export type EntryRowForHabit = {
   id: string;
   userId: string;
   name: string;

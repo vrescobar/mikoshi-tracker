@@ -6,7 +6,7 @@ import { createTestContext, signUp, type TestContext } from "../helpers/app";
 import { seedHabitDayStates } from "../helpers/habits";
 
 type HabitDetailGetter = (
-  dependencies: { db: TestContext["app"]["db"] },
+  dependencies: { db: TestContext["app"]["db"]; sqlite: TestContext["app"]["sqlite"] },
   params: {
     userId: string;
     habitId: string;
@@ -50,7 +50,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db,
+      db: context.app.db, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -101,7 +101,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -218,7 +218,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -317,7 +317,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

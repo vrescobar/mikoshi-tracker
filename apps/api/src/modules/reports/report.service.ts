@@ -1,8 +1,9 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { type ChartKind, renderChartPng } from "../charts/chart.service";
 import type { MikoshiPlatformClient } from "../platform/mikoshi-platform-client";
 
-type ReportServiceDeps = { db: PrismaClient };
+type ReportServiceDeps = { db: PrismaClient; sqlite: Db };
 
 export type SendChartResult = {
   delivered: boolean;

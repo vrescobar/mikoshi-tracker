@@ -20,11 +20,11 @@ async function setupFixture(context: TestContext) {
   const { token } = await createCircleToken(context.app.db, circle.id);
 
   const booleanHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     { userId, input: { name: "Morning run", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
   const quantityHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     {
       userId,
       input: { name: "Read pages", kind: "quantity", targetValue: 20, unit: "pages", frequency: { type: "daily" } },
@@ -127,7 +127,7 @@ describe("circle backdated check-ins", () => {
 
     // A web-sourced completion on the past day — circle must not undo it.
     await completeHabitForToday(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       { userId, habitId: booleanHabit.id, source: "web", timestamp: `${TWO_DAYS_AGO}T12:00:00.000Z` },
     );
 
@@ -188,7 +188,7 @@ describe("circle backdated check-ins", () => {
     const circle = await createCircleRecord(context.app.db, { ownerId: userId, name: "WD Circle" });
     const { token } = await createCircleToken(context.app.db, circle.id);
     const habit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId,
         input: { name: "Gym", frequency: { type: "weekdays", days: ["monday", "wednesday", "friday"] } },

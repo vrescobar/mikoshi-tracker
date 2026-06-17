@@ -8,5 +8,5 @@ import { createTestContext, type TestContext } from "../../helpers/app";
  */
 export async function createV1DepsContext(): Promise<{ deps: ApiV1Deps; ctx: TestContext }> {
   const ctx = await createTestContext();
-  return { deps: { db: ctx.app.db }, ctx };
+  return { deps: { db: ctx.app.db, sqlite: ctx.app.sqlite }, ctx };
 }

@@ -1,6 +1,7 @@
 import sharp from "sharp";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { computeAggregations } from "../aggregations/aggregation.service";
 import { resolveActiveDietGoal } from "../diet/diet.service";
 import { addDays, resolveHabitDay } from "../today/today-clock";
@@ -21,7 +22,7 @@ export function parseRangeDays(range: string | undefined): number {
   return RANGE_DAYS[range ?? "7d"] ?? 7;
 }
 
-type ChartServiceDeps = { db: PrismaClient };
+type ChartServiceDeps = { db: PrismaClient; sqlite: Db };
 
 /**
  * Render one of the supported charts as a PNG, scoped strictly to `userId`.

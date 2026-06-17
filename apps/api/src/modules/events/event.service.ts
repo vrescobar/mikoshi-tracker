@@ -6,7 +6,7 @@ import type {
   EventMutationRecord,
 } from "@mikoshi-tracker/contracts/events";
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { NothingToUndoError } from "../../shared/errors";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { resolveHabitDay } from "../today/today-clock";
@@ -62,7 +62,7 @@ export { NothingToUndoError };
 
 // ─── Internal types ────────────────────────────────────────────────────────────
 
-type EventServiceDeps = { db: PrismaClient };
+type EventServiceDeps = { db: Db };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 

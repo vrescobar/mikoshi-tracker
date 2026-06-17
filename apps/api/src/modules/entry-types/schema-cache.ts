@@ -1,6 +1,7 @@
 import type { ZodType } from "zod";
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { getEntryTypeById } from "./entry-type.repository";
 import { jsonSchemaToZod } from "./json-schema-to-zod";
 
 export interface AggregationSpec {
@@ -25,11 +26,11 @@ export interface CompiledSchema {
 
 const cache = new Map<string, CompiledSchema>();
 
-export async function getCompiledSchema(db: PrismaClient, entryTypeId: string): Promise<CompiledSchema> {
+export async function getCompiledSchema(db: Db, entryTypeId: string): Promise<CompiledSchema> {
   const cached = cache.get(entryTypeId);
   if (cached !== undefined) return cached;
 
-  const entryType = await db.entryType.findUnique({ where: { id: entryTypeId } });
+  const entryType = getEntryTypeById(db, entryTypeId);
   if (!entryType) {
     throw new Error(`EntryType not found: ${entryTypeId}`);
   }

@@ -24,7 +24,7 @@ async function buildFixture(context: TestContext) {
   const { token } = await createCircleToken(context.app.db, circle.id);
 
   const aliceHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     {
       userId: alice.user.id,
       input: { name: "Alice habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -32,7 +32,7 @@ async function buildFixture(context: TestContext) {
     },
   );
   const bobHabit = await createHabit(
-    { db: context.app.db },
+    { db: context.app.db, sqlite: context.app.sqlite },
     {
       userId: bob.user.id,
       input: { name: "Bob habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -84,7 +84,7 @@ describe("circle-token denial matrix (§C14)", () => {
 
     const { body: carol } = await signUp(context.app, { email: "carol@example.com", name: "Carol" });
     const carolHabit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId: carol.user.id,
         input: { name: "Carol habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -125,7 +125,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token } = await buildFixture(context);
 
     const unsharedHabit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId: alice.id,
         input: { name: "Private habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -207,7 +207,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token } = await buildFixture(context);
 
     const unsharedHabit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId: alice.id,
         input: { name: "Secret habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -232,7 +232,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token, aliceHabit } = await buildFixture(context);
 
     await completeHabitForToday(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW },
     );
 

@@ -7,6 +7,7 @@ import type {
 } from "@mikoshi-tracker/contracts/aggregations";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { getCompiledSchema } from "../entry-types/schema-cache";
 import {
   type RawAggregationRow,
@@ -25,7 +26,7 @@ export class EntryTypeForAggregationNotFoundError extends Error {
 
 // ─── Internal types ────────────────────────────────────────────────────────────
 
-type AggregationServiceDeps = { db: PrismaClient };
+type AggregationServiceDeps = { db: PrismaClient; sqlite: Db };
 
 // ─── Date / bucket helpers ─────────────────────────────────────────────────────
 
@@ -145,7 +146,7 @@ export async function computeAggregations(
   const entryType = await deps.db.entryType.findUnique({ where: { slug: entryTypeSlug } });
   if (!entryType) throw new EntryTypeForAggregationNotFoundError(entryTypeSlug);
 
-  const compiled = await getCompiledSchema(deps.db, entryType.id);
+  const compiled = await getCompiledSchema(deps.sqlite, entryType.id);
   const spec = compiled.aggregations;
 
   // Determine which sum fields to compute, optionally filtered by ?fields=

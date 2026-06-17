@@ -1,7 +1,8 @@
 import type { EntryRecord } from "@mikoshi-tracker/contracts/entries";
 
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { normalizeUserTimeZone } from "../../shared/timezone";
+import { getUserById } from "../users/user.repository";
 import { resolveHabitDay } from "../today/today-clock";
 import { getCompiledSchema } from "../entry-types/schema-cache";
 
@@ -45,7 +46,7 @@ export class EntryTypeNotFoundError extends Error {
 }
 
 type EntryServiceDependencies = {
-  db: PrismaClient;
+  db: Db;
 };
 
 type CreateEntryParams = {
@@ -83,10 +84,7 @@ async function resolveUserToday(
   dependencies: EntryServiceDependencies,
   params: { userId: string; timestamp?: Date | number | string },
 ): Promise<string> {
-  const user = await dependencies.db.user.findUnique({
-    where: { id: params.userId },
-    select: { timezone: true },
-  });
+  const user = getUserById(dependencies.db, params.userId);
 
   if (!user) {
     throw new EntryNotFoundError();

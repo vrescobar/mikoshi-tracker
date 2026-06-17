@@ -60,7 +60,7 @@ export async function listEntriesHandler(request: FastifyRequest, reply: Fastify
   try {
     const user = await requireAuthenticatedUser(request);
     const items = await listEntries(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { userId: user.id, filters: request.query },
     );
     return { items };
@@ -77,7 +77,7 @@ export async function createEntryHandler(request: FastifyRequest, reply: Fastify
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await createEntry(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       {
         userId: user.id,
         input: request.body,
@@ -99,7 +99,7 @@ export async function getEntryHandler(request: FastifyRequest, reply: FastifyRep
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await getEntry(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { userId: user.id, entryId: getEntryId(request) },
     );
     return { item };
@@ -116,7 +116,7 @@ export async function updateEntryHandler(request: FastifyRequest, reply: Fastify
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await updateEntry(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       {
         userId: user.id,
         entryId: getEntryId(request),
@@ -137,7 +137,7 @@ export async function archiveEntryHandler(request: FastifyRequest, reply: Fastif
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await archiveEntry(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { userId: user.id, entryId: getEntryId(request) },
     );
     return { item };
@@ -154,7 +154,7 @@ export async function restoreEntryHandler(request: FastifyRequest, reply: Fastif
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await restoreEntry(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { userId: user.id, entryId: getEntryId(request) },
     );
     return { item };

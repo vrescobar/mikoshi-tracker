@@ -129,15 +129,15 @@ describe("circle read endpoints", () => {
       const { alice, circle, token } = await setupFixture(context);
 
       const sharedActive = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Shared active", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       const unshared = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Unshared habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       const sharedInactive = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Shared inactive", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
 
@@ -146,9 +146,9 @@ describe("circle read endpoints", () => {
       await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
 
       // Complete unshared and inactive habits — should not count
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: unshared.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: unshared.id, source: "web", timestamp: NOW });
       await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: true } });
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: sharedInactive.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: sharedInactive.id, source: "web", timestamp: NOW });
       await context.app.db.entry.update({ where: { id: sharedInactive.id }, data: { isActive: false } });
 
       const response = await context.app.inject({
@@ -172,14 +172,14 @@ describe("circle read endpoints", () => {
       const { alice, bob, circle, token } = await setupFixture(context);
 
       const aliceHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Alice habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: aliceHabit.id });
 
       // Alice: completed today and yesterday (streak = 1 from yesterday back, then stopped)
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
 
       const response = await context.app.inject({
         method: "GET",
@@ -214,7 +214,7 @@ describe("circle read endpoints", () => {
 
       // A 4x/week habit: its weekly target is 4, NOT 7.
       const aliceHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         {
           userId: alice.id,
           input: { name: "Fuerza 4x", frequency: { type: "weekly_count", count: 4 }, startDate: "2026-05-01" },
@@ -224,9 +224,9 @@ describe("circle read endpoints", () => {
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: aliceHabit.id });
 
       // 3 of the 4 weekly check-ins done (today + the two prior days).
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-16T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-16T12:00:00.000Z" });
 
       const response = await context.app.inject({
         method: "GET",
@@ -257,7 +257,7 @@ describe("circle read endpoints", () => {
       const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "TZ Circle" });
       const { token } = await createCircleToken(context.app.db, circle.id);
       const habit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.user.id, input: { name: "Habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-19" },
       );
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: habit.id });
@@ -288,11 +288,11 @@ describe("circle read endpoints", () => {
       await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: carol.user.id });
 
       const aliceHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Alice habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       const carolHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: carol.user.id, input: { name: "Carol habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
 
@@ -300,8 +300,8 @@ describe("circle read endpoints", () => {
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: carolHabit.id });
 
       // Alice: completed today; Carol: has yesterday streak but no today
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
-      await completeHabitForToday({ db: context.app.db }, { userId: carol.user.id, habitId: carolHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: carol.user.id, habitId: carolHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
 
       const response = await context.app.inject({
         method: "GET",
@@ -345,13 +345,13 @@ describe("circle read endpoints", () => {
       const { alice, circle, token } = await setupFixture(context);
 
       const aliceHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Alice habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: aliceHabit.id });
 
       // Only complete today — no yesterday completion → streak should be 0
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
 
       const response = await context.app.inject({
         method: "GET",
@@ -416,7 +416,7 @@ describe("circle read endpoints", () => {
       const { alice, circle, token } = await setupFixture(context);
 
       const futureHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Future habit", frequency: { type: "daily" }, startDate: "2026-05-20" }, today: "2026-05-18" },
       );
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: futureHabit.id });
@@ -439,7 +439,7 @@ describe("circle read endpoints", () => {
 
       // NOW is Monday; schedule habit for Tue–Fri only
       const weekdayHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         {
           userId: alice.id,
           input: {
@@ -469,17 +469,17 @@ describe("circle read endpoints", () => {
       const { alice, circle, token } = await setupFixture(context);
 
       const pendingHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Pending habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       const completedHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.id, input: { name: "Completed habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
 
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: pendingHabit.id });
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: completedHabit.id });
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.id, habitId: completedHabit.id, source: "web", timestamp: NOW });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.id, habitId: completedHabit.id, source: "web", timestamp: NOW });
 
       const response = await context.app.inject({
         method: "GET",
@@ -506,13 +506,13 @@ describe("circle read endpoints", () => {
       const { token } = await createCircleToken(context.app.db, circle.id);
 
       const habit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: alice.user.id, input: { name: "Daily habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
       );
       await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: habit.id });
 
       // Complete habit for 2026-05-18 (Shanghai business day starting around UTC 2026-05-17T20:00)
-      await completeHabitForToday({ db: context.app.db }, { userId: alice.user.id, habitId: habit.id, source: "web", timestamp: "2026-05-18T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.db, sqlite: context.app.sqlite }, { userId: alice.user.id, habitId: habit.id, source: "web", timestamp: "2026-05-18T12:00:00.000Z" });
 
       // Before Shanghai date rollover (19:59 UTC = 03:59 Shanghai May 19 — still May 18 business day)
       const beforeRollover = await context.app.inject({

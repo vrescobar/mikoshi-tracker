@@ -7,6 +7,8 @@ import type {
   UpdateHabitInput,
 } from "@mikoshi-tracker/contracts/habits";
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { getUserById } from "../users/user.repository";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import {
   serializeContractFrequencyType,
@@ -146,6 +148,7 @@ async function attachSharedCircles(
 
 type HabitServiceDependencies = {
   db: PrismaClient;
+  sqlite: Db;
 };
 
 type CreateHabitParams = {
@@ -215,7 +218,7 @@ async function requireOwnedHabit(
     habitId: string;
   },
 ) {
-  const record = await findOwnedHabitRecord(dependencies.db, params);
+  const record = await findOwnedHabitRecord(dependencies.sqlite, params);
 
   if (!record) {
     throw new HabitNotFoundError();
@@ -447,14 +450,7 @@ function buildStats(rows: ComputedHistoryRow[]): HabitDetail["stats"] {
 
 export async function createHabit(dependencies: HabitServiceDependencies, params: CreateHabitParams) {
   const parsed = parseCreateHabitInput(params.input);
-  const user = await dependencies.db.user.findUnique({
-    where: {
-      id: params.userId,
-    },
-    select: {
-      timezone: true,
-    },
-  });
+  const user = getUserById(dependencies.sqlite, params.userId);
 
   if (!user) {
     throw new HabitNotFoundError();
@@ -468,7 +464,7 @@ export async function createHabit(dependencies: HabitServiceDependencies, params
         timeZone: normalizeUserTimeZone(user.timezone),
       }).todayKey,
   });
-  const record = await createHabitRecord(dependencies.db, {
+  const record = await createHabitRecord(dependencies.sqlite, {
     userId: params.userId,
     habit: normalized,
   });
@@ -484,7 +480,7 @@ export async function listHabits(
   },
 ) {
   const filters = parseHabitListFilters(params.filters ?? {});
-  const records = await listHabitRecordsByFilter(dependencies.db, {
+  const records = await listHabitRecordsByFilter(dependencies.sqlite, {
     userId: params.userId,
     filters,
   });
@@ -503,14 +499,7 @@ export async function getHabitDetail(
     timestamp?: Date | number | string;
   },
 ): Promise<HabitDetail> {
-  const user = await dependencies.db.user.findUnique({
-    where: {
-      id: params.userId,
-    },
-    select: {
-      timezone: true,
-    },
-  });
+  const user = getUserById(dependencies.sqlite, params.userId);
 
   if (!user) {
     throw new HabitNotFoundError();
@@ -520,7 +509,7 @@ export async function getHabitDetail(
     timestamp: params.timestamp ?? new Date(),
     timeZone: normalizeUserTimeZone(user.timezone),
   });
-  const record = await findOwnedHabitDetailRecord(dependencies.db, {
+  const record = await findOwnedHabitDetailRecord(dependencies.sqlite, {
     userId: params.userId,
     habitId: params.habitId,
     rangeStart: "0000-01-01",
@@ -570,7 +559,7 @@ export async function updateHabit(
   const normalized = normalizeCreateHabitInput(mergeUpdateInput(existing, patch), {
     today: existing.startDate,
   });
-  const updated = await updateHabitRecord(dependencies.db, {
+  const updated = await updateHabitRecord(dependencies.sqlite, {
     habitId: existing.id,
     habit: normalized,
   });
@@ -586,7 +575,7 @@ export async function archiveHabit(
   },
 ) {
   const existing = await requireOwnedHabit(dependencies, params);
-  const updated = await setHabitActiveState(dependencies.db, {
+  const updated = await setHabitActiveState(dependencies.sqlite, {
     habitId: existing.id,
     isActive: false,
   });
@@ -602,7 +591,7 @@ export async function restoreHabit(
   },
 ) {
   const existing = await requireOwnedHabit(dependencies, params);
-  const updated = await setHabitActiveState(dependencies.db, {
+  const updated = await setHabitActiveState(dependencies.sqlite, {
     habitId: existing.id,
     isActive: true,
   });

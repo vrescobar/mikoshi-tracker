@@ -72,7 +72,7 @@ describe("management authorization matrix (§C14.8)", () => {
     await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
 
     const aliceHabit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId: alice.user.id,
         input: { name: "Alice's habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -101,7 +101,7 @@ describe("management authorization matrix (§C14.8)", () => {
     const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
 
     const bobHabit = await createHabit(
-      { db: context.app.db },
+      { db: context.app.db, sqlite: context.app.sqlite },
       {
         userId: bob.user.id,
         input: { name: "Bob's own habit", frequency: { type: "daily" }, startDate: "2026-05-01" },

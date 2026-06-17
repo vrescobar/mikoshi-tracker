@@ -1,10 +1,11 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { computeAggregations } from "../aggregations/aggregation.service";
 import { addDays } from "../today/today-clock";
 import { listCircleMemberRecords } from "./circle.repository";
 import { CircleForbiddenError, CircleNotFoundError } from "./circle.service";
 
-type Deps = { db: PrismaClient };
+type Deps = { db: PrismaClient; sqlite: Db };
 
 export class CircleNotMetricContestError extends Error {
   constructor() {

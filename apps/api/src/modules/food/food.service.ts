@@ -9,6 +9,7 @@ import type {
 } from "@mikoshi-tracker/contracts/food";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { createEntry } from "../entries/entry.service";
 import { persistEvent } from "../events/event.service";
@@ -24,7 +25,7 @@ import {
 
 export const FOOD_MEAL_SLUG = "food_meal";
 
-type FoodServiceDeps = { db: PrismaClient };
+type FoodServiceDeps = { db: PrismaClient; sqlite: Db };
 
 class FoodSourceEventNotFoundError extends Error {
   constructor() {
@@ -111,7 +112,7 @@ export async function relogFood(
   }
 
   const entryId = await ensureFoodMealEntry(deps, params.userId, params.timestamp);
-  const detail = await persistEvent(deps, {
+  const detail = await persistEvent({ db: deps.sqlite }, {
     entryId,
     userId: params.userId,
     occurredAt,
@@ -194,7 +195,7 @@ async function ensureFoodMealEntry(
   });
   if (existing) return existing.id;
 
-  const created = await createEntry(deps, {
+  const created = await createEntry({ db: deps.sqlite }, {
     userId,
     input: { entryTypeSlug: FOOD_MEAL_SLUG, name: "Meals", config: {} },
     timestamp,

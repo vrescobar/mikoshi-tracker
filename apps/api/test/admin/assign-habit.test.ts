@@ -96,7 +96,7 @@ describe("admin assign-habit", () => {
       const { circle } = await makeCircle(context);
       const member = await enrol(context, circle.id, "ext-elafo", "eLafo");
       const habit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         {
           userId: member.userId,
           input: { name: "Fuerza y movilidad 3x semana", frequency: { type: "weekly_count", count: 3 } },
@@ -125,7 +125,7 @@ describe("admin assign-habit", () => {
       const { circle } = await makeCircle(context);
       const member = await enrol(context, circle.id, "ext-sete", "Sete");
       const habit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: member.userId, input: { name: "CrossFit 3x", frequency: { type: "weekly_count", count: 3 } }, today: "2026-06-01" },
       );
 
@@ -151,7 +151,7 @@ describe("admin assign-habit", () => {
       // Habit belongs to a DIFFERENT member.
       const other = await enrol(context, circle.id, "ext-other", "Other");
       const foreignHabit = await createHabit(
-        { db: context.app.db },
+        { db: context.app.db, sqlite: context.app.sqlite },
         { userId: other.userId, input: { name: "Ajeno", frequency: { type: "daily" } }, today: "2026-06-01" },
       );
 

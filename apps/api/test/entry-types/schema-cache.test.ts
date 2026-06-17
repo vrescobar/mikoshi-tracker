@@ -29,7 +29,7 @@ describe("schema-cache", () => {
       where: { slug: "habit_boolean" },
     });
 
-    const compiled = await getCompiledSchema(context!.app.db, entryType.id);
+    const compiled = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     expect(compiled.cadence).toBe("recurring");
     expect(compiled.skillSlug).toBeNull();
@@ -42,8 +42,8 @@ describe("schema-cache", () => {
       where: { slug: "food_meal" },
     });
 
-    const first = await getCompiledSchema(context!.app.db, entryType.id);
-    const second = await getCompiledSchema(context!.app.db, entryType.id);
+    const first = await getCompiledSchema(context!.app.sqlite, entryType.id);
+    const second = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     expect(first).toBe(second);
   });
@@ -52,7 +52,7 @@ describe("schema-cache", () => {
     const entryType = await context!.app.db.entryType.findUniqueOrThrow({
       where: { slug: "habit_boolean" },
     });
-    const { payload } = await getCompiledSchema(context!.app.db, entryType.id);
+    const { payload } = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     expect(payload.safeParse({ completed: true }).success).toBe(true);
     expect(payload.safeParse({ completed: false }).success).toBe(true);
@@ -64,7 +64,7 @@ describe("schema-cache", () => {
     const entryType = await context!.app.db.entryType.findUniqueOrThrow({
       where: { slug: "food_meal" },
     });
-    const { payload } = await getCompiledSchema(context!.app.db, entryType.id);
+    const { payload } = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     const validMeal = {
       name: "Chicken rice",
@@ -85,7 +85,7 @@ describe("schema-cache", () => {
     const entryType = await context!.app.db.entryType.findUniqueOrThrow({
       where: { slug: "food_meal" },
     });
-    const compiled = await getCompiledSchema(context!.app.db, entryType.id);
+    const compiled = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     expect(compiled.cadence).toBe("event_log");
     expect(compiled.skillSlug).toBe("mikoshi-tracker-food");
@@ -97,9 +97,9 @@ describe("schema-cache", () => {
       where: { slug: "food_meal" },
     });
 
-    await getCompiledSchema(context!.app.db, entryType.id);
+    await getCompiledSchema(context!.app.sqlite, entryType.id);
     invalidateSchemaCache(entryType.id);
-    const recompiled = await getCompiledSchema(context!.app.db, entryType.id);
+    const recompiled = await getCompiledSchema(context!.app.sqlite, entryType.id);
 
     expect(recompiled.cadence).toBe("event_log");
     expect(recompiled.skillSlug).toBe("mikoshi-tracker-food");
@@ -109,19 +109,19 @@ describe("schema-cache", () => {
     const types = await context!.app.db.entryType.findMany();
 
     for (const t of types) {
-      await getCompiledSchema(context!.app.db, t.id);
+      await getCompiledSchema(context!.app.sqlite, t.id);
     }
     invalidateSchemaCache();
 
     for (const t of types) {
-      const compiled = await getCompiledSchema(context!.app.db, t.id);
+      const compiled = await getCompiledSchema(context!.app.sqlite, t.id);
       expect(compiled.payload).toBeDefined();
     }
   });
 
   it("throws for an unknown entryTypeId", async () => {
     await expect(
-      getCompiledSchema(context!.app.db, "nonexistent-id"),
+      getCompiledSchema(context!.app.sqlite, "nonexistent-id"),
     ).rejects.toThrow("EntryType not found: nonexistent-id");
   });
 });

@@ -101,7 +101,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeList(Entry),
       handler: async (ctx) => {
         const query = ctx.query as z.infer<typeof entriesListQuerySchema>;
-        const items = await listEntries(ctx.deps, {
+        const items = await listEntries({ db: ctx.deps.sqlite }, {
           userId: requireUserId(ctx),
           filters: { entryTypeSlug: query.entryTypeSlug, isActive: query.isActive, query: query.q },
         });
@@ -119,7 +119,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: z.object({ entryId: nonEmpty }),
       outputSchema: envelopeOne(Entry),
       handler: (ctx) =>
-        getEntry(ctx.deps, { userId: requireUserId(ctx), entryId: (ctx.params as { entryId: string }).entryId }),
+        getEntry({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), entryId: (ctx.params as { entryId: string }).entryId }),
     },
     {
       method: "POST",
@@ -133,7 +133,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: createEntryInputSchema,
       outputSchema: envelopeOne(Entry),
       handler: (ctx) =>
-        createEntry(ctx.deps, {
+        createEntry({ db: ctx.deps.sqlite }, {
           userId: requireUserId(ctx),
           input: ctx.input,
           timestamp: getRequestTimestamp(ctx.request),
@@ -151,7 +151,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeOne(Entry),
       handler: (ctx) => {
         const { entryId, ...patch } = ctx.input as z.infer<typeof entryUpdateInputSchema>;
-        return updateEntry(ctx.deps, { userId: requireUserId(ctx), entryId, input: patch });
+        return updateEntry({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), entryId, input: patch });
       },
     },
     {
@@ -165,7 +165,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: entryIdInputSchema,
       outputSchema: envelopeOne(Entry),
       handler: (ctx) =>
-        archiveEntry(ctx.deps, { userId: requireUserId(ctx), entryId: (ctx.input as { entryId: string }).entryId }),
+        archiveEntry({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), entryId: (ctx.input as { entryId: string }).entryId }),
     },
     {
       method: "POST",
@@ -178,7 +178,7 @@ export function entriesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: entryIdInputSchema,
       outputSchema: envelopeOne(Entry),
       handler: (ctx) =>
-        restoreEntry(ctx.deps, { userId: requireUserId(ctx), entryId: (ctx.input as { entryId: string }).entryId }),
+        restoreEntry({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx), entryId: (ctx.input as { entryId: string }).entryId }),
     },
   ];
 }

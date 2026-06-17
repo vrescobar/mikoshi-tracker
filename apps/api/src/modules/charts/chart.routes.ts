@@ -23,7 +23,7 @@ async function chartHandler(request: FastifyRequest, reply: FastifyReply) {
 
     const range = (request.query as { range?: string } | undefined)?.range;
     const png = await renderChartPng(
-      { db: request.server.db },
+      { db: request.server.db, sqlite: request.server.sqlite },
       { userId: user.id, kind: rawKind, range, timestamp: getRequestTimestamp(request) },
     );
 

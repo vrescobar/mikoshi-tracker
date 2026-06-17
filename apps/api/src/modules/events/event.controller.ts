@@ -84,7 +84,7 @@ export async function createEventHandler(request: FastifyRequest, reply: Fastify
     const user = await requireAuthenticatedUser(request);
     const parsed = parseCreateEventInput(request.body);
     const item = await persistEvent(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       {
         entryId: getEntryId(request),
         userId: user.id,
@@ -109,7 +109,7 @@ export async function createEventHandler(request: FastifyRequest, reply: Fastify
 export async function listEventsHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
     const user = await requireAuthenticatedUser(request);
-    return await listEvents({ db: request.server.db }, { userId: user.id, filters: request.query });
+    return await listEvents({ db: request.server.sqlite }, { userId: user.id, filters: request.query });
   } catch (error) {
     if (error instanceof AuthSessionError) {
       sendAuthError(reply, error);
@@ -123,7 +123,7 @@ export async function getEventHandler(request: FastifyRequest, reply: FastifyRep
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await getEvent(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { eventId: getEventId(request), userId: user.id },
     );
     return { item };
@@ -140,7 +140,7 @@ export async function updateEventHandler(request: FastifyRequest, reply: Fastify
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await updateEvent(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       {
         eventId: getEventId(request),
         userId: user.id,
@@ -161,7 +161,7 @@ export async function deleteEventHandler(request: FastifyRequest, reply: Fastify
   try {
     const user = await requireAuthenticatedUser(request);
     return await deleteEvent(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { eventId: getEventId(request), userId: user.id },
     );
   } catch (error) {
@@ -177,7 +177,7 @@ export async function undoEventHandler(request: FastifyRequest, reply: FastifyRe
   try {
     const user = await requireAuthenticatedUser(request);
     const item = await undoEvent(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { eventId: getEventId(request), userId: user.id },
     );
     return { item };

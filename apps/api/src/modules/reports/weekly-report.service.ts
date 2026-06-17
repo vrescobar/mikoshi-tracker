@@ -1,10 +1,11 @@
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import type { ChartKind } from "../charts/chart.service";
 import { DIET_PREFS_SLUG } from "../diet/diet.service";
 import type { MikoshiPlatformClient } from "../platform/mikoshi-platform-client";
 import { sendChartToWhatsApp } from "./report.service";
 
-type WeeklyReportDeps = { db: PrismaClient };
+type WeeklyReportDeps = { db: PrismaClient; sqlite: Db };
 
 export type WeeklyReportSummary = { attempted: number; delivered: number };
 

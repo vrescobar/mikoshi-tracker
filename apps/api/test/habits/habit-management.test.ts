@@ -17,7 +17,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db,
+      db: context.app.db, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -69,7 +69,7 @@ describe("habit management service", () => {
 
     await archiveHabit(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -79,7 +79,7 @@ describe("habit management service", () => {
 
     const activeHealth = await listHabits(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -94,7 +94,7 @@ describe("habit management service", () => {
 
     const archivedSearch = await listHabits(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -109,7 +109,7 @@ describe("habit management service", () => {
 
     const activeQuantity = await listHabits(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -147,7 +147,7 @@ describe("habit management service", () => {
 
     const updated = await updateHabit(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -197,7 +197,7 @@ describe("habit management service", () => {
     await expect(
       updateHabit(
         {
-          db: context.app.db,
+          db: context.app.db, sqlite: context.app.sqlite,
         },
         {
           userId: body.user.id,
@@ -222,7 +222,7 @@ describe("habit management service", () => {
 
     const archived = await archiveHabit(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -235,7 +235,7 @@ describe("habit management service", () => {
     await expect(
       updateHabit(
         {
-          db: context.app.db,
+          db: context.app.db, sqlite: context.app.sqlite,
         },
         {
           userId: body.user.id,
@@ -249,7 +249,7 @@ describe("habit management service", () => {
 
     const restored = await restoreHabit(
       {
-        db: context.app.db,
+        db: context.app.db, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

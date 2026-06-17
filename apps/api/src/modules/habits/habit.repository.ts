@@ -1,23 +1,19 @@
-import type { Prisma, PrismaClient } from "../../generated/prisma/client";
-
-import { findEntryTypeBySlug } from "../entries/entry.repository";
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
+import { getEntryTypeBySlug } from "../entry-types/entry-type.repository";
 import {
   buildHabitConfig,
   habitKindToSlug,
   HABIT_ENTRY_TYPE_SLUGS,
   mapEntryToHabit,
+  type EntryRowForHabit,
   type MappedHabit,
 } from "./habit-entry-adapter";
 import type { NormalizedCreateHabitInput } from "./habit.schema";
 
 // Habits are stored as `Entry` rows of type habit_boolean/habit_quantity. These
 // repository functions keep their legacy names and return shapes (consumed by the
-// unchanged habit.service) but read/write the generic Entry* tables.
-
-const habitEntryInclude = {
-  entryType: { select: { slug: true } },
-  weekdays: true,
-} as const;
+// unchanged habit.service) but read/write the generic Entry* tables via bun:sqlite.
 
 type HabitListFilters = {
   status?: "active" | "archived";
@@ -26,185 +22,216 @@ type HabitListFilters = {
   kind?: NormalizedCreateHabitInput["kind"];
 };
 
-function buildHabitEntryWhere(params: {
+type EntryRow = {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  config: string;
+  startDate: string;
+  isActive: number;
+  createdAt: string;
+  updatedAt: string;
+  entryTypeSlug: string;
+};
+
+const SELECT_HABIT = `SELECT e.*, et."slug" AS "entryTypeSlug" FROM "Entry" e JOIN "EntryType" et ON et."id" = e."entryTypeId"`;
+
+function loadWeekdays(db: Db, entryId: string): { day: string }[] {
+  return db.all<{ day: string }>(`SELECT "day" FROM "EntryWeekday" WHERE "entryId" = ?`, [entryId]);
+}
+
+function toEntryRowForHabit(db: Db, row: EntryRow): EntryRowForHabit {
+  return {
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    config: row.config,
+    startDate: row.startDate,
+    isActive: row.isActive !== 0,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    entryType: { slug: row.entryTypeSlug },
+    weekdays: loadWeekdays(db, row.id),
+  };
+}
+
+function buildHabitWhere(params: {
   userId: string;
   habitId?: string;
   filters?: HabitListFilters;
-}): Prisma.EntryWhereInput {
-  const where: Prisma.EntryWhereInput = {
-    userId: params.userId,
-    entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } },
-  };
+}): { sql: string; args: unknown[] } {
+  const clauses: string[] = [`e."userId" = ?`];
+  const args: unknown[] = [params.userId];
+
+  // Habits are always entries of the habit_* types.
+  if (params.filters?.kind) {
+    clauses.push(`et."slug" = ?`);
+    args.push(habitKindToSlug(params.filters.kind));
+  } else {
+    clauses.push(`et."slug" IN (${HABIT_ENTRY_TYPE_SLUGS.map(() => "?").join(", ")})`);
+    args.push(...HABIT_ENTRY_TYPE_SLUGS);
+  }
 
   if (params.habitId) {
-    where.id = params.habitId;
+    clauses.push(`e."id" = ?`);
+    args.push(params.habitId);
   }
-
   if (params.filters?.status) {
-    where.isActive = params.filters.status === "active";
+    clauses.push(`e."isActive" = ?`);
+    args.push(params.filters.status === "active" ? 1 : 0);
   }
-
   if (params.filters?.category) {
-    where.category = params.filters.category;
+    clauses.push(`e."category" = ?`);
+    args.push(params.filters.category);
   }
-
-  if (params.filters?.kind) {
-    where.entryType = { slug: habitKindToSlug(params.filters.kind) };
-  }
-
   if (params.filters?.query) {
-    where.OR = [{ name: { contains: params.filters.query } }, { category: { contains: params.filters.query } }];
+    const like = `%${params.filters.query}%`;
+    clauses.push(`(e."name" LIKE ? OR e."category" LIKE ?)`);
+    args.push(like, like);
   }
 
-  return where;
+  return { sql: clauses.join(" AND "), args };
 }
 
-async function resolveHabitEntryTypeId(db: PrismaClient, kind: NormalizedCreateHabitInput["kind"]): Promise<string> {
-  const entryType = await findEntryTypeBySlug(db, habitKindToSlug(kind));
+async function resolveHabitEntryTypeId(db: Db, kind: NormalizedCreateHabitInput["kind"]): Promise<string> {
+  const entryType = getEntryTypeBySlug(db, habitKindToSlug(kind));
   if (!entryType) {
     throw new Error(`Built-in EntryType not seeded for habit kind: ${kind}`);
   }
   return entryType.id;
 }
 
+function requireHabit(db: Db, habitId: string): MappedHabit {
+  const row = db.get<EntryRow>(`${SELECT_HABIT} WHERE e."id" = ?`, [habitId]);
+  if (!row) throw new Error(`Habit entry not found after write: ${habitId}`);
+  return mapEntryToHabit(toEntryRowForHabit(db, row));
+}
+
+function writeWeekdays(db: Db, entryId: string, weekdays: string[]): void {
+  for (const day of weekdays) {
+    db.run(`INSERT INTO "EntryWeekday" ("id", "entryId", "day") VALUES (?, ?, ?)`, [newId(), entryId, day]);
+  }
+}
+
 export async function createHabitRecord(
-  db: PrismaClient,
-  params: {
-    userId: string;
-    habit: NormalizedCreateHabitInput;
-  },
+  db: Db,
+  params: { userId: string; habit: NormalizedCreateHabitInput },
 ): Promise<MappedHabit> {
   const { userId, habit } = params;
   const entryTypeId = await resolveHabitEntryTypeId(db, habit.kind);
-
-  const entry = await db.entry.create({
-    data: {
-      userId,
-      entryTypeId,
-      name: habit.name,
-      description: habit.description,
-      category: habit.category,
-      config: buildHabitConfig(habit),
-      startDate: habit.startDate,
-      isActive: habit.isActive,
-      weekdays: habit.weekdays.length ? { create: habit.weekdays.map((day) => ({ day })) } : undefined,
-    },
-    include: habitEntryInclude,
+  const id = newId();
+  const now = nowDb();
+  db.transaction(() => {
+    db.run(
+      `INSERT INTO "Entry"
+         ("id", "userId", "entryTypeId", "name", "description", "category", "config", "startDate", "isActive", "createdAt", "updatedAt")
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        userId,
+        entryTypeId,
+        habit.name,
+        habit.description,
+        habit.category,
+        buildHabitConfig(habit),
+        habit.startDate,
+        habit.isActive ? 1 : 0,
+        now,
+        now,
+      ],
+    );
+    writeWeekdays(db, id, habit.weekdays);
   });
-
-  return mapEntryToHabit(entry);
+  return requireHabit(db, id);
 }
 
 export async function listHabitRecordsByFilter(
-  db: PrismaClient,
-  params: {
-    userId: string;
-    filters?: HabitListFilters;
-  },
+  db: Db,
+  params: { userId: string; filters?: HabitListFilters },
 ): Promise<MappedHabit[]> {
-  const entries = await db.entry.findMany({
-    where: buildHabitEntryWhere(params),
-    orderBy: { createdAt: "asc" },
-    include: habitEntryInclude,
-  });
-
-  return entries.map((entry) => mapEntryToHabit(entry));
+  const { sql, args } = buildHabitWhere(params);
+  const rows = db.all<EntryRow>(`${SELECT_HABIT} WHERE ${sql} ORDER BY e."createdAt" ASC`, args);
+  return rows.map((row) => mapEntryToHabit(toEntryRowForHabit(db, row)));
 }
 
 export async function findOwnedHabitRecord(
-  db: PrismaClient,
-  params: {
-    userId: string;
-    habitId: string;
-  },
+  db: Db,
+  params: { userId: string; habitId: string },
 ): Promise<MappedHabit | null> {
-  const entry = await db.entry.findFirst({
-    where: buildHabitEntryWhere(params),
-    include: habitEntryInclude,
-  });
-
-  return entry ? mapEntryToHabit(entry) : null;
+  const { sql, args } = buildHabitWhere(params);
+  const row = db.get<EntryRow>(`${SELECT_HABIT} WHERE ${sql} LIMIT 1`, args);
+  return row ? mapEntryToHabit(toEntryRowForHabit(db, row)) : null;
 }
 
 export async function findOwnedHabitDetailRecord(
-  db: PrismaClient,
-  params: {
-    userId: string;
-    habitId: string;
-    rangeStart: string;
-    rangeEnd: string;
-  },
-): Promise<(MappedHabit & { user: { timezone: string }; dayStates: Array<{ dateKey: string; value: number | null; completed: boolean }> }) | null> {
-  const entry = await db.entry.findFirst({
-    where: buildHabitEntryWhere(params),
-    include: {
-      ...habitEntryInclude,
-      user: { select: { timezone: true } },
-      // Habit check-ins write at most one EntryEvent per (entryId, dateKey), so this
-      // is the direct analogue of the legacy HabitDayState range query.
-      events: {
-        where: { dateKey: { gte: params.rangeStart, lte: params.rangeEnd } },
-        orderBy: { dateKey: "asc" },
-      },
-    },
-  });
+  db: Db,
+  params: { userId: string; habitId: string; rangeStart: string; rangeEnd: string },
+): Promise<
+  | (MappedHabit & {
+      user: { timezone: string };
+      dayStates: Array<{ dateKey: string; value: number | null; completed: boolean }>;
+    })
+  | null
+> {
+  const { sql, args } = buildHabitWhere({ userId: params.userId, habitId: params.habitId });
+  const row = db.get<EntryRow>(`${SELECT_HABIT} WHERE ${sql} LIMIT 1`, args);
+  if (!row) return null;
 
-  if (!entry) {
-    return null;
-  }
+  const user = db.get<{ timezone: string }>(`SELECT "timezone" FROM "User" WHERE "id" = ?`, [row.userId]);
+  const events = db.all<{ dateKey: string; value: number | null; completed: number | null }>(
+    `SELECT "dateKey", "value", "completed" FROM "EntryEvent"
+     WHERE "entryId" = ? AND "dateKey" >= ? AND "dateKey" <= ? ORDER BY "dateKey" ASC`,
+    [row.id, params.rangeStart, params.rangeEnd],
+  );
 
   return {
-    ...mapEntryToHabit(entry),
-    user: { timezone: entry.user.timezone },
-    dayStates: entry.events.map((event) => ({
+    ...mapEntryToHabit(toEntryRowForHabit(db, row)),
+    user: { timezone: user?.timezone ?? "UTC" },
+    dayStates: events.map((event) => ({
       dateKey: event.dateKey,
-      value: event.value === null ? null : Number(event.value),
-      completed: event.completed ?? false,
+      value: event.value === null || event.value === undefined ? null : Number(event.value),
+      completed: event.completed === null || event.completed === undefined ? false : event.completed !== 0,
     })),
   };
 }
 
 export async function updateHabitRecord(
-  db: PrismaClient,
-  params: {
-    habitId: string;
-    habit: NormalizedCreateHabitInput;
-  },
+  db: Db,
+  params: { habitId: string; habit: NormalizedCreateHabitInput },
 ): Promise<MappedHabit> {
-  // The kind cannot change on update (the habit contract has no kind patch), so the
-  // entryType stays put; only config + weekdays are rewritten.
-  const entry = await db.entry.update({
-    where: { id: params.habitId },
-    data: {
-      name: params.habit.name,
-      description: params.habit.description,
-      category: params.habit.category,
-      config: buildHabitConfig(params.habit),
-      startDate: params.habit.startDate,
-      isActive: params.habit.isActive,
-      weekdays: {
-        deleteMany: {},
-        ...(params.habit.weekdays.length ? { create: params.habit.weekdays.map((day) => ({ day })) } : {}),
-      },
-    },
-    include: habitEntryInclude,
+  const now = nowDb();
+  db.transaction(() => {
+    db.run(
+      `UPDATE "Entry" SET "name" = ?, "description" = ?, "category" = ?, "config" = ?, "startDate" = ?, "isActive" = ?, "updatedAt" = ? WHERE "id" = ?`,
+      [
+        params.habit.name,
+        params.habit.description,
+        params.habit.category,
+        buildHabitConfig(params.habit),
+        params.habit.startDate,
+        params.habit.isActive ? 1 : 0,
+        now,
+        params.habitId,
+      ],
+    );
+    db.run(`DELETE FROM "EntryWeekday" WHERE "entryId" = ?`, [params.habitId]);
+    writeWeekdays(db, params.habitId, params.habit.weekdays);
   });
-
-  return mapEntryToHabit(entry);
+  return requireHabit(db, params.habitId);
 }
 
 export async function setHabitActiveState(
-  db: PrismaClient,
-  params: {
-    habitId: string;
-    isActive: boolean;
-  },
+  db: Db,
+  params: { habitId: string; isActive: boolean },
 ): Promise<MappedHabit> {
-  const entry = await db.entry.update({
-    where: { id: params.habitId },
-    data: { isActive: params.isActive },
-    include: habitEntryInclude,
-  });
-
-  return mapEntryToHabit(entry);
+  db.run(`UPDATE "Entry" SET "isActive" = ?, "updatedAt" = ? WHERE "id" = ?`, [
+    params.isActive ? 1 : 0,
+    nowDb(),
+    params.habitId,
+  ]);
+  return requireHabit(db, params.habitId);
 }

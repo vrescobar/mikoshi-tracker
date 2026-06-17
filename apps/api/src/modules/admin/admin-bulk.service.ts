@@ -1,11 +1,12 @@
 import type { CreateHabitInput } from "@mikoshi-tracker/contracts/habits";
 
 import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { findCircleMembershipByUserId, findUserByExternalId } from "../circles/circle.repository";
 import { CircleHabitAlreadySharedError, CircleNotFoundError, shareHabit } from "../circles/circle.service";
 import { createHabit } from "../habits/habit.service";
 
-type Deps = { db: PrismaClient };
+type Deps = { db: PrismaClient; sqlite: Db };
 
 /**
  * Set up a contest in one call: create the same habit for every listed member
@@ -35,7 +36,7 @@ export async function bulkAssignHabit(
       notMember.push(externalId);
       continue;
     }
-    const habit = await createHabit({ db: deps.db }, { userId: user.id, input: params.habit });
+    const habit = await createHabit({ db: deps.db, sqlite: deps.sqlite }, { userId: user.id, input: params.habit });
     try {
       await shareHabit({ db: deps.db }, { circleId: params.circleId, callerId: user.id, habitId: habit.id });
     } catch (error) {

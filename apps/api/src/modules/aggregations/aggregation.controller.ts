@@ -35,7 +35,7 @@ export async function getAggregationsHandler(request: FastifyRequest, reply: Fas
     const user = await requireAuthenticatedUser(request);
     const filters = parseAggregationFilters(request.query);
     const result = await computeAggregations(
-      { db: request.server.db },
+      { db: request.server.db, sqlite: request.server.sqlite },
       {
         userId: user.id,
         entryTypeSlug: filters.entryTypeSlug,

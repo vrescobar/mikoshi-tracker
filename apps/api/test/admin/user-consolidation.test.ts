@@ -37,6 +37,7 @@ describe("admin user consolidation", () => {
     it("folds the provisioned source into the web target: re-parents data, moves externalId, deletes source", async () => {
       context = await createTestContext();
       const db = context.app.db;
+      const sqlite = context.app.sqlite;
 
       // Target = web account (real email, no externalId).
       const { body: web } = await signUp(context.app, { email: "victor@vrescobar.com", name: "Victor" });
@@ -45,7 +46,7 @@ describe("admin user consolidation", () => {
       // Source = provisioned account (synthetic email, externalId + token), owns a circle + a habit.
       const source = await provision(context, "ext-victor", "924521e6");
       const habit = await createHabit(
-        { db },
+        { db, sqlite },
         { userId: source.userId, input: { name: "Correr", frequency: { type: "daily" } }, today: "2026-05-01" },
       );
       // createCircleRecord auto-creates the owner's membership, so the source
@@ -89,6 +90,7 @@ describe("admin user consolidation", () => {
     it("de-dups circle memberships when both users are in the same circle", async () => {
       context = await createTestContext();
       const db = context.app.db;
+      const sqlite = context.app.sqlite;
       const { body: web } = await signUp(context.app, { email: "w@example.com" });
       const source = await provision(context, "ext-dup");
       // web is auto-enrolled as owner-member; add the source as a second member.

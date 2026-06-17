@@ -565,7 +565,7 @@ export async function assignHabitAdminHandler(request: FastifyRequest, reply: Fa
     let created: boolean;
     if (input.habit) {
       const item = await createHabit(
-        { db: request.server.db },
+        { db: request.server.db, sqlite: request.server.sqlite },
         { userId: user.id, input: input.habit },
       );
       habitId = item.id;

@@ -53,6 +53,7 @@ export async function listHabitsHandler(request: FastifyRequest, reply: FastifyR
     const items = await listHabits(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -77,6 +78,7 @@ export async function createHabitHandler(request: FastifyRequest, reply: Fastify
     const item = await createHabit(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -103,6 +105,7 @@ export async function getHabitDetailHandler(request: FastifyRequest, reply: Fast
     const item = await getHabitDetail(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -128,6 +131,7 @@ export async function updateHabitHandler(request: FastifyRequest, reply: Fastify
     const item = await updateHabit(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -153,6 +157,7 @@ export async function archiveHabitHandler(request: FastifyRequest, reply: Fastif
     const item = await archiveHabit(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -177,6 +182,7 @@ export async function restoreHabitHandler(request: FastifyRequest, reply: Fastif
     const item = await restoreHabit(
       {
         db: request.server.db,
+        sqlite: request.server.sqlite,
       },
       {
         userId: user.id,
