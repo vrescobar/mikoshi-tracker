@@ -7,7 +7,7 @@
  * byte-compatible with what the retired Next.js route handler emitted
  * (HttpOnly; SameSite=Lax; Path=/; Max-Age; conditional Secure).
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, type TestContext } from "../helpers/app";
 

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { sendChartToWhatsApp } from "../../src/modules/reports/report.service";
 import type { MikoshiPlatformClient } from "../../src/modules/platform/mikoshi-platform-client";
@@ -21,7 +21,7 @@ describe("report: send chart to WhatsApp", () => {
     const { body } = await signUp(context.app, { timezone: "UTC" });
     await context.app.db.user.update({ where: { id: body.user.id }, data: { externalId: "ext_42" } });
 
-    const notifyImage = vi.fn().mockResolvedValue(true);
+    const notifyImage = mock().mockResolvedValue(true);
     const platform = { notifyImage } as unknown as MikoshiPlatformClient;
 
     const result = await sendChartToWhatsApp(
@@ -41,7 +41,7 @@ describe("report: send chart to WhatsApp", () => {
     context = await createTestContext();
     const { body } = await signUp(context.app, { timezone: "UTC" });
 
-    const platform = { notifyImage: vi.fn() } as unknown as MikoshiPlatformClient;
+    const platform = { notifyImage: mock() } as unknown as MikoshiPlatformClient;
     const result = await sendChartToWhatsApp(
       { db: context.app.db },
       { userId: body.user.id, kind: "kcal-trend", platform, timestamp: NOW },

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createCircleRecord } from "../../src/modules/circles/circle.repository";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
@@ -33,6 +33,10 @@ describe("admin provisioning routes", () => {
 
       expect(response.statusCode).toBe(201);
       const body = response.json();
+      // Capture before toMatchObject: bun's matcher mutates the received object
+      // in place when asymmetric matchers (expect.any/stringMatching) are used,
+      // which would otherwise turn `body.userId` into `{}` below.
+      const userId = body.userId as string;
       expect(body).toMatchObject({
         alreadyExists: false,
         personalToken: expect.stringMatching(/^mikoshi_tracker_/),
@@ -40,7 +44,7 @@ describe("admin provisioning routes", () => {
       });
 
       const user = await context.app.db.user.findUnique({
-        where: { id: body.userId },
+        where: { id: userId },
       });
       expect(user).not.toBeNull();
       expect(user?.email).toMatch(/^provisioned-[0-9a-f]{24}@mikoshi-tracker\.internal$/);

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { createV1DepsContext } from "./helpers/fullV1Deps";
 import type { TestContext } from "../helpers/app";

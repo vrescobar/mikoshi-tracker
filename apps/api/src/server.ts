@@ -170,10 +170,10 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   app.get("/health", async () => ({ ok: true }));
 
-  app.get("/api/auth/registration", async () => getRegistrationStatus(app.db));
+  app.get("/api/auth/registration", async () => getRegistrationStatus(app.sqlite));
 
   app.post("/api/auth/sign-up/email", authRateLimitOptions(app), async (request, reply) => {
-    const status = await getRegistrationStatus(app.db);
+    const status = await getRegistrationStatus(app.sqlite);
     const payload =
       typeof request.body === "object" && request.body !== null ? (request.body as Record<string, unknown>) : undefined;
     const requestedTimeZone = typeof payload?.timezone === "string" ? payload.timezone : undefined;
@@ -203,7 +203,7 @@ export async function createApp(options: CreateAppOptions = {}) {
               timezone,
             },
           });
-          await makeFirstUserAdmin(app.db, parsed.user.id);
+          await makeFirstUserAdmin(app.sqlite, parsed.user.id);
         }
       } catch {
         // Ignore non-JSON bodies from auth provider.
@@ -264,7 +264,7 @@ export async function createApp(options: CreateAppOptions = {}) {
           id: session.user.id,
           email: session.user.email,
           name: session.user.name,
-          isAdmin: await isUserAdmin(app.db, session.user.id),
+          isAdmin: await isUserAdmin(app.sqlite, session.user.id),
         },
         // Timezone-aware "today" for client pages (food timeline, insights, dashboard)
         // so they match the timezone the API uses to bucket EntryEvent.dateKey.
@@ -299,7 +299,7 @@ export async function createApp(options: CreateAppOptions = {}) {
     try {
       const session = await requireSession(request);
 
-      await promoteUserToAdmin(app.db, session.user.id);
+      await promoteUserToAdmin(app.sqlite, session.user.id);
 
       return {
         ok: true,
@@ -333,13 +333,13 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.get("/api/admin/registration", async (request, reply) => {
     try {
       const session = await requireSession(request);
-      const admin = await isUserAdmin(app.db, session.user.id);
+      const admin = await isUserAdmin(app.sqlite, session.user.id);
 
       if (!admin) {
         throw new AuthSessionError(403, "Forbidden");
       }
 
-      const status = await getRegistrationStatus(app.db);
+      const status = await getRegistrationStatus(app.sqlite);
 
       return {
         registrationEnabled: status.registrationEnabled,
@@ -357,7 +357,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.post("/api/admin/registration", async (request, reply) => {
     try {
       const session = await requireSession(request);
-      const admin = await isUserAdmin(app.db, session.user.id);
+      const admin = await isUserAdmin(app.sqlite, session.user.id);
 
       if (!admin) {
         throw new AuthSessionError(403, "Forbidden");
@@ -369,7 +369,7 @@ export async function createApp(options: CreateAppOptions = {}) {
         })
         .parse(request.body);
 
-      const settings = await setRegistrationEnabled(app.db, parsed.registrationEnabled);
+      const settings = await setRegistrationEnabled(app.sqlite, parsed.registrationEnabled);
 
       return {
         registrationEnabled: settings.registrationEnabled,

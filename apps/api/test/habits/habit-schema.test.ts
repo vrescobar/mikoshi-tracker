@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 
 import { createHabitInputSchema } from "@mikoshi-tracker/contracts/habits";
 import { normalizeCreateHabitInput } from "../../src/modules/habits/habit.schema";

@@ -4,7 +4,7 @@
  * fake Mikoshi v1 mutation API and stamps cohortId locally.
  */
 import fastify, { type FastifyInstance } from "fastify";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import {
   planCohortBackfill,

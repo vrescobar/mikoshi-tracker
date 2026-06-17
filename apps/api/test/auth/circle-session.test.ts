@@ -1,15 +1,16 @@
 import type { FastifyRequest } from "fastify";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, mock } from "bun:test";
 
-// The suite runs with `pool: forks` + `isolate: false` (see vitest.config.ts) for
-// speed on the ARM host, which reuses each worker process across the files it runs.
-// Once any earlier file in the same worker loads the *real* circle-token module, the
-// cached copy would defeat a top-level hoisted `vi.mock` (module mocking needs an
-// un-cached registry). So we reset the module registry before each test and import the
-// subject under test dynamically, guaranteeing it re-binds to the mocked dependency
-// regardless of file scheduling. This is the only file in the api suite that mocks.
-const { mockFindCircleByToken } = vi.hoisted(() => ({ mockFindCircleByToken: vi.fn() }));
-vi.mock("../../src/auth/circle-token", () => ({ findCircleByToken: mockFindCircleByToken }));
+import * as circleTokenModule from "../../src/auth/circle-token";
+
+// `mock.module` registers a process-global module override that subsequent
+// imports resolve to. Bun runs the whole suite in one process, so we snapshot
+// the real module first and restore it in afterAll — otherwise the mock would
+// leak into other files (e.g. the real circle-token DB tests). We import the
+// subject under test dynamically (in beforeEach) so it binds to the mock.
+const realCircleToken = { ...circleTokenModule };
+const mockFindCircleByToken = mock();
+mock.module("../../src/auth/circle-token", () => ({ findCircleByToken: mockFindCircleByToken }));
 
 type CircleSessionModule = typeof import("../../src/auth/circle-session");
 let requireCircleContext: CircleSessionModule["requireCircleContext"];
@@ -28,8 +29,12 @@ const TOKEN_ID = "token-xyz";
 const CIRCLE = { id: CIRCLE_ID, name: "Test Circle", ownerId: "owner-1" };
 
 describe("requireCircleContext", () => {
+  afterAll(() => {
+    // Restore the real module so the mock does not leak into other test files.
+    mock.module("../../src/auth/circle-token", () => realCircleToken);
+  });
+
   beforeEach(async () => {
-    vi.resetModules();
     mockFindCircleByToken.mockReset();
     ({ requireCircleContext, CircleAuthError } = await import("../../src/auth/circle-session"));
   });

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { completeHabitForToday, setHabitTotalForToday } from "../../src/modules/checkins/checkin.service";
 import { createHabit } from "../../src/modules/habits/habit.service";

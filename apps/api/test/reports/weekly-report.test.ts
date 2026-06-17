@@ -1,5 +1,5 @@
 import { createHmac } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
 
 import { runWeeklyReports } from "../../src/modules/reports/weekly-report.service";
 import type { MikoshiPlatformClient } from "../../src/modules/platform/mikoshi-platform-client";
@@ -46,7 +46,7 @@ describe("weekly report (Epic E)", () => {
     await setPrefs(optedIn.cookie, { weeklyReportOptIn: true });
     await setPrefs(optedOut.cookie, { weeklyReportOptIn: false });
 
-    const notifyImage = vi.fn().mockResolvedValue(true);
+    const notifyImage = mock().mockResolvedValue(true);
     const platform = { notifyImage } as unknown as MikoshiPlatformClient;
 
     const summary = await runWeeklyReports({ db: context.app.db }, { platform, timestamp: NOW });
@@ -61,7 +61,7 @@ describe("weekly report (Epic E)", () => {
     const { cookie } = await signUp(context.app, { timezone: "UTC" });
     await setPrefs(cookie, { weeklyReportOptIn: true });
 
-    const platform = { notifyImage: vi.fn().mockResolvedValue(true) } as unknown as MikoshiPlatformClient;
+    const platform = { notifyImage: mock().mockResolvedValue(true) } as unknown as MikoshiPlatformClient;
     const summary = await runWeeklyReports({ db: context.app.db }, { platform, timestamp: NOW });
     expect(summary).toEqual({ attempted: 0, delivered: 0 });
   });

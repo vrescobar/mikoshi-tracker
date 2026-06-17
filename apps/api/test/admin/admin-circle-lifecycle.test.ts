@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { assertCircleAcceptsCheckins, CircleClosedError } from "../../src/modules/circles/circle.service";
 import { createTestContext, type TestContext } from "../helpers/app";

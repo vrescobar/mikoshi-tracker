@@ -6,7 +6,7 @@
  * The bearer path keeps its exact pre-session error contract — the Mikoshi
  * bot authenticates with bearer keys and relies on the 200/401/503 semantics.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 

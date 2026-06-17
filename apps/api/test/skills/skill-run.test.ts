@@ -1,7 +1,7 @@
 import { createServer, type Server } from "node:http";
 import { AddressInfo } from "node:net";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 

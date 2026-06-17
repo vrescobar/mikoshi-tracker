@@ -10,7 +10,7 @@
  * See docs/architecture/performance.md for the analysis and design decision.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 
@@ -188,12 +188,9 @@ describe("aggregation performance (10k fixture)", () => {
 
   it("aggregation over 5k events completes within 5 s and returns correct sums", async () => {
     const { alice, aliceEntryId } = await buildLargeFixture();
-    const db = context!.app.db;
 
-    // Simulate production: populate kcal_cached so the COALESCE path uses the column.
-    await db.$executeRawUnsafe(
-      `UPDATE EntryEvent SET kcal_cached = CAST(json_extract(payload, '$.kcal') AS REAL) WHERE kcal_cached IS NULL`,
-    );
+    // `kcal_cached` is a STORED generated column (matches production), so it is
+    // auto-populated on insert — the COALESCE path uses it without a manual UPDATE.
 
     // Alice has DAYS * MEALS_PER_DAY = 5000 events spanning 200 days
     const from = START_DATE;

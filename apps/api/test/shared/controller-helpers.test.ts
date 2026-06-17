@@ -1,12 +1,12 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, mock } from "bun:test";
 
 import { AuthSessionError } from "../../src/auth/session";
 import { getRequestTimestamp, sendAuthError } from "../../src/shared/controller-helpers";
 
 function createReplyDouble() {
-  const send = vi.fn();
-  const status = vi.fn(() => ({ send }));
+  const send = mock();
+  const status = mock(() => ({ send }));
 
   return {
     reply: {

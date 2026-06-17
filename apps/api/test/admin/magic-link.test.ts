@@ -7,7 +7,7 @@
  * the better-auth signing scheme reimplementation (apps/api/src/auth/magic-link.ts:
  * signSessionCookieValue).
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, type TestContext } from "../helpers/app";
 

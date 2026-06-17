@@ -5,7 +5,7 @@
  * 401. La respuesta es un dump SQLite consistente (VACUUM INTO).
  */
 import { createHmac } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, type TestContext } from "../helpers/app";
 

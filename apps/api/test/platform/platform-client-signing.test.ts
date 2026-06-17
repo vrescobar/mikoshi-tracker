@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { MikoshiPlatformClient } from "../../src/modules/platform/mikoshi-platform-client";
 import {
@@ -19,19 +19,20 @@ interface Captured {
   rawBody: string;
 }
 
+const originalFetch = globalThis.fetch;
+
 function stubFetch(captured: Captured[], jsonResponse: unknown): void {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async (_url: string, init?: RequestInit) => {
-      const headers = (init?.headers ?? {}) as Record<string, string>;
-      captured.push({ headers, rawBody: init?.body ? String(init.body) : "" });
-      return new Response(JSON.stringify(jsonResponse), { status: 200 });
-    }),
-  );
+  globalThis.fetch = mock(async (_url: string, init?: RequestInit) => {
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    captured.push({ headers, rawBody: init?.body ? String(init.body) : "" });
+    return new Response(JSON.stringify(jsonResponse), { status: 200 });
+  }) as unknown as typeof fetch;
 }
 
 describe("MikoshiPlatformClient — firma de salida (SEC-2)", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   function client(): MikoshiPlatformClient {
     return new MikoshiPlatformClient({

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { seedBuiltInEntryTypes } from "../../src/modules/entry-types/seed";
 import { createTestContext, type TestContext } from "../helpers/app";

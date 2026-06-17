@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { errorCodeSchema } from "@mikoshi-tracker/contracts/errors";
 
 import { DOMAIN_ERROR_TABLE } from "../../src/v1/errors";

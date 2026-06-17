@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 
 import { jsonSchemaToZod } from "../../src/modules/entry-types/json-schema-to-zod";
 

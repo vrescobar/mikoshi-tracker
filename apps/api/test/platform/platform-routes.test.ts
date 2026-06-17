@@ -13,7 +13,7 @@
  *     with the legacy provision-user + reset-token round-trip Mikoshi does
  *     when it re-enrols a user it has no stored secret for.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { findUserByApiToken } from "../../src/auth/api-token";
 import { createTestContext, type TestContext } from "../helpers/app";
@@ -54,19 +54,23 @@ describe("platform contract namespace", () => {
 
       expect(response.statusCode).toBe(201);
       const body = response.json();
+      // Capture before toMatchObject: bun's matcher mutates asymmetric-matched
+      // fields on the received object in place.
+      const userId = body.userId as string;
+      const personalToken = body.personalToken as string;
       expect(body).toMatchObject({
         created: true,
         userId: expect.any(String),
         personalToken: expect.stringMatching(/^mikoshi_tracker_/),
       });
 
-      const user = await context.app.db.user.findUnique({ where: { id: body.userId } });
+      const user = await context.app.db.user.findUnique({ where: { id: userId } });
       expect(user?.externalId).toBe("ext-platform-1");
       expect(user?.name).toBe("Alice");
       expect(user?.timezone).toBe("Europe/Madrid");
       // The token in the response resolves to the created user.
-      const resolved = await findUserByApiToken(context.app.db, body.personalToken);
-      expect(resolved?.id).toBe(body.userId);
+      const resolved = await findUserByApiToken(context.app.db, personalToken);
+      expect(resolved?.id).toBe(userId);
     });
 
     it("re-provision is idempotent on the user and rotates the personal token", async () => {
@@ -89,6 +93,8 @@ describe("platform contract namespace", () => {
       });
       expect(second.statusCode).toBe(200);
       const secondBody = second.json();
+      // Capture before toMatchObject mutates the asymmetric-matched field.
+      const secondToken = secondBody.personalToken as string;
       expect(secondBody).toMatchObject({
         created: false,
         userId: firstBody.userId,
@@ -96,8 +102,8 @@ describe("platform contract namespace", () => {
       });
 
       // Rotation: the new token wins, the first one is dead.
-      expect(secondBody.personalToken).not.toBe(firstBody.personalToken);
-      const resolvedNew = await findUserByApiToken(context.app.db, secondBody.personalToken);
+      expect(secondToken).not.toBe(firstBody.personalToken);
+      const resolvedNew = await findUserByApiToken(context.app.db, secondToken);
       expect(resolvedNew?.id).toBe(firstBody.userId);
       const resolvedOld = await findUserByApiToken(context.app.db, firstBody.personalToken);
       expect(resolvedOld).toBeNull();

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { createCircleToken } from "../../src/auth/circle-token";
 import { addCircleMemberRecord, createCircleRecord } from "../../src/modules/circles/circle.repository";

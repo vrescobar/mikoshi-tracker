@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 

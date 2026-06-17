@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { signActorAssertion } from "../../src/auth/actor-assertion";
 import { createCircleToken } from "../../src/auth/circle-token";

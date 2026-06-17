@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { describe, expect, it, afterEach, beforeEach } from "vitest";
+import { describe, expect, it, afterEach, beforeEach } from "bun:test";
 
 import { AdminKeyError, requireAdminKey, resolveAdminOperator } from "../../src/auth/admin-key";
 

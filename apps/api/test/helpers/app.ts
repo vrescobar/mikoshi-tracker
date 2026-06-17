@@ -1,11 +1,11 @@
-import { copyFileSync, rmSync } from "node:fs";
+import { rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import type { FastifyInstance } from "fastify";
 
 import { createApp } from "../../src/server";
-import { TEMPLATE_DB_PATH, TEST_DB_DIR } from "./test-db";
+import { makeTestDbPath } from "./test-db";
 
 const TEST_SECRET = "test-secret-with-at-least-thirty-two-characters";
 export type TestContext = {
@@ -26,13 +26,12 @@ function normalizeCookie(setCookie: string | string[] | undefined): string {
 export async function createTestContext(
   envOverrides: Partial<NodeJS.ProcessEnv> = {},
 ): Promise<TestContext> {
-  const databasePath = join(TEST_DB_DIR, `mikoshi-tracker-test-${Date.now()}-${Math.random().toString(36).slice(2)}.db`);
+  const databasePath = makeTestDbPath();
   const databaseUrl = `file:${databasePath}`;
 
-  // Copy the pre-built schema template instead of re-running `prisma db push`
-  // (see test/helpers/global-setup.ts). Each test still gets its own isolated DB.
-  copyFileSync(TEMPLATE_DB_PATH, databasePath);
-
+  // Each test gets its own isolated, freshly-migrated DB. `createApp` →
+  // `registerDb` runs the bun:sqlite migration runner on boot, so no template
+  // copy or `prisma db push` is needed.
   const attachmentsDir = join(tmpdir(), `mikoshi-tracker-attachments-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   const app = await createApp({

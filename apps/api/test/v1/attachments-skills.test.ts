@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import { completeHabitForToday } from "../../src/modules/checkins/checkin.service";
 import { createHabit } from "../../src/modules/habits/habit.service";

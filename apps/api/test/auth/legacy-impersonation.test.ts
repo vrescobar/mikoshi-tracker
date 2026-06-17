@@ -6,7 +6,7 @@
  * (session admins included), /api/session answers as the target user, and the
  * global onResponse hook audits impersonated legacy mutations.
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, signUp, type TestContext } from "../helpers/app";
 

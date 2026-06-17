@@ -12,7 +12,7 @@
  *    pulling `GET {platform}/cohorts/:id/members` from Mikoshi.
  */
 import fastify, { type FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { reconcileCircleRoster } from "../../src/modules/platform/membership-sync";
 import { createCircleRecord, addCircleMemberRecord } from "../../src/modules/circles/circle.repository";

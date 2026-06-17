@@ -89,7 +89,7 @@ export async function resolveAdminOperator(request: FastifyRequest): Promise<Adm
   }
 
   const session = await getSession(request);
-  if (session && (await isUserAdmin(request.server.db, session.user.id))) {
+  if (session && (await isUserAdmin(request.server.sqlite, session.user.id))) {
     return {
       type: "session",
       id: session.user.id,

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { z } from "zod";
 
 import { buildV1RouteTable, generateV1OpenApi, type ApiV1Deps, type V1RouteMeta } from "../../src/v1";

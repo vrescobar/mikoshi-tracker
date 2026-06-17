@@ -12,7 +12,7 @@
  */
 import { createHmac } from "node:crypto";
 import fastify, { type FastifyInstance } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { createTestContext, type TestContext } from "../helpers/app";
 

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { createHabit, updateHabit } from "../../src/modules/habits/habit.service";
 import { createTestContext, signUp, type TestContext } from "../helpers/app";

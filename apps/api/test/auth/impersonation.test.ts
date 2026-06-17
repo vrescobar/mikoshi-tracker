@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { AdminKeyError } from "../../src/auth/admin-key";
 import { ACT_AS_HEADER, resolveBearerOrImpersonation } from "../../src/auth/impersonation";
