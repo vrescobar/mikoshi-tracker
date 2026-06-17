@@ -148,7 +148,10 @@ describe("magic-link routes", () => {
       expect(session?.userId).toBe(userId);
     });
 
-    it("returns 410 Gone on second consume of the same token (single-use)", async () => {
+    it("allows a second consume within the TTL (prefetch/preview tolerance)", async () => {
+      // A link-preview/prefetch GET often burns the token before the human taps
+      // it. Within the TTL the second consume must still succeed (mint a fresh
+      // session) rather than 410 — otherwise previews lock the user out.
       context = await createTestContext();
       await provisionUser(context, "ext-single-use");
 
@@ -172,8 +175,11 @@ describe("magic-link routes", () => {
         url: "/api/auth/magic-link/consume",
         payload: { token },
       });
-      expect(second.statusCode).toBe(410);
-      expect((second.json() as { code: string }).code).toBe("GONE");
+      expect(second.statusCode).toBe(200);
+      // A fresh session is minted for the real click.
+      const firstToken = decodeURIComponent((first.json() as { cookie: { value: string } }).cookie.value).split(".")[0];
+      const secondToken = decodeURIComponent((second.json() as { cookie: { value: string } }).cookie.value).split(".")[0];
+      expect(secondToken).not.toBe(firstToken);
     });
 
     it("returns 410 Gone for an expired token", async () => {

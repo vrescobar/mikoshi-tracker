@@ -128,7 +128,10 @@ describe("GET /magic", () => {
     expect(res.headers.location).toBe("/?magicError=invalid");
   });
 
-  it("redirects to /?magicError=used on second consume (single-use)", async () => {
+  it("tolerates a prefetch/preview double-GET: the second GET still logs in", async () => {
+    // A link-preview bot or browser prefetch may GET the URL (burning the
+    // single-use flag) before the human taps it. Within the TTL the real click
+    // must still succeed — log in and set the cookie, not error "used".
     context = await createTestContext();
     await provisionUser(context, "ext-redirect-replay");
     const token = await issueToken(context, "ext-redirect-replay");
@@ -139,8 +142,8 @@ describe("GET /magic", () => {
 
     const second = await context.app.inject({ method: "GET", url: `/magic?t=${token}` });
     expect(second.statusCode).toBe(303);
-    expect(second.headers.location).toBe("/?magicError=used");
-    expect(second.headers["set-cookie"]).toBeUndefined();
+    expect(second.headers.location).toBe("/");
+    expect(second.headers["set-cookie"]).toBeDefined();
   });
 
   it("redirects to /?magicError=expired for an expired token", async () => {

@@ -13,9 +13,9 @@
  *
  * Security invariants:
  *   - Plaintext token never lands in the DB (hash-only storage).
- *   - `consumedAt` write-once: a second consume attempt is rejected before
- *     any session is created (CAS via Prisma `updateMany`).
- *   - TTL gate: expired tokens are rejected.
+ *   - `consumedAt` records first use; re-consume is allowed only within a grace
+ *     window (= TTL) so a link-preview/prefetch GET can't lock the human out.
+ *   - TTL gate: expired tokens are rejected (the binding time gate).
  *   - `next` must be a path (starts with "/") — never an external URL — to
  *     prevent open-redirect abuse. Validated both at issuance and at consume.
  *   - Signed cookie format matches better-call's `serializeSignedCookie`
@@ -27,6 +27,18 @@ import { createHash, createHmac, randomBytes } from "node:crypto";
 import type { PrismaClient } from "../generated/prisma/client";
 
 export const MAGIC_LINK_DEFAULT_TTL_SECONDS = 15 * 60; // 15 min
+/**
+ * How long after first use a magic-link token may still be re-consumed.
+ *
+ * A strictly single-use token is routinely burned by a link-preview bot or a
+ * browser/OS prefetch that GETs the URL *before* the human taps it — which
+ * surfaces as "magicLink used" on the real click. This is especially likely
+ * when the link host is a directly-reachable IP (e.g. a Tailscale dev box). We
+ * therefore let the token be consumed repeatedly until it EXPIRES: the short
+ * TTL is the real time gate, and delivery is private (WhatsApp + Tailscale).
+ * Set to the TTL so expiry is the binding constraint.
+ */
+export const MAGIC_LINK_REUSE_GRACE_SECONDS = MAGIC_LINK_DEFAULT_TTL_SECONDS;
 export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days — matches the better-auth default 7d? No: better-auth defaults to 7d but a tracker session that lives 30d is acceptable; we lean longer because the admin re-issues per device.
 
 const MAGIC_LINK_TOKEN_BYTES = 32;
@@ -169,17 +181,29 @@ export async function consumeMagicLink(opts: {
     where: { token: tokenHash },
   });
   if (!row) return { ok: false, reason: "not-found" };
-  if (row.consumedAt) return { ok: false, reason: "used" };
   if (row.expiresAt.getTime() <= now.getTime()) {
     return { ok: false, reason: "expired" };
   }
 
-  // CAS the consumedAt write: any second consume in flight loses the race.
-  const cas = await opts.db.magicLink.updateMany({
-    where: { id: row.id, consumedAt: null },
-    data: { consumedAt: now },
-  });
-  if (cas.count === 0) return { ok: false, reason: "used" };
+  // Prefetch/link-preview tolerance: a preview bot or browser prefetch often
+  // GETs the URL and stamps `consumedAt` before the human taps it. Rather than
+  // reject every subsequent GET as "used", allow re-consume within a grace
+  // window (= the TTL, so a still-valid link always works). `consumedAt` keeps
+  // its first-use timestamp; only a re-consume past the grace window is "used".
+  if (row.consumedAt) {
+    const sinceConsumedMs = now.getTime() - row.consumedAt.getTime();
+    if (sinceConsumedMs > MAGIC_LINK_REUSE_GRACE_SECONDS * 1000) {
+      return { ok: false, reason: "used" };
+    }
+    // within grace → fall through and mint a fresh session for this request
+  } else {
+    // First use: stamp consumedAt. A concurrent prefetch losing/winning the CAS
+    // is fine — either way we mint a session for the request in hand.
+    await opts.db.magicLink.updateMany({
+      where: { id: row.id, consumedAt: null },
+      data: { consumedAt: now },
+    });
+  }
 
   // Issue the session token verbatim into Session.token (better-auth doesn't
   // hash session tokens — the row IS the bearer).
