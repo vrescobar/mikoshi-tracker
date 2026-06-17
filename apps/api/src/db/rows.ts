@@ -1,13 +1,22 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import { z } from "zod";
 
 /**
- * Generate a primary-key id for a new row. Prisma used cuid (lowercase
- * alphanumeric, no hyphens); we emit hyphen-free lowercase hex so ids keep
- * matching the same `^[a-z0-9]+$` shape callers/tests expect.
+ * Generate a primary-key id for a new row. Prisma used cuid, which is
+ * lexically sortable by creation time — and several `ORDER BY "createdAt"
+ * DESC, "id" DESC` queries rely on that to break same-millisecond ties in
+ * insertion order. We reproduce both properties: a millisecond timestamp
+ * prefix + a per-process monotonic counter (same-ms ordering) + random
+ * entropy, all lowercase base36/hex so ids keep the `^[a-z0-9]+$` shape.
  */
-export const newId = (): string => randomUUID().replace(/-/g, "");
+let idCounter = 0;
+export const newId = (): string => {
+  const time = Date.now().toString(36).padStart(9, "0");
+  const seq = (idCounter++ & 0xffffff).toString(36).padStart(5, "0");
+  const rand = randomBytes(8).toString("hex");
+  return `${time}${seq}${rand}`;
+};
 
 /**
  * Column coercions for raw SQLite rows read via bun:sqlite. Prisma's libSQL

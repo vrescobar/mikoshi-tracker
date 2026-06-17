@@ -3,6 +3,7 @@ import { fromNodeHeaders } from "better-auth/node";
 
 import { getActAsUserId } from "./act-as";
 import { findUserByApiToken } from "./api-token";
+import { getUserById } from "../modules/users/user.repository";
 
 export class AuthSessionError extends Error {
   constructor(
@@ -96,7 +97,7 @@ async function impersonatedUser(
     throw error;
   }
 
-  const target = await request.server.db.user.findUnique({ where: { id: actAsUserId } });
+  const target = getUserById(request.server.sqlite, actAsUserId);
   if (!target) {
     throw new AuthSessionError(404, `Impersonation target user not found: ${actAsUserId}`);
   }

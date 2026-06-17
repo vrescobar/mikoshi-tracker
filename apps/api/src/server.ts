@@ -13,6 +13,7 @@ import {
 import { getActAsUserId } from "./auth/act-as";
 import { AdminKeyError, resolveAdminOperator } from "./auth/admin-key";
 import { registerAuth } from "./auth/auth";
+import { getUserById, updateUserTimezone } from "./modules/users/user.repository";
 import { recordAdminAction } from "./modules/admin/admin-audit.service";
 import {
   getRegistrationStatus,
@@ -195,14 +196,7 @@ export async function createApp(options: CreateAppOptions = {}) {
         const parsed = JSON.parse(body) as { user?: { id?: string } };
 
         if (typeof parsed.user?.id === "string") {
-          await app.db.user.update({
-            where: {
-              id: parsed.user.id,
-            },
-            data: {
-              timezone,
-            },
-          });
+          updateUserTimezone(app.sqlite, parsed.user.id, timezone);
           await makeFirstUserAdmin(app.sqlite, parsed.user.id);
         }
       } catch {
@@ -229,10 +223,7 @@ export async function createApp(options: CreateAppOptions = {}) {
       const actAsUserId = getActAsUserId(request);
       if (actAsUserId) {
         const operator = await resolveAdminOperator(request);
-        const target = await app.db.user.findUnique({
-          where: { id: actAsUserId },
-          select: { id: true, email: true, name: true, isAdmin: true, timezone: true },
-        });
+        const target = getUserById(app.sqlite, actAsUserId);
         if (!target) {
           reply.status(404).send({
             code: "NOT_FOUND",
@@ -254,10 +245,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
       const session = await requireSession(request);
 
-      const dbUser = await app.db.user.findUnique({
-        where: { id: session.user.id },
-        select: { timezone: true },
-      });
+      const dbUser = getUserById(app.sqlite, session.user.id);
 
       return {
         user: {

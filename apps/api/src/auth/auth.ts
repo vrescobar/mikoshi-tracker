@@ -1,23 +1,31 @@
+import type { Database } from "bun:sqlite";
 import type { FastifyInstance } from "fastify";
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
 
-import type { PrismaClient } from "../generated/prisma/client";
 import type { AppEnv } from "../plugins/env";
 
-export function createAuth(env: AppEnv, db: PrismaClient) {
+/**
+ * better-auth on the native bun:sqlite handle (the same DB file the app uses).
+ * Passing a bun:sqlite `Database` makes better-auth use its BunSqliteDialect via
+ * Kysely. Our tables were created PascalCase (by the original Prisma schema), so
+ * each model is mapped to its existing table name; the column names already
+ * match better-auth's camelCase defaults.
+ */
+export function createAuth(env: AppEnv, database: Database) {
   return betterAuth({
     appName: "mikoshi-tracker",
     baseURL: env.BETTER_AUTH_URL,
     basePath: "/api/auth",
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: env.corsOrigins,
-    database: prismaAdapter(db, {
-      provider: "sqlite",
-    }),
+    database,
     emailAndPassword: {
       enabled: true,
     },
+    user: { modelName: "User" },
+    session: { modelName: "Session" },
+    account: { modelName: "Account" },
+    verification: { modelName: "Verification" },
   });
 }
 
@@ -30,5 +38,5 @@ declare module "fastify" {
 }
 
 export async function registerAuth(app: FastifyInstance): Promise<void> {
-  app.decorate("auth", createAuth(app.env, app.db));
+  app.decorate("auth", createAuth(app.env, app.sqlite.raw));
 }
