@@ -1,12 +1,14 @@
 [Unit]
-Description=MikoshiTracker API (Fastify)
+Description=MikoshiTracker (Bun: API + static SPA)
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/home/victor/projects/mikoshi-tracker
 EnvironmentFile=%h/.config/mikoshi-tracker/env
-Environment=PORT=3001
+# Single process: Bun serves the API and the built Vite SPA (apps/web/dist) on
+# this port directly — no reverse proxy. Put a TLS terminator in front for HTTPS.
+Environment=PORT=7080
 ExecStart=%h/.bun/bin/bun apps/api/src/server.ts
 Restart=on-failure
 RestartSec=5

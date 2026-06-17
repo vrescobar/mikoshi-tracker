@@ -16,7 +16,7 @@
  */
 import { homedir } from "node:os";
 
-import { createPrismaClient } from "../apps/api/src/plugins/db";
+import { createDb } from "../apps/api/src/db/client";
 import {
   applyCohortBackfill,
   planCohortBackfill,
@@ -30,14 +30,14 @@ async function main() {
   const databaseUrl = process.env.DATABASE_URL ?? DEFAULT_DB;
   const v1BaseUrl = process.env.MIKOSHI_V1_API_URL ?? DEFAULT_V1;
 
-  const db = createPrismaClient(databaseUrl);
+  const db = createDb(databaseUrl);
   try {
-    const circles = await db.circle.findMany({
-      select: { id: true, name: true, cohortId: true },
-    });
-    const memberships = await db.circleMembership.findMany({
-      select: { circleId: true, externalId: true, role: true },
-    });
+    const circles = db.all<{ id: string; name: string; cohortId: string | null }>(
+      `SELECT "id", "name", "cohortId" FROM "Circle"`,
+    );
+    const memberships = db.all<{ circleId: string; externalId: string | null; role: string }>(
+      `SELECT "circleId", "externalId", "role" FROM "CircleMembership"`,
+    );
 
     const plan = planCohortBackfill(circles, memberships);
 
@@ -72,7 +72,7 @@ async function main() {
     }
     console.log("Backfill completo.");
   } finally {
-    await db.$disconnect();
+    db.close();
   }
 }
 

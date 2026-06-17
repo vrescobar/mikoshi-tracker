@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Install MikoshiTracker as systemd user services (API + Caddy proxy; the web
-# SPA is a static Vite build served by Caddy).
+# Install MikoshiTracker as a single systemd user service: one Bun process that
+# serves the API AND the built Vite SPA (apps/web/dist) — no reverse proxy.
 # Run once on first setup. Subsequent deploys use scripts/deploy.sh.
 #
 # Prerequisites:
-#   - Bun in ~/.bun/bin/bun (https://bun.sh) — runs the API
-#   - Node.js in PATH — runs tooling (prisma CLI, vitest, playwright)
-#   - Caddy binary in ~/.local/bin/caddy
-#     Download: https://github.com/caddyserver/caddy/releases
+#   - Bun in ~/.bun/bin/bun (https://bun.sh) — runs the API and the SPA build
+#   - Node.js in PATH — runs dev tooling (vitest, playwright)
 #
 # Usage: ./scripts/install-services.sh
 
@@ -30,44 +28,42 @@ fi
 if ! command -v node >/dev/null 2>&1; then
   echo "ERROR: node not found in PATH" >&2; exit 1
 fi
-if [[ ! -x "${HOME}/.local/bin/caddy" ]]; then
-  echo "ERROR: ~/.local/bin/caddy not found or not executable." >&2
-  echo "Download from https://github.com/caddyserver/caddy/releases" >&2
-  exit 1
-fi
 
 echo "==> Creating directories"
 mkdir -p "$SYSTEMD_USER_DIR"
 mkdir -p "$MIKOSHI_CONFIG_DIR"
 mkdir -p "${DATA_DIR}/attachments"
 
-echo "==> Installing systemd unit files"
-cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-api.service"   "${SYSTEMD_USER_DIR}/mikoshi-tracker-api.service"
-cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-proxy.service" "${SYSTEMD_USER_DIR}/mikoshi-tracker-proxy.service"
+echo "==> Installing systemd unit file"
+cp "${SCRIPT_DIR}/self-host/mikoshi-tracker-api.service" "${SYSTEMD_USER_DIR}/mikoshi-tracker-api.service"
 
-# Upgrade cleanup: the web app used to run as its own unit (Next.js server);
-# it is now a static build served by Caddy.
-systemctl --user disable --now mikoshi-tracker-web 2>/dev/null || true
-rm -f "${SYSTEMD_USER_DIR}/mikoshi-tracker-web.service"
+# Upgrade cleanup: the SPA used to run as its own Next.js unit, then behind a
+# Caddy proxy unit. Both are gone — Bun serves everything in one process now.
+for stale in mikoshi-tracker-web mikoshi-tracker-proxy; do
+  systemctl --user disable --now "$stale" 2>/dev/null || true
+  rm -f "${SYSTEMD_USER_DIR}/${stale}.service"
+done
 
 echo "==> Reloading systemd daemon"
 systemctl --user daemon-reload
 
-echo "==> Enabling units (start on login)"
-systemctl --user enable mikoshi-tracker-api mikoshi-tracker-proxy
+echo "==> Enabling unit (start on login)"
+systemctl --user enable mikoshi-tracker-api
 
 PORT="${MIKOSHI_TRACKER_PUBLIC_PORT:-7080}"
 
 echo ""
-echo "Units installed. Create ${MIKOSHI_CONFIG_DIR}/env with:"
+echo "Unit installed. Create ${MIKOSHI_CONFIG_DIR}/env with:"
 echo ""
 echo "  NODE_ENV=production"
+echo "  PORT=${PORT}                  # Bun serves API + SPA on this port"
 echo "  BETTER_AUTH_SECRET=<secret>   # openssl rand -hex 32"
+echo "  BETTER_AUTH_URL=http://localhost:${PORT}"
 echo "  APP_BASE_URL=http://localhost:${PORT}"
+echo "  CORS_ORIGIN=http://localhost:${PORT}"
 echo "  DATABASE_URL=file:${DATA_DIR}/mikoshi-tracker.db"
 echo "  ATTACHMENTS_DIR=${DATA_DIR}/attachments"
 echo "  MIKOSHI_TRACKER_ADMIN_API_KEY=<key>   # openssl rand -hex 32"
-echo "  MIKOSHI_TRACKER_SITE_ADDRESS=:${PORT} # port Caddy binds on"
 echo ""
-echo "Then run: systemctl --user start mikoshi-tracker-api mikoshi-tracker-proxy"
-echo "Or run:   ./scripts/deploy.sh  (build + migrate + restart all)"
+echo "Then run: ./scripts/deploy.sh   (build + migrate + restart)"
+echo "For public HTTPS, put a TLS terminator (Tailscale/Caddy/nginx) in front of PORT."

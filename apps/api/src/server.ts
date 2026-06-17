@@ -43,6 +43,7 @@ import { registerDb } from "./plugins/db";
 import { registerEnv } from "./plugins/env";
 import { registerMultipart } from "./plugins/multipart";
 import { registerOpenApi } from "./plugins/openapi";
+import { registerWebStatic } from "./plugins/web-static";
 import { registerV1 } from "./v1";
 import { authRateLimitOptions, registerSecurity } from "./plugins/security";
 import { normalizeUserTimeZone } from "./shared/timezone";
@@ -90,8 +91,9 @@ async function sendProxyResponse(reply: FastifyReply, response: Response) {
 export async function createApp(options: CreateAppOptions = {}) {
   const app = fastify({
     logger: options.logger ?? false,
-    // The API is only reachable through the Caddy reverse proxy, which sets
-    // X-Forwarded-For. trustProxy lets rate limiting key on the real client IP.
+    // trustProxy keeps rate limiting keyed on the real client IP when a TLS
+    // terminator (Tailscale, nginx, …) sits in front; harmless when Bun is
+    // exposed directly.
     trustProxy: true,
   });
   const defaultJsonParser = app.getDefaultJsonParser("ignore", "ignore");
@@ -422,6 +424,10 @@ export async function createApp(options: CreateAppOptions = {}) {
       throw error;
     }
   });
+
+  // Serve the built SPA from this same process in production (no Caddy). No-op
+  // in dev/tests where apps/web/dist is absent.
+  await registerWebStatic(app);
 
   await app.ready();
 
