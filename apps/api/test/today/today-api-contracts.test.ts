@@ -26,7 +26,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,

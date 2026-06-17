@@ -12,11 +12,11 @@ const TODAY = "2026-03-11T12:00:00.000Z";
 
 async function makeMutation(context: TestContext, userId: string): Promise<string> {
   const habit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId, input: { name: "Tidy up", frequency: { type: "daily" } }, today: "2026-03-07" },
   );
   const result = await completeHabitForToday(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId, habitId: habit.id, source: "web", timestamp: TODAY },
   );
   return result.mutation.id;
@@ -80,7 +80,7 @@ describe("attachment routes", () => {
     context = await createTestContext();
     const { body, cookie } = await signUp(context.app);
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, input: { name: "Walk", frequency: { type: "daily" } }, today: "2026-03-07" },
     );
 
@@ -204,11 +204,11 @@ describe("attachment routes", () => {
     context = await createTestContext();
     const { body, cookie } = await signUp(context.app);
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, input: { name: "Floor", frequency: { type: "daily" } }, today: "2026-03-07" },
     );
     await completeHabitForToday(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, habitId: habit.id, source: "web", timestamp: TODAY },
     );
 
@@ -231,7 +231,7 @@ describe("attachment routes", () => {
     context = await createTestContext();
     const { body, cookie } = await signUp(context.app);
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, input: { name: "Unlogged", frequency: { type: "daily" } }, today: "2026-03-07" },
     );
 
@@ -372,11 +372,11 @@ describe("attachment routes", () => {
     context = await createTestContext();
     const { body, cookie } = await signUp(context.app);
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, input: { name: "Cascade", frequency: { type: "daily" } }, today: "2026-03-07" },
     );
     const result = await completeHabitForToday(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, habitId: habit.id, source: "web", timestamp: TODAY },
     );
     await base64Upload(context, cookie, result.mutation.id, await png(20, 20));

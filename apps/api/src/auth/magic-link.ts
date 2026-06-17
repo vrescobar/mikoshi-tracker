@@ -24,7 +24,8 @@
  */
 import { createHash, createHmac, randomBytes } from "node:crypto";
 
-import type { PrismaClient } from "../generated/prisma/client";
+import type { Db } from "../db/client";
+import { newId, nowDb } from "../db/rows";
 
 export const MAGIC_LINK_DEFAULT_TTL_SECONDS = 15 * 60; // 15 min
 /**
@@ -58,7 +59,7 @@ export interface IssuedMagicLink {
  * URL and intentionally not stored.
  */
 export async function issueMagicLink(opts: {
-  db: PrismaClient;
+  db: Db;
   appBaseUrl: string;
   externalId: string;
   next?: string;
@@ -66,10 +67,9 @@ export async function issueMagicLink(opts: {
   /** Override for tests so they can pin an exact expiresAt. */
   now?: Date;
 }): Promise<IssuedMagicLink | null> {
-  const user = await opts.db.user.findUnique({
-    where: { externalId: opts.externalId },
-    select: { id: true },
-  });
+  const user = opts.db.get<{ id: string }>(`SELECT "id" FROM "User" WHERE "externalId" = ? LIMIT 1`, [
+    opts.externalId,
+  ]);
   if (!user) return null;
 
   validateNextPath(opts.next);
@@ -80,15 +80,10 @@ export async function issueMagicLink(opts: {
   const ttl = (opts.ttlSeconds ?? MAGIC_LINK_DEFAULT_TTL_SECONDS) * 1000;
   const expiresAt = new Date(now.getTime() + ttl);
 
-  await opts.db.magicLink.create({
-    data: {
-      userId: user.id,
-      token: tokenHash,
-      expiresAt,
-      next: opts.next ?? null,
-      createdAt: now,
-    },
-  });
+  opts.db.run(
+    `INSERT INTO "MagicLink" ("id", "userId", "token", "expiresAt", "next", "createdAt") VALUES (?, ?, ?, ?, ?, ?)`,
+    [newId(), user.id, tokenHash, expiresAt.toISOString(), opts.next ?? null, now.toISOString()],
+  );
 
   const base = trimTrailingSlash(opts.appBaseUrl);
   // Next.js route-group convention: `app/(auth)/magic/page.tsx` resolves to
@@ -107,17 +102,14 @@ export async function issueMagicLink(opts: {
  * externalId variant. Returns null when the user does not exist.
  */
 export async function issueMagicLinkForUserId(opts: {
-  db: PrismaClient;
+  db: Db;
   appBaseUrl: string;
   userId: string;
   next?: string;
   ttlSeconds?: number;
   now?: Date;
 }): Promise<IssuedMagicLink | null> {
-  const user = await opts.db.user.findUnique({
-    where: { id: opts.userId },
-    select: { id: true },
-  });
+  const user = opts.db.get<{ id: string }>(`SELECT "id" FROM "User" WHERE "id" = ? LIMIT 1`, [opts.userId]);
   if (!user) return null;
 
   validateNextPath(opts.next);
@@ -128,15 +120,10 @@ export async function issueMagicLinkForUserId(opts: {
   const ttl = (opts.ttlSeconds ?? MAGIC_LINK_DEFAULT_TTL_SECONDS) * 1000;
   const expiresAt = new Date(now.getTime() + ttl);
 
-  await opts.db.magicLink.create({
-    data: {
-      userId: user.id,
-      token: tokenHash,
-      expiresAt,
-      next: opts.next ?? null,
-      createdAt: now,
-    },
-  });
+  opts.db.run(
+    `INSERT INTO "MagicLink" ("id", "userId", "token", "expiresAt", "next", "createdAt") VALUES (?, ?, ?, ?, ?, ?)`,
+    [newId(), user.id, tokenHash, expiresAt.toISOString(), opts.next ?? null, now.toISOString()],
+  );
 
   const base = trimTrailingSlash(opts.appBaseUrl);
   const url = `${base}/magic?t=${encodeURIComponent(plaintext)}`;
@@ -168,7 +155,7 @@ export interface SignedSessionCookie {
  * is independent from the URL scheme of the API itself.
  */
 export async function consumeMagicLink(opts: {
-  db: PrismaClient;
+  db: Db;
   token: string;
   secret: string;
   secureCookies: boolean;
@@ -177,10 +164,18 @@ export async function consumeMagicLink(opts: {
   const now = opts.now ?? new Date();
   const tokenHash = hashMagicLinkToken(opts.token);
 
-  const row = await opts.db.magicLink.findUnique({
-    where: { token: tokenHash },
-  });
-  if (!row) return { ok: false, reason: "not-found" };
+  const rawRow = opts.db.get<{ id: string; userId: string; expiresAt: string; consumedAt: string | null; next: string | null }>(
+    `SELECT "id", "userId", "expiresAt", "consumedAt", "next" FROM "MagicLink" WHERE "token" = ? LIMIT 1`,
+    [tokenHash],
+  );
+  if (!rawRow) return { ok: false, reason: "not-found" };
+  const row = {
+    id: rawRow.id,
+    userId: rawRow.userId,
+    expiresAt: new Date(rawRow.expiresAt),
+    consumedAt: rawRow.consumedAt ? new Date(rawRow.consumedAt) : null,
+    next: rawRow.next,
+  };
   if (row.expiresAt.getTime() <= now.getTime()) {
     return { ok: false, reason: "expired" };
   }
@@ -199,27 +194,21 @@ export async function consumeMagicLink(opts: {
   } else {
     // First use: stamp consumedAt. A concurrent prefetch losing/winning the CAS
     // is fine — either way we mint a session for the request in hand.
-    await opts.db.magicLink.updateMany({
-      where: { id: row.id, consumedAt: null },
-      data: { consumedAt: now },
-    });
+    opts.db.run(`UPDATE "MagicLink" SET "consumedAt" = ? WHERE "id" = ? AND "consumedAt" IS NULL`, [
+      now.toISOString(),
+      row.id,
+    ]);
   }
 
   // Issue the session token verbatim into Session.token (better-auth doesn't
   // hash session tokens — the row IS the bearer).
   const sessionToken = randomBytes(SESSION_TOKEN_BYTES).toString("hex");
   const sessionExpiresAt = new Date(now.getTime() + SESSION_TTL_SECONDS * 1000);
-  await opts.db.session.create({
-    data: {
-      userId: row.userId,
-      token: sessionToken,
-      expiresAt: sessionExpiresAt,
-      ipAddress: "",
-      userAgent: "magic-link",
-      createdAt: now,
-      updatedAt: now,
-    },
-  });
+  opts.db.run(
+    `INSERT INTO "Session" ("id", "userId", "token", "expiresAt", "ipAddress", "userAgent", "createdAt", "updatedAt")
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [newId(), row.userId, sessionToken, sessionExpiresAt.toISOString(), "", "magic-link", now.toISOString(), now.toISOString()],
+  );
 
   const signed = await signSessionCookieValue(sessionToken, opts.secret);
   return {

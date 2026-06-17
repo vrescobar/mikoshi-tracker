@@ -57,7 +57,7 @@ export async function requireCircleContext(
     throw new CircleAuthError(401, "Circle token required");
   }
 
-  const result = await findCircleByToken(request.server.db, bearer);
+  const result = await findCircleByToken(request.server.sqlite, bearer);
 
   if (!result) {
     throw new CircleAuthError(401, "Invalid or unknown circle token");

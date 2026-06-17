@@ -12,20 +12,20 @@ async function setupCircleFixture(context: TestContext) {
   const { body: alice } = await signUp(context.app);
   const userId = alice.user.id;
 
-  const circle = await createCircleRecord(context.app.db, {
+  const circle = await createCircleRecord(context.app.sqlite, {
     ownerId: userId,
     name: "Test Circle",
   });
 
-  const { token } = await createCircleToken(context.app.db, circle.id);
+  const { token } = await createCircleToken(context.app.sqlite, circle.id);
 
   const booleanHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId, input: { name: "Morning run", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
 
   const quantityHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     {
       userId,
       input: { name: "Read pages", kind: "quantity", targetValue: 20, unit: "pages", frequency: { type: "daily" } },
@@ -33,8 +33,8 @@ async function setupCircleFixture(context: TestContext) {
     },
   );
 
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: booleanHabit.id });
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: quantityHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: booleanHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: quantityHabit.id });
 
   return { userId, circle, token, booleanHabit, quantityHabit };
 }
@@ -137,7 +137,7 @@ describe("circle write endpoints", () => {
 
     const { body: bob } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
     const bobHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: bob.user.id, input: { name: "Bob's habit", frequency: { type: "daily" } }, today: "2026-05-01" },
     );
 
@@ -156,7 +156,7 @@ describe("circle write endpoints", () => {
     const { userId, circle, token } = await setupCircleFixture(context);
 
     const unsharedHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId, input: { name: "Private habit", frequency: { type: "daily" } }, today: "2026-05-01" },
     );
 
@@ -208,7 +208,7 @@ describe("circle write endpoints", () => {
     const { userId, circle, token, booleanHabit } = await setupCircleFixture(context);
 
     await completeHabitForToday(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId, habitId: booleanHabit.id, source: "web", timestamp: TIMESTAMP },
     );
 

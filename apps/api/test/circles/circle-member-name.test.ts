@@ -12,9 +12,9 @@ async function setupFixture(context: TestContext) {
     name: "750b55db-c536-4338-a241-120d1adbca63",
   });
 
-  const circle = await createCircleRecord(context.app.db, { ownerId: owner.user.id, name: "Test Circle" });
-  await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: member.user.id });
-  const { token } = await createCircleToken(context.app.db, circle.id);
+  const circle = await createCircleRecord(context.app.sqlite, { ownerId: owner.user.id, name: "Test Circle" });
+  await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: member.user.id });
+  const { token } = await createCircleToken(context.app.sqlite, circle.id);
 
   return { owner: owner.user, member: member.user, circle, token };
 }

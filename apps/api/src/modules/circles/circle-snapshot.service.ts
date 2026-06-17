@@ -1,8 +1,20 @@
-import type { PrismaClient } from "../../generated/prisma/client";
-
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
+import { findCircleRecord } from "./circle.repository";
 import { CircleNotFoundError, getCircleLeaderboard } from "./circle.service";
 
-type Deps = { db: PrismaClient };
+type Deps = { sqlite: Db };
+
+type SnapshotRow = {
+  id: string;
+  circleId: string;
+  season: string;
+  userId: string;
+  rank: number;
+  score: number;
+  data: string;
+  createdAt: string;
+};
 
 /**
  * Derives a single integer ranking score from a leaderboard row so snapshots can
@@ -23,25 +35,29 @@ export async function createCircleLeaderboardSnapshot(
   deps: Deps,
   params: { circleId: string; season?: string; timestamp?: Date | number | string },
 ): Promise<{ circleId: string; season: string; count: number }> {
-  const circle = await deps.db.circle.findUnique({ where: { id: params.circleId } });
+  const circle = await findCircleRecord(deps.sqlite, params.circleId);
   if (!circle) throw new CircleNotFoundError();
 
   const season = params.season ?? circle.season ?? "default";
-  const { leaderboard } = await getCircleLeaderboard(deps, {
-    circleId: params.circleId,
-    timestamp: params.timestamp,
-  });
+  const { leaderboard } = await getCircleLeaderboard(
+    { db: deps.sqlite },
+    {
+      circleId: params.circleId,
+      timestamp: params.timestamp,
+    },
+  );
 
   let rank = 0;
   for (const row of leaderboard) {
     rank += 1;
     const score = scoreOf(row);
     const data = JSON.stringify(row);
-    await deps.db.circleLeaderboardSnapshot.upsert({
-      where: { circleId_season_userId: { circleId: params.circleId, season, userId: row.userId } },
-      create: { circleId: params.circleId, season, userId: row.userId, rank, score, data },
-      update: { rank, score, data },
-    });
+    deps.sqlite.run(
+      `INSERT INTO "CircleLeaderboardSnapshot" ("id", "circleId", "season", "userId", "rank", "score", "data", "createdAt")
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT("circleId", "season", "userId") DO UPDATE SET "rank" = excluded."rank", "score" = excluded."score", "data" = excluded."data"`,
+      [newId(), params.circleId, season, row.userId, rank, score, data, nowDb()],
+    );
   }
 
   return { circleId: params.circleId, season, count: leaderboard.length };
@@ -118,10 +134,15 @@ export async function listCircleLeaderboardSnapshots(
     createdAt: string;
   }[]
 > {
-  const rows = await deps.db.circleLeaderboardSnapshot.findMany({
-    where: { circleId: params.circleId, ...(params.season ? { season: params.season } : {}) },
-    orderBy: [{ season: "asc" }, { rank: "asc" }],
-  });
+  const rows = params.season
+    ? deps.sqlite.all<SnapshotRow>(
+        `SELECT * FROM "CircleLeaderboardSnapshot" WHERE "circleId" = ? AND "season" = ? ORDER BY "season" ASC, "rank" ASC`,
+        [params.circleId, params.season],
+      )
+    : deps.sqlite.all<SnapshotRow>(
+        `SELECT * FROM "CircleLeaderboardSnapshot" WHERE "circleId" = ? ORDER BY "season" ASC, "rank" ASC`,
+        [params.circleId],
+      );
   return rows.map((row) => ({
     id: row.id,
     circleId: row.circleId,
@@ -130,6 +151,6 @@ export async function listCircleLeaderboardSnapshots(
     rank: row.rank,
     score: row.score,
     data: JSON.parse(row.data) as unknown,
-    createdAt: row.createdAt.toISOString(),
+    createdAt: new Date(row.createdAt).toISOString(),
   }));
 }

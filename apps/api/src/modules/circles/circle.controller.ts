@@ -145,7 +145,7 @@ async function enforceCircleActor(
     return;
   }
   await assertCircleSelfOrOwner(
-    { db: request.server.db },
+    { db: request.server.sqlite },
     { circleId: context.circle.id, targetUserId, actorExternalId: actor.actorExternalId },
   );
   request.log.info({ circleId: context.circle.id }, "circle.actor.present");
@@ -157,7 +157,7 @@ export async function listCircleMembersHandler(request: FastifyRequest, reply: F
   try {
     const { circleId } = request.params as { circleId: string };
     await requireCircleContext(request, circleId);
-    return await listCircleMembersForToken({ db: request.server.db }, { circleId });
+    return await listCircleMembersForToken({ db: request.server.sqlite }, { circleId });
   } catch (error) {
     if (error instanceof CircleAuthError) {
       sendCircleAuthError(reply, error);
@@ -172,7 +172,7 @@ export async function getCircleLeaderboardHandler(request: FastifyRequest, reply
     const { circleId } = request.params as { circleId: string };
     await requireCircleContext(request, circleId);
     const timestamp = getRequestTimestamp(request);
-    return await getCircleLeaderboard({ db: request.server.db }, { circleId, timestamp });
+    return await getCircleLeaderboard({ db: request.server.sqlite }, { circleId, timestamp });
   } catch (error) {
     if (error instanceof CircleAuthError) {
       sendCircleAuthError(reply, error);
@@ -187,7 +187,7 @@ export async function getMemberHabitsHandler(request: FastifyRequest, reply: Fas
     const { circleId, userId } = request.params as { circleId: string; userId: string };
     await requireCircleContext(request, circleId);
     const timestamp = getRequestTimestamp(request);
-    return await getMemberHabitsForCircle({ db: request.server.db }, { circleId, userId, timestamp });
+    return await getMemberHabitsForCircle({ db: request.server.sqlite }, { circleId, userId, timestamp });
   } catch (error) {
     if (error instanceof CircleAuthError) {
       sendCircleAuthError(reply, error);
@@ -212,7 +212,7 @@ export async function circleCompleteHabitHandler(request: FastifyRequest, reply:
     await enforceCircleActor(request, ctx, userId);
     const { date } = circleCompleteInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
-    return await circleCompleteHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
+    return await circleCompleteHabit({ db: request.server.sqlite }, { circleId, userId, habitId, timestamp, date });
   } catch (error) {
     return sendCircleWriteError(reply, error);
   }
@@ -230,7 +230,7 @@ export async function circleSetHabitTotalHandler(request: FastifyRequest, reply:
     const { total, date } = circleSetTotalInputSchema.parse(request.body);
     const timestamp = getRequestTimestamp(request);
     return await circleSetHabitTotal(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { circleId, userId, habitId, total, timestamp, date },
     );
   } catch (error) {
@@ -249,7 +249,7 @@ export async function circleUndoHabitHandler(request: FastifyRequest, reply: Fas
     await enforceCircleActor(request, ctx, userId);
     const { date } = circleUndoInputSchema.parse(request.body ?? {});
     const timestamp = getRequestTimestamp(request);
-    return await circleUndoHabit({ db: request.server.db }, { circleId, userId, habitId, timestamp, date });
+    return await circleUndoHabit({ db: request.server.sqlite }, { circleId, userId, habitId, timestamp, date });
   } catch (error) {
     return sendCircleWriteError(reply, error);
   }
@@ -261,7 +261,7 @@ export async function setCircleMemberNameHandler(request: FastifyRequest, reply:
     const ctx = await requireCircleContext(request, circleId);
     await enforceCircleActor(request, ctx, userId);
     const { name } = setCircleMemberNameInputSchema.parse(request.body);
-    return await setCircleMemberName({ db: request.server.db }, { circleId, userId, name });
+    return await setCircleMemberName({ db: request.server.sqlite }, { circleId, userId, name });
   } catch (error) {
     return sendCircleWriteError(reply, error);
   }
@@ -304,7 +304,7 @@ export async function createCircleHandler(request: FastifyRequest, reply: Fastif
   try {
     const user = await requireAuthenticatedUser(request);
     const { name } = createCircleInputSchema.parse(request.body);
-    const result = await createCircle({ db: request.server.db }, { userId: user.id, name });
+    const result = await createCircle({ db: request.server.sqlite }, { userId: user.id, name });
     reply.status(201);
     return result;
   } catch (error) {
@@ -315,7 +315,7 @@ export async function createCircleHandler(request: FastifyRequest, reply: Fastif
 export async function listCirclesHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
     const user = await requireAuthenticatedUser(request);
-    return await listUserCircles({ db: request.server.db }, { userId: user.id });
+    return await listUserCircles({ db: request.server.sqlite }, { userId: user.id });
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
@@ -325,7 +325,7 @@ export async function getCircleDetailHandler(request: FastifyRequest, reply: Fas
   try {
     const user = await requireAuthenticatedUser(request);
     const { circleId } = request.params as { circleId: string };
-    return await getCircleDetail({ db: request.server.db }, { circleId, userId: user.id });
+    return await getCircleDetail({ db: request.server.sqlite }, { circleId, userId: user.id });
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
@@ -337,7 +337,7 @@ export async function addCircleMemberHandler(request: FastifyRequest, reply: Fas
     const { circleId } = request.params as { circleId: string };
     const { email, externalId } = addCircleMemberInputSchema.parse(request.body);
     const result = await addCircleMember(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { circleId, callerId: user.id, email, externalId },
     );
     reply.status(201);
@@ -353,7 +353,7 @@ export async function updateCircleMemberHandler(request: FastifyRequest, reply: 
     const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
     const { role, externalId } = updateCircleMemberInputSchema.parse(request.body);
     return await updateCircleMember(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { circleId, callerId: user.id, membershipId, role, externalId },
     );
   } catch (error) {
@@ -365,7 +365,7 @@ export async function removeCircleMemberHandler(request: FastifyRequest, reply: 
   try {
     const user = await requireAuthenticatedUser(request);
     const { circleId, membershipId } = request.params as { circleId: string; membershipId: string };
-    await removeCircleMember({ db: request.server.db }, { circleId, callerId: user.id, membershipId });
+    await removeCircleMember({ db: request.server.sqlite }, { circleId, callerId: user.id, membershipId });
     return await reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
@@ -377,7 +377,7 @@ export async function shareHabitHandler(request: FastifyRequest, reply: FastifyR
     const user = await requireAuthenticatedUser(request);
     const { circleId } = request.params as { circleId: string };
     const { habitId } = shareHabitInputSchema.parse(request.body);
-    const result = await shareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+    const result = await shareHabit({ db: request.server.sqlite }, { circleId, callerId: user.id, habitId });
     reply.status(201);
     return result;
   } catch (error) {
@@ -389,7 +389,7 @@ export async function unshareHabitHandler(request: FastifyRequest, reply: Fastif
   try {
     const user = await requireAuthenticatedUser(request);
     const { circleId, habitId } = request.params as { circleId: string; habitId: string };
-    await unshareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+    await unshareHabit({ db: request.server.sqlite }, { circleId, callerId: user.id, habitId });
     return await reply.code(204).send();
   } catch (error) {
     return sendCircleManagementError(reply, error);
@@ -402,7 +402,7 @@ export async function createCircleTokenHandler(request: FastifyRequest, reply: F
     const { circleId } = request.params as { circleId: string };
     const { label } = createCircleTokenInputSchema.parse(request.body);
     const result = await mintCircleToken(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { circleId, callerId: user.id, label },
     );
     reply.status(201);
@@ -416,7 +416,7 @@ export async function listCircleTokensHandler(request: FastifyRequest, reply: Fa
   try {
     const user = await requireAuthenticatedUser(request);
     const { circleId } = request.params as { circleId: string };
-    return await listCircleTokensForOwner({ db: request.server.db }, { circleId, callerId: user.id });
+    return await listCircleTokensForOwner({ db: request.server.sqlite }, { circleId, callerId: user.id });
   } catch (error) {
     return sendCircleManagementError(reply, error);
   }
@@ -427,7 +427,7 @@ export async function revokeCircleTokenHandler(request: FastifyRequest, reply: F
     const user = await requireAuthenticatedUser(request);
     const { circleId, tokenId } = request.params as { circleId: string; tokenId: string };
     await revokeCircleTokenForOwner(
-      { db: request.server.db },
+      { db: request.server.sqlite },
       { circleId, callerId: user.id, tokenId },
     );
     return await reply.code(204).send();

@@ -16,23 +16,23 @@ async function setupFixture(context: TestContext) {
   const { body: alice } = await signUp(context.app, { timezone: "UTC" });
   const userId = alice.user.id;
 
-  const circle = await createCircleRecord(context.app.db, { ownerId: userId, name: "Test Circle" });
-  const { token } = await createCircleToken(context.app.db, circle.id);
+  const circle = await createCircleRecord(context.app.sqlite, { ownerId: userId, name: "Test Circle" });
+  const { token } = await createCircleToken(context.app.sqlite, circle.id);
 
   const booleanHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId, input: { name: "Morning run", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
   const quantityHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     {
       userId,
       input: { name: "Read pages", kind: "quantity", targetValue: 20, unit: "pages", frequency: { type: "daily" } },
       today: "2026-05-01",
     },
   );
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: booleanHabit.id });
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: quantityHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: booleanHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: quantityHabit.id });
 
   return { userId, circle, token, booleanHabit, quantityHabit };
 }
@@ -127,7 +127,7 @@ describe("circle backdated check-ins", () => {
 
     // A web-sourced completion on the past day — circle must not undo it.
     await completeHabitForToday(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId, habitId: booleanHabit.id, source: "web", timestamp: `${TWO_DAYS_AGO}T12:00:00.000Z` },
     );
 
@@ -185,17 +185,17 @@ describe("circle backdated check-ins", () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app, { timezone: "UTC" });
     const userId = alice.user.id;
-    const circle = await createCircleRecord(context.app.db, { ownerId: userId, name: "WD Circle" });
-    const { token } = await createCircleToken(context.app.db, circle.id);
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: userId, name: "WD Circle" });
+    const { token } = await createCircleToken(context.app.sqlite, circle.id);
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId,
         input: { name: "Gym", frequency: { type: "weekdays", days: ["monday", "wednesday", "friday"] } },
         today: "2026-05-01",
       },
     );
-    await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: habit.id });
+    await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: habit.id });
 
     // 2026-05-16 is a Saturday → not scheduled → 400.
     const unscheduled = await context.app.inject({

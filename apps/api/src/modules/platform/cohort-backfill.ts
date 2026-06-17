@@ -11,7 +11,8 @@
  *    mutation API (`POST /cohorts/create`, `POST /cohorts/:id/members/add` —
  *    `{ok: true, data}` envelope) and stamps `cohortId` locally.
  */
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { nowDb } from "../../db/rows";
 
 export interface BackfillCircle {
   id: string;
@@ -112,7 +113,7 @@ async function v1Mutation(
 }
 
 export async function applyCohortBackfill(
-  db: PrismaClient,
+  db: Db,
   plan: BackfillPlan,
   options: { v1BaseUrl: string },
 ): Promise<ApplyResult[]> {
@@ -138,7 +139,7 @@ export async function applyCohortBackfill(
       membersAdded++;
     }
 
-    await db.circle.update({ where: { id: planned.circleId }, data: { cohortId } });
+    db.run(`UPDATE "Circle" SET "cohortId" = ?, "updatedAt" = ? WHERE "id" = ?`, [cohortId, nowDb(), planned.circleId]);
     results.push({ circleId: planned.circleId, cohortId, membersAdded });
   }
 

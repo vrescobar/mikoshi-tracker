@@ -25,7 +25,7 @@ describe("report: send chart to WhatsApp", () => {
     const platform = { notifyImage } as unknown as MikoshiPlatformClient;
 
     const result = await sendChartToWhatsApp(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, kind: "macro-donut", platform, timestamp: NOW },
     );
 
@@ -43,7 +43,7 @@ describe("report: send chart to WhatsApp", () => {
 
     const platform = { notifyImage: mock() } as unknown as MikoshiPlatformClient;
     const result = await sendChartToWhatsApp(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, kind: "kcal-trend", platform, timestamp: NOW },
     );
 
@@ -55,7 +55,7 @@ describe("report: send chart to WhatsApp", () => {
     const { body } = await signUp(context.app, { timezone: "UTC" });
 
     const result = await sendChartToWhatsApp(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: body.user.id, kind: "kcal-trend", platform: null, timestamp: NOW },
     );
 

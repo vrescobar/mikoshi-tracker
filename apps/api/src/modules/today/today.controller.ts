@@ -91,7 +91,7 @@ export async function completeTodayHabitHandler(request: FastifyRequest, reply: 
     const timestamp = getRequestTimestamp(request);
     const result = await completeHabitForToday(
       {
-        db: request.server.db,
+        db: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -121,7 +121,7 @@ export async function setTodayHabitTotalHandler(request: FastifyRequest, reply: 
     const timestamp = getRequestTimestamp(request);
     const result = await setHabitTotalForToday(
       {
-        db: request.server.db,
+        db: request.server.sqlite,
       },
       {
         userId: user.id,
@@ -151,7 +151,7 @@ export async function undoTodayHabitHandler(request: FastifyRequest, reply: Fast
     const timestamp = getRequestTimestamp(request);
     const result = await undoHabitForToday(
       {
-        db: request.server.db,
+        db: request.server.sqlite,
       },
       {
         userId: user.id,

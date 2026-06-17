@@ -46,12 +46,12 @@ describe("admin user consolidation", () => {
       // Source = provisioned account (synthetic email, externalId + token), owns a circle + a habit.
       const source = await provision(context, "ext-victor", "924521e6");
       const habit = await createHabit(
-        { db, sqlite },
+        { db: context.app.sqlite, sqlite },
         { userId: source.userId, input: { name: "Correr", frequency: { type: "daily" } }, today: "2026-05-01" },
       );
       // createCircleRecord auto-creates the owner's membership, so the source
       // is already a member of this circle.
-      const circle = await createCircleRecord(db, { ownerId: source.userId, name: "Bikini" });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: source.userId, name: "Bikini" });
 
       const res = await context.app.inject({
         method: "POST",
@@ -94,8 +94,8 @@ describe("admin user consolidation", () => {
       const { body: web } = await signUp(context.app, { email: "w@example.com" });
       const source = await provision(context, "ext-dup");
       // web is auto-enrolled as owner-member; add the source as a second member.
-      const circle = await createCircleRecord(db, { ownerId: web.user.id, name: "Shared" });
-      await addCircleMemberRecord(db, { circleId: circle.id, userId: source.userId, externalId: "ext-dup" });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: web.user.id, name: "Shared" });
+      await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: source.userId, externalId: "ext-dup" });
 
       const res = await context.app.inject({
         method: "POST",

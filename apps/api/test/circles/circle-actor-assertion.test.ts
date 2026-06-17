@@ -21,7 +21,7 @@ async function setup(context: TestContext) {
   process.env.MIKOSHI_TRACKER_ADMIN_API_KEY = ADMIN_KEY;
   const { body: alice } = await signUp(context.app);
   const ownerId = alice.user.id;
-  const circle = await createCircleRecord(context.app.db, { ownerId, name: "Círculo" });
+  const circle = await createCircleRecord(context.app.sqlite, { ownerId, name: "Círculo" });
   // El owner necesita externalId para que la aserción de actor lo resuelva.
   await context.app.db.circleMembership.update({
     where: { circleId_userId: { circleId: circle.id, userId: ownerId } },
@@ -30,20 +30,20 @@ async function setup(context: TestContext) {
 
   const { body: bob } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
   const bobId = bob.user.id;
-  await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bobId, externalId: "ext-bob" });
+  await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bobId, externalId: "ext-bob" });
 
-  const { token } = await createCircleToken(context.app.db, circle.id);
+  const { token } = await createCircleToken(context.app.sqlite, circle.id);
 
   const ownerHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId: ownerId, input: { name: "Run", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
   const bobHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     { userId: bobId, input: { name: "Read", frequency: { type: "daily" } }, today: "2026-05-01" },
   );
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: ownerHabit.id });
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: bobHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: ownerHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: bobHabit.id });
 
   return { circle, token, ownerId, bobId, ownerHabit, bobHabit };
 }

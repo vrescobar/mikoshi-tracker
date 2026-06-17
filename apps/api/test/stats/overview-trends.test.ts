@@ -12,7 +12,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -44,7 +44,7 @@ describe("overview trend windows", () => {
       startDate: "2026-02-10",
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: habit.id, dateKey: "2026-03-05", completed: true },
         { habitId: habit.id, dateKey: "2026-03-06", completed: false },
         { habitId: habit.id, dateKey: "2026-03-07", completed: true },
@@ -53,7 +53,7 @@ describe("overview trend windows", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

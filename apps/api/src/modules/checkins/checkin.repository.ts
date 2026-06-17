@@ -1,6 +1,11 @@
-import type { Prisma, PrismaClient } from "../../generated/prisma/client";
-
-import { buildHabitPayload, HABIT_ENTRY_TYPE_SLUGS, mapEntryToHabit } from "../habits/habit-entry-adapter";
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
+import {
+  buildHabitPayload,
+  HABIT_ENTRY_TYPE_SLUGS,
+  mapEntryToHabit,
+  type EntryRowForHabit,
+} from "../habits/habit-entry-adapter";
 
 export type PersistedCheckinHabit = {
   id: string;
@@ -47,14 +52,6 @@ export type PersistedCheckinMutation = {
   updatedAt: Date;
 };
 
-type DbClient = PrismaClient | Prisma.TransactionClient;
-
-const habitEntryInclude = {
-  entryType: { select: { slug: true } },
-  weekdays: true,
-  user: { select: { timezone: true } },
-} as const;
-
 type HabitPayloadProjection = { value: number | null; completed: boolean };
 
 function payloadProjection(payload: string | null): HabitPayloadProjection {
@@ -68,42 +65,69 @@ function payloadProjection(payload: string | null): HabitPayloadProjection {
   };
 }
 
-export async function findOwnedHabitForCheckin(
-  db: DbClient,
-  params: {
-    userId: string;
-    habitId: string;
-  },
-): Promise<PersistedCheckinHabit> {
-  const entry = await db.entry.findFirst({
-    where: {
-      id: params.habitId,
-      userId: params.userId,
-      entryType: { slug: { in: [...HABIT_ENTRY_TYPE_SLUGS] } },
-    },
-    include: habitEntryInclude,
-  });
+type EntryRow = {
+  id: string;
+  userId: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  config: string;
+  startDate: string;
+  isActive: number;
+  createdAt: string;
+  updatedAt: string;
+  entryTypeSlug: string;
+  timezone: string;
+};
 
-  if (!entry) {
+export async function findOwnedHabitForCheckin(
+  db: Db,
+  params: { userId: string; habitId: string },
+): Promise<PersistedCheckinHabit> {
+  const placeholders = HABIT_ENTRY_TYPE_SLUGS.map(() => "?").join(", ");
+  const row = db.get<EntryRow>(
+    `SELECT e.*, et."slug" AS "entryTypeSlug", u."timezone" AS "timezone"
+     FROM "Entry" e
+     JOIN "EntryType" et ON et."id" = e."entryTypeId"
+     JOIN "User" u ON u."id" = e."userId"
+     WHERE e."id" = ? AND e."userId" = ? AND et."slug" IN (${placeholders}) LIMIT 1`,
+    [params.habitId, params.userId, ...HABIT_ENTRY_TYPE_SLUGS],
+  );
+
+  if (!row) {
     throw new Error("Habit not found");
   }
 
+  const weekdays = db.all<{ day: string }>(`SELECT "day" FROM "EntryWeekday" WHERE "entryId" = ?`, [row.id]);
+  const entryForHabit: EntryRowForHabit = {
+    id: row.id,
+    userId: row.userId,
+    name: row.name,
+    description: row.description,
+    category: row.category,
+    config: row.config,
+    startDate: row.startDate,
+    isActive: row.isActive !== 0,
+    createdAt: new Date(row.createdAt),
+    updatedAt: new Date(row.updatedAt),
+    entryType: { slug: row.entryTypeSlug },
+    weekdays,
+  };
+
   return {
-    ...mapEntryToHabit(entry),
-    user: { timezone: entry.user.timezone },
+    ...mapEntryToHabit(entryForHabit),
+    user: { timezone: row.timezone },
   };
 }
 
 export async function findHabitDayState(
-  db: DbClient,
-  params: {
-    habitId: string;
-    dateKey: string;
-  },
+  db: Db,
+  params: { habitId: string; dateKey: string },
 ): Promise<{ dateKey: string; value: number | null; completed: boolean } | null> {
-  const event = await db.entryEvent.findFirst({
-    where: { entryId: params.habitId, dateKey: params.dateKey },
-  });
+  const event = db.get<{ dateKey: string; value: number | null; completed: number | null }>(
+    `SELECT "dateKey", "value", "completed" FROM "EntryEvent" WHERE "entryId" = ? AND "dateKey" = ? LIMIT 1`,
+    [params.habitId, params.dateKey],
+  );
 
   if (!event) {
     return null;
@@ -111,29 +135,25 @@ export async function findHabitDayState(
 
   return {
     dateKey: event.dateKey,
-    value: event.value === null ? null : Number(event.value),
-    completed: event.completed ?? false,
+    value: event.value === null || event.value === undefined ? null : Number(event.value),
+    completed: event.completed === null || event.completed === undefined ? false : event.completed !== 0,
   };
 }
 
 export async function findLatestCheckinMutation(
-  db: DbClient,
-  params: {
-    habitId: string;
-    dateKey: string;
-  },
+  db: Db,
+  params: { habitId: string; dateKey: string },
 ): Promise<{ previousValue: number | null; previousCompleted: boolean; source: string } | null> {
-  const mutation = await db.eventMutation.findFirst({
-    where: { entryId: params.habitId, dateKey: params.dateKey },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-  });
+  const mutation = db.get<{ previousPayload: string | null; source: string }>(
+    `SELECT "previousPayload", "source" FROM "EventMutation"
+     WHERE "entryId" = ? AND "dateKey" = ? ORDER BY "createdAt" DESC, "id" DESC LIMIT 1`,
+    [params.habitId, params.dateKey],
+  );
 
   if (!mutation) {
     return null;
   }
 
-  // The legacy undo restores to the prior state. Generic mutations record that state
-  // in `previousPayload`; the very first (CREATE) has none → treat as the empty state.
   const projection = payloadProjection(mutation.previousPayload);
   return {
     previousValue: projection.value,
@@ -143,7 +163,7 @@ export async function findLatestCheckinMutation(
 }
 
 export async function persistCheckinMutation(
-  db: PrismaClient,
+  db: Db,
   params: {
     habitId: string;
     userId: string;
@@ -158,83 +178,88 @@ export async function persistCheckinMutation(
     previousCompleted: boolean;
     nextCompleted: boolean;
   },
-): Promise<{
-  dayState: PersistedHabitDayState;
-  mutation: PersistedCheckinMutation;
-}> {
+): Promise<{ dayState: PersistedHabitDayState; mutation: PersistedCheckinMutation }> {
   const payload = buildHabitPayload(params.storedKind, params.nextValue, params.nextCompleted);
   const projectedValue = params.storedKind === "QUANTITY" ? (params.nextValue ?? 0) : null;
 
-  return db.$transaction(async (tx) => {
-    // habit_boolean/habit_quantity are recurring → at most one event per (entryId, dateKey),
-    // mirroring the legacy HabitDayState upsert. First write is CREATE, later writes UPDATE,
-    // an undo is UNDO. The EntryEvent/EventMutation written here are shape-identical to those
-    // produced by events.service.persistEvent, so /api/events + aggregations see them uniformly.
-    const existing = await tx.entryEvent.findFirst({
-      where: { entryId: params.habitId, dateKey: params.dateKey },
-    });
+  return db.transaction(() => {
+    // habit_* are recurring → at most one event per (entryId, dateKey). The
+    // EntryEvent/EventMutation written here are shape-identical to those produced
+    // by events.service.persistEvent.
+    const existing = db.get<{ id: string; payload: string }>(
+      `SELECT "id", "payload" FROM "EntryEvent" WHERE "entryId" = ? AND "dateKey" = ? LIMIT 1`,
+      [params.habitId, params.dateKey],
+    );
 
-    const event = existing
-      ? await tx.entryEvent.update({
-          where: { id: existing.id },
-          data: { payload, value: projectedValue, completed: params.nextCompleted },
-        })
-      : await tx.entryEvent.create({
-          data: {
-            entryId: params.habitId,
-            userId: params.userId,
-            occurredAt: new Date(),
-            dateKey: params.dateKey,
-            payload,
-            value: projectedValue,
-            completed: params.nextCompleted,
-          },
-        });
+    const now = nowDb();
+    let eventId: string;
+    if (existing) {
+      eventId = existing.id;
+      db.run(
+        `UPDATE "EntryEvent" SET "payload" = ?, "value" = ?, "completed" = ?, "updatedAt" = ? WHERE "id" = ?`,
+        [payload, projectedValue, params.nextCompleted ? 1 : 0, now, eventId],
+      );
+    } else {
+      eventId = newId();
+      db.run(
+        `INSERT INTO "EntryEvent"
+           ("id", "entryId", "userId", "occurredAt", "dateKey", "payload", "value", "completed", "createdAt", "updatedAt")
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [eventId, params.habitId, params.userId, now, params.dateKey, payload, projectedValue, params.nextCompleted ? 1 : 0, now, now],
+      );
+    }
+
+    const event = db.get<{ id: string; dateKey: string; value: number | null; completed: number | null; createdAt: string; updatedAt: string }>(
+      `SELECT "id", "dateKey", "value", "completed", "createdAt", "updatedAt" FROM "EntryEvent" WHERE "id" = ?`,
+      [eventId],
+    )!;
 
     const genericType = params.type === "UNDO" ? "UNDO" : existing ? "UPDATE" : "CREATE";
-
-    const mutation = await tx.eventMutation.create({
-      data: {
-        entryId: params.habitId,
-        eventId: event.id,
-        userId: params.userId,
-        dateKey: params.dateKey,
-        type: genericType,
-        source: params.source,
-        note: params.note,
-        onBehalfOfCircleId: params.onBehalfOfCircleId ?? null,
-        previousPayload: existing ? existing.payload : null,
-        nextPayload: payload,
-      },
-    });
+    const mutationId = newId();
+    db.run(
+      `INSERT INTO "EventMutation"
+         ("id", "entryId", "eventId", "userId", "dateKey", "type", "source", "note", "onBehalfOfCircleId", "previousPayload", "nextPayload", "createdAt")
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        mutationId,
+        params.habitId,
+        eventId,
+        params.userId,
+        params.dateKey,
+        genericType,
+        params.source,
+        params.note,
+        params.onBehalfOfCircleId ?? null,
+        existing ? existing.payload : null,
+        payload,
+        now,
+      ],
+    );
 
     return {
-      // Return the legacy snapshot shape the checkin service contract expects. The DB
-      // stores generic CREATE/UPDATE/UNDO types; the returned `type` keeps the legacy
-      // COMPLETE/SET_TOTAL/UNDO value passed in for backward compatibility.
       dayState: {
         id: event.id,
         habitId: params.habitId,
         dateKey: event.dateKey,
-        value: event.value === null ? null : Number(event.value),
-        completed: event.completed ?? false,
-        createdAt: event.createdAt,
-        updatedAt: event.updatedAt,
+        value: event.value === null || event.value === undefined ? null : Number(event.value),
+        completed: event.completed === null || event.completed === undefined ? false : event.completed !== 0,
+        createdAt: new Date(event.createdAt),
+        updatedAt: new Date(event.updatedAt),
       },
       mutation: {
-        id: mutation.id,
+        id: mutationId,
         habitId: params.habitId,
         dayStateId: event.id,
-        dateKey: mutation.dateKey,
+        dateKey: params.dateKey,
         type: params.type,
-        source: mutation.source,
-        note: mutation.note,
+        source: params.source,
+        note: params.note,
         previousValue: params.previousValue,
         nextValue: params.nextValue,
         previousCompleted: params.previousCompleted,
         nextCompleted: params.nextCompleted,
-        createdAt: mutation.createdAt,
-        updatedAt: mutation.createdAt,
+        createdAt: new Date(now),
+        updatedAt: new Date(now),
       },
     };
   });

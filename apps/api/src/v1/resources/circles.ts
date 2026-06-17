@@ -145,7 +145,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelopeList(Circle),
       handler: async (ctx) => {
         const query = ctx.query as z.infer<typeof circlesListQuerySchema>;
-        const { items } = await listUserCircles(ctx.deps, { userId: requireUserId(ctx) });
+        const { items } = await listUserCircles({ db: ctx.deps.sqlite }, { userId: requireUserId(ctx) });
         return paginate(sortItems(items, query), query);
       },
     },
@@ -160,7 +160,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: circleIdParams,
       outputSchema: detailOutputSchema,
       handler: (ctx) =>
-        getCircleDetail(ctx.deps, {
+        getCircleDetail({ db: ctx.deps.sqlite }, {
           circleId: (ctx.params as { circleId: string }).circleId,
           userId: requireUserId(ctx),
         }),
@@ -178,7 +178,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       inputSchema: createCircleInputSchema,
       outputSchema: envelope(z.object({ item: Circle })),
       handler: (ctx) =>
-        createCircle(ctx.deps, {
+        createCircle({ db: ctx.deps.sqlite }, {
           userId: requireUserId(ctx),
           name: (ctx.input as z.infer<typeof createCircleInputSchema>).name,
         }),
@@ -196,7 +196,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({ membership: CircleMember })),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof addMemberInputSchema>;
-        return addCircleMember(ctx.deps, {
+        return addCircleMember({ db: ctx.deps.sqlite }, {
           circleId: input.circleId,
           callerId: requireUserId(ctx),
           email: input.email,
@@ -216,7 +216,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({ membership: CircleMember })),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof updateMemberInputSchema>;
-        return updateCircleMember(ctx.deps, {
+        return updateCircleMember({ db: ctx.deps.sqlite }, {
           circleId: input.circleId,
           callerId: requireUserId(ctx),
           membershipId: input.membershipId,
@@ -237,7 +237,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({})),
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof removeMemberInputSchema>;
-        await removeCircleMember(ctx.deps, {
+        await removeCircleMember({ db: ctx.deps.sqlite }, {
           circleId: input.circleId,
           callerId: requireUserId(ctx),
           membershipId: input.membershipId,
@@ -269,7 +269,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       ),
       handler: (ctx) => {
         const { circleId, ...config } = ctx.input as z.infer<typeof contestConfigInputSchema>;
-        return configureCircleContest(ctx.deps, { circleId, callerId: requireUserId(ctx), config });
+        return configureCircleContest({ sqlite: ctx.deps.sqlite }, { circleId, callerId: requireUserId(ctx), config });
       },
     },
     // ── Circle token: reads ──────────────────────────────────────────────────
@@ -284,7 +284,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: circleIdParams,
       outputSchema: leaderboardOutputSchema,
       handler: (ctx) =>
-        getCircleLeaderboard(ctx.deps, { circleId: requireCircleId(ctx), timestamp: getRequestTimestamp(ctx.request) }),
+        getCircleLeaderboard({ db: ctx.deps.sqlite }, { circleId: requireCircleId(ctx), timestamp: getRequestTimestamp(ctx.request) }),
     },
     {
       method: "GET",
@@ -297,7 +297,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: circleIdParams,
       outputSchema: envelope(z.object({ leaderboard: z.array(metricLeaderboardEntrySchema) })),
       handler: (ctx) =>
-        getCircleMetricLeaderboard(ctx.deps, {
+        getCircleMetricLeaderboard({ sqlite: ctx.deps.sqlite }, {
           circleId: requireCircleId(ctx),
           timestamp: getRequestTimestamp(ctx.request),
         }),
@@ -312,7 +312,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       mutating: false,
       paramsSchema: circleIdParams,
       outputSchema: membersOutputSchema,
-      handler: (ctx) => listCircleMembersForToken(ctx.deps, { circleId: requireCircleId(ctx) }),
+      handler: (ctx) => listCircleMembersForToken({ db: ctx.deps.sqlite }, { circleId: requireCircleId(ctx) }),
     },
     {
       method: "GET",
@@ -325,7 +325,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: memberParams,
       outputSchema: memberHabitsOutputSchema,
       handler: (ctx) =>
-        getMemberHabitsForCircle(ctx.deps, {
+        getMemberHabitsForCircle({ db: ctx.deps.sqlite }, {
           circleId: requireCircleId(ctx),
           userId: (ctx.params as { userId: string }).userId,
           timestamp: getRequestTimestamp(ctx.request),
@@ -345,7 +345,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: actionOutputSchema,
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof checkinInputSchema>;
-        return circleCompleteHabit(ctx.deps, {
+        return circleCompleteHabit({ db: ctx.deps.sqlite }, {
           circleId: requireCircleId(ctx),
           userId: input.userId,
           habitId: input.habitId,
@@ -367,7 +367,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: actionOutputSchema,
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof setTotalInputSchema>;
-        return circleSetHabitTotal(ctx.deps, {
+        return circleSetHabitTotal({ db: ctx.deps.sqlite }, {
           circleId: requireCircleId(ctx),
           userId: input.userId,
           habitId: input.habitId,
@@ -390,7 +390,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: actionOutputSchema,
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof checkinInputSchema>;
-        return circleUndoHabit(ctx.deps, {
+        return circleUndoHabit({ db: ctx.deps.sqlite }, {
           circleId: requireCircleId(ctx),
           userId: input.userId,
           habitId: input.habitId,
@@ -415,7 +415,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       ),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof shareInputSchema>;
-        return shareHabit(ctx.deps, { circleId: input.circleId, callerId: requireUserId(ctx), habitId: input.habitId });
+        return shareHabit({ db: ctx.deps.sqlite }, { circleId: input.circleId, callerId: requireUserId(ctx), habitId: input.habitId });
       },
     },
     {
@@ -430,7 +430,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({})),
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof shareInputSchema>;
-        await unshareHabit(ctx.deps, { circleId: input.circleId, callerId: requireUserId(ctx), habitId: input.habitId });
+        await unshareHabit({ db: ctx.deps.sqlite }, { circleId: input.circleId, callerId: requireUserId(ctx), habitId: input.habitId });
         return {};
       },
     },
@@ -448,7 +448,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(circleTokenCreatedResponseSchema),
       handler: (ctx) => {
         const input = ctx.input as z.infer<typeof tokenMintInputSchema>;
-        return mintCircleToken(ctx.deps, { circleId: input.circleId, callerId: requireUserId(ctx), label: input.label });
+        return mintCircleToken({ db: ctx.deps.sqlite }, { circleId: input.circleId, callerId: requireUserId(ctx), label: input.label });
       },
     },
     {
@@ -462,7 +462,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       paramsSchema: circleIdParams,
       outputSchema: envelope(z.object({ tokens: z.array(CircleTokenMeta) })),
       handler: (ctx) =>
-        listCircleTokensForOwner(ctx.deps, {
+        listCircleTokensForOwner({ db: ctx.deps.sqlite }, {
           circleId: (ctx.params as { circleId: string }).circleId,
           callerId: requireUserId(ctx),
         }),
@@ -479,7 +479,7 @@ export function circlesV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({})),
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof tokenRevokeInputSchema>;
-        await revokeCircleTokenForOwner(ctx.deps, {
+        await revokeCircleTokenForOwner({ db: ctx.deps.sqlite }, {
           circleId: input.circleId,
           callerId: requireUserId(ctx),
           tokenId: input.tokenId,

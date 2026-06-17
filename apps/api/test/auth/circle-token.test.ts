@@ -50,21 +50,21 @@ describe("circle-token DB operations", () => {
 
   it("findCircleByToken() returns null for an unknown token", async () => {
     context = await createTestContext();
-    const result = await findCircleByToken(context.app.db, "mikoshi_tracker_circle_doesnotexist");
+    const result = await findCircleByToken(context.app.sqlite, "mikoshi_tracker_circle_doesnotexist");
     expect(result).toBeNull();
   });
 
   it("createCircleToken() returns a plain token findCircleByToken() resolves to the correct circle", async () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app);
-    const circle = await createCircleRecord(context.app.db, {
+    const circle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.user.id,
       name: "Lookup Circle",
     });
 
-    const { token, tokenId } = await createCircleToken(context.app.db, circle.id);
+    const { token, tokenId } = await createCircleToken(context.app.sqlite, circle.id);
 
-    const found = await findCircleByToken(context.app.db, token);
+    const found = await findCircleByToken(context.app.sqlite, token);
     expect(found).not.toBeNull();
     expect(found!.circle.id).toBe(circle.id);
     expect(found!.circle.ownerId).toBe(alice.user.id);
@@ -74,12 +74,12 @@ describe("circle-token DB operations", () => {
   it("createCircleToken() with a label stores the label in the DB", async () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app);
-    const circle = await createCircleRecord(context.app.db, {
+    const circle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.user.id,
       name: "Label Circle",
     });
 
-    const { tokenId } = await createCircleToken(context.app.db, circle.id, "Mikoshi bot");
+    const { tokenId } = await createCircleToken(context.app.sqlite, circle.id, "Mikoshi bot");
     const record = await context.app.db.circleToken.findUnique({ where: { id: tokenId } });
     expect(record?.label).toBe("Mikoshi bot");
   });
@@ -87,12 +87,12 @@ describe("circle-token DB operations", () => {
   it("createCircleToken() stores only the hash, never the plain token", async () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app);
-    const circle = await createCircleRecord(context.app.db, {
+    const circle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.user.id,
       name: "Hash Circle",
     });
 
-    const { token, tokenId } = await createCircleToken(context.app.db, circle.id);
+    const { token, tokenId } = await createCircleToken(context.app.sqlite, circle.id);
     const record = await context.app.db.circleToken.findUnique({ where: { id: tokenId } });
     expect(record?.token).not.toBe(token);
     expect(record?.token).toBe(hashCircleToken(token));
@@ -101,31 +101,31 @@ describe("circle-token DB operations", () => {
   it("findCircleByToken() returns null after the token is revoked", async () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app);
-    const circle = await createCircleRecord(context.app.db, {
+    const circle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.user.id,
       name: "Revoke Circle",
     });
 
-    const { token, tokenId } = await createCircleToken(context.app.db, circle.id);
-    await revokeCircleToken(context.app.db, tokenId);
+    const { token, tokenId } = await createCircleToken(context.app.sqlite, circle.id);
+    await revokeCircleToken(context.app.sqlite, tokenId);
 
-    const found = await findCircleByToken(context.app.db, token);
+    const found = await findCircleByToken(context.app.sqlite, token);
     expect(found).toBeNull();
   });
 
   it("two tokens for the same circle both resolve independently", async () => {
     context = await createTestContext();
     const { body: alice } = await signUp(context.app);
-    const circle = await createCircleRecord(context.app.db, {
+    const circle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.user.id,
       name: "Multi-token Circle",
     });
 
-    const { token: token1, tokenId: tokenId1 } = await createCircleToken(context.app.db, circle.id, "Bot A");
-    const { token: token2, tokenId: tokenId2 } = await createCircleToken(context.app.db, circle.id, "Bot B");
+    const { token: token1, tokenId: tokenId1 } = await createCircleToken(context.app.sqlite, circle.id, "Bot A");
+    const { token: token2, tokenId: tokenId2 } = await createCircleToken(context.app.sqlite, circle.id, "Bot B");
 
-    const found1 = await findCircleByToken(context.app.db, token1);
-    const found2 = await findCircleByToken(context.app.db, token2);
+    const found1 = await findCircleByToken(context.app.sqlite, token1);
+    const found2 = await findCircleByToken(context.app.sqlite, token2);
 
     expect(found1!.tokenId).toBe(tokenId1);
     expect(found2!.tokenId).toBe(tokenId2);

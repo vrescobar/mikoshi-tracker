@@ -42,6 +42,8 @@ import {
   findUserByExternalId,
   updateCircleLifecycle,
 } from "../circles/circle.repository";
+import { getUserById, getUserByExternalId } from "../users/user.repository";
+import { newId, nowDb } from "../../db/rows";
 
 /** Serialize a circle record (+ member count) into the admin contract shape. */
 function serializeAdminCircle(
@@ -107,10 +109,7 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
     await requireAdminKey(request);
     const input = provisionUserInputSchema.parse(request.body);
 
-    const existing = await request.server.db.user.findUnique({
-      where: { externalId: input.externalId },
-      select: { id: true, name: true },
-    });
+    const existing = getUserByExternalId(request.server.sqlite, input.externalId);
 
     if (existing) {
       // Self-heal: earlier provisions that ran without a name left `name`
@@ -118,10 +117,11 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
       // (violates the "names always readable" rule). If we now have a real
       // name and the stored one is still just the externalId, backfill it.
       if (input.name && input.name !== input.externalId && existing.name === input.externalId) {
-        await request.server.db.user.update({
-          where: { id: existing.id },
-          data: { name: input.name },
-        });
+        request.server.sqlite.run(`UPDATE "User" SET "name" = ?, "updatedAt" = ? WHERE "id" = ?`, [
+          input.name,
+          nowDb(),
+          existing.id,
+        ]);
       }
       reply.status(200);
       return { userId: existing.id, alreadyExists: true as const };
@@ -135,35 +135,25 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
     const name = input.name ?? input.externalId;
 
     try {
-      const user = await request.server.db.user.create({
-        data: {
-          name,
-          email,
-          emailVerified: true,
-          timezone,
-          externalId: input.externalId,
-        },
-      });
+      const userId = newId();
+      const now = nowDb();
+      request.server.sqlite.run(
+        `INSERT INTO "User" ("id", "name", "email", "emailVerified", "timezone", "externalId", "createdAt", "updatedAt")
+         VALUES (?, ?, ?, 1, ?, ?, ?, ?)`,
+        [userId, name, email, timezone, input.externalId, now, now],
+      );
 
-      const { token } = await resetPersonalApiToken(request.server.sqlite, user.id);
+      const { token } = await resetPersonalApiToken(request.server.sqlite, userId);
 
       reply.status(201);
-      return { userId: user.id, personalToken: token, alreadyExists: false as const };
+      return { userId, personalToken: token, alreadyExists: false as const };
     } catch (createError) {
-      // Concurrent provision calls: both pass findUnique, second hits unique constraint.
-      // Re-resolve idempotently as a 200 instead of surfacing a 500.
-      if (
-        createError instanceof Prisma.PrismaClientKnownRequestError &&
-        createError.code === "P2002"
-      ) {
-        const race = await request.server.db.user.findUnique({
-          where: { externalId: input.externalId },
-          select: { id: true },
-        });
-        if (race) {
-          reply.status(200);
-          return { userId: race.id, alreadyExists: true as const };
-        }
+      // Concurrent provision calls: both pass the existence check, second hits a
+      // UNIQUE constraint. Re-resolve idempotently as a 200 instead of a 500.
+      const race = getUserByExternalId(request.server.sqlite, input.externalId);
+      if (race) {
+        reply.status(200);
+        return { userId: race.id, alreadyExists: true as const };
       }
       throw createError;
     }
@@ -177,10 +167,7 @@ export async function resetProvisionedTokenHandler(request: FastifyRequest, repl
     await requireAdminKey(request);
     const input = resetProvisionedTokenInputSchema.parse(request.body);
 
-    const user = await request.server.db.user.findUnique({
-      where: { externalId: input.externalId },
-      select: { id: true },
-    });
+    const user = getUserByExternalId(request.server.sqlite, input.externalId);
 
     if (!user) {
       return await reply.status(404).send({
@@ -211,7 +198,7 @@ export async function issueMagicLinkHandler(
     let issued;
     try {
       issued = await issueMagicLink({
-        db: request.server.db,
+        db: request.server.sqlite,
         appBaseUrl,
         externalId: input.externalId,
         next: input.next,
@@ -247,7 +234,7 @@ export async function consumeMagicLinkHandler(
     const input = consumeMagicLinkInputSchema.parse(request.body);
 
     const result = await consumeMagicLink({
-      db: request.server.db,
+      db: request.server.sqlite,
       token: input.token,
       secret: request.server.env.BETTER_AUTH_SECRET,
       // Mirror better-auth's secure-cookie default: HTTPS base URL → secure.
@@ -340,7 +327,7 @@ export async function magicLinkRedirectHandler(request: FastifyRequest, reply: F
 
   try {
     const result = await consumeMagicLink({
-      db: request.server.db,
+      db: request.server.sqlite,
       token,
       secret: request.server.env.BETTER_AUTH_SECRET,
       secureCookies: request.server.env.BETTER_AUTH_URL.startsWith("https://"),
@@ -375,7 +362,7 @@ export async function createCircleAdminHandler(request: FastifyRequest, reply: F
     await requireAdminKey(request);
     const input = createCircleInputSchema.parse(request.body);
 
-    const owner = await findUserByExternalId(request.server.db, input.ownerExternalId);
+    const owner = await findUserByExternalId(request.server.sqlite, input.ownerExternalId);
     if (!owner) {
       return await reply.status(404).send({
         code: "NOT_FOUND",
@@ -383,7 +370,7 @@ export async function createCircleAdminHandler(request: FastifyRequest, reply: F
       });
     }
 
-    const circle = await createCircleWithLifecycle(request.server.db, {
+    const circle = await createCircleWithLifecycle(request.server.sqlite, {
       ownerId: owner.id,
       name: input.name,
       season: input.season ?? null,
@@ -393,8 +380,8 @@ export async function createCircleAdminHandler(request: FastifyRequest, reply: F
 
     // Mint a read-only circle token so the caller (mikoshi) can store the
     // chat-scope binding in one round-trip. Returned once, never re-readable.
-    const { token } = await createCircleToken(request.server.db, circle.id, "mikoshi-binding");
-    const memberCount = await countCircleMembers(request.server.db, circle.id);
+    const { token } = await createCircleToken(request.server.sqlite, circle.id, "mikoshi-binding");
+    const memberCount = await countCircleMembers(request.server.sqlite, circle.id);
 
     reply.status(201);
     return { circle: serializeAdminCircle(circle, memberCount), circleToken: token };
@@ -409,12 +396,12 @@ export async function updateCircleAdminHandler(request: FastifyRequest, reply: F
     const { circleId } = request.params as { circleId: string };
     const input = updateCircleInputSchema.parse(request.body);
 
-    const existing = await findCircleRecord(request.server.db, circleId);
+    const existing = await findCircleRecord(request.server.sqlite, circleId);
     if (!existing) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
 
-    const updated = await updateCircleLifecycle(request.server.db, circleId, {
+    const updated = await updateCircleLifecycle(request.server.sqlite, circleId, {
       status: input.status,
       season: input.season,
       contestStartAt:
@@ -431,7 +418,7 @@ export async function updateCircleAdminHandler(request: FastifyRequest, reply: F
             : new Date(input.contestEndAt),
       leaderboardMode: input.leaderboardMode,
     });
-    const memberCount = await countCircleMembers(request.server.db, circleId);
+    const memberCount = await countCircleMembers(request.server.sqlite, circleId);
 
     return { circle: serializeAdminCircle(updated, memberCount) };
   } catch (error) {
@@ -443,11 +430,11 @@ export async function getCircleAdminHandler(request: FastifyRequest, reply: Fast
   try {
     await requireAdminKey(request);
     const { circleId } = request.params as { circleId: string };
-    const circle = await findCircleRecord(request.server.db, circleId);
+    const circle = await findCircleRecord(request.server.sqlite, circleId);
     if (!circle) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
-    const memberCount = await countCircleMembers(request.server.db, circleId);
+    const memberCount = await countCircleMembers(request.server.sqlite, circleId);
     return { circle: serializeAdminCircle(circle, memberCount) };
   } catch (error) {
     return sendAdminError(reply, error);
@@ -460,10 +447,7 @@ export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: Fas
     const { circleId } = request.params as { circleId: string };
     const input = bulkEnrollInputSchema.parse(request.body);
 
-    const circle = await request.server.db.circle.findUnique({
-      where: { id: circleId },
-      select: { id: true },
-    });
+    const circle = await findCircleRecord(request.server.sqlite, circleId);
     if (!circle) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
@@ -474,12 +458,12 @@ export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: Fas
 
     // De-dup input while preserving order.
     for (const externalId of [...new Set(input.externalIds)]) {
-      const user = await findUserByExternalId(request.server.db, externalId);
+      const user = await findUserByExternalId(request.server.sqlite, externalId);
       if (!user) {
         notProvisioned.push(externalId);
         continue;
       }
-      const existing = await findCircleMembershipByUserId(request.server.db, {
+      const existing = await findCircleMembershipByUserId(request.server.sqlite, {
         circleId,
         userId: user.id,
       });
@@ -488,7 +472,7 @@ export async function bulkEnrollAdminHandler(request: FastifyRequest, reply: Fas
         continue;
       }
       try {
-        await addCircleMemberRecord(request.server.db, {
+        await addCircleMemberRecord(request.server.sqlite, {
           circleId,
           userId: user.id,
           externalId,
@@ -531,15 +515,12 @@ export async function assignHabitAdminHandler(request: FastifyRequest, reply: Fa
     const { circleId } = request.params as { circleId: string };
     const input = assignHabitInputSchema.parse(request.body);
 
-    const circle = await request.server.db.circle.findUnique({
-      where: { id: circleId },
-      select: { id: true },
-    });
+    const circle = await findCircleRecord(request.server.sqlite, circleId);
     if (!circle) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
 
-    const user = await findUserByExternalId(request.server.db, input.externalId);
+    const user = await findUserByExternalId(request.server.sqlite, input.externalId);
     if (!user) {
       return await reply.status(404).send({
         code: "NOT_FOUND",
@@ -549,7 +530,7 @@ export async function assignHabitAdminHandler(request: FastifyRequest, reply: Fa
 
     // Verify membership up front so we never create an orphan habit for a
     // non-member (shareHabit also checks, but only after the habit exists).
-    const membership = await findCircleMembershipByUserId(request.server.db, {
+    const membership = await findCircleMembershipByUserId(request.server.sqlite, {
       circleId,
       userId: user.id,
     });
@@ -565,7 +546,7 @@ export async function assignHabitAdminHandler(request: FastifyRequest, reply: Fa
     let created: boolean;
     if (input.habit) {
       const item = await createHabit(
-        { db: request.server.db, sqlite: request.server.sqlite },
+        { db: request.server.sqlite },
         { userId: user.id, input: input.habit },
       );
       habitId = item.id;
@@ -578,7 +559,7 @@ export async function assignHabitAdminHandler(request: FastifyRequest, reply: Fa
     // Share into the circle (idempotent on the (circleId, entryId) link).
     let alreadyShared = false;
     try {
-      await shareHabit({ db: request.server.db }, { circleId, callerId: user.id, habitId });
+      await shareHabit({ db: request.server.sqlite }, { circleId, callerId: user.id, habitId });
     } catch (shareError) {
       if (shareError instanceof CircleHabitAlreadySharedError) {
         alreadyShared = true;
@@ -609,15 +590,12 @@ export async function enrollMemberByExternalIdHandler(
     const { circleId } = request.params as { circleId: string };
     const input = enrollMemberInputSchema.parse(request.body);
 
-    const circle = await request.server.db.circle.findUnique({
-      where: { id: circleId },
-      select: { id: true },
-    });
+    const circle = await findCircleRecord(request.server.sqlite, circleId);
     if (!circle) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "Circle not found" });
     }
 
-    const user = await findUserByExternalId(request.server.db, input.externalId);
+    const user = await findUserByExternalId(request.server.sqlite, input.externalId);
     if (!user) {
       return await reply.status(404).send({
         code: "NOT_FOUND",
@@ -625,7 +603,7 @@ export async function enrollMemberByExternalIdHandler(
       });
     }
 
-    const existing = await findCircleMembershipByUserId(request.server.db, {
+    const existing = await findCircleMembershipByUserId(request.server.sqlite, {
       circleId,
       userId: user.id,
     });
@@ -635,7 +613,7 @@ export async function enrollMemberByExternalIdHandler(
     }
 
     try {
-      const membership = await addCircleMemberRecord(request.server.db, {
+      const membership = await addCircleMemberRecord(request.server.sqlite, {
         circleId,
         userId: user.id,
         externalId: input.externalId,
@@ -648,7 +626,7 @@ export async function enrollMemberByExternalIdHandler(
         createError instanceof Prisma.PrismaClientKnownRequestError &&
         createError.code === "P2002"
       ) {
-        const race = await findCircleMembershipByUserId(request.server.db, {
+        const race = await findCircleMembershipByUserId(request.server.sqlite, {
           circleId,
           userId: user.id,
         });
@@ -673,7 +651,7 @@ export async function mergeUsersHandler(request: FastifyRequest, reply: FastifyR
   try {
     await requireAdminKey(request);
     const input = mergeUsersInputSchema.parse(request.body);
-    const result = await mergeUsers(request.server.db, input);
+    const result = await mergeUsers(request.server.sqlite, input);
     reply.status(200);
     return result;
   } catch (error) {
@@ -699,10 +677,7 @@ export async function attachExternalIdHandler(request: FastifyRequest, reply: Fa
     await requireAdminKey(request);
     const input = attachExternalIdInputSchema.parse(request.body);
 
-    const user = await request.server.db.user.findUnique({
-      where: { id: input.userId },
-      select: { id: true, externalId: true },
-    });
+    const user = getUserById(request.server.sqlite, input.userId);
     if (!user) {
       return await reply.status(404).send({ code: "NOT_FOUND", message: "No user with that id" });
     }
@@ -713,23 +688,18 @@ export async function attachExternalIdHandler(request: FastifyRequest, reply: Fa
       });
     }
 
-    try {
-      await request.server.db.user.update({
-        where: { id: input.userId },
-        data: { externalId: input.externalId },
+    const conflict = getUserByExternalId(request.server.sqlite, input.externalId);
+    if (conflict && conflict.id !== input.userId) {
+      return await reply.status(409).send({
+        code: "CONFLICT",
+        message: `externalId "${input.externalId}" is already attached to another user`,
       });
-    } catch (updateError) {
-      if (
-        updateError instanceof Prisma.PrismaClientKnownRequestError &&
-        updateError.code === "P2002"
-      ) {
-        return await reply.status(409).send({
-          code: "CONFLICT",
-          message: `externalId "${input.externalId}" is already attached to another user`,
-        });
-      }
-      throw updateError;
     }
+    request.server.sqlite.run(`UPDATE "User" SET "externalId" = ?, "updatedAt" = ? WHERE "id" = ?`, [
+      input.externalId,
+      nowDb(),
+      input.userId,
+    ]);
 
     reply.status(200);
     return {
@@ -756,7 +726,7 @@ export async function adminLoginAsHandler(request: FastifyRequest, reply: Fastif
     let issued;
     try {
       issued = await issueMagicLinkForUserId({
-        db: request.server.db,
+        db: request.server.sqlite,
         appBaseUrl,
         userId: input.userId,
         next: input.next,

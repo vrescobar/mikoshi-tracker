@@ -12,8 +12,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db,
-      sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -71,7 +70,7 @@ describe("overview stats summary", () => {
       },
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: dailyHabit.id, dateKey: "2026-03-08", completed: true },
         { habitId: dailyHabit.id, dateKey: "2026-03-09", completed: true },
         { habitId: dailyHabit.id, dateKey: "2026-03-10", completed: true },
@@ -83,7 +82,7 @@ describe("overview stats summary", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -115,14 +114,14 @@ describe("overview stats summary", () => {
       startDate: "2026-02-01",
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: weeklyHabit.id, dateKey: "2026-02-16", completed: true },
         { habitId: weeklyHabit.id, dateKey: "2026-02-23", completed: true },
       ]);
 
     const overview = await getOverviewStats(
       {
-        db: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -153,7 +152,7 @@ describe("overview stats summary", () => {
       startDate: "2026-03-01",
     });
 
-    await seedHabitDayStates(context.app.db, [{
+    await seedHabitDayStates(context.app.sqlite, [{
         habitId: weeklyHabit.id,
         dateKey: "2026-03-11",
         completed: true,
@@ -161,7 +160,7 @@ describe("overview stats summary", () => {
 
     const overview = await getOverviewStats(
       {
-        db: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

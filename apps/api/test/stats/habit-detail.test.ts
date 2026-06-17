@@ -50,7 +50,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -91,7 +91,7 @@ describe("habit detail read model", () => {
       },
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: habit.id, dateKey: "2026-03-01", value: 8, completed: true },
         { habitId: habit.id, dateKey: "2026-03-02", value: 6, completed: false },
         { habitId: habit.id, dateKey: "2026-03-03", value: 10, completed: true },
@@ -101,7 +101,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -205,7 +205,7 @@ describe("habit detail read model", () => {
       startDate: "2026-01-26",
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: habit.id, dateKey: "2026-01-27", completed: true },
         { habitId: habit.id, dateKey: "2026-01-28", completed: true },
         { habitId: habit.id, dateKey: "2026-01-29", completed: true },
@@ -218,7 +218,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -301,7 +301,7 @@ describe("habit detail read model", () => {
       startDate: "2026-01-01",
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: habit.id, dateKey: "2026-01-03", completed: true },
         { habitId: habit.id, dateKey: "2026-01-10", completed: true },
         { habitId: habit.id, dateKey: "2026-01-21", completed: true },
@@ -317,7 +317,7 @@ describe("habit detail read model", () => {
 
     const detail = await getHabitDetail!(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

@@ -15,7 +15,8 @@
  *    triggered on provision/issue-magic-link misses — the moments where a
  *    stale externalId would otherwise duplicate a human or 404 a login.
  */
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { nowDb } from "../../db/rows";
 
 import { mergeUsers } from "../admin/user-merge";
 import type { MikoshiPlatformClient } from "./mikoshi-platform-client";
@@ -23,22 +24,20 @@ import type { MikoshiPlatformClient } from "./mikoshi-platform-client";
 export type ReconcileAction = "merged" | "re-keyed" | "noop";
 
 export async function reconcileMergedIdentity(
-  db: PrismaClient,
+  db: Db,
   params: { orphanExternalId: string; survivorExternalId: string },
 ): Promise<ReconcileAction> {
   const { orphanExternalId, survivorExternalId } = params;
   if (orphanExternalId === survivorExternalId) return "noop";
 
-  const orphanUser = await db.user.findUnique({
-    where: { externalId: orphanExternalId },
-    select: { id: true },
-  });
+  const orphanUser = db.get<{ id: string }>(`SELECT "id" FROM "User" WHERE "externalId" = ? LIMIT 1`, [
+    orphanExternalId,
+  ]);
   if (!orphanUser) return "noop";
 
-  const survivorUser = await db.user.findUnique({
-    where: { externalId: survivorExternalId },
-    select: { id: true },
-  });
+  const survivorUser = db.get<{ id: string }>(`SELECT "id" FROM "User" WHERE "externalId" = ? LIMIT 1`, [
+    survivorExternalId,
+  ]);
 
   if (survivorUser && survivorUser.id !== orphanUser.id) {
     await mergeUsers(db, {
@@ -48,10 +47,11 @@ export async function reconcileMergedIdentity(
     return "merged";
   }
 
-  await db.user.update({
-    where: { id: orphanUser.id },
-    data: { externalId: survivorExternalId },
-  });
+  db.run(`UPDATE "User" SET "externalId" = ?, "updatedAt" = ? WHERE "id" = ?`, [
+    survivorExternalId,
+    nowDb(),
+    orphanUser.id,
+  ]);
   return "re-keyed";
 }
 
@@ -61,13 +61,10 @@ export async function reconcileMergedIdentity(
  * client timeout); reconciles run sequentially because they write.
  */
 export async function sweepMergedIdentities(
-  db: PrismaClient,
+  db: Db,
   client: MikoshiPlatformClient,
 ): Promise<ReconcileAction[]> {
-  const users = await db.user.findMany({
-    where: { externalId: { not: null } },
-    select: { externalId: true },
-  });
+  const users = db.all<{ externalId: string }>(`SELECT "externalId" FROM "User" WHERE "externalId" IS NOT NULL`);
 
   const lookups = await Promise.all(
     users.map(async (user) => ({

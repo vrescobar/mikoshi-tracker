@@ -61,8 +61,8 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-      await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+      await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
       const response = await context.app.inject({
         method: "POST",
@@ -80,7 +80,7 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
 
       const response = await context.app.inject({
         method: "POST",
@@ -102,8 +102,8 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-      await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+      await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
       const response = await context.app.inject({
         method: "GET",
@@ -120,7 +120,7 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
 
       const response = await context.app.inject({
         method: "GET",
@@ -251,8 +251,8 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-      await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+      await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
       const response = await context.app.inject({
         method: "DELETE",
@@ -269,7 +269,7 @@ describe("circle token endpoints", () => {
       const { body: alice } = await signUp(context.app);
       const { cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-      const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
+      const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
 
       const response = await context.app.inject({
         method: "DELETE",

@@ -15,7 +15,9 @@
  * externalId (so WhatsApp magic-links + the skill's personal token resolve to
  * it) AND the human's web login.
  */
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { nowDb } from "../../db/rows";
+import { getUserById } from "../users/user.repository";
 
 export class UserMergeError extends Error {
   constructor(
@@ -49,7 +51,7 @@ export interface MergeUsersResult {
 }
 
 export async function mergeUsers(
-  db: PrismaClient,
+  db: Db,
   params: { sourceUserId: string; targetUserId: string },
 ): Promise<MergeUsersResult> {
   const { sourceUserId, targetUserId } = params;
@@ -57,32 +59,34 @@ export async function mergeUsers(
     throw new UserMergeError("SAME_USER", "sourceUserId and targetUserId are the same");
   }
 
-  return db.$transaction(async (tx) => {
-    const source = await tx.user.findUnique({ where: { id: sourceUserId } });
+  return db.transaction(() => {
+    const source = getUserById(db, sourceUserId);
     if (!source) throw new UserMergeError("SOURCE_NOT_FOUND", `No user with id ${sourceUserId}`);
-    const target = await tx.user.findUnique({ where: { id: targetUserId } });
+    const target = getUserById(db, targetUserId);
     if (!target) throw new UserMergeError("TARGET_NOT_FOUND", `No user with id ${targetUserId}`);
 
-    const bySource = { where: { userId: sourceUserId } };
+    const reparent = (table: string, column: string) =>
+      db.run(`UPDATE "${table}" SET "${column}" = ? WHERE "${column}" = ?`, [targetUserId, sourceUserId]).changes;
 
     // 1. Collision-free re-parents (scalar userId / ownerId fields).
-    const entries = (await tx.entry.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const entryEvents = (await tx.entryEvent.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const eventMutations = (await tx.eventMutation.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const attachments = (await tx.attachment.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const sessions = (await tx.session.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const accounts = (await tx.account.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const magicLinks = (await tx.magicLink.updateMany({ ...bySource, data: { userId: targetUserId } })).count;
-    const circlesOwned = (
-      await tx.circle.updateMany({ where: { ownerId: sourceUserId }, data: { ownerId: targetUserId } })
-    ).count;
+    const entries = reparent("Entry", "userId");
+    const entryEvents = reparent("EntryEvent", "userId");
+    const eventMutations = reparent("EventMutation", "userId");
+    const attachments = reparent("Attachment", "userId");
+    const sessions = reparent("Session", "userId");
+    const accounts = reparent("Account", "userId");
+    const magicLinks = reparent("MagicLink", "userId");
+    const circlesOwned = reparent("Circle", "ownerId");
 
     // 2. CircleMembership — unique(circleId,userId) and unique(circleId,externalId).
-    //    For circles where the target is already a member, fold the source's
-    //    membership in (carrying its externalId/owner role if the target lacks
-    //    them) and delete it; otherwise re-parent it.
-    const sourceMemberships = await tx.circleMembership.findMany({ where: { userId: sourceUserId } });
-    const targetMemberships = await tx.circleMembership.findMany({ where: { userId: targetUserId } });
+    const sourceMemberships = db.all<{ id: string; circleId: string; externalId: string | null; role: string }>(
+      `SELECT "id", "circleId", "externalId", "role" FROM "CircleMembership" WHERE "userId" = ?`,
+      [sourceUserId],
+    );
+    const targetMemberships = db.all<{ id: string; circleId: string; externalId: string | null; role: string }>(
+      `SELECT "id", "circleId", "externalId", "role" FROM "CircleMembership" WHERE "userId" = ?`,
+      [targetUserId],
+    );
     const targetByCircle = new Map(targetMemberships.map((m) => [m.circleId, m]));
     let circleMemberships = 0;
     let circleMembershipsDeduped = 0;
@@ -91,30 +95,46 @@ export async function mergeUsers(
       if (tm) {
         // Delete the source's membership FIRST so copying its externalId onto
         // the target's row can't transiently violate unique(circleId,externalId).
-        await tx.circleMembership.delete({ where: { id: sm.id } });
-        const data: { externalId?: string; role?: string } = {};
-        if (!tm.externalId && sm.externalId) data.externalId = sm.externalId;
-        if (tm.role !== "owner" && sm.role === "owner") data.role = "owner";
-        if (Object.keys(data).length > 0) await tx.circleMembership.update({ where: { id: tm.id }, data });
+        db.run(`DELETE FROM "CircleMembership" WHERE "id" = ?`, [sm.id]);
+        const sets: string[] = [];
+        const args: unknown[] = [];
+        if (!tm.externalId && sm.externalId) {
+          sets.push(`"externalId" = ?`);
+          args.push(sm.externalId);
+        }
+        if (tm.role !== "owner" && sm.role === "owner") {
+          sets.push(`"role" = ?`);
+          args.push("owner");
+        }
+        if (sets.length > 0) {
+          args.push(tm.id);
+          db.run(`UPDATE "CircleMembership" SET ${sets.join(", ")} WHERE "id" = ?`, args);
+        }
         circleMembershipsDeduped++;
       } else {
-        await tx.circleMembership.update({ where: { id: sm.id }, data: { userId: targetUserId } });
+        db.run(`UPDATE "CircleMembership" SET "userId" = ? WHERE "id" = ?`, [targetUserId, sm.id]);
         circleMemberships++;
       }
     }
 
     // 3. CircleLeaderboardSnapshot — unique(circleId,season,userId).
-    const sourceSnaps = await tx.circleLeaderboardSnapshot.findMany({ where: { userId: sourceUserId } });
-    const targetSnaps = await tx.circleLeaderboardSnapshot.findMany({ where: { userId: targetUserId } });
+    const sourceSnaps = db.all<{ id: string; circleId: string; season: string }>(
+      `SELECT "id", "circleId", "season" FROM "CircleLeaderboardSnapshot" WHERE "userId" = ?`,
+      [sourceUserId],
+    );
+    const targetSnaps = db.all<{ circleId: string; season: string }>(
+      `SELECT "circleId", "season" FROM "CircleLeaderboardSnapshot" WHERE "userId" = ?`,
+      [targetUserId],
+    );
     const targetSnapKeys = new Set(targetSnaps.map((s) => `${s.circleId}:${s.season}`));
     let leaderboardSnapshots = 0;
     let leaderboardSnapshotsDeduped = 0;
     for (const ss of sourceSnaps) {
       if (targetSnapKeys.has(`${ss.circleId}:${ss.season}`)) {
-        await tx.circleLeaderboardSnapshot.delete({ where: { id: ss.id } });
+        db.run(`DELETE FROM "CircleLeaderboardSnapshot" WHERE "id" = ?`, [ss.id]);
         leaderboardSnapshotsDeduped++;
       } else {
-        await tx.circleLeaderboardSnapshot.update({ where: { id: ss.id }, data: { userId: targetUserId } });
+        db.run(`UPDATE "CircleLeaderboardSnapshot" SET "userId" = ? WHERE "id" = ?`, [targetUserId, ss.id]);
         leaderboardSnapshots++;
       }
     }
@@ -122,10 +142,12 @@ export async function mergeUsers(
     // 4. ApiToken — unique(userId). Prefer the source's token (it's the one the
     //    Mikoshi skill already has stored), so move it onto the target.
     let apiTokenMoved = false;
-    const sourceToken = await tx.apiToken.findUnique({ where: { userId: sourceUserId } });
+    const sourceToken = db.get<{ id: string }>(`SELECT "id" FROM "ApiToken" WHERE "userId" = ? LIMIT 1`, [
+      sourceUserId,
+    ]);
     if (sourceToken) {
-      await tx.apiToken.deleteMany({ where: { userId: targetUserId } });
-      await tx.apiToken.update({ where: { id: sourceToken.id }, data: { userId: targetUserId } });
+      db.run(`DELETE FROM "ApiToken" WHERE "userId" = ?`, [targetUserId]);
+      db.run(`UPDATE "ApiToken" SET "userId" = ? WHERE "id" = ?`, [targetUserId, sourceToken.id]);
       apiTokenMoved = true;
     }
 
@@ -133,19 +155,20 @@ export async function mergeUsers(
     //    none (null the source's first to dodge the unique constraint).
     let movedExternalId: string | null = null;
     if (source.externalId && !target.externalId) {
-      await tx.user.update({ where: { id: sourceUserId }, data: { externalId: null } });
-      await tx.user.update({ where: { id: targetUserId }, data: { externalId: source.externalId } });
+      const now = nowDb();
+      db.run(`UPDATE "User" SET "externalId" = NULL, "updatedAt" = ? WHERE "id" = ?`, [now, sourceUserId]);
+      db.run(`UPDATE "User" SET "externalId" = ?, "updatedAt" = ? WHERE "id" = ?`, [source.externalId, now, targetUserId]);
       movedExternalId = source.externalId;
     }
 
     // 6. Admin flag survives if either side had it.
     const targetIsAdmin = source.isAdmin || target.isAdmin;
     if (targetIsAdmin && !target.isAdmin) {
-      await tx.user.update({ where: { id: targetUserId }, data: { isAdmin: true } });
+      db.run(`UPDATE "User" SET "isAdmin" = 1, "updatedAt" = ? WHERE "id" = ?`, [nowDb(), targetUserId]);
     }
 
     // 7. Delete the now-empty source row (any leftover children cascade).
-    await tx.user.delete({ where: { id: sourceUserId } });
+    db.run(`DELETE FROM "User" WHERE "id" = ?`, [sourceUserId]);
 
     return {
       targetUserId,

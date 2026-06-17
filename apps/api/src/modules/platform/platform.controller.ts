@@ -39,6 +39,8 @@ import {
 import { normalizeUserTimeZone } from "../../shared/timezone";
 import { Prisma } from "../../generated/prisma/client";
 import { addCircleMemberRecord } from "../circles/circle.repository";
+import { getUserByExternalId } from "../users/user.repository";
+import { newId, nowDb } from "../../db/rows";
 import { sendAdminError } from "../admin/admin.controller";
 import { reconcileMergedIdentity, sweepMergedIdentities } from "./identity-lifecycle";
 import { pullCircleRoster, reconcileCircleRoster } from "./membership-sync";
@@ -68,34 +70,24 @@ async function applyCohortHints(
   cohorts: PlatformProvisionInput["cohorts"],
 ): Promise<void> {
   if (!cohorts || cohorts.length === 0) return;
-  const db = request.server.db;
+  const db = request.server.sqlite;
 
   for (const hint of cohorts) {
-    const circle = await db.circle.findUnique({ where: { cohortId: hint.cohortId } });
+    const circle = db.get<{ id: string }>(`SELECT "id" FROM "Circle" WHERE "cohortId" = ? LIMIT 1`, [hint.cohortId]);
     if (!circle) continue;
 
-    const existing = await db.circleMembership.findFirst({
-      where: { circleId: circle.id, userId },
-    });
+    const existing = db.get<{ id: string; externalId: string | null }>(
+      `SELECT "id", "externalId" FROM "CircleMembership" WHERE "circleId" = ? AND "userId" = ? LIMIT 1`,
+      [circle.id, userId],
+    );
     try {
       if (!existing) {
         await addCircleMemberRecord(db, { circleId: circle.id, userId, externalId });
       } else if (!existing.externalId) {
-        await db.circleMembership.update({
-          where: { id: existing.id },
-          data: { externalId },
-        });
+        db.run(`UPDATE "CircleMembership" SET "externalId" = ? WHERE "id" = ?`, [externalId, existing.id]);
       }
-    } catch (enrolError) {
-      // Concurrent enrol (unique(circleId, externalId/userId)) — already in.
-      if (
-        !(
-          enrolError instanceof Prisma.PrismaClientKnownRequestError &&
-          enrolError.code === "P2002"
-        )
-      ) {
-        throw enrolError;
-      }
+    } catch {
+      // Concurrent enrol (unique(circleId, externalId/userId)) — already in; ignore.
     }
 
     const client = request.server.mikoshiPlatform;
@@ -109,38 +101,38 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
   try {
     await requireAdminKey(request);
     const input = platformProvisionInputSchema.parse(request.body);
-    const db = request.server.db;
+    const db = request.server.sqlite;
 
-    let existing = await db.user.findUnique({
-      where: { externalId: input.externalId },
-      select: { id: true, name: true },
-    });
+    let existing = getUserByExternalId(db, input.externalId);
 
     // Lazy merge net (story 52): an unknown externalId may be the SURVIVOR of
     // a Mikoshi merge whose orphan we still hold. Sweep our stored ids before
     // creating a fresh row — re-keying beats duplicating the human.
     if (!existing && request.server.mikoshiPlatform) {
       await sweepMergedIdentities(db, request.server.mikoshiPlatform);
-      existing = await db.user.findUnique({
-        where: { externalId: input.externalId },
-        select: { id: true, name: true },
-      });
+      existing = getUserByExternalId(db, input.externalId);
     }
 
     if (existing) {
-      const data: { name?: string; timezone?: string } = {};
+      const sets: string[] = [];
+      const args: unknown[] = [];
       if (
         input.displayName &&
         input.displayName !== input.externalId &&
         existing.name === input.externalId
       ) {
-        data.name = input.displayName;
+        sets.push(`"name" = ?`);
+        args.push(input.displayName);
       }
       if (input.timezone) {
-        data.timezone = normalizeUserTimeZone(input.timezone);
+        sets.push(`"timezone" = ?`);
+        args.push(normalizeUserTimeZone(input.timezone));
       }
-      if (Object.keys(data).length > 0) {
-        await db.user.update({ where: { id: existing.id }, data });
+      if (sets.length > 0) {
+        sets.push(`"updatedAt" = ?`);
+        args.push(nowDb());
+        args.push(existing.id);
+        db.run(`UPDATE "User" SET ${sets.join(", ")} WHERE "id" = ?`, args);
       }
 
       const { token } = await resetPersonalApiToken(request.server.sqlite, existing.id);
@@ -150,38 +142,36 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
     }
 
     try {
-      const user = await db.user.create({
-        data: {
-          name: input.displayName ?? input.externalId,
-          email: syntheticProvisionEmail(input.externalId),
-          emailVerified: true,
-          timezone: normalizeUserTimeZone(input.timezone),
-          externalId: input.externalId,
-        },
-      });
-      const { token } = await resetPersonalApiToken(request.server.sqlite, user.id);
-      await applyCohortHints(request, user.id, input.externalId, input.cohorts);
+      const userId = newId();
+      const now = nowDb();
+      db.run(
+        `INSERT INTO "User" ("id", "name", "email", "emailVerified", "timezone", "externalId", "createdAt", "updatedAt")
+         VALUES (?, ?, ?, 1, ?, ?, ?, ?)`,
+        [
+          userId,
+          input.displayName ?? input.externalId,
+          syntheticProvisionEmail(input.externalId),
+          normalizeUserTimeZone(input.timezone),
+          input.externalId,
+          now,
+          now,
+        ],
+      );
+      const { token } = await resetPersonalApiToken(request.server.sqlite, userId);
+      await applyCohortHints(request, userId, input.externalId, input.cohorts);
 
       reply.status(201);
-      return { created: true, userId: user.id, personalToken: token };
+      return { created: true, userId, personalToken: token };
     } catch (createError) {
-      // Concurrent provisions: both miss findUnique, second create hits the
-      // unique constraint. Resolve idempotently — and still rotate a token so
+      // Concurrent provisions: both miss the existence check, second insert hits
+      // the UNIQUE constraint. Resolve idempotently — and still rotate a token so
       // the response keeps the contract's "always a working credential".
-      if (
-        createError instanceof Prisma.PrismaClientKnownRequestError &&
-        createError.code === "P2002"
-      ) {
-        const race = await db.user.findUnique({
-          where: { externalId: input.externalId },
-          select: { id: true },
-        });
-        if (race) {
-          const { token } = await resetPersonalApiToken(request.server.sqlite, race.id);
-          await applyCohortHints(request, race.id, input.externalId, input.cohorts);
-          reply.status(200);
-          return { created: false, userId: race.id, personalToken: token };
-        }
+      const race = getUserByExternalId(db, input.externalId);
+      if (race) {
+        const { token } = await resetPersonalApiToken(request.server.sqlite, race.id);
+        await applyCohortHints(request, race.id, input.externalId, input.cohorts);
+        reply.status(200);
+        return { created: false, userId: race.id, personalToken: token };
       }
       throw createError;
     }
@@ -198,9 +188,9 @@ export async function platformMembershipHandler(request: FastifyRequest, reply: 
   try {
     await requireAdminKey(request);
     const input = platformMembershipInputSchema.parse(request.body);
-    const db = request.server.db;
+    const db = request.server.sqlite;
 
-    const circle = await db.circle.findUnique({ where: { cohortId: input.cohortId } });
+    const circle = db.get<{ id: string }>(`SELECT "id" FROM "Circle" WHERE "cohortId" = ? LIMIT 1`, [input.cohortId]);
     if (!circle) {
       return await reply.status(404).send({
         code: "NOT_FOUND",
@@ -258,7 +248,7 @@ export async function identityWebhookHandler(request: FastifyRequest, reply: Fas
 
   try {
     const event = identityMergedEventSchema.parse(request.body);
-    const action = await reconcileMergedIdentity(request.server.db, {
+    const action = await reconcileMergedIdentity(request.server.sqlite, {
       orphanExternalId: event.orphanExternalId,
       survivorExternalId: event.survivorExternalId,
     });
@@ -322,7 +312,7 @@ export async function platformBackupHandler(request: FastifyRequest, reply: Fast
     // se escapan comillas por si acaso. VACUUM no corre en transacción, así que
     // se ejecuta como statement suelto.
     const escaped = target.replace(/'/g, "''");
-    await request.server.db.$executeRawUnsafe(`VACUUM INTO '${escaped}'`);
+    request.server.sqlite.exec(`VACUUM INTO '${escaped}'`);
     const bytes = readFileSync(target);
     request.log.info({ bytes: bytes.byteLength }, "platform backup dump served");
     return reply.header("Content-Type", "application/octet-stream").send(bytes);

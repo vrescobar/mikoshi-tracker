@@ -11,7 +11,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -45,7 +45,7 @@ describe("habit detail routes", () => {
       },
     });
 
-    await seedHabitDayStates(context.app.db, [
+    await seedHabitDayStates(context.app.sqlite, [
         { habitId: habit.id, dateKey: "2026-03-01", value: 8, completed: true },
         { habitId: habit.id, dateKey: "2026-03-02", value: 6, completed: false },
         { habitId: habit.id, dateKey: "2026-03-03", value: 10, completed: true },
@@ -138,7 +138,7 @@ describe("habit detail routes", () => {
 
     await archiveHabit(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

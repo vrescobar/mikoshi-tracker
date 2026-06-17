@@ -21,8 +21,8 @@ describe("management authorization matrix (§C14.8)", () => {
     const { body: alice } = await signUp(context.app);
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-    const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-    await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+    await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
     const response = await context.app.inject({
       method: "POST",
@@ -43,8 +43,8 @@ describe("management authorization matrix (§C14.8)", () => {
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
     await signUp(context.app, { email: "carol@example.com", name: "Carol" });
 
-    const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-    await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+    await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
     const response = await context.app.inject({
       method: "POST",
@@ -68,11 +68,11 @@ describe("management authorization matrix (§C14.8)", () => {
     const { body: alice } = await signUp(context.app);
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-    const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-    await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+    await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
     const aliceHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId: alice.user.id,
         input: { name: "Alice's habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -98,10 +98,10 @@ describe("management authorization matrix (§C14.8)", () => {
     const { body: alice } = await signUp(context.app);
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-    const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
 
     const bobHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId: bob.user.id,
         input: { name: "Bob's own habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -127,8 +127,8 @@ describe("management authorization matrix (§C14.8)", () => {
     const { body: alice } = await signUp(context.app);
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-    const circle = await createCircleRecord(context.app.db, { ownerId: alice.user.id, name: "Circle" });
-    await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: alice.user.id, name: "Circle" });
+    await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
 
     const response = await context.app.inject({
       method: "POST",

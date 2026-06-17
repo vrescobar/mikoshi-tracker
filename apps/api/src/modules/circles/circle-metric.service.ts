@@ -1,11 +1,11 @@
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
+import { nowDb } from "../../db/rows";
 import { computeAggregations } from "../aggregations/aggregation.service";
 import { addDays } from "../today/today-clock";
-import { listCircleMemberRecords } from "./circle.repository";
+import { findCircleRecord, listCircleMemberRecords } from "./circle.repository";
 import { CircleForbiddenError, CircleNotFoundError } from "./circle.service";
 
-type Deps = { db: PrismaClient; sqlite: Db };
+type Deps = { sqlite: Db };
 
 export class CircleNotMetricContestError extends Error {
   constructor() {
@@ -43,31 +43,34 @@ export async function configureCircleContest(
   deps: Deps,
   params: { circleId: string; callerId: string; config: CircleContestConfigInput },
 ) {
-  const circle = await deps.db.circle.findUnique({ where: { id: params.circleId }, select: { ownerId: true } });
+  const circle = await findCircleRecord(deps.sqlite, params.circleId);
   if (!circle) throw new CircleNotFoundError();
   if (circle.ownerId !== params.callerId) throw new CircleForbiddenError("Only the owner can configure the contest");
 
   const c = params.config;
-  const updated = await deps.db.circle.update({
-    where: { id: params.circleId },
-    data: {
-      contestKind: c.contestKind,
-      metricEntryTypeSlug: c.contestKind === "metric" ? (c.metricEntryTypeSlug ?? null) : null,
-      metricField: c.contestKind === "metric" ? (c.metricField ?? null) : null,
-      metricMode: c.contestKind === "metric" ? (c.metricMode ?? null) : null,
-      metricTarget: c.contestKind === "metric" ? (c.metricTarget ?? null) : null,
-      metricGoal: c.contestKind === "metric" ? (c.metricGoal ?? "higher") : null,
-    },
-    select: {
-      id: true,
-      contestKind: true,
-      metricEntryTypeSlug: true,
-      metricField: true,
-      metricMode: true,
-      metricTarget: true,
-      metricGoal: true,
-    },
-  });
+  const isMetric = c.contestKind === "metric";
+  const updated = {
+    id: params.circleId,
+    contestKind: c.contestKind,
+    metricEntryTypeSlug: isMetric ? (c.metricEntryTypeSlug ?? null) : null,
+    metricField: isMetric ? (c.metricField ?? null) : null,
+    metricMode: isMetric ? (c.metricMode ?? null) : null,
+    metricTarget: isMetric ? (c.metricTarget ?? null) : null,
+    metricGoal: isMetric ? (c.metricGoal ?? "higher") : null,
+  };
+  deps.sqlite.run(
+    `UPDATE "Circle" SET "contestKind" = ?, "metricEntryTypeSlug" = ?, "metricField" = ?, "metricMode" = ?, "metricTarget" = ?, "metricGoal" = ?, "updatedAt" = ? WHERE "id" = ?`,
+    [
+      updated.contestKind,
+      updated.metricEntryTypeSlug,
+      updated.metricField,
+      updated.metricMode,
+      updated.metricTarget,
+      updated.metricGoal,
+      nowDb(),
+      params.circleId,
+    ],
+  );
   return { circle: updated };
 }
 
@@ -94,7 +97,7 @@ export async function getCircleMetricLeaderboard(
     mode: MetricMode;
   }[];
 }> {
-  const circle = await deps.db.circle.findUnique({ where: { id: params.circleId } });
+  const circle = await findCircleRecord(deps.sqlite, params.circleId);
   if (!circle) throw new CircleNotFoundError();
 
   const entryTypeSlug = circle.metricEntryTypeSlug;
@@ -114,7 +117,7 @@ export async function getCircleMetricLeaderboard(
   const contestEndKey = circle.contestEndAt ? toDateKey(circle.contestEndAt) : todayKey;
   const to = contestEndKey < todayKey ? contestEndKey : todayKey;
 
-  const members = await listCircleMemberRecords(deps.db, params.circleId);
+  const members = await listCircleMemberRecords(deps.sqlite, params.circleId);
 
   const scored = await Promise.all(
     members.map(async (m) => {

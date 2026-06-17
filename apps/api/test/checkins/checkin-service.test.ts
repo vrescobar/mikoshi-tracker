@@ -15,7 +15,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -47,7 +47,7 @@ describe("checkin service", () => {
 
     const completed = await completeHabitForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -66,7 +66,7 @@ describe("checkin service", () => {
 
     const undone = await undoHabitForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -99,7 +99,7 @@ describe("checkin service", () => {
 
     const partial = await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -118,7 +118,7 @@ describe("checkin service", () => {
 
     const complete = await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -137,7 +137,7 @@ describe("checkin service", () => {
 
     const downgraded = await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -170,7 +170,7 @@ describe("checkin service", () => {
 
     await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -183,7 +183,7 @@ describe("checkin service", () => {
 
     await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -196,7 +196,7 @@ describe("checkin service", () => {
 
     const undone = await undoHabitForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

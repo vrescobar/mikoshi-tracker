@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
 import { requireAdminKey } from "../../auth/admin-key";
+import { getUserByExternalId } from "../users/user.repository";
 import { issueMagicLinkHandler, sendAdminError } from "../admin/admin.controller";
 import { sweepMergedIdentities } from "./identity-lifecycle";
 import { createMikoshiPlatformClient } from "./mikoshi-platform-client";
@@ -50,10 +51,10 @@ export async function registerPlatformRoutes(app: FastifyInstance) {
     if (app.mikoshiPlatform) {
       const externalId = (request.body as { externalId?: unknown } | null)?.externalId;
       if (typeof externalId === "string" && externalId.length > 0) {
-        const known = await app.db.user.findUnique({ where: { externalId } });
+        const known = getUserByExternalId(app.sqlite, externalId);
         if (!known) {
           try {
-            await sweepMergedIdentities(app.db, app.mikoshiPlatform);
+            await sweepMergedIdentities(app.sqlite, app.mikoshiPlatform);
           } catch (error) {
             request.log.error({ err: error }, "lazy identity sweep before SSO failed");
           }
@@ -64,7 +65,7 @@ export async function registerPlatformRoutes(app: FastifyInstance) {
     const out = await issueMagicLinkHandler(request, reply);
     if (reply.statusCode === 201 && app.mikoshiPlatform) {
       try {
-        await pullAllCohortCircles(app.db, app.mikoshiPlatform);
+        await pullAllCohortCircles(app.sqlite, app.mikoshiPlatform);
       } catch (error) {
         request.log.error({ err: error }, "cohort roster pull after SSO failed");
       }

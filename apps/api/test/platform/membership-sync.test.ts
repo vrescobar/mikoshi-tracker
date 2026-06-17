@@ -33,7 +33,7 @@ async function provision(context: TestContext, externalId: string, displayName: 
 /** Provisioned owner + circle linked to a cohort. */
 async function makeLinkedCircle(context: TestContext, cohortId: string) {
   const ownerId = await provision(context, `ext-owner-${cohortId}`, "Owner");
-  const circle = await createCircleRecord(context.app.db, { ownerId, name: `Circle ${cohortId}` });
+  const circle = await createCircleRecord(context.app.sqlite, { ownerId, name: `Circle ${cohortId}` });
   await context.app.db.circle.update({ where: { id: circle.id }, data: { cohortId } });
   return { circle, ownerId };
 }
@@ -64,7 +64,7 @@ describe("membership sync (cohorts = roster)", () => {
       const { circle } = await makeLinkedCircle(context, "cohort-a");
       await provision(context, "ext-alice", "Alice");
 
-      const result = await reconcileCircleRoster(context.app.db, circle.id, [
+      const result = await reconcileCircleRoster(context.app.sqlite, circle.id, [
         { externalId: "ext-alice", displayName: "Alice" },
         { externalId: "ext-ghost", displayName: "Ghost" },
       ]);
@@ -83,7 +83,7 @@ describe("membership sync (cohorts = roster)", () => {
       const db = context.app.db;
       const { circle } = await makeLinkedCircle(context, "cohort-b");
       const bobId = await provision(context, "ext-bob", "Bob");
-      await addCircleMemberRecord(db, { circleId: circle.id, userId: bobId, externalId: "ext-bob" });
+      await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bobId, externalId: "ext-bob" });
       // Historical traces: a leaderboard snapshot and an entry owned by Bob.
       await db.circleLeaderboardSnapshot.create({
         data: { circleId: circle.id, season: "s1", userId: bobId, rank: 1, score: 10, data: "{}" },
@@ -99,7 +99,7 @@ describe("membership sync (cohorts = roster)", () => {
         },
       });
 
-      const result = await reconcileCircleRoster(db, circle.id, []);
+      const result = await reconcileCircleRoster(context.app.sqlite, circle.id, []);
 
       expect(result.removed).toEqual(["ext-bob"]);
       const membership = await db.circleMembership.findFirst({
@@ -124,7 +124,7 @@ describe("membership sync (cohorts = roster)", () => {
         data: { circleId: circle.id, userId: web.id, role: "member", externalId: null },
       });
 
-      const result = await reconcileCircleRoster(db, circle.id, []);
+      const result = await reconcileCircleRoster(context.app.sqlite, circle.id, []);
 
       expect(result.removed).toEqual([]);
       const remaining = await db.circleMembership.findMany({ where: { circleId: circle.id } });
@@ -137,8 +137,8 @@ describe("membership sync (cohorts = roster)", () => {
       await provision(context, "ext-carol", "Carol");
       const roster = [{ externalId: "ext-carol", displayName: "Carol" }];
 
-      await reconcileCircleRoster(context.app.db, circle.id, roster);
-      const second = await reconcileCircleRoster(context.app.db, circle.id, roster);
+      await reconcileCircleRoster(context.app.sqlite, circle.id, roster);
+      const second = await reconcileCircleRoster(context.app.sqlite, circle.id, roster);
 
       expect(second.added).toEqual([]);
       expect(second.removed).toEqual([]);

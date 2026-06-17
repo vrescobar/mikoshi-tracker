@@ -26,19 +26,19 @@ export async function bulkAssignHabit(
   const notProvisioned: string[] = [];
 
   for (const externalId of [...new Set(params.externalIds)]) {
-    const user = await findUserByExternalId(deps.db, externalId);
+    const user = await findUserByExternalId(deps.sqlite, externalId);
     if (!user) {
       notProvisioned.push(externalId);
       continue;
     }
-    const membership = await findCircleMembershipByUserId(deps.db, { circleId: params.circleId, userId: user.id });
+    const membership = await findCircleMembershipByUserId(deps.sqlite, { circleId: params.circleId, userId: user.id });
     if (!membership) {
       notMember.push(externalId);
       continue;
     }
-    const habit = await createHabit({ db: deps.db, sqlite: deps.sqlite }, { userId: user.id, input: params.habit });
+    const habit = await createHabit({ db: deps.sqlite }, { userId: user.id, input: params.habit });
     try {
-      await shareHabit({ db: deps.db }, { circleId: params.circleId, callerId: user.id, habitId: habit.id });
+      await shareHabit({ db: deps.sqlite }, { circleId: params.circleId, callerId: user.id, habitId: habit.id });
     } catch (error) {
       if (!(error instanceof CircleHabitAlreadySharedError)) throw error;
     }

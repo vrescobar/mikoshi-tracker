@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 import { NothingToUndoError } from "../../shared/errors";
 import {
   serializeContractFrequencyType,
@@ -39,7 +39,7 @@ const mutationTypeMap = {
 } as const;
 
 type CheckinDependencies = {
-  db: PrismaClient;
+  db: Db;
 };
 
 type ServiceTimestamp = Date | number | string | undefined;

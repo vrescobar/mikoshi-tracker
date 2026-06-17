@@ -260,7 +260,7 @@ describe("admin provisioning routes", () => {
       const { userId } = provisionRes.json() as { userId: string };
 
       const { body: owner } = await signUp(context.app);
-      const circle = await createCircleRecord(context.app.db, {
+      const circle = await createCircleRecord(context.app.sqlite, {
         ownerId: owner.user.id,
         name: "Test Circle",
       });
@@ -291,7 +291,7 @@ describe("admin provisioning routes", () => {
       });
 
       const { body: owner } = await signUp(context.app);
-      const circle = await createCircleRecord(context.app.db, {
+      const circle = await createCircleRecord(context.app.sqlite, {
         ownerId: owner.user.id,
         name: "Test Circle",
       });
@@ -319,7 +319,7 @@ describe("admin provisioning routes", () => {
       context = await createTestContext();
 
       const { body: owner } = await signUp(context.app);
-      const circle = await createCircleRecord(context.app.db, {
+      const circle = await createCircleRecord(context.app.sqlite, {
         ownerId: owner.user.id,
         name: "Test Circle",
       });
@@ -360,7 +360,7 @@ describe("admin provisioning routes", () => {
       context = await createTestContext();
 
       const { body: owner } = await signUp(context.app);
-      const circle = await createCircleRecord(context.app.db, {
+      const circle = await createCircleRecord(context.app.sqlite, {
         ownerId: owner.user.id,
         name: "Test Circle",
       });
@@ -380,7 +380,7 @@ describe("admin provisioning routes", () => {
       context = await createTestContext();
 
       const { body: owner } = await signUp(context.app);
-      const circle = await createCircleRecord(context.app.db, {
+      const circle = await createCircleRecord(context.app.sqlite, {
         ownerId: owner.user.id,
         name: "Test Circle",
       });

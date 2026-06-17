@@ -34,7 +34,7 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Morning run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -55,7 +55,7 @@ describe("circle habit share endpoints", () => {
     const { body: bob, cookie: bobCookie } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: bob.user.id, input: { name: "Evening run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -76,7 +76,7 @@ describe("circle habit share endpoints", () => {
     const { body: carol } = await signUp(context.app, { email: "carol@example.com", name: "Carol" });
 
     const carolHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: carol.user.id, input: { name: "Carol habit", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -111,7 +111,7 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Morning run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -140,7 +140,7 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Morning run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -180,7 +180,7 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Morning run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -201,11 +201,11 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const shared = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Shared run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
     const solo = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Solo stretch", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 
@@ -240,7 +240,7 @@ describe("circle habit share endpoints", () => {
     const { alice, aliceCookie, circleId } = await setupCircle(context);
 
     const habit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, input: { name: "Morning run", frequency: { type: "daily" }, startDate: "2026-05-01" }, today: "2026-05-18" },
     );
 

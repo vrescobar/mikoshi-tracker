@@ -19,7 +19,7 @@ describe("createHabit persistence", () => {
 
     const habit = await createHabit(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -64,7 +64,7 @@ describe("createHabit persistence", () => {
 
     const habit = await createHabit(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -123,7 +123,7 @@ describe("createHabit persistence", () => {
 
     const habit = await createHabit(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

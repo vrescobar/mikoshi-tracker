@@ -98,7 +98,7 @@ describe("applyCohortBackfill", () => {
 
     context = await createTestContext();
     const db = context.app.db;
-    const owner = await db.user.create({
+    const owner = await context.app.db.user.create({
       data: {
         name: "Owner",
         email: "owner-backfill@example.com",
@@ -106,7 +106,7 @@ describe("applyCohortBackfill", () => {
         externalId: "ext-owner",
       },
     });
-    const circle = await createCircleRecord(db, { ownerId: owner.id, name: "Backfill Circle" });
+    const circle = await createCircleRecord(context.app.sqlite, { ownerId: owner.id, name: "Backfill Circle" });
     await db.circleMembership.updateMany({
       where: { circleId: circle.id, userId: owner.id },
       data: { externalId: "ext-owner" },
@@ -117,7 +117,7 @@ describe("applyCohortBackfill", () => {
       select: { circleId: true, externalId: true, role: true },
     });
     const plan = planCohortBackfill(circles, memberships);
-    const results = await applyCohortBackfill(db, plan, { v1BaseUrl: `${address}/api/v1` });
+    const results = await applyCohortBackfill(context.app.sqlite, plan, { v1BaseUrl: `${address}/api/v1` });
 
     expect(created).toEqual([expect.objectContaining({ name: "Backfill Circle" })]);
     expect(added).toEqual([{ cohortId: "cohort-1", identityId: "ext-owner" }]);

@@ -49,7 +49,7 @@ describe("weekly report (Epic E)", () => {
     const notifyImage = mock().mockResolvedValue(true);
     const platform = { notifyImage } as unknown as MikoshiPlatformClient;
 
-    const summary = await runWeeklyReports({ db: context.app.db, sqlite: context.app.sqlite }, { platform, timestamp: NOW });
+    const summary = await runWeeklyReports({ db: context.app.sqlite, sqlite: context.app.sqlite }, { platform, timestamp: NOW });
 
     expect(summary).toEqual({ attempted: 1, delivered: 1 });
     expect(notifyImage).toHaveBeenCalledTimes(1);
@@ -62,7 +62,7 @@ describe("weekly report (Epic E)", () => {
     await setPrefs(cookie, { weeklyReportOptIn: true });
 
     const platform = { notifyImage: mock().mockResolvedValue(true) } as unknown as MikoshiPlatformClient;
-    const summary = await runWeeklyReports({ db: context.app.db, sqlite: context.app.sqlite }, { platform, timestamp: NOW });
+    const summary = await runWeeklyReports({ db: context.app.sqlite, sqlite: context.app.sqlite }, { platform, timestamp: NOW });
     expect(summary).toEqual({ attempted: 0, delivered: 0 });
   });
 

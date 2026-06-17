@@ -11,7 +11,7 @@ async function createOwnedHabit(
 ) {
   return createHabit(
     {
-      db: context.app.db, sqlite: context.app.sqlite,
+      db: context.app.sqlite, sqlite: context.app.sqlite,
     },
     {
       userId,
@@ -60,7 +60,7 @@ describe("today routes", () => {
 
     await setHabitTotalForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,
@@ -72,7 +72,7 @@ describe("today routes", () => {
     );
     await completeHabitForToday(
       {
-        db: context.app.db, sqlite: context.app.sqlite,
+        db: context.app.sqlite, sqlite: context.app.sqlite,
       },
       {
         userId: body.user.id,

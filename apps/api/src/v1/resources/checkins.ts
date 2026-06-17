@@ -66,7 +66,7 @@ export function checkinsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof completeHabitInputSchema>;
         try {
-          return await completeHabitForToday(ctx.deps, {
+          return await completeHabitForToday({ db: ctx.deps.sqlite }, {
             userId: requireUserId(ctx),
             habitId: input.habitId,
             source: input.source,
@@ -91,7 +91,7 @@ export function checkinsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof setHabitTotalInputSchema>;
         try {
-          return await setHabitTotalForToday(ctx.deps, {
+          return await setHabitTotalForToday({ db: ctx.deps.sqlite }, {
             userId: requireUserId(ctx),
             habitId: input.habitId,
             total: input.total,
@@ -117,7 +117,7 @@ export function checkinsV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof undoHabitInputSchema>;
         try {
-          return await undoHabitForToday(ctx.deps, {
+          return await undoHabitForToday({ db: ctx.deps.sqlite }, {
             userId: requireUserId(ctx),
             habitId: input.habitId,
             source: input.source,

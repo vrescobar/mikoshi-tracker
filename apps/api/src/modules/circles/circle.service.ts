@@ -1,4 +1,6 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { getUserById } from "../users/user.repository";
+import { nowDb } from "../../db/rows";
 import { serializeContractHabitKind, serializeContractWeekday } from "../../shared/habit-contract-mappers";
 import { addDays, compareDateKeys, dateKeyToLocalNoonTimestamp, resolveHabitDay } from "../today/today-clock";
 import { findLatestCheckinMutation } from "../checkins/checkin.repository";
@@ -171,7 +173,7 @@ export class CircleClosedError extends Error {
   }
 }
 
-export type CircleServiceDependencies = { db: PrismaClient };
+export type CircleServiceDependencies = { db: Db };
 
 /**
  * Contest-window gate: rejects writes when the circle is closed/archived or the
@@ -382,10 +384,7 @@ export async function getMemberHabitsForCircle(
     throw new CircleMemberNotFoundError();
   }
 
-  const user = await db.user.findUnique({
-    where: { id: params.userId },
-    select: { timezone: true },
-  });
+  const user = getUserById(db, params.userId);
   if (!user) {
     throw new CircleMemberNotFoundError();
   }
@@ -472,11 +471,11 @@ function resolveBackdateTimestamp(params: {
  * member's local noon on that day, after the backdate guard.
  */
 async function resolveEffectiveTimestamp(
-  db: PrismaClient,
+  db: Db,
   params: CircleWriteBaseParams,
 ): Promise<Date | number | string | undefined> {
   if (!params.date) return params.timestamp;
-  const user = await db.user.findUnique({ where: { id: params.userId }, select: { timezone: true } });
+  const user = getUserById(db, params.userId);
   if (!user) throw new CircleMemberNotFoundError();
   return resolveBackdateTimestamp({
     date: params.date,
@@ -540,10 +539,7 @@ export async function circleUndoHabit(
 ) {
   await assertCircleHabitWritable({ db }, params);
 
-  const user = await db.user.findUnique({
-    where: { id: params.userId },
-    select: { timezone: true },
-  });
+  const user = getUserById(db, params.userId);
   if (!user) {
     throw new CircleMemberNotFoundError();
   }
@@ -606,7 +602,7 @@ export async function setCircleMemberName(
   if (!membership) {
     throw new CircleMemberNotFoundError();
   }
-  await db.user.update({ where: { id: params.userId }, data: { name: params.name } });
+  db.run(`UPDATE "User" SET "name" = ?, "updatedAt" = ? WHERE "id" = ?`, [params.name, nowDb(), params.userId]);
   const updated = await findCircleMembershipById(db, {
     circleId: params.circleId,
     membershipId: membership.id,
@@ -617,7 +613,7 @@ export async function setCircleMemberName(
 // ─── Private helpers ──────────────────────────────────────────────────────────
 
 async function assertCircleOwner(
-  db: PrismaClient,
+  db: Db,
   circleId: string,
   userId: string,
 ): Promise<void> {

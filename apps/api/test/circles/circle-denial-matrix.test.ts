@@ -16,15 +16,15 @@ async function buildFixture(context: TestContext) {
   const { body: alice } = await signUp(context.app, { email: "alice@example.com", name: "Alice" });
   const { body: bob } = await signUp(context.app, { email: "bob@example.com", name: "Bob" });
 
-  const circle = await createCircleRecord(context.app.db, {
+  const circle = await createCircleRecord(context.app.sqlite, {
     ownerId: alice.user.id,
     name: "Test Circle",
   });
-  await addCircleMemberRecord(context.app.db, { circleId: circle.id, userId: bob.user.id });
-  const { token } = await createCircleToken(context.app.db, circle.id);
+  await addCircleMemberRecord(context.app.sqlite, { circleId: circle.id, userId: bob.user.id });
+  const { token } = await createCircleToken(context.app.sqlite, circle.id);
 
   const aliceHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     {
       userId: alice.user.id,
       input: { name: "Alice habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -32,7 +32,7 @@ async function buildFixture(context: TestContext) {
     },
   );
   const bobHabit = await createHabit(
-    { db: context.app.db, sqlite: context.app.sqlite },
+    { db: context.app.sqlite, sqlite: context.app.sqlite },
     {
       userId: bob.user.id,
       input: { name: "Bob habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -40,8 +40,8 @@ async function buildFixture(context: TestContext) {
     },
   );
 
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: aliceHabit.id });
-  await createCircleHabitShareRecord(context.app.db, { circleId: circle.id, habitId: bobHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: aliceHabit.id });
+  await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: bobHabit.id });
 
   return { alice: alice.user, bob: bob.user, circle, token, aliceHabit, bobHabit };
 }
@@ -61,11 +61,11 @@ describe("circle-token denial matrix (§C14)", () => {
     context = await createTestContext();
     const { alice, circle, aliceHabit } = await buildFixture(context);
 
-    const otherCircle = await createCircleRecord(context.app.db, {
+    const otherCircle = await createCircleRecord(context.app.sqlite, {
       ownerId: alice.id,
       name: "Other Circle",
     });
-    const { token: otherToken } = await createCircleToken(context.app.db, otherCircle.id);
+    const { token: otherToken } = await createCircleToken(context.app.sqlite, otherCircle.id);
 
     const response = await context.app.inject({
       method: "POST",
@@ -84,7 +84,7 @@ describe("circle-token denial matrix (§C14)", () => {
 
     const { body: carol } = await signUp(context.app, { email: "carol@example.com", name: "Carol" });
     const carolHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId: carol.user.id,
         input: { name: "Carol habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -125,7 +125,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token } = await buildFixture(context);
 
     const unsharedHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId: alice.id,
         input: { name: "Private habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -207,7 +207,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token } = await buildFixture(context);
 
     const unsharedHabit = await createHabit(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       {
         userId: alice.id,
         input: { name: "Secret habit", frequency: { type: "daily" }, startDate: "2026-05-01" },
@@ -232,7 +232,7 @@ describe("circle-token denial matrix (§C14)", () => {
     const { alice, circle, token, aliceHabit } = await buildFixture(context);
 
     await completeHabitForToday(
-      { db: context.app.db, sqlite: context.app.sqlite },
+      { db: context.app.sqlite, sqlite: context.app.sqlite },
       { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW },
     );
 

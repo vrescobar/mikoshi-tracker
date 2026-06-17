@@ -34,11 +34,11 @@ describe("v1 attachments + skills", () => {
 
   it("uploads a base64 image to a mutation, lists, then deletes it", async () => {
     const habit = await createHabit(
-      { db: ctx.app.db, sqlite: ctx.app.sqlite },
+      { db: ctx.app.sqlite, sqlite: ctx.app.sqlite },
       { userId, input: { name: "Tidy up", frequency: { type: "daily" } }, today: "2026-03-11" },
     );
     const result = await completeHabitForToday(
-      { db: ctx.app.db, sqlite: ctx.app.sqlite },
+      { db: ctx.app.sqlite, sqlite: ctx.app.sqlite },
       { userId, habitId: habit.id, source: "web", timestamp: TODAY },
     );
     const mutationId = result.mutation.id;
