@@ -6,9 +6,9 @@ import type {
   AggregationSummary,
 } from "@mikoshi-tracker/contracts/aggregations";
 
-import type { PrismaClient } from "../../generated/prisma/client";
 import type { Db } from "../../db/client";
 import { getCompiledSchema } from "../entry-types/schema-cache";
+import { getEntryTypeBySlug } from "../entry-types/entry-type.repository";
 import {
   type RawAggregationRow,
   queryAggregationRows,
@@ -26,7 +26,7 @@ export class EntryTypeForAggregationNotFoundError extends Error {
 
 // ─── Internal types ────────────────────────────────────────────────────────────
 
-type AggregationServiceDeps = { db: PrismaClient; sqlite: Db };
+type AggregationServiceDeps = { sqlite: Db };
 
 // ─── Date / bucket helpers ─────────────────────────────────────────────────────
 
@@ -143,7 +143,7 @@ export async function computeAggregations(
     limit,
   } = params;
 
-  const entryType = await deps.db.entryType.findUnique({ where: { slug: entryTypeSlug } });
+  const entryType = getEntryTypeBySlug(deps.sqlite, entryTypeSlug);
   if (!entryType) throw new EntryTypeForAggregationNotFoundError(entryTypeSlug);
 
   const compiled = await getCompiledSchema(deps.sqlite, entryType.id);
@@ -167,7 +167,7 @@ export async function computeAggregations(
 
   // ── Payload-grouped path ───────────────────────────────────────────────────
   if (groupByPayload) {
-    const rows = await queryAggregationRowsByPayload(deps.db, {
+    const rows = await queryAggregationRowsByPayload(deps.sqlite, {
       userId,
       entryTypeSlug,
       entryId,
@@ -218,7 +218,7 @@ export async function computeAggregations(
   }
 
   // ── Date-grouped path (existing behaviour) ─────────────────────────────────
-  const rawRows = await queryAggregationRows(deps.db, {
+  const rawRows = await queryAggregationRows(deps.sqlite, {
     userId,
     entryTypeSlug,
     entryId,

@@ -1,4 +1,4 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
 
 // Only allow alphanumeric + underscore, must start with a letter.
 // Prevents SQL injection in dynamic field name interpolation.
@@ -25,7 +25,7 @@ function bucketExpression(groupBy: "day" | "week" | "month" | "none"): string {
 export type RawAggregationRow = Record<string, unknown>;
 
 export async function queryAggregationRows(
-  db: PrismaClient,
+  db: Db,
   params: {
     userId: string;
     entryTypeSlug: string;
@@ -83,7 +83,7 @@ export async function queryAggregationRows(
   const args: unknown[] = [userId, entryTypeSlug, from, to];
   if (entryId) args.push(entryId);
 
-  return db.$queryRawUnsafe<RawAggregationRow[]>(sql, ...args);
+  return db.all<RawAggregationRow>(sql, args);
 }
 
 export type RawPayloadAggregationRow = RawAggregationRow & {
@@ -92,7 +92,7 @@ export type RawPayloadAggregationRow = RawAggregationRow & {
 };
 
 export async function queryAggregationRowsByPayload(
-  db: PrismaClient,
+  db: Db,
   params: {
     userId: string;
     entryTypeSlug: string;
@@ -187,5 +187,5 @@ export async function queryAggregationRowsByPayload(
   const args: unknown[] = [userId, entryTypeSlug, from, to];
   if (entryId) args.push(entryId);
 
-  return db.$queryRawUnsafe<RawPayloadAggregationRow[]>(sql, ...args);
+  return db.all<RawPayloadAggregationRow>(sql, args);
 }
