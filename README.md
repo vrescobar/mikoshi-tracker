@@ -2,12 +2,10 @@
 
 Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any recurring or event-log data — that makes "what should I do today?" legible to both humans and AI. Habits are one of several `EntryType`s; `food_meal` and `weight_log` are non-habit types.
 
-自托管**通用条目追踪工具** — 习惯、餐食及任何周期性或事件日志数据 — 让人和 AI 都能清楚地知道"今天该做什么"。
-
 > **Origin:** MikoshiTracker is a fork of [`haaabit`](https://github.com/vrescobar/haaabit) (originally MIT-licensed,
 > Copyright © 2026 Finn). See [`LICENSE`](LICENSE) for the full attribution.
 
-## Features / 功能
+## Features
 
 - **Today-first dashboard** — see pending and completed habits at a glance, with completion rates, trends, and today's food summary
 - **Generic typed-entries engine** — any data modelled as an `EntryType` with a JSON-Schema-validated payload, a cadence (`recurring` or `event_log`), and a declarative aggregations spec; no new tables or services required per type
@@ -26,7 +24,7 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 - **Admin controls** — first user becomes admin; toggle new-user registration on or off; system-key provisioning for bot-operated circles
 - **Lightweight native deployment** — SQLite (`bun:sqlite`) and a single systemd user unit where one Bun process serves both the API and the built SPA; no ORM, no reverse proxy, no containers
 
-## Tech Stack / 技术栈
+## Tech Stack
 
 | Layer    | Technology                                  |
 | -------- | ------------------------------------------- |
@@ -37,7 +35,7 @@ Self-hosted **generic typed-entries tracker** — habits, meals, weight, and any
 | Runtime  | TypeScript, Bun (workspace), Node.js        |
 | Testing  | bun test (API), Vitest (web unit), Playwright (E2E) |
 
-## Quick Start (native) / 快速开始
+## Quick Start (native)
 
 ```bash
 git clone https://github.com/vrescobar/mikoshi-tracker.git
@@ -53,13 +51,13 @@ bun install
 Open `http://localhost:7080` — the first registered user becomes admin.
 
 For the full setup guide (prerequisites, env reference, troubleshooting), see
-[Self-host install guide / 自托管安装指南](./docs/self-hosting.md). For
+[Self-host install guide](./docs/self-hosting.md). For
 public-internet hardening see
 [docs/PUBLIC-DEPLOYMENT.md](./docs/PUBLIC-DEPLOYMENT.md).
 
-For upgrades, see [Self-host upgrade guide / 自托管升级指南](./docs/self-hosting-upgrades.md).
+For upgrades, see [Self-host upgrade guide](./docs/self-hosting-upgrades.md).
 
-## Local Development / 本地开发
+## Local Development
 
 Prerequisites: Bun 1.3+, Node.js 20+
 
@@ -78,7 +76,7 @@ bun run dev
 - API: `http://localhost:3001`
 - API docs: `http://localhost:3001/api/docs`
 
-### Running Tests / 运行测试
+### Running Tests
 
 ```bash
 # API unit tests (Vitest)
@@ -88,7 +86,7 @@ bun run test
 bun run test:e2e
 ```
 
-## Generic Entries Architecture / 通用条目架构
+## Generic Entries Architecture
 
 MikoshiTracker is built around a schema-driven engine where every domain (habits, meals, …) is an `EntryType` row with a JSON-Schema-validated payload. Adding a new type requires only inserting an `EntryType` row (and, optionally, shipping a Mikoshi skill) — no new tables, services, or endpoints. See [`docs/architecture/generic-entries.md`](./docs/architecture/generic-entries.md) for diagrams and a full walkthrough.
 
@@ -103,7 +101,7 @@ Key components:
 | Aggregations | `apps/api/src/modules/aggregations/` | Declarative SQL engine; sums/streaks/missing-days over any window |
 | Legacy aliases | `apps/api/src/modules/habits/`, `today/` | Thin adapters over the new engine; `/api/habits/*` and `/api/today/*` continue to work |
 
-## API Overview / API 概览
+## API Overview
 
 All endpoints require Bearer token authentication. Generate a personal API token from the web UI under API Access.
 
@@ -144,7 +142,7 @@ All endpoints require Bearer token authentication. Generate a personal API token
 
 Full request/response examples are available at `/api/docs`.
 
-## OpenClaw Native Plugin / OpenClaw 原生插件
+## OpenClaw Native Plugin
 
 MikoshiTracker now ships a native OpenClaw plugin for the OpenClaw host:
 
@@ -162,7 +160,7 @@ Recommended OpenClaw strategy:
 3. If the host also supports workspace Skills, add [`skills/mikoshi-tracker-mcp`](./skills/mikoshi-tracker-mcp/SKILL.md) as optional routing guidance. Do not treat the Skill as the transport layer.
 4. If you only have account credentials, run `npx -y @mikoshi-tracker/mcp bootstrap-token --api-url <...> --email <...>` once, then store the returned personal API token as `MIKOSHI_TRACKER_API_TOKEN`.
 
-## MCP Package / MCP 包
+## MCP Package
 
 MikoshiTracker also ships a standalone MCP package for generic MCP clients:
 
@@ -173,11 +171,11 @@ MikoshiTracker also ships a standalone MCP package for generic MCP clients:
 - Built-in guidance: `mikoshi_tracker_assistant_workflow` prompt and `mikoshi-tracker://guides/workflow` resource
 - Best fit: generic MCP clients, Claude Code MCP, Inspector, one-shot `bootstrap-token`
 
-If the agent also supports repo-local Skills, invoke `$mikoshi-tracker-mcp` for stronger today-first guidance, including bilingual trigger phrases like `今天还剩哪些习惯没做？`, `撤销刚才的打卡。`, or `How am I doing this week?`.
+If the agent also supports repo-local Skills, invoke `$mikoshi-tracker-mcp` for stronger today-first guidance, including multilingual trigger phrases (the app and skill support en / es / zh-CN).
 
-See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md) for the native OpenClaw path, [`packages/mcp/README.md`](./packages/mcp/README.md) for generic MCP hosts, [AI Agent Integration / AI 机器人接入](./docs/ai-agent-integration.md) for host-by-host guidance, and [OpenClaw Troubleshooting](./docs/openclaw-troubleshooting.md) for symptom-driven fixes.
+See [`packages/openclaw-plugin/README.md`](./packages/openclaw-plugin/README.md) for the native OpenClaw path, [`packages/mcp/README.md`](./packages/mcp/README.md) for generic MCP hosts, [AI Agent Integration](./docs/ai-agent-integration.md) for host-by-host guidance, and [OpenClaw Troubleshooting](./docs/openclaw-troubleshooting.md) for symptom-driven fixes.
 
-## Project Structure / 项目结构
+## Project Structure
 
 ```
 apps/
@@ -215,6 +213,6 @@ docs/
   ai-agent-integration.md, openclaw-*.md
 ```
 
-## License / 许可证
+## License
 
 [MIT](./LICENSE)

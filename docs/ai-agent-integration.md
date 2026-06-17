@@ -1,8 +1,6 @@
-# AI Agent Integration / AI 机器人接入
+# AI Agent Integration
 
 This guide explains which MikoshiTracker integration surface to use for each host.
-
-本指南说明不同 host 应该使用哪一种 MikoshiTracker 接入面。
 
 ## Integration Surfaces
 
@@ -116,14 +114,14 @@ This is a Repo-local Skill-aware agent with MCP pattern. It remains useful for C
 
 ## Typical Trigger Phrases
 
-The `mikoshi-tracker-mcp` Skill is intentionally bilingual. Common requests include:
+The `mikoshi-tracker-mcp` Skill is intentionally multilingual (en / es / zh-CN). Common requests include:
 
-- `What should I do today?` / `今天该做什么？`
-- `What habits are still left today?` / `今天还剩哪些习惯没做？`
-- `Mark reading as done.` / `帮我把阅读打卡。`
-- `Set water to 1800 ml today.` / `把喝水记录到 1800 ml。`
-- `Undo the last check-in.` / `撤销刚才的打卡。`
-- `How am I doing this week?` / `我这周做得怎么样？`
+- `What should I do today?`
+- `What habits are still left today?`
+- `Mark reading as done.`
+- `Set water to 1800 ml today.`
+- `Undo the last check-in.`
+- `How am I doing this week?`
 
 For symptom-driven fixes such as `skill visible, tools missing` or startup errors, see [OpenClaw Troubleshooting](./openclaw-troubleshooting.md).
 

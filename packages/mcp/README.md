@@ -122,7 +122,7 @@ npx -y @mikoshi-tracker/mcp bootstrap-token \
 
 If the account already has a personal API token, the helper may require `--force` before rotating it. Keep the returned token in your host secret store and continue using the normal runtime env names only.
 
-For a broader explanation of workspace skills vs MCP transport and host-specific guidance, see [AI Agent Integration / AI 机器人接入](../../docs/ai-agent-integration.md). For symptom-driven fixes such as missing `MIKOSHI_TRACKER_API_TOKEN`, `bootstrap-token`, or skill-visible/tools-missing failures, see [OpenClaw Troubleshooting](../../docs/openclaw-troubleshooting.md). For the milestone-close validation path, see [OpenClaw Validation Checklist](../../docs/openclaw-validation-checklist.md).
+For a broader explanation of workspace skills vs MCP transport and host-specific guidance, see [AI Agent Integration](../../docs/ai-agent-integration.md). For symptom-driven fixes such as missing `MIKOSHI_TRACKER_API_TOKEN`, `bootstrap-token`, or skill-visible/tools-missing failures, see [OpenClaw Troubleshooting](../../docs/openclaw-troubleshooting.md). For the milestone-close validation path, see [OpenClaw Validation Checklist](../../docs/openclaw-validation-checklist.md).
 
 ## Tool Surface
 
@@ -186,15 +186,15 @@ Recommended usage:
 
 If your agent platform supports repo-local Skills, MikoshiTracker also ships both [`.agents/skills/mikoshi-tracker-mcp`](../../.agents/skills/mikoshi-tracker-mcp/SKILL.md) for Codex/Claude-style agents and [`../../skills/mikoshi-tracker-mcp/SKILL.md`](../../skills/mikoshi-tracker-mcp/SKILL.md) for OpenClaw-style workspace skill discovery.
 
-For a broader explanation of when to connect MCP only, how to pair OpenClaw workspace skills with a real MCP runner, and how to explain this to robot operators, see [AI Agent Integration / AI 机器人接入](../../docs/ai-agent-integration.md).
+For a broader explanation of when to connect MCP only, how to pair OpenClaw workspace skills with a real MCP runner, and how to explain this to robot operators, see [AI Agent Integration](../../docs/ai-agent-integration.md).
 
-The `mikoshi-tracker-mcp` Skill is documented as a bilingual trigger layer for Skill-aware agents. Typical requests include:
+The `mikoshi-tracker-mcp` Skill is documented as a multilingual (en / es / zh-CN) trigger layer for Skill-aware agents. Typical requests include:
 
-- `What should I do today?` / `今天该做什么？`
-- `What habits are still left today?` / `今天还剩哪些习惯没做？`
-- `Mark reading as done.` / `帮我把阅读打卡。`
-- `Undo the last check-in.` / `撤销刚才的打卡。`
-- `How am I doing this week?` / `我这周做得怎么样？`
+- `What should I do today?`
+- `What habits are still left today?`
+- `Mark reading as done.`
+- `Undo the last check-in.`
+- `How am I doing this week?`
 
 ## Notes
 
