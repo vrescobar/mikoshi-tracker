@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import type { FastifyInstance } from "fastify";
 
 import { createApp } from "../../src/server";
+import { makePrismaShim } from "./prisma-shim";
 import { makeTestDbPath } from "./test-db";
 
 const TEST_SECRET = "test-secret-with-at-least-thirty-two-characters";
@@ -45,6 +46,10 @@ export async function createTestContext(
       ...envOverrides,
     },
   });
+
+  // Test-only: expose a Prisma-compatible shim over the bun:sqlite layer as
+  // `app.db` so the existing test assertions keep working after Prisma's removal.
+  (app as unknown as { db: unknown }).db = makePrismaShim(app.sqlite);
 
   return {
     app,
