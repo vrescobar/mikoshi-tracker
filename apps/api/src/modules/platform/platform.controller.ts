@@ -266,7 +266,7 @@ export async function identityWebhookHandler(request: FastifyRequest, reply: Fas
 
 /** `file:/abs/path.db?params` → `/abs/path.db`. Null si no es un file URL. */
 function sqliteFilePathFromUrl(url: string | undefined): string | null {
-  if (!url || !url.startsWith("file:")) return null;
+  if (!url?.startsWith("file:")) return null;
   return url.slice("file:".length).split("?")[0] || null;
 }
 

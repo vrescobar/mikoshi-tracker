@@ -64,7 +64,7 @@ export async function resetPersonalApiToken(
 }
 
 export async function findUserByApiToken(db: Db, token: string): Promise<UserRecord | null> {
-  const row = db.get<Record<string, unknown>>(
+  const row = db.get(
     `SELECT u.* FROM "ApiToken" t JOIN "User" u ON u."id" = t."userId" WHERE t."token" = ?`,
     [hashPersonalApiToken(token)],
   );

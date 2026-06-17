@@ -41,7 +41,7 @@ export async function reconcileCircleRoster(
     [circleId],
   );
   const byExternalId = new Map(
-    memberships.filter((m) => m.externalId !== null).map((m) => [m.externalId as string, m]),
+    memberships.filter((m) => m.externalId !== null).map((m) => [m.externalId!, m]),
   );
   const byUserId = new Map(memberships.map((m) => [m.userId, m]));
 
@@ -107,6 +107,6 @@ export async function pullAllCohortCircles(
 ): Promise<void> {
   const circles = db.all<{ id: string; cohortId: string }>(`SELECT "id", "cohortId" FROM "Circle" WHERE "cohortId" IS NOT NULL`);
   for (const circle of circles) {
-    await pullCircleRoster(db, client, { id: circle.id, cohortId: circle.cohortId as string });
+    await pullCircleRoster(db, client, { id: circle.id, cohortId: circle.cohortId });
   }
 }

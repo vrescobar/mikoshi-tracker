@@ -60,7 +60,7 @@ export async function findAdminTokenByValue(db: Db, token: string) {
     `SELECT "id", "label", "revoked" FROM "AdminToken" WHERE "token" = ?`,
     [hashAdminToken(token)],
   );
-  if (!record || record.revoked !== 0) return null;
+  if (record?.revoked !== 0) return null;
   // Best-effort last-used stamp; never block auth on it.
   try {
     db.run(`UPDATE "AdminToken" SET "lastUsedAt" = ? WHERE "id" = ?`, [nowDb(), record.id]);

@@ -68,14 +68,14 @@ export async function sweepMergedIdentities(
 
   const lookups = await Promise.all(
     users.map(async (user) => ({
-      externalId: user.externalId as string,
-      identity: await client.getIdentity(user.externalId as string),
+      externalId: user.externalId,
+      identity: await client.getIdentity(user.externalId),
     })),
   );
 
   const actions: ReconcileAction[] = [];
   for (const { externalId, identity } of lookups) {
-    if (!identity || identity.merged !== true) continue;
+    if (identity?.merged !== true) continue;
     const survivorId = identity.survivorId;
     if (typeof survivorId !== "string" || survivorId.length === 0) continue;
     actions.push(

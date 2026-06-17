@@ -75,7 +75,7 @@ function mapAttachment(r: Record<string, unknown>): AttachmentRecord {
 
 function loadAttachments(db: Db, eventMutationId: string): AttachmentRecord[] {
   return db
-    .all<Record<string, unknown>>(`SELECT * FROM "Attachment" WHERE "eventMutationId" = ?`, [eventMutationId])
+    .all(`SELECT * FROM "Attachment" WHERE "eventMutationId" = ?`, [eventMutationId])
     .map(mapAttachment);
 }
 
@@ -99,7 +99,7 @@ function mapMutation(db: Db, r: Record<string, unknown>): EventMutationWithAttac
 
 function loadMutations(db: Db, eventId: string): EventMutationWithAttachments[] {
   return db
-    .all<Record<string, unknown>>(
+    .all(
       `SELECT * FROM "EventMutation" WHERE "eventId" = ? ORDER BY "createdAt" ASC, "id" ASC`,
       [eventId],
     )
@@ -123,7 +123,7 @@ function mapEvent(db: Db, r: Record<string, unknown>): EventWithMutations {
 }
 
 function loadEvent(db: Db, eventId: string): EventWithMutations | null {
-  const row = db.get<Record<string, unknown>>(`SELECT * FROM "EntryEvent" WHERE "id" = ?`, [eventId]);
+  const row = db.get(`SELECT * FROM "EntryEvent" WHERE "id" = ?`, [eventId]);
   return row ? mapEvent(db, row) : null;
 }
 
@@ -163,7 +163,7 @@ export async function findEventForDate(
   db: Db,
   params: { entryId: string; dateKey: string },
 ): Promise<EventWithMutations | null> {
-  const row = db.get<Record<string, unknown>>(
+  const row = db.get(
     `SELECT * FROM "EntryEvent" WHERE "entryId" = ? AND "dateKey" = ? LIMIT 1`,
     [params.entryId, params.dateKey],
   );
@@ -174,7 +174,7 @@ export async function findOwnedEvent(
   db: Db,
   params: { eventId: string; userId: string },
 ): Promise<EventWithMutations | null> {
-  const row = db.get<Record<string, unknown>>(
+  const row = db.get(
     `SELECT * FROM "EntryEvent" WHERE "id" = ? AND "userId" = ? LIMIT 1`,
     [params.eventId, params.userId],
   );
@@ -228,7 +228,7 @@ export async function listOwnedEvents(
   }
 
   args.push(params.limit + 1);
-  const rows = db.all<Record<string, unknown>>(
+  const rows = db.all(
     `SELECT ee.* FROM "EntryEvent" ee WHERE ${clauses.join(" AND ")}
      ORDER BY ee."occurredAt" DESC, ee."id" DESC LIMIT ?`,
     args,
@@ -349,7 +349,7 @@ export async function createMutationRecord(
       nowDb(),
     ],
   );
-  const row = db.get<Record<string, unknown>>(`SELECT * FROM "EventMutation" WHERE "id" = ?`, [id]);
+  const row = db.get(`SELECT * FROM "EventMutation" WHERE "id" = ?`, [id]);
   if (!row) throw new Error(`EventMutation not found after write: ${id}`);
   return mapMutation(db, row);
 }
