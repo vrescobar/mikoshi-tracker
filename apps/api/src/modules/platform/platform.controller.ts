@@ -143,7 +143,7 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
         await db.user.update({ where: { id: existing.id }, data });
       }
 
-      const { token } = await resetPersonalApiToken(db, existing.id);
+      const { token } = await resetPersonalApiToken(request.server.sqlite, existing.id);
       await applyCohortHints(request, existing.id, input.externalId, input.cohorts);
       reply.status(200);
       return { created: false, userId: existing.id, personalToken: token };
@@ -159,7 +159,7 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
           externalId: input.externalId,
         },
       });
-      const { token } = await resetPersonalApiToken(db, user.id);
+      const { token } = await resetPersonalApiToken(request.server.sqlite, user.id);
       await applyCohortHints(request, user.id, input.externalId, input.cohorts);
 
       reply.status(201);
@@ -177,7 +177,7 @@ export async function platformProvisionHandler(request: FastifyRequest, reply: F
           select: { id: true },
         });
         if (race) {
-          const { token } = await resetPersonalApiToken(db, race.id);
+          const { token } = await resetPersonalApiToken(request.server.sqlite, race.id);
           await applyCohortHints(request, race.id, input.externalId, input.cohorts);
           reply.status(200);
           return { created: false, userId: race.id, personalToken: token };

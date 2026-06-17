@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 import type { PrismaClient } from "../generated/prisma/client";
+import type { Db } from "../db/client";
 import type { AdminOperator } from "../auth/admin-key";
 import type { AuthenticatedUser } from "../auth/session";
 
@@ -14,6 +15,8 @@ export type V1Auth = "bearer" | "admin-key" | "circle" | "public";
  */
 export interface ApiV1Deps {
   db: PrismaClient;
+  /** Native bun:sqlite layer, progressively replacing `db` (Prisma). */
+  sqlite: Db;
 }
 
 /** Auth principal resolved by the pipeline before the handler runs. */

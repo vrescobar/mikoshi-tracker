@@ -22,7 +22,7 @@ async function resolveAuth(
 ): Promise<V1Principal> {
   switch (route.auth) {
     case "bearer": {
-      const { user, impersonatedBy } = await resolveBearerOrImpersonation(request, deps.db);
+      const { user, impersonatedBy } = await resolveBearerOrImpersonation(request, deps.sqlite);
       if (impersonatedBy) {
         request.impersonation = { operator: impersonatedBy, userId: user.id };
       }

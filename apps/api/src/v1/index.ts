@@ -53,15 +53,15 @@ const VERSION = "1";
  * envelope used by resource routes.
  */
 export async function registerV1(app: FastifyInstance): Promise<void> {
-  const deps: ApiV1Deps = { db: app.db };
+  const deps: ApiV1Deps = { db: app.db, sqlite: app.sqlite };
   const routes = buildV1RouteTable(deps);
 
   registerV1Routes(app, deps, routes);
 
-  app.get("/api/v1/openapi.json", async () => generateV1OpenApi(buildV1RouteTable({ db: app.db })));
+  app.get("/api/v1/openapi.json", async () => generateV1OpenApi(buildV1RouteTable({ db: app.db, sqlite: app.sqlite })));
 
   app.get("/api/v1", async () => {
-    const table = buildV1RouteTable({ db: app.db });
+    const table = buildV1RouteTable({ db: app.db, sqlite: app.sqlite });
     const resources = [...new Set(table.map((route) => route.resource))].sort();
     return {
       version: VERSION,

@@ -69,7 +69,7 @@ describe("platform contract namespace", () => {
       expect(user?.name).toBe("Alice");
       expect(user?.timezone).toBe("Europe/Madrid");
       // The token in the response resolves to the created user.
-      const resolved = await findUserByApiToken(context.app.db, personalToken);
+      const resolved = await findUserByApiToken(context.app.sqlite, personalToken);
       expect(resolved?.id).toBe(userId);
     });
 
@@ -103,9 +103,9 @@ describe("platform contract namespace", () => {
 
       // Rotation: the new token wins, the first one is dead.
       expect(secondToken).not.toBe(firstBody.personalToken);
-      const resolvedNew = await findUserByApiToken(context.app.db, secondToken);
+      const resolvedNew = await findUserByApiToken(context.app.sqlite, secondToken);
       expect(resolvedNew?.id).toBe(firstBody.userId);
-      const resolvedOld = await findUserByApiToken(context.app.db, firstBody.personalToken);
+      const resolvedOld = await findUserByApiToken(context.app.sqlite, firstBody.personalToken);
       expect(resolvedOld).toBeNull();
     });
 

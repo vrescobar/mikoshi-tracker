@@ -197,7 +197,7 @@ describe("api token auth", () => {
       },
     });
 
-    await migrateLegacyPersonalApiTokens(context.app.db);
+    await migrateLegacyPersonalApiTokens(context.app.sqlite);
 
     const migratedRecord = await context.app.db.apiToken.findUnique({
       where: {
@@ -209,7 +209,7 @@ describe("api token auth", () => {
     expect(migratedRecord?.token).not.toBe(issuedToken);
     expect(migratedRecord?.token.startsWith("mikoshi_tracker_")).toBe(false);
 
-    const authenticatedUser = await findUserByApiToken(context.app.db, issuedToken);
+    const authenticatedUser = await findUserByApiToken(context.app.sqlite, issuedToken);
     expect(authenticatedUser?.id).toBe(body.user.id);
 
     const habitsResponse = await context.app.inject({

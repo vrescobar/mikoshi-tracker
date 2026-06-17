@@ -145,7 +145,7 @@ export async function provisionUserHandler(request: FastifyRequest, reply: Fasti
         },
       });
 
-      const { token } = await resetPersonalApiToken(request.server.db, user.id);
+      const { token } = await resetPersonalApiToken(request.server.sqlite, user.id);
 
       reply.status(201);
       return { userId: user.id, personalToken: token, alreadyExists: false as const };
@@ -189,7 +189,7 @@ export async function resetProvisionedTokenHandler(request: FastifyRequest, repl
       });
     }
 
-    const { token } = await resetPersonalApiToken(request.server.db, user.id);
+    const { token } = await resetPersonalApiToken(request.server.sqlite, user.id);
 
     return { userId: user.id, personalToken: token };
   } catch (error) {

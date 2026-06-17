@@ -80,7 +80,7 @@ export async function resolveAdminOperator(request: FastifyRequest): Promise<Adm
       return { type: "env", id: "env", label: "root" };
     }
 
-    const named = await findAdminTokenByValue(request.server.db, bearer);
+    const named = await findAdminTokenByValue(request.server.sqlite, bearer);
     if (named) {
       return { type: "token", id: named.tokenId, label: named.label };
     }

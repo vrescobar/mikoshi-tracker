@@ -60,7 +60,7 @@ export async function getAuthenticatedUser(request: FastifyRequest): Promise<Aut
   const bearerToken = getBearerToken(request);
 
   if (bearerToken) {
-    return findUserByApiToken(request.server.db, bearerToken);
+    return findUserByApiToken(request.server.sqlite, bearerToken);
   }
 
   const session = await getSession(request);

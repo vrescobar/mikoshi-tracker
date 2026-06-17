@@ -358,7 +358,7 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       ),
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof adminTokenMintInput>;
-        const result = await createAdminToken(ctx.deps.db, input.label);
+        const result = await createAdminToken(ctx.deps.sqlite, input.label);
         await recordAdminAction(ctx.deps, {
           operator: requireAdminOperator(ctx),
           action: "admin_token.mint",
@@ -392,7 +392,7 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       ),
       handler: async (ctx) => {
         requireAdminOperator(ctx);
-        return { tokens: await listAdminTokens(ctx.deps.db) };
+        return { tokens: await listAdminTokens(ctx.deps.sqlite) };
       },
     },
     {
@@ -407,7 +407,7 @@ export function adminV1Routes(_deps: ApiV1Deps): V1RouteMeta[] {
       outputSchema: envelope(z.object({ revoked: z.boolean() })),
       handler: async (ctx) => {
         const input = ctx.input as z.infer<typeof adminTokenRevokeInput>;
-        const revoked = await revokeAdminToken(ctx.deps.db, input.tokenId);
+        const revoked = await revokeAdminToken(ctx.deps.sqlite, input.tokenId);
         await recordAdminAction(ctx.deps, {
           operator: requireAdminOperator(ctx),
           action: "admin_token.revoke",

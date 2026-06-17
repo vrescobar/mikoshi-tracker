@@ -20,11 +20,14 @@ function makeRequest(
   return {
     headers: { authorization },
     server: {
-      db: {
-        adminToken: {
-          findUnique: () => Promise.resolve(adminToken),
-          update: () => Promise.resolve(undefined),
-        },
+      // findAdminTokenByValue now reads via the bun:sqlite layer; the row shape
+      // mirrors the AdminToken columns (revoked is an INTEGER 0/1).
+      sqlite: {
+        get: () =>
+          adminToken
+            ? { id: adminToken.id, label: adminToken.label, revoked: adminToken.revoked ? 1 : 0 }
+            : null,
+        run: () => ({ changes: 0, lastInsertRowid: 0 }),
       },
       auth: {
         api: {

@@ -1,6 +1,7 @@
 import type { FastifyRequest } from "fastify";
 
-import type { PrismaClient } from "../generated/prisma/client";
+import type { Db } from "../db/client";
+import { getUserById } from "../modules/users/user.repository";
 import { V1ApiError } from "../v1/errors";
 import { getActAsUserId } from "./act-as";
 import { resolveAdminOperator, type AdminOperator } from "./admin-key";
@@ -33,7 +34,7 @@ export interface ResolvedBearerPrincipal {
  */
 export async function resolveBearerOrImpersonation(
   request: FastifyRequest,
-  db: PrismaClient,
+  db: Db,
 ): Promise<ResolvedBearerPrincipal> {
   const actAsUserId = getActAsUserId(request);
 
@@ -42,7 +43,7 @@ export async function resolveBearerOrImpersonation(
   }
 
   const operator = await resolveAdminOperator(request);
-  const user = await db.user.findUnique({ where: { id: actAsUserId } });
+  const user = getUserById(db, actAsUserId);
   if (!user) {
     throw new V1ApiError(404, "NOT_FOUND", `Impersonation target user not found: ${actAsUserId}`);
   }

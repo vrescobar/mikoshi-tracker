@@ -115,7 +115,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
   await registerEnv(app, options.env);
   await registerDb(app, options.prisma);
-  await migrateLegacyPersonalApiTokens(app.db);
+  await migrateLegacyPersonalApiTokens(app.sqlite);
   await registerCors(app);
   await registerSecurity(app);
   await registerMultipart(app);
@@ -154,7 +154,7 @@ export async function createApp(options: CreateAppOptions = {}) {
 
     try {
       await recordAdminAction(
-        { db: app.db },
+        { sqlite: app.sqlite },
         {
           operator: request.impersonation.operator,
           action: `impersonate.legacy.${request.method} ${routePath}`,
@@ -396,7 +396,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.get("/api/api-access/token", async (request, reply) => {
     try {
       const session = await requireSession(request);
-      const currentToken = await getPersonalApiToken(app.db, session.user.id);
+      const currentToken = await getPersonalApiToken(app.sqlite, session.user.id);
 
       return {
         token: null,
@@ -418,7 +418,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   app.post("/api/api-access/token/reset", async (request, reply) => {
     try {
       const session = await requireSession(request);
-      const token = await resetPersonalApiToken(app.db, session.user.id);
+      const token = await resetPersonalApiToken(app.sqlite, session.user.id);
 
       return {
         token: token.token,

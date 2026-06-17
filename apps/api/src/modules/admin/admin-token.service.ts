@@ -1,8 +1,8 @@
 import { getPersonalApiToken, resetPersonalApiToken } from "../../auth/api-token";
-import type { PrismaClient } from "../../generated/prisma/client";
-import { findUserByExternalId } from "../circles/circle.repository";
+import type { Db } from "../../db/client";
+import { getUserByExternalId, getUserById } from "../users/user.repository";
 
-type Deps = { db: PrismaClient };
+type Deps = { sqlite: Db };
 type UserRef = { userId?: string; externalId?: string };
 
 export class AdminUserNotFoundError extends Error {
@@ -12,13 +12,13 @@ export class AdminUserNotFoundError extends Error {
   }
 }
 
-async function resolveUserId(db: PrismaClient, ref: UserRef): Promise<string> {
+function resolveUserId(db: Db, ref: UserRef): string {
   if (ref.userId) {
-    const user = await db.user.findUnique({ where: { id: ref.userId }, select: { id: true } });
+    const user = getUserById(db, ref.userId);
     if (user) return user.id;
   }
   if (ref.externalId) {
-    const user = await findUserByExternalId(db, ref.externalId);
+    const user = getUserByExternalId(db, ref.externalId);
     if (user) return user.id;
   }
   throw new AdminUserNotFoundError();
@@ -29,8 +29,8 @@ async function resolveUserId(db: PrismaClient, ref: UserRef): Promise<string> {
  * plaintext can NEVER be retrieved — only whether one exists and when it changed.
  */
 export async function readUserTokenMeta(deps: Deps, ref: UserRef) {
-  const userId = await resolveUserId(deps.db, ref);
-  const record = await getPersonalApiToken(deps.db, userId);
+  const userId = resolveUserId(deps.sqlite, ref);
+  const record = await getPersonalApiToken(deps.sqlite, userId);
   return {
     userId,
     hasToken: record != null,
@@ -46,8 +46,8 @@ export async function readUserTokenMeta(deps: Deps, ref: UserRef) {
  * creation; an existing token is reported as metadata only (never re-revealed).
  */
 export async function ensureUserToken(deps: Deps, ref: UserRef) {
-  const userId = await resolveUserId(deps.db, ref);
-  const existing = await getPersonalApiToken(deps.db, userId);
+  const userId = resolveUserId(deps.sqlite, ref);
+  const existing = await getPersonalApiToken(deps.sqlite, userId);
   if (existing) {
     return {
       userId,
@@ -57,7 +57,7 @@ export async function ensureUserToken(deps: Deps, ref: UserRef) {
       updatedAt: existing.updatedAt.toISOString(),
     };
   }
-  const minted = await resetPersonalApiToken(deps.db, userId);
+  const minted = await resetPersonalApiToken(deps.sqlite, userId);
   return {
     userId,
     created: true,

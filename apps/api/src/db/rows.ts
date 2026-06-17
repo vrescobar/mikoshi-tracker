@@ -1,4 +1,9 @@
+import { randomUUID } from "node:crypto";
+
 import { z } from "zod";
+
+/** Generate a primary-key id for a new row (Prisma previously used cuid). */
+export const newId = (): string => randomUUID();
 
 /**
  * Column coercions for raw SQLite rows read via bun:sqlite. Prisma's libSQL

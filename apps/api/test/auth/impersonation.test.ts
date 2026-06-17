@@ -8,23 +8,29 @@ import { V1ApiError } from "../../src/v1/errors";
 const ADMIN_KEY = "super-secret-admin-key-for-tests";
 const TARGET_USER = { id: "user_target", name: "Target", email: "t@example.com", timezone: "UTC" };
 
-type DbStub = {
-  user: { findUnique: (args: { where: { id: string } }) => Promise<unknown> };
-  apiToken: { findUnique: (args: unknown) => Promise<unknown> };
-  adminToken: { findUnique: () => Promise<unknown>; update: () => Promise<unknown> };
+// bun:sqlite-shaped stub. `getUserById` and `findUserByApiToken` both go through
+// `.get(sql, params)`; we branch on the SQL so impersonation (User by id) and the
+// personal-token fallback (ApiToken join) resolve independently.
+type SqliteStub = {
+  get: (sql: string, params?: unknown[]) => unknown;
+  run: () => { changes: number; lastInsertRowid: number };
 };
 
-function makeDb(overrides: Partial<DbStub> = {}): DbStub {
+function makeDb(opts: { apiTokenUser?: { id: string; name: string } | null } = {}): SqliteStub {
   return {
-    user: { findUnique: ({ where }) => Promise.resolve(where.id === TARGET_USER.id ? TARGET_USER : null) },
-    apiToken: { findUnique: () => Promise.resolve(null) },
-    adminToken: { findUnique: () => Promise.resolve(null), update: () => Promise.resolve(undefined) },
-    ...overrides,
+    get: (sql: string, params?: unknown[]) => {
+      if (sql.includes('"ApiToken"')) {
+        return opts.apiTokenUser ?? null;
+      }
+      // getUserById: SELECT * FROM "User" WHERE id = ?
+      return params?.[0] === TARGET_USER.id ? TARGET_USER : null;
+    },
+    run: () => ({ changes: 0, lastInsertRowid: 0 }),
   };
 }
 
-function makeRequest(headers: Record<string, string | undefined>, db: DbStub): FastifyRequest {
-  return { headers, server: { db } } as unknown as FastifyRequest;
+function makeRequest(headers: Record<string, string | undefined>, db: SqliteStub): FastifyRequest {
+  return { headers, server: { sqlite: db } } as unknown as FastifyRequest;
 }
 
 describe("resolveBearerOrImpersonation", () => {
@@ -63,9 +69,7 @@ describe("resolveBearerOrImpersonation", () => {
 
   it("ignores a blank act-as header and falls back to ordinary user auth", async () => {
     // A personal token resolves through findUserByApiToken (db.apiToken.findUnique → { user }).
-    const db = makeDb({
-      apiToken: { findUnique: () => Promise.resolve({ user: { id: "user_self", name: "Self" } }) },
-    });
+    const db = makeDb({ apiTokenUser: { id: "user_self", name: "Self" } });
     const request = makeRequest({ authorization: "Bearer mikoshi_tracker_personal", [ACT_AS_HEADER]: "   " }, db);
 
     const result = await resolveBearerOrImpersonation(request, db as never);
@@ -75,9 +79,7 @@ describe("resolveBearerOrImpersonation", () => {
   });
 
   it("falls back to ordinary user auth when no act-as header is present", async () => {
-    const db = makeDb({
-      apiToken: { findUnique: () => Promise.resolve({ user: { id: "user_self", name: "Self" } }) },
-    });
+    const db = makeDb({ apiTokenUser: { id: "user_self", name: "Self" } });
     const request = makeRequest({ authorization: "Bearer mikoshi_tracker_personal" }, db);
 
     const result = await resolveBearerOrImpersonation(request, db as never);

@@ -1,7 +1,8 @@
 import type { AdminOperator } from "../../auth/admin-key";
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
 
-type Deps = { db: PrismaClient };
+type Deps = { sqlite: Db };
 
 /**
  * Append a row to the god-mode audit trail. Best-effort by design at the call
@@ -18,17 +19,22 @@ export async function recordAdminAction(
     metadata?: unknown;
   },
 ): Promise<void> {
-  await deps.db.adminAuditLog.create({
-    data: {
-      actorType: params.operator.type,
-      actorId: params.operator.id,
-      actorLabel: params.operator.label,
-      action: params.action,
-      targetType: params.targetType ?? null,
-      targetId: params.targetId ?? null,
-      metadata: params.metadata !== undefined ? JSON.stringify(params.metadata) : null,
-    },
-  });
+  deps.sqlite.run(
+    `INSERT INTO "AdminAuditLog"
+       ("id", "actorType", "actorId", "actorLabel", "action", "targetType", "targetId", "metadata", "createdAt")
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      newId(),
+      params.operator.type,
+      params.operator.id,
+      params.operator.label,
+      params.action,
+      params.targetType ?? null,
+      params.targetId ?? null,
+      params.metadata !== undefined ? JSON.stringify(params.metadata) : null,
+      nowDb(),
+    ],
+  );
 }
 
 export async function listAdminAuditLog(
@@ -48,16 +54,24 @@ export async function listAdminAuditLog(
   }[];
   total: number;
 }> {
-  const where = params.action ? { action: params.action } : {};
-  const [rows, total] = await Promise.all([
-    deps.db.adminAuditLog.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      take: params.limit ?? 100,
-      skip: params.offset ?? 0,
-    }),
-    deps.db.adminAuditLog.count({ where }),
-  ]);
+  const limit = params.limit ?? 100;
+  const offset = params.offset ?? 0;
+
+  const rows = params.action
+    ? deps.sqlite.all<AuditRow>(
+        `SELECT * FROM "AdminAuditLog" WHERE "action" = ? ORDER BY "createdAt" DESC LIMIT ? OFFSET ?`,
+        [params.action, limit, offset],
+      )
+    : deps.sqlite.all<AuditRow>(`SELECT * FROM "AdminAuditLog" ORDER BY "createdAt" DESC LIMIT ? OFFSET ?`, [
+        limit,
+        offset,
+      ]);
+
+  const total = params.action
+    ? (deps.sqlite.get<{ c: number }>(`SELECT COUNT(*) AS c FROM "AdminAuditLog" WHERE "action" = ?`, [params.action])
+        ?.c ?? 0)
+    : (deps.sqlite.get<{ c: number }>(`SELECT COUNT(*) AS c FROM "AdminAuditLog"`)?.c ?? 0);
+
   return {
     items: rows.map((r) => ({
       id: r.id,
@@ -68,8 +82,20 @@ export async function listAdminAuditLog(
       targetType: r.targetType,
       targetId: r.targetId,
       metadata: r.metadata != null ? (JSON.parse(r.metadata) as unknown) : null,
-      createdAt: r.createdAt.toISOString(),
+      createdAt: new Date(r.createdAt).toISOString(),
     })),
     total,
   };
 }
+
+type AuditRow = {
+  id: string;
+  actorType: string;
+  actorId: string | null;
+  actorLabel: string | null;
+  action: string;
+  targetType: string | null;
+  targetId: string | null;
+  metadata: string | null;
+  createdAt: string;
+};
