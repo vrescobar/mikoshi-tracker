@@ -1,4 +1,5 @@
-import type { PrismaClient } from "../../generated/prisma/client";
+import type { Db } from "../../db/client";
+import { newId, nowDb } from "../../db/rows";
 
 const HABIT_BOOLEAN_PAYLOAD_SCHEMA = JSON.stringify({
   type: "object",
@@ -397,15 +398,33 @@ const BUILT_IN_ENTRY_TYPES: Array<{
   },
 ];
 
-export async function seedBuiltInEntryTypes(db: PrismaClient): Promise<void> {
+export async function seedBuiltInEntryTypes(db: Db): Promise<void> {
+  const now = nowDb();
   for (const type of BUILT_IN_ENTRY_TYPES) {
-    await db.entryType.upsert({
-      where: { slug: type.slug },
-      create: type,
-      // Keep the aggregations spec + configSchema in sync so additive schema
-      // changes (e.g. food_meal.dailyKcalTarget) are picked up on existing
-      // deployments without requiring a separate data migration.
-      update: { aggregations: type.aggregations, configSchema: type.configSchema },
-    });
+    // Keep the aggregations spec + configSchema in sync so additive schema
+    // changes (e.g. food_meal.dailyKcalTarget) are picked up on existing
+    // deployments without requiring a separate data migration.
+    db.run(
+      `INSERT INTO "EntryType"
+         ("id", "slug", "displayName", "cadence", "payloadSchema", "configSchema", "aggregations", "skillSlug", "isBuiltIn", "isActive", "createdAt", "updatedAt")
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+       ON CONFLICT("slug") DO UPDATE SET
+         "aggregations" = excluded."aggregations",
+         "configSchema" = excluded."configSchema",
+         "updatedAt" = excluded."updatedAt"`,
+      [
+        newId(),
+        type.slug,
+        type.displayName,
+        type.cadence,
+        type.payloadSchema,
+        type.configSchema,
+        type.aggregations,
+        type.skillSlug ?? null,
+        type.isBuiltIn ? 1 : 0,
+        now,
+        now,
+      ],
+    );
   }
 }

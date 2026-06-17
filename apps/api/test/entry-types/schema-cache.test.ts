@@ -12,7 +12,7 @@ describe("schema-cache", () => {
 
   beforeEach(async () => {
     context = await createTestContext();
-    await seedBuiltInEntryTypes(context.app.db);
+    await seedBuiltInEntryTypes(context.app.sqlite);
     invalidateSchemaCache();
   });
 

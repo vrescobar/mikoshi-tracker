@@ -18,7 +18,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("inserts the built-in entry type slugs", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const types = await context!.app.db.entryType.findMany({
       select: { slug: true },
@@ -37,7 +37,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("stores payloadSchemas that parse as valid JSON Schema objects", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const types = await context!.app.db.entryType.findMany({
       orderBy: { slug: "asc" },
@@ -52,7 +52,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("marks all built-ins as isBuiltIn and isActive", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const notBuiltIn = await context!.app.db.entryType.findMany({
       where: { isBuiltIn: false },
@@ -66,15 +66,15 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("is idempotent — calling twice leaves exactly 8 rows", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const count = await context!.app.db.entryType.count();
     expect(count).toBe(8);
   });
 
   it("seeds diet_goal / food_item / diet_prefs as food-skill diet types", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const [goal, item, prefs] = await Promise.all([
       context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "diet_goal" } }),
@@ -94,7 +94,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("seeds the temptation journal as an event_log type with a resistedValue sum field", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const temptation = await context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "temptation" } });
     expect(temptation.cadence).toBe("event_log");
@@ -104,7 +104,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("seeds food_meal with skillSlug mikoshi-tracker-food and cadence event_log", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const foodMeal = await context!.app.db.entryType.findUniqueOrThrow({
       where: { slug: "food_meal" },
@@ -115,7 +115,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("seeds habit_boolean and habit_quantity with cadence recurring", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const [boolean_, quantity] = await Promise.all([
       context!.app.db.entryType.findUniqueOrThrow({ where: { slug: "habit_boolean" } }),
@@ -129,7 +129,7 @@ describe("seedBuiltInEntryTypes", () => {
   });
 
   it("seeds weight_log with event_log cadence, no skill, and correct payload schema", async () => {
-    await seedBuiltInEntryTypes(context!.app.db);
+    await seedBuiltInEntryTypes(context!.app.sqlite);
 
     const weightLog = await context!.app.db.entryType.findUniqueOrThrow({
       where: { slug: "weight_log" },

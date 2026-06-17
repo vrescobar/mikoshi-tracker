@@ -124,7 +124,7 @@ export async function createApp(options: CreateAppOptions = {}) {
   await registerPlatformRoutes(app);
   await registerHabitRoutes(app);
   invalidateSchemaCache();
-  await seedBuiltInEntryTypes(app.db);
+  await seedBuiltInEntryTypes(app.sqlite);
   await registerEntryTypeRoutes(app);
   await registerEntryRoutes(app);
   await registerEventRoutes(app);
