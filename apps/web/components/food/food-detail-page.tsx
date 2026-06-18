@@ -163,6 +163,10 @@ function PhotoSection({
   copy: ReturnType<typeof getFoodCopy>["detail"]["photo"];
 }) {
   const images = attachments.filter((a) => a.kind === "image");
+  // Track images whose bytes fail to load (e.g. the file endpoint 404s because
+  // the stored file is missing) so we can show a calm placeholder instead of the
+  // browser's broken-image icon.
+  const [failedIds, setFailedIds] = useState<ReadonlySet<string>>(() => new Set());
 
   return (
     <div className={styles.section}>
@@ -176,6 +180,16 @@ function PhotoSection({
             // endpoint is served `immutable`) can't pin a stale/empty body to the
             // bare URL — the cache key changes when the bytes do.
             const src = `${attachmentFileUrl(img.id)}?v=${img.size}`;
+            if (failedIds.has(img.id)) {
+              return (
+                <div key={img.id} className={styles.photoMissing} role="img" aria-label={copy.unavailable}>
+                  <span aria-hidden="true" className={styles.photoMissingIcon}>
+                    🖼️
+                  </span>
+                  <span className={styles.photoMissingText}>{copy.unavailable}</span>
+                </div>
+              );
+            }
             return (
               <a key={img.id} href={src} target="_blank" rel="noreferrer" className={styles.photoLink}>
                 <img
@@ -184,6 +198,14 @@ function PhotoSection({
                   className={styles.photo}
                   width={img.width ?? undefined}
                   height={img.height ?? undefined}
+                  onError={() =>
+                    setFailedIds((prev) => {
+                      if (prev.has(img.id)) return prev;
+                      const next = new Set(prev);
+                      next.add(img.id);
+                      return next;
+                    })
+                  }
                 />
               </a>
             );

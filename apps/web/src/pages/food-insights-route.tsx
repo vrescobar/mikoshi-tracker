@@ -12,7 +12,7 @@ import type { AggregationResponse } from "@mikoshi-tracker/contracts/aggregation
 import type { EntryEventRecord } from "@mikoshi-tracker/contracts/events";
 
 /** Port of app/(app)/food/insights/page.tsx (searchParams: from, to). */
-export default function FoodInsightsRoute() {
+export default function FoodInsightsRoute({ embedded = false }: { embedded?: boolean } = {}) {
   const { timezone } = useSession();
   const [searchParams] = useSearchParams();
 
@@ -48,6 +48,7 @@ export default function FoodInsightsRoute() {
           initialFrom={from}
           initialTo={to}
           goalKcalTarget={data.goalKcalTarget}
+          embedded={embedded}
         />
       )}
     </PageBoundary>

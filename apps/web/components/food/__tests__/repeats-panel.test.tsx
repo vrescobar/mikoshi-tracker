@@ -38,6 +38,7 @@ const COPY = {
   logging: "Logging…",
   errorTitle: "Could not log meal",
   countLabel: (count: number) => `${count}×`,
+  variantsLabel: (count: number) => `includes ${count} variations`,
 };
 
 function buildAgg(rows: Array<{ name: string; count: number; kcal: number }>): AggregationResponse {

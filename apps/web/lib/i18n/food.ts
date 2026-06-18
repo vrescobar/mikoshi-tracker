@@ -35,6 +35,7 @@ export type FoodCopy = {
       logAgain: string;
       logging: string;
       errorTitle: string;
+      variantsLabel: (count: number) => string;
     };
   };
   today: {
@@ -76,6 +77,7 @@ export type FoodCopy = {
     photo: {
       title: string;
       noPhoto: string;
+      unavailable: string;
     };
     fields: {
       name: string;
@@ -248,10 +250,17 @@ export type FoodCopy = {
       emptyState: string;
       timesLabel: (count: number) => string;
     };
-    missingDays: {
+    consistency: {
       title: string;
       description: string;
-      emptyState: string;
+      daysLoggedValue: (logged: number, total: number) => string;
+      daysLoggedLabel: string;
+      rateLabel: string;
+      streakValue: (days: number) => string;
+      streakLabel: string;
+      legendLogged: string;
+      legendMissing: string;
+      dailyOnly: string;
     };
   };
 };
@@ -292,6 +301,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         logAgain: "Log again",
         logging: "Logging…",
         errorTitle: "Could not log meal",
+        variantsLabel: (count) => `includes ${count} variations`,
       },
     },
     today: {
@@ -333,6 +343,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photo: {
         title: "Photo",
         noPhoto: "No photo attached.",
+        unavailable: "Photo unavailable — the file could not be loaded.",
       },
       fields: {
         name: "Name",
@@ -506,10 +517,17 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         emptyState: "No repeated meals in this range.",
         timesLabel: (count) => `${count}×`,
       },
-      missingDays: {
-        title: "Days without data",
-        description: "Days in the selected range with no food logged.",
-        emptyState: "Every day in this range has at least one entry.",
+      consistency: {
+        title: "Logging consistency",
+        description: "How steadily you logged across the range.",
+        daysLoggedValue: (logged, total) => `${logged} / ${total}`,
+        daysLoggedLabel: "days logged",
+        rateLabel: "logging rate",
+        streakValue: (days) => (days === 1 ? "1 day" : `${days} days`),
+        streakLabel: "current streak",
+        legendLogged: "Logged",
+        legendMissing: "No data",
+        dailyOnly: "Switch to the daily view to see the timeline.",
       },
     },
   },
@@ -548,6 +566,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         logAgain: "再记一次",
         logging: "记录中…",
         errorTitle: "无法记录餐食",
+        variantsLabel: (count) => `包含 ${count} 种写法`,
       },
     },
     today: {
@@ -589,6 +608,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photo: {
         title: "照片",
         noPhoto: "没有附加照片。",
+        unavailable: "照片无法显示 —— 文件加载失败。",
       },
       fields: {
         name: "名称",
@@ -761,10 +781,17 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         emptyState: "该范围内没有重复餐食。",
         timesLabel: (count) => `${count} 次`,
       },
-      missingDays: {
-        title: "未记录日期",
-        description: "所选范围内没有饮食记录的天数。",
-        emptyState: "该范围内每天都有至少一条记录。",
+      consistency: {
+        title: "记录连续度",
+        description: "在该时间范围内记录的稳定程度。",
+        daysLoggedValue: (logged, total) => `${logged} / ${total}`,
+        daysLoggedLabel: "天已记录",
+        rateLabel: "记录率",
+        streakValue: (days) => `${days} 天`,
+        streakLabel: "当前连续",
+        legendLogged: "已记录",
+        legendMissing: "无数据",
+        dailyOnly: "切换到「日」视图即可查看时间线。",
       },
     },
   },
@@ -803,6 +830,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         logAgain: "Registrar de nuevo",
         logging: "Registrando…",
         errorTitle: "No se pudo registrar la comida",
+        variantsLabel: (count) => `incluye ${count} variantes`,
       },
     },
     today: {
@@ -844,6 +872,7 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
       photo: {
         title: "Foto",
         noPhoto: "Sin foto adjunta.",
+        unavailable: "Foto no disponible — no se pudo cargar el archivo.",
       },
       fields: {
         name: "Nombre",
@@ -1018,10 +1047,17 @@ const foodCopy: Record<SupportedLocale, FoodCopy> = {
         emptyState: "No hay comidas repetidas en este rango.",
         timesLabel: (count) => `${count}×`,
       },
-      missingDays: {
-        title: "Días sin datos",
-        description: "Días en el rango seleccionado sin ninguna comida registrada.",
-        emptyState: "Todos los días en este rango tienen al menos una entrada.",
+      consistency: {
+        title: "Constancia de registro",
+        description: "Con qué regularidad registraste en el rango.",
+        daysLoggedValue: (logged, total) => `${logged} / ${total}`,
+        daysLoggedLabel: "días registrados",
+        rateLabel: "tasa de registro",
+        streakValue: (days) => (days === 1 ? "1 día" : `${days} días`),
+        streakLabel: "racha actual",
+        legendLogged: "Registrado",
+        legendMissing: "Sin datos",
+        dailyOnly: "Cambia a la vista diaria para ver la línea de tiempo.",
       },
     },
   },

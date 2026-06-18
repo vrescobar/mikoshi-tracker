@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 
 import type { FoodPayload } from "../../lib/food-client";
 import { getFoodAggregations, isFoodPayload, listFoodEvents } from "../../lib/food-client";
+import { groupSimilarMeals } from "../../lib/food-grouping";
 import { shiftDays } from "../../lib/dates";
 import { getFoodCopy } from "../../lib/i18n/food";
 import { routes } from "../../lib/navigation";
@@ -23,6 +24,12 @@ type FoodInsightsPageProps = {
   initialTo: string;
   /** Active daily kcal goal, used for the goal reference line. */
   goalKcalTarget?: number | null;
+  /**
+   * Rendered inside the Diet → Explore tab rather than as the standalone
+   * /food/insights page. Drops the page chrome (back link, hero header) and the
+   * static repeated-meals list (the Explore tab's Favourites panel covers it).
+   */
+  embedded?: boolean;
 };
 
 function normalizeName(name: string) {
@@ -36,6 +43,7 @@ type RepeatedMeal = {
 };
 
 export function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[] {
+  // Stage 1 — tally exact occurrences by normalized name.
   const counts = new Map<string, { count: number; lastDate: string; display: string }>();
   for (const ev of events) {
     if (!isFoodPayload(ev.payload)) continue;
@@ -50,10 +58,23 @@ export function computeRepeatedMeals(events: EntryEventRecord[]): RepeatedMeal[]
       counts.set(key, { count: 1, lastDate: date, display: p.name });
     }
   }
-  return Array.from(counts.values())
+
+  // Stage 2 — fold near-identical product spellings into one family, keeping the
+  // most-logged spelling as the label.
+  const clusters = groupSimilarMeals(Array.from(counts.values()), (v) => v.display);
+  return clusters
+    .map((members): RepeatedMeal => {
+      const representative = [...members].sort(
+        (a, b) => b.count - a.count || a.display.length - b.display.length,
+      )[0];
+      return {
+        name: representative.display,
+        count: members.reduce((sum, m) => sum + m.count, 0),
+        lastDate: members.reduce((latest, m) => (m.lastDate > latest ? m.lastDate : latest), ""),
+      };
+    })
     .filter((v) => v.count > 1)
-    .sort((a, b) => b.count - a.count)
-    .map((v) => ({ name: v.display, count: v.count, lastDate: v.lastDate }));
+    .sort((a, b) => b.count - a.count);
 }
 
 export function getMissingDays(buckets: AggregationBucket[]): string[] {
@@ -84,6 +105,7 @@ export function FoodInsightsPage({
   initialFrom,
   initialTo,
   goalKcalTarget = null,
+  embedded = false,
 }: FoodInsightsPageProps) {
   const { locale } = useLocale();
   const copy = getFoodCopy(locale).insights;
@@ -134,7 +156,24 @@ export function FoodInsightsPage({
   }
 
   const repeatedMeals = computeRepeatedMeals(events);
-  const missingDays = aggregations ? getMissingDays(aggregations.buckets) : [];
+
+  // Logging-consistency widget: a per-day timeline of logged/missing days plus
+  // a headline metric and current streak. Only day-granularity buckets carry a
+  // per-day missing flag; week/month roll many days into one bucket.
+  const consistencyDays =
+    aggregations && granularity === "day"
+      ? aggregations.buckets
+          .filter((b) => b.key.kind === "date")
+          .map((b) => ({ date: b.key.kind === "date" ? b.key.value : "", logged: !b.missing }))
+      : [];
+  const totalDays = consistencyDays.length;
+  const loggedDays = consistencyDays.filter((d) => d.logged).length;
+  const loggingRate = totalDays > 0 ? Math.round((loggedDays / totalDays) * 100) : 0;
+  let currentStreak = 0;
+  for (let i = consistencyDays.length - 1; i >= 0; i--) {
+    if (consistencyDays[i].logged) currentStreak += 1;
+    else break;
+  }
 
   const intakeData = aggregations ? bucketsToIntakeData(aggregations.buckets, granularity, locale) : [];
   const loggedBuckets = intakeData.filter((d) => !d.missing && d.kcal > 0).length;
@@ -145,18 +184,8 @@ export function FoodInsightsPage({
   // Goal line only makes sense per-day; weekly/monthly buckets sum many days.
   const chartTarget = granularity === "day" ? goalKcalTarget : null;
 
-  return (
-    <div className={styles.stack} data-testid="food-insights-page">
-      <Surface variant="hero">
-        <PageFrame>
-          <div className={styles.backRow}>
-            <Link to={routes.food} className={styles.backLink}>
-              ← {getFoodCopy(locale).detail.backToFood.replace("← ", "")}
-            </Link>
-          </div>
-          <PageHeader eyebrow={copy.header.eyebrow} title={copy.header.title} description={copy.header.description} />
-
-          <Surface variant="soft" padding="md" className={styles.rangePanel}>
+  const rangeControls = (
+    <Surface variant="soft" padding="md" className={styles.rangePanel}>
             <div className={styles.controlsRow}>
               <div className={styles.controlGroup} role="group" aria-label={copy.controls.rangeLabel}>
                 <span className={styles.controlLabel}>{copy.controls.rangeLabel}</span>
@@ -222,15 +251,36 @@ export function FoodInsightsPage({
                 </Button>
               </div>
             </div>
-          </Surface>
+    </Surface>
+  );
 
-          {error ? (
-            <InlineStatus tone="danger" title="Error">
-              {error}
-            </InlineStatus>
-          ) : null}
-        </PageFrame>
-      </Surface>
+  return (
+    <div className={styles.stack} data-testid="food-insights-page">
+      {embedded ? (
+        rangeControls
+      ) : (
+        <Surface variant="hero">
+          <PageFrame>
+            <div className={styles.backRow}>
+              <Link to={routes.food} className={styles.backLink}>
+                ← {getFoodCopy(locale).detail.backToFood.replace("← ", "")}
+              </Link>
+            </div>
+            <PageHeader
+              eyebrow={copy.header.eyebrow}
+              title={copy.header.title}
+              description={copy.header.description}
+            />
+            {rangeControls}
+          </PageFrame>
+        </Surface>
+      )}
+
+      {error ? (
+        <InlineStatus tone="danger" title="Error">
+          {error}
+        </InlineStatus>
+      ) : null}
 
       <div className={styles.sections}>
         {/* Summary */}
@@ -308,39 +358,77 @@ export function FoodInsightsPage({
           )}
         </div>
 
-        {/* Repeated meals */}
-        <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>{copy.repeatedMeals.title}</h2>
-          <p className={styles.muted}>{copy.repeatedMeals.description}</p>
-          {repeatedMeals.length === 0 ? (
-            <p className={styles.emptyState}>{copy.repeatedMeals.emptyState}</p>
-          ) : (
-            <div className={styles.repeatedList}>
-              {repeatedMeals.map((meal) => (
-                <div key={meal.name} className={styles.repeatedRow}>
-                  <span className={styles.repeatedName}>{meal.name}</span>
-                  <span className={styles.repeatedCount}>{copy.repeatedMeals.timesLabel(meal.count)}</span>
-                  <span className={styles.repeatedDate}>{formatDate(meal.lastDate, locale)}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Repeated meals — standalone only; the Explore tab's Favourites panel
+            (RepeatsPanel) is the actionable version of this list. */}
+        {!embedded ? (
+          <div className={styles.section}>
+            <h2 className={styles.sectionTitle}>{copy.repeatedMeals.title}</h2>
+            <p className={styles.muted}>{copy.repeatedMeals.description}</p>
+            {repeatedMeals.length === 0 ? (
+              <p className={styles.emptyState}>{copy.repeatedMeals.emptyState}</p>
+            ) : (
+              <div className={styles.repeatedList}>
+                {repeatedMeals.map((meal) => (
+                  <div key={meal.name} className={styles.repeatedRow}>
+                    <span className={styles.repeatedName}>{meal.name}</span>
+                    <span className={styles.repeatedCount}>{copy.repeatedMeals.timesLabel(meal.count)}</span>
+                    <span className={styles.repeatedDate}>{formatDate(meal.lastDate, locale)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
 
-        {/* Missing days */}
+        {/* Logging consistency — replaces the old flat "days without data" list
+            with a headline metric + a per-day timeline strip. */}
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>{copy.missingDays.title}</h2>
-          <p className={styles.muted}>{copy.missingDays.description}</p>
-          {missingDays.length === 0 ? (
-            <p className={styles.emptyState}>{copy.missingDays.emptyState}</p>
+          <h2 className={styles.sectionTitle}>{copy.consistency.title}</h2>
+          <p className={styles.muted}>{copy.consistency.description}</p>
+          {totalDays === 0 ? (
+            <p className={styles.emptyState}>{copy.consistency.dailyOnly}</p>
           ) : (
-            <ul className={styles.missingList}>
-              {missingDays.map((day) => (
-                <li key={day} className={styles.missingDay}>
-                  {formatDate(day, locale)}
-                </li>
-              ))}
-            </ul>
+            <>
+              <div className={styles.consistencyMetrics}>
+                <div className={styles.summaryFact}>
+                  <span className={styles.summaryValue}>
+                    {copy.consistency.daysLoggedValue(loggedDays, totalDays)}
+                  </span>
+                  <span className={styles.summaryLabel}>{copy.consistency.daysLoggedLabel}</span>
+                </div>
+                <div className={styles.summaryFact}>
+                  <span className={styles.summaryValue}>{loggingRate}%</span>
+                  <span className={styles.summaryLabel}>{copy.consistency.rateLabel}</span>
+                </div>
+                <div className={styles.summaryFact}>
+                  <span className={styles.summaryValue}>{copy.consistency.streakValue(currentStreak)}</span>
+                  <span className={styles.summaryLabel}>{copy.consistency.streakLabel}</span>
+                </div>
+              </div>
+              <div className={styles.timeline} role="img" aria-label={copy.consistency.title}>
+                {consistencyDays.map((d) => (
+                  <span
+                    key={d.date}
+                    className={`${styles.timelineCell} ${
+                      d.logged ? styles.timelineLogged : styles.timelineMissing
+                    }`}
+                    title={`${formatDate(d.date, locale)} · ${
+                      d.logged ? copy.consistency.legendLogged : copy.consistency.legendMissing
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className={styles.timelineLegend}>
+                <span className={styles.legendItem}>
+                  <span className={`${styles.legendSwatch} ${styles.timelineLogged}`} />
+                  {copy.consistency.legendLogged}
+                </span>
+                <span className={styles.legendItem}>
+                  <span className={`${styles.legendSwatch} ${styles.timelineMissing}`} />
+                  {copy.consistency.legendMissing}
+                </span>
+              </div>
+            </>
           )}
         </div>
       </div>

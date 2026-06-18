@@ -45,6 +45,15 @@ export default function FoodExploreRoute() {
         <FoodSearchBox onLogged={() => setReloadKey((k) => k + 1)} />
       </section>
 
+      <section className={styles.section} aria-label={copy.explore.historyTitle}>
+        <h3 className={styles.sectionTitle}>{copy.explore.historyTitle}</h3>
+        <Surface variant="panel" padding="md">
+          <Suspense fallback={<SkeletonBlock height="16rem" />}>
+            <FoodInsightsRoute embedded />
+          </Suspense>
+        </Surface>
+      </section>
+
       <section className={styles.section} aria-label={copy.explore.favoritesTitle}>
         <h3 className={styles.sectionTitle}>{copy.explore.favoritesTitle}</h3>
         <PageBoundary state={state}>
@@ -59,20 +68,12 @@ export default function FoodExploreRoute() {
                 logging: copy.page.repeats.logging,
                 errorTitle: copy.page.repeats.errorTitle,
                 countLabel: (count) => `${count}×`,
+                variantsLabel: copy.page.repeats.variantsLabel,
               }}
               onLogged={() => setReloadKey((k) => k + 1)}
             />
           )}
         </PageBoundary>
-      </section>
-
-      <section className={styles.section} aria-label={copy.explore.historyTitle}>
-        <h3 className={styles.sectionTitle}>{copy.explore.historyTitle}</h3>
-        <Surface variant="panel" padding="md">
-          <Suspense fallback={<SkeletonBlock height="16rem" />}>
-            <FoodInsightsRoute />
-          </Suspense>
-        </Surface>
       </section>
     </div>
   );

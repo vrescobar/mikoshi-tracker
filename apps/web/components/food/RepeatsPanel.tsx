@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 
 import type { FoodPayload } from "../../lib/food-client";
 import { createFoodEvent, ensureFoodEntry, isFoodPayload } from "../../lib/food-client";
+import { groupSimilarMeals } from "../../lib/food-grouping";
 import { Button, Notice } from "../ui";
 
 import styles from "./RepeatsPanel.module.css";
@@ -16,6 +17,8 @@ type RepeatsCopy = {
   logging: string;
   errorTitle: string;
   countLabel: (count: number) => string;
+  /** Subline shown when a row bundles several spellings of the same product. */
+  variantsLabel: (count: number) => string;
 };
 
 type Props = {
@@ -29,23 +32,43 @@ type RepeatRow = {
   count: number;
   totalKcal: number;
   sample: FoodPayload;
+  /** How many distinct spellings of this product were folded into the row. */
+  variantCount: number;
 };
 
 function buildRows(agg: AggregationResponse | null): RepeatRow[] {
   if (!agg) return [];
-  const rows: RepeatRow[] = [];
+  const raw: RepeatRow[] = [];
   for (const bucket of agg.buckets) {
     if (bucket.key.kind !== "payload") continue;
     const sample = bucket.key.sample;
     if (!isFoodPayload(sample)) continue;
-    rows.push({
+    raw.push({
       name: sample.name,
       count: bucket.count,
       totalKcal: bucket.sum.kcal ?? 0,
       sample,
+      variantCount: 1,
     });
   }
-  return rows;
+
+  // Fold near-identical product spellings (e.g. the several "yfood …" names)
+  // into a single routine row: combined count, the most-logged variant as the
+  // label/relog target, and a count of how many spellings were merged.
+  const clusters = groupSimilarMeals(raw, (r) => r.name);
+  const merged = clusters.map((members): RepeatRow => {
+    const representative = [...members].sort(
+      (a, b) => b.count - a.count || a.name.length - b.name.length,
+    )[0];
+    return {
+      name: representative.name,
+      sample: representative.sample,
+      count: members.reduce((sum, m) => sum + m.count, 0),
+      totalKcal: members.reduce((sum, m) => sum + m.totalKcal, 0),
+      variantCount: members.length,
+    };
+  });
+  return merged.sort((a, b) => b.count - a.count);
 }
 
 export function RepeatsPanel({ aggregations, copy, onLogged }: Props) {
@@ -96,8 +119,13 @@ export function RepeatsPanel({ aggregations, copy, onLogged }: Props) {
           {rows.map((row) => (
             <li key={row.name} className={styles.row} data-testid="repeats-row">
               <div className={styles.meta}>
-                <span className={styles.name}>{row.sample.name}</span>
-                <span className={styles.count}>{copy.countLabel(row.count)}</span>
+                <div className={styles.nameRow}>
+                  <span className={styles.name}>{row.sample.name}</span>
+                  <span className={styles.count}>{copy.countLabel(row.count)}</span>
+                </div>
+                {row.variantCount > 1 ? (
+                  <span className={styles.variants}>{copy.variantsLabel(row.variantCount)}</span>
+                ) : null}
               </div>
               <Button
                 type="button"

@@ -209,24 +209,54 @@
   white-space: nowrap;
 }
 
-/* Missing days */
-.missingList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* Logging consistency */
+.consistencyMetrics {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
 }
 
-.missingDay {
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-  padding: 0.35rem 0;
-  border-bottom: 1px solid var(--color-border);
+.timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0.25rem 0;
 }
 
-.missingDay:last-child {
-  border-bottom: none;
+.timelineCell {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+
+.timelineLogged {
+  background: var(--color-accent-diet, #ef6f53);
+}
+
+.timelineMissing {
+  background: var(--color-border);
+}
+
+.timelineLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.78rem;
+  color: var(--color-text-soft);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
 }
 
 @media (max-width: 720px) {
