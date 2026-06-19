@@ -1,0 +1,76 @@
+# Fly.io deployment of MikoshiTracker — the OFFICIAL host of the tracker.
+# Mirrors the proven mikoshi-tasks pattern (always-on 256MB VM + /data volume +
+# Tailscale userspace sidecar). Local `bun dev` is for development only; the
+# WhatsApp bot/kernel talk to https://mikoshi-tracker.fly.dev.
+#
+# Coste: 256 MB always-on + volumen 1 GB ≈ ~2 $/mes. Fly NO tiene hard cap de
+# gasto: control estructural = VM mínima, sin autoscaling, volumen pequeño.
+
+app = "mikoshi-tracker"
+primary_region = "cdg"          # París (Madrid no es región de Fly)
+
+[build]
+  # Containerfile.fly = imagen base + binarios Tailscale + entrypoint que levanta
+  # tailscaled userspace antes del proceso Bun. Manda sobre --dockerfile.
+  dockerfile = "Containerfile.fly"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "7080"
+  DATA_DIR = "/data"
+  # DB y adjuntos viven en el volumen persistente /data.
+  DATABASE_URL = "file:/data/mikoshi-tracker.db"
+  ATTACHMENTS_DIR = "/data/attachments"
+  # Base pública de los magic links (auth/magic-link.ts construye ${base}/magic).
+  # DEBE ser el dominio Fly o los enlaces de WhatsApp no abrirán desde el móvil.
+  BETTER_AUTH_URL = "https://mikoshi-tracker.fly.dev"
+  APP_BASE_URL = "https://mikoshi-tracker.fly.dev"
+  CORS_ORIGIN = "https://mikoshi-tracker.fly.dev"
+  # Platform API privada del kernel (jetson). IP del tailnet (no MagicDNS).
+  MIKOSHI_PLATFORM_API_URL = "http://100.67.119.104:7777/api/platform/v1"
+  # Bun fetch sale por el proxy HTTP de tailscaled userspace hacia el tailnet
+  # (NUNCA por internet abierto).
+  HTTP_PROXY = "http://127.0.0.1:1099"
+  HTTPS_PROXY = "http://127.0.0.1:1099"
+  NO_PROXY = "localhost,127.0.0.1"
+
+# Un solo proceso Bun sirve API + SPA (apps/web/dist) en :7080. Sin reverse proxy.
+[http_service]
+  internal_port = 7080
+  force_https = true
+  # ALWAYS-ON: el kernel dispara hooks de cron (informe semanal), el push webhook
+  # y el pull-backup contra esta extensión; si la máquina se durmiera no estarían
+  # disponibles. Coste: VM 256 MB encendida 24/7 ≈ ~2 $/mes.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 50
+    hard_limit = 100
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "15s"
+
+# VM mínima: Bun + bun:sqlite caben de sobra en 256 MB.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+  cpus = 1
+
+# Estado persistente (SQLite WAL + adjuntos) en /data.
+# `fly volumes create tracker_data --size 1 --region cdg`
+[mounts]
+  source = "tracker_data"
+  destination = "/data"
+
+# --- Secretos (NUNCA en este fichero ni en git) — `fly secrets set` ---
+#   fly secrets set \
+#     BETTER_AUTH_SECRET=...                 \  # firma cookies de sesión
+#     MIKOSHI_TRACKER_ADMIN_API_KEY=...      \  # = secret mikoshi_tracker_admin_key del bot
+#     TS_AUTHKEY=tskey-auth-...                 # auth key EFÍMERA del tailnet, tag acotado

@@ -1,0 +1,49 @@
+# MikoshiTracker en Fly.io alcanzando la Platform API privada (jetson:7777) vía
+# Tailscale userspace. Variante monorepo del patrón de mikoshi-tasks: copia los
+# binarios estáticos de Tailscale y arranca por el entrypoint que levanta
+# tailscaled antes del proceso Bun.
+#
+# Build: AMD64 (Fly). La imagen base oven/bun es multi-arch.
+# Contexto de build: la RAÍZ del repo (apps/, packages/, package.json, bun.lock).
+
+# --- Stage build: instala deps del workspace y buildea el SPA Vite ---
+FROM docker.io/oven/bun:1 AS build
+WORKDIR /app
+COPY . .
+RUN bun install --frozen-lockfile
+RUN bun run --filter @mikoshi-tracker/web build
+
+# --- Stage runtime ---
+FROM docker.io/oven/bun:1-slim
+WORKDIR /app
+ENV NODE_ENV=production \
+    PORT=7080 \
+    DATA_DIR=/data
+
+# --- Tailscale (userspace) ---
+# Binarios estáticos desde la imagen oficial; sin paquetes del SO ni /dev/net/tun.
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale  /usr/local/bin/tailscale
+# `tailscale` necesita el socket dir; `curl` para verify/healthchecks.
+RUN mkdir -p /var/run/tailscale && \
+    apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# El API corre desde TypeScript bajo Bun (no se "buildea"); necesita el código
+# fuente, los packages del workspace, node_modules ya resuelto y el SPA buildeado.
+# Copiamos el /app ya instalado del stage build (incluye node_modules hoisted),
+# que es lo más robusto para un workspace Bun.
+COPY --from=build /app /app
+
+COPY tailscale-entrypoint.sh /app/tailscale-entrypoint.sh
+COPY verify-platform-reach.sh /app/verify-platform-reach.sh
+RUN chmod +x /app/tailscale-entrypoint.sh /app/verify-platform-reach.sh
+
+VOLUME /data
+EXPOSE 7080
+
+# El entrypoint: importa la DB seed (first run) → migra → arranca tailscaled
+# userspace → exec del CMD. Secretos (TS_AUTHKEY, BETTER_AUTH_SECRET,
+# MIKOSHI_TRACKER_ADMIN_API_KEY) llegan por `fly secrets set`, NUNCA horneados.
+ENTRYPOINT ["/app/tailscale-entrypoint.sh"]
+CMD ["bun", "apps/api/src/server.ts"]
