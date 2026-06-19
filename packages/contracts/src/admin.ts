@@ -51,7 +51,13 @@ export const adminCirclePathParamsSchema = z.object({
 
 // ─── Admin circle lifecycle (contest management) ────────────────────────────
 
-export const circleStatusSchema = z.enum(["active", "closed", "archived"]);
+/**
+ * `disabled` is the "switched off" state (distinct from `closed`/`archived`,
+ * which stay visible for history): a disabled circle is hidden from every
+ * member's circle list, 404s on direct access, and rejects all check-ins — but
+ * it is preserved (admins still see it and can re-enable it).
+ */
+export const circleStatusSchema = z.enum(["active", "closed", "archived", "disabled"]);
 export const circleLeaderboardModeSchema = z.enum(["rolling", "snapshot"]);
 
 /** Shared serialized shape of a circle returned by admin endpoints. */

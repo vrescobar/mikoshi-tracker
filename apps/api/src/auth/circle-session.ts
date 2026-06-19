@@ -27,7 +27,7 @@ export class CircleAuthError extends Error {
 }
 
 export interface CircleContext {
-  circle: { id: string; name: string; ownerId: string };
+  circle: { id: string; name: string; ownerId: string; status: string };
   tokenId: string;
 }
 
@@ -65,6 +65,13 @@ export async function requireCircleContext(
 
   if (result.circle.id !== pathCircleId) {
     throw new CircleAuthError(403, "Circle token is not valid for this circle");
+  }
+
+  if (result.circle.status === "disabled") {
+    // A disabled circle is switched off for everyone — the bot/skills surface
+    // it too. 404 (not 401/403) so it reads as "gone", with an explicit code so
+    // it isn't mistaken for an expired token.
+    throw new CircleAuthError(404, "This circle has been disabled", "CIRCLE_DISABLED");
   }
 
   return {

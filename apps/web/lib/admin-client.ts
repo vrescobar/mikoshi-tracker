@@ -85,7 +85,7 @@ export type AdminCircle = {
   id: string;
   name: string;
   ownerId: string;
-  status: "active" | "closed" | "archived";
+  status: "active" | "closed" | "archived" | "disabled";
   season: string | null;
   contestStartAt: string | null;
   contestEndAt: string | null;
@@ -380,7 +380,7 @@ export const adminApi = {
   updateCircle: (
     circleId: string,
     patch: Partial<{
-      status: "active" | "closed" | "archived";
+      status: "active" | "closed" | "archived" | "disabled";
       season: string | null;
       contestStartAt: string | null;
       contestEndAt: string | null;

@@ -98,11 +98,12 @@ function Lifecycle({ circle, onSaved }: { circle: AdminCircle; onSaved: () => vo
   return (
     <div className="card pad" style={{ maxWidth: 560 }}>
       <h3 style={{ marginBottom: 16 }}>Lifecycle</h3>
-      <Field label="Status">
+      <Field label="Status" hint="Disabled hides the circle from all members and blocks every check-in (reversible).">
         <select value={status} onChange={(e) => setStatus(e.target.value as AdminCircle["status"])}>
           <option value="active">active</option>
           <option value="closed">closed</option>
           <option value="archived">archived</option>
+          <option value="disabled">disabled (hidden + off)</option>
         </select>
       </Field>
       <Field label="Season">

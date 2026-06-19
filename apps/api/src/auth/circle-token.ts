@@ -28,14 +28,14 @@ export async function createCircleToken(db: Db, circleId: string, label?: string
 }
 
 export async function findCircleByToken(db: Db, token: string) {
-  const record = db.get<{ id: string; circleId: string; name: string; ownerId: string }>(
-    `SELECT t."id" AS "id", c."id" AS "circleId", c."name" AS "name", c."ownerId" AS "ownerId"
+  const record = db.get<{ id: string; circleId: string; name: string; ownerId: string; status: string }>(
+    `SELECT t."id" AS "id", c."id" AS "circleId", c."name" AS "name", c."ownerId" AS "ownerId", c."status" AS "status"
      FROM "CircleToken" t JOIN "Circle" c ON c."id" = t."circleId" WHERE t."token" = ? LIMIT 1`,
     [hashCircleToken(token)],
   );
   if (!record) return null;
   return {
-    circle: { id: record.circleId, name: record.name, ownerId: record.ownerId },
+    circle: { id: record.circleId, name: record.name, ownerId: record.ownerId, status: record.status },
     tokenId: record.id,
   };
 }

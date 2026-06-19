@@ -238,6 +238,7 @@
 
 .admin-scope .pill.danger,
 .admin-scope .pill.archived,
+.admin-scope .pill.disabled,
 .admin-scope .pill.revoked {
   background: var(--color-danger-soft);
   color: var(--color-danger);

@@ -875,7 +875,9 @@ export async function getCircleDetail(
     listCircleHabitSharesByUser(db, { circleId: params.circleId, userId: params.userId }),
   ]);
 
-  if (!circle) {
+  if (!circle || circle.status === "disabled") {
+    // A disabled circle is invisible even to its own members — 404 (the same
+    // response a non-member sees) so it can't be opened by a stale link.
     throw new CircleNotFoundError();
   }
 

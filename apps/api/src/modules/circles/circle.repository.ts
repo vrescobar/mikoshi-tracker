@@ -208,10 +208,13 @@ export async function countCircleMembers(db: Db, circleId: string): Promise<numb
 }
 
 export async function listCirclesByUserId(db: Db, userId: string): Promise<CircleRecord[]> {
+  // `disabled` circles are hidden from members entirely — they never appear in
+  // anyone's list (admins still see them via the admin API to re-enable).
   return db
     .all<CircleRow>(
       `SELECT c.* FROM "Circle" c
-       WHERE EXISTS (SELECT 1 FROM "CircleMembership" m WHERE m."circleId" = c."id" AND m."userId" = ?)
+       WHERE c."status" != 'disabled'
+         AND EXISTS (SELECT 1 FROM "CircleMembership" m WHERE m."circleId" = c."id" AND m."userId" = ?)
        ORDER BY c."createdAt" ASC`,
       [userId],
     )

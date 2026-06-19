@@ -111,6 +111,38 @@ describe("admin circle lifecycle routes", () => {
       expect(res.json().circle.status).toBe("closed");
     });
 
+    it("disables a circle and reflects status", async () => {
+      context = await createTestContext();
+      await provision(context, "owner-ext-disable");
+      const created = (
+        await context.app.inject({
+          method: "POST",
+          url: "/api/admin/circles",
+          headers: auth,
+          payload: { name: "Concurso", ownerExternalId: "owner-ext-disable" },
+        })
+      ).json();
+      const circleId = created.circle.id as string;
+
+      const res = await context.app.inject({
+        method: "PATCH",
+        url: `/api/admin/circles/${circleId}`,
+        headers: auth,
+        payload: { status: "disabled" },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json().circle.status).toBe("disabled");
+
+      // Re-enabling is just another PATCH.
+      const reenable = await context.app.inject({
+        method: "PATCH",
+        url: `/api/admin/circles/${circleId}`,
+        headers: auth,
+        payload: { status: "active" },
+      });
+      expect(reenable.json().circle.status).toBe("active");
+    });
+
     it("400 when no fields are provided", async () => {
       context = await createTestContext();
       await provision(context, "owner-ext-3");
@@ -187,6 +219,12 @@ describe("assertCircleAcceptsCheckins (contest-window gate)", () => {
   it("throws when status is closed", () => {
     expect(() =>
       assertCircleAcceptsCheckins({ status: "closed", contestStartAt: null, contestEndAt: null }, within),
+    ).toThrow(CircleClosedError);
+  });
+
+  it("throws when status is disabled", () => {
+    expect(() =>
+      assertCircleAcceptsCheckins({ status: "disabled", contestStartAt: null, contestEndAt: null }, within),
     ).toThrow(CircleClosedError);
   });
 
