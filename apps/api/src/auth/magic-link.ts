@@ -44,7 +44,18 @@ export const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days — matches the
 
 const MAGIC_LINK_TOKEN_BYTES = 32;
 const SESSION_TOKEN_BYTES = 32;
-const COOKIE_NAME = "better-auth.session_token";
+const COOKIE_BASE_NAME = "better-auth.session_token";
+
+/**
+ * better-auth prefixes its cookie with `__Secure-` whenever secure cookies are
+ * in effect (i.e. an `https://` baseURL — the default `useSecureCookies`). The
+ * session cookie we mint here MUST match that name byte-for-byte or
+ * `auth.api.getSession` won't find it and every magic-link login 401s. With an
+ * `http://` baseURL (local dev) there is no prefix.
+ */
+function sessionCookieName(secureCookies: boolean): string {
+  return secureCookies ? `__Secure-${COOKIE_BASE_NAME}` : COOKIE_BASE_NAME;
+}
 
 export interface IssuedMagicLink {
   url: string;
@@ -215,7 +226,7 @@ export async function consumeMagicLink(opts: {
     ok: true,
     userId: row.userId,
     cookie: {
-      name: COOKIE_NAME,
+      name: sessionCookieName(opts.secureCookies),
       value: signed,
       attributes: {
         httpOnly: true,
