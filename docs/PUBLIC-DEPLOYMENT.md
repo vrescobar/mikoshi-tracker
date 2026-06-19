@@ -12,6 +12,40 @@ This guide covers the hardening required before exposing MikoshiTracker
 
 ---
 
+## Official deployment: Fly.io (the canonical production host)
+
+Production runs on **Fly.io** at `https://mikoshi-tracker.fly.dev` (app
+`mikoshi-tracker`, region `cdg`). The systemd self-host below is now the
+**legacy / local-dev** path: locally you only run `bun dev`. The committed
+artifacts (`fly.toml`, `Containerfile.fly`, `tailscale-entrypoint.sh`,
+`verify-platform-reach.sh`) define the deployment; the fleet source-of-truth is
+`mikoshi-stack/stack.yaml` (`tracker` is `managed: external`).
+
+- **One always-on Bun process** serves the API + built SPA on `:7080`; Fly
+  terminates TLS. DB (`/data/mikoshi-tracker.db`) and attachments
+  (`/data/attachments`) live on a persistent volume.
+- **Public env** (`BETTER_AUTH_URL`/`APP_BASE_URL`/`CORS_ORIGIN`) is the
+  `fly.dev` URL — required so WhatsApp magic links open from phones.
+- **Kernel reach (Tailscale userspace sidecar):** the tracker reaches the
+  private Mikoshi Platform API (`jetson:7777`) over the tailnet via the
+  tailscaled HTTP proxy. Set `TS_AUTHKEY` (ephemeral, tagged) via
+  `fly secrets set`; without it the sidecar is skipped and only the outbound
+  roster sync is lost (web, magic links, circle writes and the kernel's
+  pull-backup all still work over public HTTPS).
+- **Secrets** (never in git): `fly secrets set BETTER_AUTH_SECRET=…
+  MIKOSHI_TRACKER_ADMIN_API_KEY=… TS_AUTHKEY=…`. The admin key MUST equal the
+  bot's `mikoshi_tracker_admin_key` secret (the kernel signs circle writes /
+  backup pulls with it).
+- **Deploy:** `fly deploy --ha=false`. **Seed/restore data:** upload a
+  VACUUM'd DB to `/data/_seed.sqlite` (`fly ssh sftp put`) and restart — the
+  entrypoint installs it as the live DB on first boot.
+- **Backups (two layers):** Fly volume daily snapshots (5 retained) **and** the
+  kernel's pull-backup (`POST /api/platform/backup`, signed) stored on jetson at
+  `data/ext-backups/tracker/`. Trigger manually with the kernel's
+  `scripts/run-ext-backup-now.ts`.
+
+---
+
 ## Hardening for public internet exposure
 
 MikoshiTracker is multi-user with correct per-user data isolation, but the defaults
