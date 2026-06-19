@@ -9,13 +9,16 @@
 # El cliente de la Platform API sale por ahí hacia jetson:7777 (tailnet).
 # El tracker NO gana IP pública por aquí; nada de esto va por internet abierto.
 #
-# Requiere en el entorno:
+# Variables del entorno:
 #   TS_AUTHKEY   auth key EFÍMERA del tailnet (fly secrets set), tag acotado.
+#                Si NO está, se OMITE el sidecar: el tracker sigue sirviendo web,
+#                magic links y escrituras de círculo (todo inbound, público); y
+#                el kernel sigue pudiendo hacer pull-backup/push por HTTPS público.
+#                Solo se pierde el sync saliente tracker→kernel (roster, story 51).
 #   TS_HOSTNAME  opcional, nombre del nodo (default: fly-mikoshi-tracker).
 #   DATABASE_URL opcional para migrar (default: file:${DATA_DIR}/mikoshi-tracker.db).
 set -e
 
-: "${TS_AUTHKEY:?falta TS_AUTHKEY (fly secrets set TS_AUTHKEY=tskey-auth-...)}"
 : "${TS_HOSTNAME:=fly-mikoshi-tracker}"
 : "${DATA_DIR:=/data}"
 DB_PATH="${DATA_DIR}/mikoshi-tracker.db"
@@ -35,6 +38,15 @@ fi
 # --- Migraciones (idempotente; no-op si la DB ya está al día) ---
 echo "[entrypoint] aplicando migraciones…"
 ( cd /app/apps/api && bun scripts/migrate.ts ) || echo "[entrypoint] WARN: migrate falló (¿DB nueva?)"
+
+# Sin TS_AUTHKEY: omitimos el sidecar y limpiamos el proxy saliente para que
+# cualquier fetch del proceso salga directo (sin colgarse contra un proxy muerto).
+if [ -z "${TS_AUTHKEY:-}" ]; then
+  echo "[entrypoint] TS_AUTHKEY ausente → sin sidecar Tailscale (sync saliente al kernel deshabilitado)"
+  unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
+  echo "[entrypoint] arrancando app: $*"
+  exec "$@"
+fi
 
 echo "[entrypoint] arrancando tailscaled (userspace)…"
 /usr/local/bin/tailscaled \
