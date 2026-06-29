@@ -177,14 +177,20 @@ describe("circle read endpoints", () => {
       );
       await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: aliceHabit.id });
 
-      // Alice: completed today and yesterday (streak = 1 from yesterday back, then stopped)
-      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
-      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
+      // Weekly adherence is anchored to the CURRENT CALENDAR WEEK (Mon–Sun), so
+      // run "now" on Tue 2026-05-19 (week = Mon 05-18 … Sun 05-24).
+      const nowTue = "2026-05-19T12:00:00.000Z";
+      // Two completions THIS week (Mon 05-18, Tue 05-19) …
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: nowTue });
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-18T12:00:00.000Z" });
+      // … plus one in the PREVIOUS week (Fri 05-15) that must NOT count toward the
+      // weekly total (regression: a rolling 7-day window used to leak it in).
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-15T12:00:00.000Z" });
 
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": nowTue },
       });
 
       expect(response.statusCode).toBe(200);
@@ -200,9 +206,12 @@ describe("circle read endpoints", () => {
 
       const aliceEntry = leaderboard.find((e) => e.userId === alice.id)!;
       expect(aliceEntry.completedTodayCount).toBe(1);
-      // Streak counts back from yesterday: completed 2026-05-17, not 2026-05-16 → streak = 1
+      // Streak counts back from yesterday (Mon 05-18 ✓, Sun 05-17 ✗) → 1. The streak
+      // is consecutive-day based and NOT week-bounded, so 05-15 doesn't extend it
+      // (the 05-16/05-17 gap stops it).
       expect(aliceEntry.currentStreak).toBe(1);
-      // Daily habit → weekly target is 7. 2 completions in past 7 days → min(1, 2/7) ≈ 0.29
+      // Daily habit → weekly target 7. Only the 2 in-week completions count
+      // (the prev-week 05-15 is excluded) → min(1, 2/7) ≈ 0.29.
       expect(aliceEntry.weeklyCompletionRate).toBe(0.29);
       expect(aliceEntry.weeklyCompletedCount).toBe(2);
       expect(aliceEntry.weeklyTargetCount).toBe(7);
@@ -223,15 +232,20 @@ describe("circle read endpoints", () => {
       );
       await createCircleHabitShareRecord(context.app.sqlite, { circleId: circle.id, habitId: aliceHabit.id });
 
-      // 3 of the 4 weekly check-ins done (today + the two prior days).
-      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: NOW });
-      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-17T12:00:00.000Z" });
-      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-16T12:00:00.000Z" });
+      // "now" = Wed 2026-05-20 (week = Mon 05-18 … Sun 05-24). 3 of the 4 weekly
+      // check-ins done THIS week (Mon/Tue/Wed) …
+      const nowWed = "2026-05-20T12:00:00.000Z";
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: nowWed });
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-19T12:00:00.000Z" });
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-18T12:00:00.000Z" });
+      // … plus one in the PREVIOUS week (Thu 05-14) that must be excluded from the
+      // weekly count (regression for the Monday-reset fix).
+      await completeHabitForToday({ db: context.app.sqlite, sqlite: context.app.sqlite }, { userId: alice.id, habitId: aliceHabit.id, source: "web", timestamp: "2026-05-14T12:00:00.000Z" });
 
       const response = await context.app.inject({
         method: "GET",
         url: `/api/circles/${circle.id}/leaderboard`,
-        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": NOW },
+        headers: { authorization: `Bearer ${token}`, "x-mikoshi-tracker-now": nowWed },
       });
 
       expect(response.statusCode).toBe(200);
@@ -240,7 +254,8 @@ describe("circle read endpoints", () => {
       };
 
       const aliceEntry = leaderboard.find((e) => e.userId === alice.id)!;
-      // 3 done out of a weekly target of 4 → 0.75, NOT 3/7 ≈ 0.43.
+      // 3 done THIS week out of a weekly target of 4 → 0.75 (prev-week 05-14 excluded;
+      // also NOT 3/7 ≈ 0.43 — target is the habit's own weekly count).
       expect(aliceEntry.weeklyCompletedCount).toBe(3);
       expect(aliceEntry.weeklyTargetCount).toBe(4);
       expect(aliceEntry.weeklyCompletionRate).toBe(0.75);

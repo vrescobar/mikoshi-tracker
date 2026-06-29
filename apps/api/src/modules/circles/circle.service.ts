@@ -2,7 +2,7 @@ import type { Db } from "../../db/client";
 import { getUserById } from "../users/user.repository";
 import { nowDb } from "../../db/rows";
 import { serializeContractHabitKind, serializeContractWeekday } from "../../shared/habit-contract-mappers";
-import { addDays, compareDateKeys, dateKeyToLocalNoonTimestamp, resolveHabitDay } from "../today/today-clock";
+import { addDays, compareDateKeys, dateKeyToLocalNoonTimestamp, getWeekBounds, resolveHabitDay } from "../today/today-clock";
 import { findLatestCheckinMutation } from "../checkins/checkin.repository";
 import {
   completeHabitForToday,
@@ -244,10 +244,10 @@ export async function listCircleMembersForToken(
 }
 
 /**
- * How many completions in a rolling 7-day window count as 100% for one habit.
- * Mirrors the per-period `completionTarget` semantics in `stats.shared.ts`:
+ * How many completions in the current calendar week (Mon–Sun) count as 100% for
+ * one habit. Mirrors the per-period `completionTarget` semantics in `stats.shared.ts`:
  *  - DAILY         → 7 (one per day)
- *  - WEEKDAYS      → number of scheduled weekdays (each falls once per 7-day window)
+ *  - WEEKDAYS      → number of scheduled weekdays (each falls once per week)
  *  - WEEKLY_COUNT  → its weekly count (e.g. 4x/week → 4)
  *  - MONTHLY_COUNT → the monthly count amortized to a week (ceil over ~4 weeks)
  * Always ≥ 1 so a misconfigured habit never divides by zero.
@@ -302,7 +302,13 @@ export async function getCircleLeaderboard(
     // Resolve this member's day keys in their own timezone — a UTC-only "today"
     // miscounts members whose local date differs from UTC at request time.
     const memberToday = resolveHabitDay({ timestamp: now, timeZone: membership.user.timezone }).todayKey;
-    const weekStart = addDays(memberToday, -6);
+    // Weekly adherence is anchored to the CURRENT CALENDAR WEEK (Monday 00:00 in
+    // the member's timezone, ISO Mon–Sun), NOT a rolling 7-day window. A rolling
+    // window made the counter carry completions from the previous week (e.g. a
+    // member showed "2/3" on a Monday because Mon−6 reached back into last week);
+    // the calendar week resets the count every Monday, matching how members read
+    // "esta semana". `getWeekBounds` is the same Mon-anchored helper stats/habits use.
+    const weekStart = getWeekBounds(memberToday).weekStartKey;
     const yesterday = addDays(memberToday, -1);
     const rangeStart = addDays(memberToday, -29);
 
