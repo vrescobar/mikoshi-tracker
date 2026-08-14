@@ -64,6 +64,38 @@ export async function createTestContext(
   };
 }
 
+export type CapturedNotify = { externalId: string; prompt: string };
+
+/**
+ * Install a capturing fake `mikoshiPlatform` on a test app so flows that deliver
+ * to a WhatsApp DM (magic-link issuance, reports) can be asserted without a live
+ * kernel. `notifies` records every `notifyText` call; pass `deliver: false` to
+ * simulate a delivery failure. Without this, `app.mikoshiPlatform` is null in
+ * tests (no `MIKOSHI_PLATFORM_API_URL`).
+ */
+export function installFakePlatform(
+  app: FastifyInstance,
+  opts: { deliver?: boolean } = {},
+): { notifies: CapturedNotify[] } {
+  const notifies: CapturedNotify[] = [];
+  const deliver = opts.deliver ?? true;
+  const fake = {
+    async notifyText(params: { externalId: string; prompt: string }): Promise<boolean> {
+      notifies.push({ externalId: params.externalId, prompt: params.prompt });
+      return deliver;
+    },
+  };
+  Object.defineProperty(app, "mikoshiPlatform", { value: fake, writable: true, configurable: true });
+  return { notifies };
+}
+
+/** Extract the magic-link token from a captured DM prompt. */
+export function tokenFromNotify(prompt: string): string {
+  const match = prompt.match(/\/magic\?t=([0-9a-f]{64})/);
+  if (!match) throw new Error(`No magic-link token found in prompt: ${prompt}`);
+  return match[1]!;
+}
+
 export async function signUp(
   app: FastifyInstance,
   overrides: Partial<{ email: string; password: string; name: string; timezone: string }> = {},

@@ -218,8 +218,41 @@ export async function issueMagicLinkHandler(
       });
     }
 
+    // SECURITY (Operación Bikini incident): a magic link is a bearer login
+    // credential — whoever opens it gets a session as `externalId`. We must NOT
+    // hand the raw URL back to the bot, because the bot relays it into whatever
+    // chat it is serving, and in a PUBLIC GROUP any member could click it and
+    // hijack this user's account. Instead the tracker delivers the link itself,
+    // straight to the requester's own WhatsApp DM (notify by externalId is 1:1,
+    // never a group), and returns only `delivered` — same trust-boundary model
+    // as the nutrition report. The link still expires (15 min TTL); private
+    // delivery is the binding control. The bot cannot leak what it never gets.
+    const platform = request.server.mikoshiPlatform;
+    if (!platform) {
+      return await reply.status(503).send({
+        code: "PLATFORM_UNAVAILABLE",
+        message:
+          "No puedo entregar el enlace de acceso ahora mismo: la mensajería no está disponible. Reinténtalo en un momento.",
+      });
+    }
+
+    // The platform notify delivers text VERBATIM (raw mode) to the DM — no LLM
+    // reformats it — so `prompt` is the exact message the user receives. Keep it
+    // to the user-facing line only; the URL must arrive intact and un-shortened.
+    const delivered = await platform.notifyText({
+      externalId: input.externalId,
+      prompt: `🔐 Tu enlace de acceso a MikoshiTracker (válido 15 min, ábrelo solo tú):\n${issued.url}`,
+    });
+    if (!delivered) {
+      return await reply.status(502).send({
+        code: "DELIVERY_FAILED",
+        message:
+          "No pude enviarte el enlace de acceso por privado. Reinténtalo en un momento.",
+      });
+    }
+
     reply.status(201);
-    return { url: issued.url, expiresAt: issued.expiresAt.toISOString() };
+    return { delivered: true, expiresAt: issued.expiresAt.toISOString() };
   } catch (error) {
     return sendAdminError(reply, error);
   }

@@ -194,6 +194,8 @@ describe("identity lifecycle (story 52)", () => {
           return reply.status(404).send({ error: "not found" });
         },
       );
+      // Magic-link delivery now goes through the platform notify (DM-only).
+      server.post("/api/platform/v1/notify", async () => ({ ok: true }));
       return server;
     }
 
@@ -236,7 +238,9 @@ describe("identity lifecycle (story 52)", () => {
       });
 
       expect(response.statusCode).toBe(201);
-      expect(response.json().url).toMatch(/\/magic\?t=/);
+      // Delivered to the survivor's DM; the raw URL is never returned to the caller.
+      expect(response.json().delivered).toBe(true);
+      expect(response.json().url).toBeUndefined();
     });
   });
 });

@@ -235,6 +235,8 @@ describe("membership sync (cohorts = roster)", () => {
           { externalId: "ext-frank", displayName: "Frank" },
         ];
       });
+      // The link is delivered to the user's DM via the platform notify.
+      fakeMikoshi.post("/api/platform/v1/notify", async () => ({ ok: true }));
       const address = await fakeMikoshi.listen({ port: 0, host: "127.0.0.1" });
 
       context = await createTestContext({
@@ -250,6 +252,8 @@ describe("membership sync (cohorts = roster)", () => {
         payload: { externalId: "ext-frank" },
       });
       expect(response.statusCode).toBe(201);
+      expect(response.json().delivered).toBe(true);
+      expect(response.json().url).toBeUndefined();
 
       // The pull hit Mikoshi with the shared admin key…
       expect(requests).toHaveLength(1);
@@ -262,10 +266,18 @@ describe("membership sync (cohorts = roster)", () => {
       expect(membership).not.toBeNull();
     });
 
-    it("an unreachable Mikoshi never blocks the magic link (best-effort)", async () => {
+    it("a failing cohort pull never blocks the magic link (best-effort side-effect)", async () => {
+      // Delivery (notify) succeeds, but the cohort roster pull errors out. The
+      // pull is a best-effort side-effect, so the link is still issued + delivered.
+      fakeMikoshi = fastify();
+      fakeMikoshi.get("/api/platform/v1/cohorts/:id/members", async (_req, reply) =>
+        reply.status(500).send({ error: "boom" }),
+      );
+      fakeMikoshi.post("/api/platform/v1/notify", async () => ({ ok: true }));
+      const address = await fakeMikoshi.listen({ port: 0, host: "127.0.0.1" });
+
       context = await createTestContext({
-        // Nothing listens here — the pull must fail silently.
-        MIKOSHI_PLATFORM_API_URL: "http://127.0.0.1:1/api/platform/v1",
+        MIKOSHI_PLATFORM_API_URL: `${address}/api/platform/v1`,
       });
       await makeLinkedCircle(context, "cohort-down");
       await provision(context, "ext-grace", "Grace");
@@ -277,7 +289,26 @@ describe("membership sync (cohorts = roster)", () => {
         payload: { externalId: "ext-grace" },
       });
       expect(response.statusCode).toBe(201);
-      expect(response.json().url).toMatch(/\/magic\?t=/);
+      expect(response.json().delivered).toBe(true);
+      expect(response.json().url).toBeUndefined();
+    });
+
+    it("a messaging outage fails the link closed — no URL is ever returned", async () => {
+      context = await createTestContext({
+        // Nothing listens here — delivery cannot happen.
+        MIKOSHI_PLATFORM_API_URL: "http://127.0.0.1:1/api/platform/v1",
+      });
+      await makeLinkedCircle(context, "cohort-outage");
+      await provision(context, "ext-outage", "Otto");
+
+      const response = await context.app.inject({
+        method: "POST",
+        url: "/api/platform/issue-magic-link",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-outage" },
+      });
+      expect(response.statusCode).toBe(502);
+      expect(response.json().url).toBeUndefined();
     });
   });
 });

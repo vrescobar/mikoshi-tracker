@@ -172,8 +172,22 @@ export const issueMagicLinkInputSchema = z.object({
     .optional(),
 });
 
+/**
+ * A magic link is a bearer login credential: opening it starts a session as the
+ * target user. We therefore NEVER return the raw URL to the caller (the Mikoshi
+ * bot), because the bot would relay it into whatever chat it is serving —
+ * including a PUBLIC GROUP, where any member could click it and hijack the
+ * requester's account (the "Operación Bikini" incident). Instead the tracker
+ * delivers the link straight to the requester's own WhatsApp DM (1:1 by
+ * externalId, never a group) and returns only a `delivered` flag — the same
+ * trust-boundary model as the nutrition report (`report_send_chart`). The bot
+ * cannot leak what it never receives.
+ *
+ * Note: `adminLoginAsResponseSchema` (God Mode) still returns a URL — that path
+ * is the admin web UI, not a bot relay into a chat.
+ */
 export const issueMagicLinkResponseSchema = z.object({
-  url: nonEmptyString,
+  delivered: z.boolean(),
   expiresAt: nonEmptyString, // ISO timestamp
 });
 

@@ -11,7 +11,9 @@ import { z } from "zod";
  *
  * Magic-link issuance under `/api/platform/issue-magic-link` reuses the
  * admin schemas verbatim (`issueMagicLinkInputSchema` /
- * `issueMagicLinkResponseSchema`) — same shape in both namespaces.
+ * `issueMagicLinkResponseSchema`) — same shape in both namespaces. The link is
+ * delivered to the requester's WhatsApp DM by the tracker; the response carries
+ * only `{ delivered, expiresAt }`, never the raw URL (see admin.ts).
  */
 
 const nonEmptyString = z.string().trim().min(1);

@@ -9,7 +9,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { createTestContext, type TestContext } from "../helpers/app";
+import { createTestContext, installFakePlatform, tokenFromNotify, type TestContext } from "../helpers/app";
 
 const ADMIN_KEY = "test-admin-key-for-provisioning";
 
@@ -25,6 +25,9 @@ async function provisionUser(context: TestContext, externalId: string): Promise<
 }
 
 async function issueToken(context: TestContext, externalId: string, next?: string): Promise<string> {
+  // The endpoint no longer returns the URL — it delivers it to the user's DM.
+  // Capture the DM the tracker sends and pull the token out of it.
+  const platform = installFakePlatform(context.app);
   const res = await context.app.inject({
     method: "POST",
     url: "/api/admin/issue-magic-link",
@@ -32,7 +35,7 @@ async function issueToken(context: TestContext, externalId: string, next?: strin
     payload: next ? { externalId, next } : { externalId },
   });
   expect(res.statusCode).toBe(201);
-  return new URL((res.json() as { url: string }).url).searchParams.get("t")!;
+  return tokenFromNotify(platform.notifies.at(-1)!.prompt);
 }
 
 describe("GET /magic", () => {

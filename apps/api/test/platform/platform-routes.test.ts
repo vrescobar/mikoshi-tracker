@@ -16,7 +16,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { findUserByApiToken } from "../../src/auth/api-token";
-import { createTestContext, type TestContext } from "../helpers/app";
+import { createTestContext, installFakePlatform, type TestContext } from "../helpers/app";
 
 const ADMIN_KEY = "test-admin-key-for-platform";
 
@@ -217,8 +217,9 @@ describe("platform contract namespace", () => {
   });
 
   describe("POST /api/platform/issue-magic-link", () => {
-    it("issues a magic link with the contract shape {url, expiresAt}", async () => {
+    it("delivers to the user's DM and returns {delivered, expiresAt} — never a URL", async () => {
       context = await createTestContext();
+      const platform = installFakePlatform(context.app);
 
       await context.app.inject({
         method: "POST",
@@ -235,8 +236,12 @@ describe("platform contract namespace", () => {
       });
       expect(response.statusCode).toBe(201);
       const body = response.json();
-      expect(body.url).toMatch(/\/magic\?t=/);
+      expect(body.delivered).toBe(true);
+      // The raw URL must not be relayable by the bot — it only goes to the DM.
+      expect(body.url).toBeUndefined();
       expect(new Date(body.expiresAt).getTime()).toBeGreaterThan(Date.now());
+      const dm = platform.notifies.find((n) => n.externalId === "ext-platform-6");
+      expect(dm?.prompt).toMatch(/\/magic\?t=/);
     });
 
     it("returns 404 for an unknown externalId and 401 without the admin key", async () => {

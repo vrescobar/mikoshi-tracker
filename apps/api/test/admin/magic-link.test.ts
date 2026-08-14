@@ -9,7 +9,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { createTestContext, type TestContext } from "../helpers/app";
+import { createTestContext, installFakePlatform, tokenFromNotify, type TestContext } from "../helpers/app";
 
 const ADMIN_KEY = "test-admin-key-for-provisioning";
 
@@ -40,8 +40,9 @@ describe("magic-link routes", () => {
   });
 
   describe("POST /api/admin/issue-magic-link", () => {
-    it("returns 201 with an absolute URL when the user exists", async () => {
+    it("delivers the link to the requester's WhatsApp DM and returns {delivered} without a URL", async () => {
       context = await createTestContext();
+      const platform = installFakePlatform(context.app);
       await provisionUser(context, "ext-magic-1");
 
       const res = await context.app.inject({
@@ -52,15 +53,55 @@ describe("magic-link routes", () => {
       });
 
       expect(res.statusCode).toBe(201);
-      const body = res.json() as { url: string; expiresAt: string };
-      // `(auth)` is a Next.js route group and gets stripped from the URL —
-      // the page lives at `/magic`, not `/auth/magic`.
-      expect(body.url).toMatch(/^http:\/\/127\.0\.0\.1:3001\/magic\?t=[0-9a-f]{64}$/);
+      const body = res.json() as { delivered: boolean; expiresAt: string; url?: string };
+      expect(body.delivered).toBe(true);
+      // SECURITY: the raw URL must NEVER come back to the caller — the bot would
+      // relay it into the chat (incl. a public group). It only goes to the DM.
+      expect(body.url).toBeUndefined();
       const expires = new Date(body.expiresAt).getTime();
       const now = Date.now();
       // Default TTL is 15 min — accept anywhere in [10, 20) min to absorb test latency.
       expect(expires - now).toBeGreaterThan(10 * 60 * 1000);
       expect(expires - now).toBeLessThan(20 * 60 * 1000);
+
+      // Delivered to the requester's own identity (1:1 DM), with the link intact.
+      expect(platform.notifies).toHaveLength(1);
+      expect(platform.notifies[0]!.externalId).toBe("ext-magic-1");
+      // `(auth)` is a Next.js route group stripped from the URL — page is `/magic`.
+      expect(platform.notifies[0]!.prompt).toMatch(/http:\/\/127\.0\.0\.1:3001\/magic\?t=[0-9a-f]{64}/);
+    });
+
+    it("returns 503 without ever leaking a URL when the messaging platform is not configured", async () => {
+      context = await createTestContext();
+      // Messaging not wired up at all (vs. configured-but-unreachable → 502).
+      Object.defineProperty(context.app, "mikoshiPlatform", { value: null, configurable: true });
+      await provisionUser(context, "ext-magic-noplatform");
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/issue-magic-link",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-magic-noplatform" },
+      });
+
+      expect(res.statusCode).toBe(503);
+      expect((res.json() as { url?: string }).url).toBeUndefined();
+    });
+
+    it("returns 502 when DM delivery fails (fail-closed, no URL)", async () => {
+      context = await createTestContext();
+      installFakePlatform(context.app, { deliver: false });
+      await provisionUser(context, "ext-magic-faildeliver");
+
+      const res = await context.app.inject({
+        method: "POST",
+        url: "/api/admin/issue-magic-link",
+        headers: { authorization: `Bearer ${ADMIN_KEY}` },
+        payload: { externalId: "ext-magic-faildeliver" },
+      });
+
+      expect(res.statusCode).toBe(502);
+      expect((res.json() as { url?: string }).url).toBeUndefined();
     });
 
     it("returns 401 without admin key", async () => {
@@ -107,16 +148,16 @@ describe("magic-link routes", () => {
   describe("POST /api/auth/magic-link/consume", () => {
     it("consumes a fresh token and returns a signed session cookie", async () => {
       context = await createTestContext();
+      const platform = installFakePlatform(context.app);
       const userId = await provisionUser(context, "ext-consume-1");
 
-      const issueRes = await context.app.inject({
+      await context.app.inject({
         method: "POST",
         url: "/api/admin/issue-magic-link",
         headers: { authorization: `Bearer ${ADMIN_KEY}` },
         payload: { externalId: "ext-consume-1", next: "/food" },
       });
-      const url = (issueRes.json() as { url: string }).url;
-      const token = new URL(url).searchParams.get("t")!;
+      const token = tokenFromNotify(platform.notifies[0]!.prompt);
 
       const consumeRes = await context.app.inject({
         method: "POST",
@@ -153,15 +194,16 @@ describe("magic-link routes", () => {
       // it. Within the TTL the second consume must still succeed (mint a fresh
       // session) rather than 410 — otherwise previews lock the user out.
       context = await createTestContext();
+      const platform = installFakePlatform(context.app);
       await provisionUser(context, "ext-single-use");
 
-      const issueRes = await context.app.inject({
+      await context.app.inject({
         method: "POST",
         url: "/api/admin/issue-magic-link",
         headers: { authorization: `Bearer ${ADMIN_KEY}` },
         payload: { externalId: "ext-single-use" },
       });
-      const token = new URL((issueRes.json() as { url: string }).url).searchParams.get("t")!;
+      const token = tokenFromNotify(platform.notifies[0]!.prompt);
 
       const first = await context.app.inject({
         method: "POST",
