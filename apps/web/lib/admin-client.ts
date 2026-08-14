@@ -23,7 +23,7 @@ export class AdminApiError extends Error {
   }
 }
 
-type Method = "GET" | "POST" | "PATCH";
+type Method = "GET" | "POST" | "PATCH" | "DELETE";
 
 interface CallOptions {
   body?: unknown;
@@ -427,6 +427,10 @@ export const adminApi = {
     call<{ url: string; userId: string; expiresAt: string }>("POST", "/admin/login-as", {
       base: "/api",
       body: { userId, next },
+    }),
+  deleteUser: (userId: string) =>
+    call<null>("DELETE", `/admin/users/${encodeURIComponent(userId)}`, {
+      base: "/api",
     }),
 };
 

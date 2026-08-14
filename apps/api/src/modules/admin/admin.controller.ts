@@ -387,6 +387,35 @@ export async function magicLinkRedirectHandler(request: FastifyRequest, reply: F
   }
 }
 
+/**
+ * DELETE /api/admin/users/:userId
+ *
+ * Permanently delete a user account and all its associated data. The database
+ * handles cascade removal (Entry, CircleMembership, Session, ApiToken, etc.)
+ * via foreign-key rules; this handler only removes the User row after verifying
+ * existence.
+ */
+export async function deleteUserHandler(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await requireAdminKey(request);
+    const { userId } = request.params as { userId: string };
+
+    const user = getUserById(request.server.sqlite, userId);
+    if (!user) {
+      return await reply.status(404).send({
+        code: "NOT_FOUND",
+        message: "No user with that id",
+      });
+    }
+
+    request.server.sqlite.run(`DELETE FROM "User" WHERE "id" = ?`, [userId]);
+
+    return reply.status(204).send();
+  } catch (error) {
+    return sendAdminError(reply, error);
+  }
+}
+
 // ─── Admin circle lifecycle (contest management) ────────────────────────────
 
 export async function createCircleAdminHandler(request: FastifyRequest, reply: FastifyReply) {

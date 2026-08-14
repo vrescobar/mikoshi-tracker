@@ -33,6 +33,7 @@ import {
   bulkEnrollAdminHandler,
   consumeMagicLinkHandler,
   createCircleAdminHandler,
+  deleteUserHandler,
   enrollMemberByExternalIdHandler,
   getCircleAdminHandler,
   issueMagicLinkHandler,
@@ -353,6 +354,7 @@ export async function registerAdminRoutes(app: FastifyInstance) {
   app.post("/api/admin/circles/:circleId/members", enrollMemberByExternalIdHandler);
   app.post("/api/admin/circles/:circleId/assign-habit", assignHabitAdminHandler);
   // User consolidation + God Mode (admin-key gated).
+  app.delete("/api/admin/users/:userId", deleteUserHandler);
   app.post("/api/admin/users/merge", mergeUsersHandler);
   app.post("/api/admin/users/attach-external-id", attachExternalIdHandler);
   app.post("/api/admin/login-as", adminLoginAsHandler);

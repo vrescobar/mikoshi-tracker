@@ -112,7 +112,7 @@ export function UserDetail() {
       {tab === "diet" && <DietTab userId={userId} />}
       {tab === "history" && <HistoryTab userId={userId} />}
       {tab === "circles" && <CirclesTab userId={userId} />}
-      {tab === "account" && <AccountTab user={u} userId={userId} onChanged={user.reload} />}
+      {tab === "account" && <AccountTab user={u} userId={userId} onChanged={user.reload} onDeleted={() => void navigate("/admin/users")} />}
     </>
   );
 }
@@ -652,16 +652,20 @@ function AccountTab({
   user,
   userId,
   onChanged,
+  onDeleted,
 }: {
   user: AdminUser | null;
   userId: string;
   onChanged: () => void;
+  onDeleted: () => void;
 }) {
   const toast = useToast();
   const token = useAsync(() => api.admin.userTokenMeta(userId), [userId]);
   const [busy, setBusy] = useState(false);
   const [extId, setExtId] = useState("");
   const [mergeSource, setMergeSource] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const ensureToken = async () => {
     setBusy(true);
@@ -702,6 +706,21 @@ function AccountTab({
       toast.error(errorMessage(e));
     } finally {
       setBusy(false);
+    }
+  };
+
+  const deleteUser = async () => {
+    setDeleting(true);
+    try {
+      await api.admin.deleteUser(userId);
+      toast.ok("Account deleted");
+      setConfirmDelete(false);
+      onChanged();
+      onDeleted();
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -750,7 +769,27 @@ function AccountTab({
             </button>
           </div>
         </Field>
+
+        <h3 style={{ margin: "22px 0 12px", color: "#dc2626" }}>Delete account</h3>
+        <p className="dim" style={{ marginBottom: 12, fontSize: 13, lineHeight: 1.5 }}>
+          Permanently delete this user account and all associated data (habits, events, circles, memberships). This cannot be undone.
+        </p>
+        <button className="btn danger" disabled={busy || deleting} onClick={() => setConfirmDelete(true)}>
+          {deleting ? "Deleting…" : "Delete Account"}
+        </button>
       </div>
+
+      {confirmDelete && (
+        <ConfirmDialog
+          title="Delete account"
+          message="This will permanently delete the user, all habits, events, circles, and circle memberships. This cannot be undone."
+          confirmLabel="Delete"
+          danger
+          busy={deleting}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={() => void deleteUser()}
+        />
+      )}
     </div>
   );
 }
